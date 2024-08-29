@@ -99,6 +99,13 @@ def miseAPlatDonorTree__(zones, tc, graph=None, list_graph=None, nbpts_linelets=
 
         else: neq_trans = neq_base
 
+        try:
+               import dNami.rhsinfo as rhs
+               # neq_trans = rhs.nvarst_dyn+len(rhs.varname)
+               neq_trans = len(rhs.varname)
+        except:
+               pass
+
         #print(z[0])
         subRegions =  Internal.getNodesFromType1(z, 'ZoneSubRegion_t')
         meshtype   = 1

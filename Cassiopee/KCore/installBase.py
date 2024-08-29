@@ -7,6 +7,21 @@
 # Others are strings.
 installDict = {
 ###############################################################################
+'PA-DYF-NALFEREZ': [ 'Alferez Laptop (ubuntu)',
+'ifort', # f77compiler
+'ifort', # f90compiler
+'icpc', # Cppcompiler
+[], # CppAdditionalOptions
+[], # f77AdditionalOptions
+True, # useOMP
+False, # static
+['/usr/include/mpi', '/usr/include/hdf5/serial','/opt/intel/oneapi/vtune/2023.1.0/include/','/opt/intel/oneapi/advisor/2023.1.0/include/'], # additionalIncludePaths
+['gfortran', 'gomp', 'pthread'], # additionalLibs
+['/usr/lib/x86_64-linux-gnu','/usr/lib/x86_64-linux-gnu/hdf5/serial/','/opt/intel/oneapi/vtune/2023.1.0/lib64/','/opt/intel/oneapi/advisor/2023.1.0/lib64/'], # additionalLibPaths
+False, # useCuda
+[] # NvccAdditionalOptions
+],
+###############################################################################
 'DESKTOP...': [ 'Windows ubuntu',
 'gfortran', # f77compiler
 'gfortran', # f90compiler

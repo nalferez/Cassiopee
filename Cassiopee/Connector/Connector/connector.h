@@ -19,6 +19,19 @@
 
 #ifndef _CONNECTOR_CONNECTOR_H_
 #define _CONNECTOR_CONNECTOR_H_
+
+#ifdef _MPI
+#include <cassert>
+#include "CMP/include/pending_message_container.h"
+#include "CMP/include/recv_buffer.hpp"
+#include "CMP/include/send_buffer.hpp"
+#include "setInterpTransfersD.h"
+#include "xmpi/context.hpp"
+typedef typename CMP::PendingMsgContainer<CMP::RecvBuffer> RecvQueue;
+typedef typename CMP::PendingMsgContainer<CMP::SendBuffer> SendQueue;
+#endif
+
+
 # include <locale>
 # include <cctype>
 # include "kcore.h"
@@ -156,6 +169,48 @@ extern "C"
 
 namespace K_CONNECTOR
 {
+
+
+/* Transferts FastS Intra process */
+void setInterpTransfersIntra(E_Float**& ipt_ro, E_Int& vartype         , E_Int*& ipt_param_int   , E_Float*& ipt_param_real, 
+                            E_Int**& param_int, E_Float**& param_real  , E_Int*& ipt_omp         , E_Int*& ipt_linelets_int, E_Float*& ipt_linelets_real, E_Int& TypeTransfert, E_Int& nitrun, E_Int& nidom,
+                            E_Int& NoTransfert, E_Float*& ipt_timecount,
+                            E_Int& nitcfg     , E_Int& nssiter         , E_Int& rk, E_Int& exploc, E_Int& numpassage, E_Int*& grp2transfer);
+
+
+//==============================
+// - Transfer with CMP library -
+//==============================
+
+  /* Call to transfers from FastS */
+
+  void setInterpTransfersFast(E_Float**& iptro_tmp    , E_Int& vartype             , E_Int*& param_int_tc, E_Float*& param_real_tc , E_Int**& param_int     , E_Float**& param_real, E_Int*& ipt_omp,
+                              E_Int*& ipt_linelets_int, E_Float*& ipt_linelets_real, E_Int& it_target    , E_Int& nidom            , E_Float*& ipt_timecount, E_Int& mpi           ,
+                              E_Int& nitcfg           , E_Int& nssiter             , E_Int& rk           , E_Int& exploc           , E_Int& numpassage, E_Int*& grp2transfer);
+  
+
+
+  #ifdef _MPI
+  /* Transferts FastS Inter process */
+  void setInterpTransfersInter(E_Float**& ipt_ro , E_Int& vartype        , E_Int*& ipt_param_int   , E_Float*& ipt_param_real ,
+                               E_Int**& param_int, E_Float**& param_real , E_Int*& ipt_omp, E_Int*& ipt_linelets_int, E_Float*& ipt_linelets_real, E_Int& TypeTransfert, E_Int& nitrun, E_Int& nidom,
+                               E_Int& NoTransfert,
+                               std::pair<RecvQueue*, SendQueue*>*& pair_of_queue,
+                               E_Float*& ipt_timecount,
+                               E_Int& nitcfg, E_Int& nssiter, E_Int& rk, E_Int& exploc, E_Int& numpassage , E_Int& nb_send_buffer, E_Int*& grp2transfer);
+
+  /* Get Transfert Inter process */
+  void getTransfersInter(E_Int& nbcom, E_Float**& ipt_roD, E_Int**& param_int, E_Int*& param_int_tc , std::pair<RecvQueue*, SendQueue*>*& pair_of_queue, E_Int*& grp2transfer);
+
+  /* Init Transfert Inter process */
+  void init_TransferInter(std::pair<RecvQueue*, SendQueue*>*& pair_of_queue);
+
+  /* Delete Transfert Inter process */
+  void del_TransferInter(std::pair<RecvQueue*, SendQueue*>*& pair_of_queue);
+
+  #endif
+
+
 /* Interpolation datas.*/
   struct InterpData
   {
