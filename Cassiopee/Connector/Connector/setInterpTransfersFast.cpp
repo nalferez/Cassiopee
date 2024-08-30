@@ -115,7 +115,7 @@ void K_CONNECTOR::setInterpTransfersFast(
  //Swap (call to setInterpTransfer)
   if ( (param_int_tc != NULL) && (param_real_tc != NULL))
   {
-    E_Int TypeTransfert ;    
+    E_Int TypeTransfert ;
     E_Int sizecomIBC = param_int_tc[2];
     E_Int sizecomID  = param_int_tc[3+sizecomIBC];
     E_Int shift_graph = sizecomIBC + sizecomID + 3;
@@ -136,7 +136,7 @@ void K_CONNECTOR::setInterpTransfersFast(
 
       E_Int ech        = param_int_tc[1 + shift_graph];
       timelevel_tc     = param_int_tc[ech + 3];
- 
+
       if (pair_of_queue  != NULL)
         {
           del_TransferInter(pair_of_queue);
@@ -153,7 +153,7 @@ void K_CONNECTOR::setInterpTransfersFast(
     E_Int iter = 1;
     if (exploc==1 and mpi) { iter = nstep; nbcomID_U =0;}
     else if(timelevel_tc !=0)
-       {  
+       {
           pt_debID_U = param_int_tc[3+sizecomIBC+ iter + 1 + it_target] + 3 +sizecomIBC+1;
           nbcomID_U  = param_int_tc[ pt_debID_U ];
        }
@@ -202,10 +202,10 @@ void K_CONNECTOR::setInterpTransfersFast(
             {
               CMP::RecvBuffer& recv_buffer = iterBuf->get_message_buffer();
               recv_buffer.irecv();
-              
+
               //printf("receptionIBM OLD  nstep= %d , tag= %d  size= %d \n",  nstep, recv_buffer.tag(), recv_buffer.size());
             }
-        }  
+        }
 
       #ifdef TimeShow
        E_Float time_out = omp_get_wtime();
@@ -227,8 +227,8 @@ void K_CONNECTOR::setInterpTransfersFast(
           #ifdef _MPI
           //printf("inter IBM  %d %d \n", dest, nstep );
           setInterpTransfersInter(iptro_tmp    , varType      , param_int_tc, param_real_tc,
-                                  param_int    , param_real   , ipt_omp     , linelets_int, linelets_real, TypeTransfert, it_target , nidom , ip2p, 
-                                  pair_of_queue_IBC, ipt_timecount, nstep       , nitmax       , rk           , exploc    , numpassage, nb_send_buffer,grp2transfer); 
+                                  param_int    , param_real   , ipt_omp     , linelets_int, linelets_real, TypeTransfert, it_target , nidom , ip2p,
+                                  pair_of_queue_IBC, ipt_timecount, nstep       , nitmax       , rk           , exploc    , numpassage, nb_send_buffer,grp2transfer);
           #endif
         }
       }//loop comm p2p*/
@@ -245,8 +245,8 @@ void K_CONNECTOR::setInterpTransfersFast(
       { TypeTransfert = 1;
         //printf("intra IBM  %d %d \n", dest, nstep );
        setInterpTransfersIntra(iptro_tmp    , varType    , param_int_tc, param_real_tc,
-                               param_int    , param_real , ipt_omp     , linelets_int, linelets_real, TypeTransfert, it_target, nidom, ip2p, 
-                               ipt_timecount, nstep      , nitmax      , rk           , exploc       , numpassage, grp2transfer); 
+                               param_int    , param_real , ipt_omp     , linelets_int, linelets_real, TypeTransfert, it_target, nidom, ip2p,
+                               ipt_timecount, nstep      , nitmax      , rk           , exploc       , numpassage, grp2transfer);
       }
     } //loop ip2p
 
@@ -269,13 +269,13 @@ void K_CONNECTOR::setInterpTransfersFast(
       #endif
     }
 
-    
+
     //MPI_Barrier(MPI_COMM_WORLD);
     //
     //Debut Transfert ID
     //
     //
-    
+
     if (mpi and (nbcomID_S != 0 or nbcomID_U != 0) )
     {
 
@@ -362,8 +362,8 @@ void K_CONNECTOR::setInterpTransfersFast(
 /*            printf(" inter ID  %d %d %d \n", dest, rank, nstep );*/
             //
             setInterpTransfersInter(iptro_tmp    , varType      , param_int_tc, param_real_tc,
-  	        	                      param_int    , param_real   , ipt_omp     , linelets_int, linelets_real, TypeTransfert, it_target , nidom , ip2p, 
-                                    pair_of_queue, ipt_timecount, nstep       , nitmax       , rk           , exploc    , numpassage, cpt_send_buffer, grp2transfer); 
+  	        	                      param_int    , param_real   , ipt_omp     , linelets_int, linelets_real, TypeTransfert, it_target , nidom , ip2p,
+                                    pair_of_queue, ipt_timecount, nstep       , nitmax       , rk           , exploc    , numpassage, cpt_send_buffer, grp2transfer);
           }
         }//loop ip2p
     } // Endif MPI
@@ -380,9 +380,9 @@ void K_CONNECTOR::setInterpTransfersFast(
         TypeTransfert = 0;
 /*        cout << "Intra com " << dest << "\n";*/
         setInterpTransfersIntra(iptro_tmp, varType   , param_int_tc, param_real_tc ,
-                                param_int, param_real,  ipt_omp    ,linelets_int, linelets_real, TypeTransfert , it_target, nidom, ip2p, 
-                                ipt_timecount, nstep, nitmax, rk, exploc, numpassage, grp2transfer); 
-      }    
+                                param_int, param_real,  ipt_omp    ,linelets_int, linelets_real, TypeTransfert , it_target, nidom, ip2p,
+                                ipt_timecount, nstep, nitmax, rk, exploc, numpassage, grp2transfer);
+      }
     }
 
     #ifdef TimeShow
@@ -455,7 +455,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
   else if (varType == 5 ) nvars = param_int[0][NEQ_LBM] +5 +  6; // LBM Overset ou hybride : 19 or 27 Q, 5 macro and 6 gradients
   else if (varType == 111)nvars = param_int[0][4]; // dNami transfers varsolved
   else                    nvars = 6;
-  
+
   E_Int beg_param_grp = 0;
   E_Int nbgrptot      = 0;
 
@@ -463,7 +463,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
   { // dNami transfer groups from varstored
 
   nvars = 0;
-  
+
   beg_param_grp = 13 + param_int[0][4] + param_int[0][5] + 1 + param_int[0][19 + param_int[0][4] + param_int[0][5] ] + 6 + 6 + 6;
   nbgrptot      = param_int[0][beg_param_grp];
 
@@ -474,11 +474,11 @@ void K_CONNECTOR::setInterpTransfersIntra(
     E_Int nbvars_grpId = param_int[0][beg_param_grp + nbgrptot + grpId];
 
     nvars = nvars + nbvars_grpId;
-  } 
   }
-  
+  }
+
 /*  std::cout << "nvars is " << nvars<<"\n";
-  std:cout << "\n param_grp "; 
+  std:cout << "\n param_grp ";
   for (E_Int addr = 0;addr<1+nbgrptot*2 ;addr++){
     std::cout <<  param_int[0][beg_param_grp+addr]<< " ";
   }
@@ -489,7 +489,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
 
 
   E_Int* ipt_cnd = NULL;  // ONLY FOR STRUCTURED
-  
+
   E_Int sizecomIBC = param_int_tc[2];
   E_Int sizecomID  = param_int_tc[3+sizecomIBC];
   E_Int shift_graph = sizecomIBC + sizecomID + 3;
@@ -511,8 +511,8 @@ void K_CONNECTOR::setInterpTransfersIntra(
   E_Int impli_local[nidom];
   if (ipt_omp == NULL) // Merde fastP a gerer
     { for (E_Int nd = 0; nd < nidom; nd++) {impli_local[nd]=1;}  }
-  else{ 
-        E_Int nbtask = ipt_omp[nstep-1]; 
+  else{
+        E_Int nbtask = ipt_omp[nstep-1];
         E_Int ptiter = ipt_omp[nssiter+ nstep-1];
 
         for (E_Int nd = 0; nd < nidom; nd++) {impli_local[nd]=0;}
@@ -554,7 +554,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
       if (ibcType > ibcTypeMax){ ibcTypeMax= ibcType;}
       E_Int ibc = 1;
       if (ibcType < 0) ibc = 0;
-      if      (TypeTransfert == 0 && ibc == 1) { continue; } 
+      if      (TypeTransfert == 0 && ibc == 1) { continue; }
       else if (TypeTransfert == 1 && ibc == 0) { continue; }
 
 
@@ -596,9 +596,9 @@ void K_CONNECTOR::setInterpTransfersIntra(
            }
 
       if (autorisation_transferts[pass_inst][irac_auto]==1)
-	   { 
+	   {
 	      E_Int nbRcvPts = param_int_tc[shift_rac + nrac * 10 + 1];
-    
+
 	      if (nbRcvPts > nbRcvPts_mx) nbRcvPts_mx = nbRcvPts;
 
            }// autorisation transfert
@@ -645,7 +645,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
       // 2eme pass_inst: les raccord instationnaire
       for (E_Int pass_inst=pass_inst_deb; pass_inst< pass_inst_fin; pass_inst++)
       {
-        //  printf("pass %d %d %d %d \n", rank ,ipass_typ, pass_inst, it_target ); 
+        //  printf("pass %d %d %d %d \n", rank ,ipass_typ, pass_inst, it_target );
         // printf("ipass_inst = %d, level= %d \n",  ipass_inst, nrac_inst_level
         // );
         E_Int irac_deb = 0;
@@ -687,7 +687,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
 /*          E_Int overset  =  param_int[NoD][LBM_OVERSET];        //flag pour overset en LBM*/
 /*          if      (nvars_loc== param_int[NoD][NEQ_LBM] && overset==0) nvars_loc = nvars_loc + 5;
           else if (nvars_loc== param_int[NoD][NEQ_LBM] && overset==1) nvars_loc = nvars_loc + 5 + 6 + 6;*/
- 
+
           //printf("nvar loc %d , solver_RD= %d %d \n", nvars_loc, solver_R, solver_R);
 
           E_Int meshtype = param_int[ NoD ][ MESHTYPE ] ;
@@ -704,32 +704,32 @@ void K_CONNECTOR::setInterpTransfersIntra(
 /*
               std:cout << "\n zone donnor : " << NoD << " zone receveur " << NoR << "\n"<<"\n param_grp NoD ";
 
-              for (E_Int addr = 0;addr<1+nbgrptot*2 ;addr++){                
+              for (E_Int addr = 0;addr<1+nbgrptot*2 ;addr++){
                 std::cout <<  param_int[NoD][beg_param_grpD+addr]<< " ";
               }
-              std::cout<<"\n param_grp NoR "; 
+              std::cout<<"\n param_grp NoR ";
               for (E_Int addr = 0;addr<1+nbgrptot*2 ;addr++){
                 std::cout <<  param_int[NoR][beg_param_grpR+addr]<< " ";
               }
               std::cout<<'\n';*/
 
-            E_Int eqst = 0; 
+            E_Int eqst = 0;
 
             for (E_Int g = 1 ; g <= grp2transfer[0]; g++){
 
                 E_Int grpId        = grp2transfer[g];
                 E_Int nbvars_grpId = param_int[NoR][beg_param_grpR + nbgrptot + grpId]; // same number of variables for all zones. Here we take it from zone 0
 
-                E_Int shift_grpIdR = param_int[NoR][beg_param_grpR + grpId];  
+                E_Int shift_grpIdR = param_int[NoR][beg_param_grpR + grpId];
                 E_Int shift_grpIdD = param_int[NoD][beg_param_grpD + grpId];
 
-                for (E_Int varst = 0; varst < nbvars_grpId; varst++){             
-                    
+                for (E_Int varst = 0; varst < nbvars_grpId; varst++){
+
                     vectOfRcvFields[eqst] = ipt_ro[NoR] + varst * param_int[NoR][ NDIMDX] + shift_grpIdR;
                     vectOfDnrFields[eqst] = ipt_ro[NoD] + varst * param_int[NoD][ NDIMDX] + shift_grpIdD;
-       
+
                     eqst += 1;
-                } 
+                }
             }
            }
            else
@@ -738,7 +738,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
              vectOfRcvFields[eq] = ipt_ro[NoR] + eq * param_int[NoR][ NDIMDX];
              vectOfDnrFields[eq] = ipt_ro[NoD] + eq * param_int[NoD][ NDIMDX];
             }
-           } 
+           }
 /*          }*/
 /*          else */
  /*         if (nvars_loc == param_int[NoD][NEQ_LBM] + 5) // Transferts LBM classiques
@@ -756,7 +756,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
               vectOfDnrFields[eq] = ipt_ro[NoD + nidom] + (eq-5) * param_int[NoD][ NDIMDX];
             }
           }*/
-/*          else if (nvars_loc == 11 ) // //Transfert NS -> LBM    
+/*          else if (nvars_loc == 11 ) // //Transfert NS -> LBM
           {
             // On commence par copier les 5 variables macros
             for (E_Int eq = 0; eq < 5; eq++)
@@ -771,7 +771,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
               vectOfDnrFields[eq] = ipt_ro[NoD + nidom] + (eq-5) * param_int[NoD][ NDIMDX];
             }
           }*/
-          /*else if (nvars_loc == param_int[NoD][NEQ_LBM] + 17 ) // //Transfert LBM  overset   
+          /*else if (nvars_loc == param_int[NoD][NEQ_LBM] + 17 ) // //Transfert LBM  overset
           {
             // On commence par copier les 5 variables macros
             for (E_Int eq = 0; eq < 5; eq++)
@@ -961,13 +961,13 @@ void K_CONNECTOR::setInterpTransfersIntra(
 			  setIBCTransfersCommonVar2(ibcType, rcvPts, nbRcvPts, pt_deb, pt_fin, ithread,
                                                                  xPC    , xPC     +nbRcvPts, xPC     +nbRcvPts*2,
                                                                  xPW    , xPW     +nbRcvPts, xPW     +nbRcvPts*2,
-                                                                 xPI    , xPI     +nbRcvPts, xPI     +nbRcvPts*2, 
-                                                                 densPtr, 
+                                                                 xPI    , xPI     +nbRcvPts, xPI     +nbRcvPts*2,
+                                                                 densPtr,
                                                                  ipt_tmp, size,
                                                                  param_real[ NoD ],
                                                                  vectOfDnrFields, vectOfRcvFields,
                                                                  nbptslinelets, linelets, indexlinelets);
-                        
+
                       }//ibc*/
                       //*
                       //        } //chunk
@@ -977,7 +977,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
                       shiftDonor= shiftDonor +  ntype[1+ndtyp];           //shift donor entre 2 types successif
 
                    }// type
-              #pragma omp barrier 
+              #pragma omp barrier
 	          } //autorisation transfert
                 }//irac
                }//pass_inst
@@ -1004,7 +1004,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
 //=============================================================================
 void K_CONNECTOR::setInterpTransfersInter(
     E_Float**& ipt_ro   , E_Int& varType   , E_Int*& param_int_tc, E_Float*& param_real_tc,
-    E_Int**& param_int  , E_Float**& param_real, E_Int*& ipt_omp, E_Int*& linelets_int    , E_Float*& linelets_real, 
+    E_Int**& param_int  , E_Float**& param_real, E_Int*& ipt_omp, E_Int*& linelets_int    , E_Float*& linelets_real,
     E_Int& TypeTransfert, E_Int& it_target, E_Int& nidom, E_Int& NoTransfert,
     std::pair<RecvQueue*, SendQueue*>*& pair_of_queue_loc,
     E_Float*& ipt_timecount                          ,
@@ -1047,13 +1047,13 @@ void K_CONNECTOR::setInterpTransfersInter(
   { // dNami transfer groups from varstored
 
   nvars = 0;
-  
+
   beg_param_grp = 13 + param_int[0][4] + param_int[0][5] + 1 + param_int[0][19 + param_int[0][4] + param_int[0][5] ] + 6 + 6 + 6;
   nbgrptot      = param_int[0][beg_param_grp];
 
-/*  printf("\n[Send] nbgrptot is : %d",nbgrptot); 
+/*  printf("\n[Send] nbgrptot is : %d",nbgrptot);
 
-  std:cout << "\n param_grp "; 
+  std:cout << "\n param_grp ";
   for (E_Int addr = 0;addr<5 ;addr++){
     std::cout <<  param_int[0][beg_param_grp+addr]<< " ";
   }
@@ -1067,7 +1067,7 @@ void K_CONNECTOR::setInterpTransfersInter(
 
     nvars = nvars + nbvars_grpId;
   }
-/*  printf("nvars is : %d",nvars);*/ 
+/*  printf("nvars is : %d",nvars);*/
   }
 
   E_Int sizecomIBC = param_int_tc[2];
@@ -1091,12 +1091,12 @@ void K_CONNECTOR::setInterpTransfersInter(
     time_in = omp_get_wtime();
 #endif
 /*  printf("rac inst %d \n\n\n",nrac_inst);*/
-    
+
   if (nrac_inst > 0) {
    pass_inst_fin=2;
-   nrac_inst_level = param_int_tc[ech + 4 + it_target + timelevel] - param_int_tc[ech + 4 + it_target] + 1; 
-  } 
-  
+   nrac_inst_level = param_int_tc[ech + 4 + it_target + timelevel] - param_int_tc[ech + 4 + it_target] + 1;
+  }
+
   //printf("send %d , nrac= %d , nrac_inst= %d , timelevelNb= %d \n", dest, nrac, nrac_inst, nrac_inst_level);
 
   // on dimension tableau travail pour IBC et pour transfert
@@ -1115,7 +1115,7 @@ void K_CONNECTOR::setInterpTransfersInter(
   {
       pt_snd_queue->emplace_back(dest, etiquette);
 
-      //printf("size sendQeueNEW  %d %d dest= %d , etiquetee= %d \n",pt_snd_queue->size(), nb_send_buffer, dest, etiquette); 
+      //printf("size sendQeueNEW  %d %d dest= %d , etiquetee= %d \n",pt_snd_queue->size(), nb_send_buffer, dest, etiquette);
   }
 
   // Preparation du buffer d'envoi :
@@ -1128,8 +1128,8 @@ void K_CONNECTOR::setInterpTransfersInter(
   E_Int impli_local[nidom];
   if (ipt_omp == NULL) // Merde fastP a gerer
     { for (E_Int nd = 0; nd < nidom; nd++) {impli_local[nd]=1;}  }
-  else{ 
-        E_Int nbtask = ipt_omp[nstep-1]; 
+  else{
+        E_Int nbtask = ipt_omp[nstep-1];
         E_Int ptiter = ipt_omp[nssiter+ nstep-1];
 
         for (E_Int nd = 0; nd < nidom; nd++) {impli_local[nd]=0;}
@@ -1178,7 +1178,7 @@ void K_CONNECTOR::setInterpTransfersInter(
           if (ibcType > ibcTypeMax){ ibcTypeMax= ibcType;}
           E_Int ibc = 1;
 	  if (ibcType < 0) ibc = 0;
-	  if      (TypeTransfert == 0 && ibc == 1) { continue; } 
+	  if      (TypeTransfert == 0 && ibc == 1) { continue; }
 	  else if (TypeTransfert == 1 && ibc == 0) { continue; }
 
 	  if(exploc == 1)
@@ -1212,13 +1212,13 @@ void K_CONNECTOR::setInterpTransfersInter(
 		}
 	    }
            // Sinon, on autorise les transferts  si la zone donneuse a ete modifiee a l'iteration nstep
-	   else 
+	   else
         {
             //E_Int NoD      =  param_int_tc[ shift_rac + nrac*5     ];
             //if (impli_local[NoD]==1) autorisation_transferts[pass_inst][irac_auto]=1;
             autorisation_transferts[pass_inst][irac_auto]=1;
         }
-	  
+
 	  if (autorisation_transferts[pass_inst][irac_auto]==1)
 	   {
 	      E_Int shift_rac = ech + 4 + timelevel * 2 + irac;
@@ -1259,7 +1259,7 @@ if (has_data_to_send) {
 
 	E_Int irac_auto= irac-irac_deb;
 	if (autorisation_transferts[pass_inst][irac_auto]==1)
-	{ 
+	{
 	    E_Int shift_rac = ech + 4 + timelevel * 2 + irac;
 
 	    E_Int nbRcvPts  = param_int_tc[shift_rac + nrac * 10 + 1];
@@ -1268,7 +1268,7 @@ if (has_data_to_send) {
 
             // on determine un No zone pipeau pour skipper remplissage inutile en implicit local
             E_Int NoD       = param_int_tc[shift_rac + nrac * 5     ];
-            E_Int Nozone_loc   = Nozone; 
+            E_Int Nozone_loc   = Nozone;
             E_Int nbRcvPts_loc = nbRcvPts;
             if (impli_local[NoD] == 0) {Nozone_loc = -999; nbRcvPts_loc=1;}
 
@@ -1289,9 +1289,9 @@ if (has_data_to_send) {
 
             //if(Nozone==5 and count_rac==0 ) { printf("Nozone_loc %d \n", Nozone_loc);}
 
-	    send_buffer << Nozone_loc;  
+	    send_buffer << Nozone_loc;
 
-	    pck_data.push_back(&send_buffer.push_inplace_array(nvars_loc * nbRcvPts_loc * sizeof(E_Float) ));    
+	    pck_data.push_back(&send_buffer.push_inplace_array(nvars_loc * nbRcvPts_loc * sizeof(E_Float) ));
 	    E_Int PtlistDonor  = param_int_tc[shift_rac + nrac * 12 + 1];
 	    E_Int* ipt_listRcv = param_int_tc + PtlistDonor;
 
@@ -1424,7 +1424,7 @@ if (has_data_to_send) {
                      // COUPLAGE NS LBM - Recupere les solveurs des zones R et D
                      E_Int solver_D=2; E_Int solver_R=2;
 /*                     if (varType != 111) // if not dNami transfer
-                     { 
+                     {
                      if (nvars_loc == 11) {solver_R =4;}
                      if (nvars_loc == -5) {solver_D =4; nvars_loc = 5;}
                      if (nvars_loc == 19) {solver_D =4; solver_R=4;}
@@ -1444,25 +1444,25 @@ if (has_data_to_send) {
                      {*/
 
                       if (varType == 112)
-                      {                      
-                       
+                      {
+
                        E_Int beg_param_grpD = 13 + param_int[NoD][4] + param_int[NoD][5] + 1 + param_int[NoD][19 + param_int[NoD][4] + param_int[NoD][5] ] + 6 + 6 + 6;
 
-                       E_Int eqst = 0; 
+                       E_Int eqst = 0;
 
                        for (E_Int g = 1 ; g <= grp2transfer[0]; g++){
-           
+
                            E_Int grpId        = grp2transfer[g];
                            E_Int nbvars_grpId = param_int[NoD][beg_param_grpD + nbgrptot + grpId]; // same number of variables for all zones. Here we take it from zone 0
-             
+
                            E_Int shift_grpIdD = param_int[NoD][beg_param_grpD + grpId];
-                    
-                           for (E_Int varst = 0; varst < nbvars_grpId; varst++){             
-                               
+
+                           for (E_Int varst = 0; varst < nbvars_grpId; varst++){
+
                                vectOfDnrFields[eqst] = ipt_ro[NoD] + varst * param_int[NoD][ NDIMDX] + shift_grpIdD;
-                  
+
                                eqst += 1;
-                           } 
+                           }
                        }
                       }
                       else
@@ -1470,7 +1470,7 @@ if (has_data_to_send) {
                        for (E_Int eq = 0; eq < nvars_loc; eq++){
                         vectOfDnrFields[eq] = ipt_ro[NoD] + eq * param_int[NoD][ NDIMDX];
                        }
-                      } 
+                      }
 /*                     }*/
 /*                     else */
 /*                     if (nvars_loc == param_int[NoD][NEQ_LBM] + 5) // Transferts LBM classiques
@@ -1480,14 +1480,14 @@ if (has_data_to_send) {
                        // Puis on copie les fonctions de distribution
                        for (E_Int eq = 5; eq < nvars_loc; eq++) { vectOfDnrFields[eq] = ipt_ro[NoD + nidom] + (eq-5) * param_int[NoD][ NDIMDX]; }
                      }*/
-/*                     else if (nvars_loc == 11 ) // //Transfert NS -> LBM    
+/*                     else if (nvars_loc == 11 ) // //Transfert NS -> LBM
                      {
                        // On commence par copier les 5 variables macros
                        for (E_Int eq = 0; eq < 5; eq++)         { vectOfDnrFields[eq] = ipt_ro[NoD        ] +     eq * param_int[NoD][ NDIMDX]; }
                        // Puis on copie les gradients
                        for (E_Int eq = 5; eq < nvars_loc; eq++) { vectOfDnrFields[eq] = ipt_ro[NoD + nidom] + (eq-5) * param_int[NoD][ NDIMDX]; }
                      }*/
- /*                    else if (nvars_loc == param_int[NoD][NEQ_LBM] + 17 ) // //Transfert LBM  overset   
+ /*                    else if (nvars_loc == param_int[NoD][NEQ_LBM] + 17 ) // //Transfert LBM  overset
                      {
                        // On commence par copier les 5 variables macros
                        for (E_Int eq = 0; eq < 5; eq++) { vectOfDnrFields[eq] = ipt_ro[NoD] + eq * param_int[NoD][ NDIMDX]; }
@@ -1501,7 +1501,7 @@ if (has_data_to_send) {
                      }
 */
                      /*printf("count_rac = %d , nvars_loc=%d, nbRcvPts=%d \n\n",count_rac,nvars_loc,nbRcvPts);
-                     */   
+                     */
                      for (E_Int eq = 0; eq < nvars_loc; eq++) { vectOfRcvFields[eq] = frp[count_rac] + eq * nbRcvPts; }
 
                      imd = param_int[ NoD ][ NIJK   ];
@@ -1523,7 +1523,7 @@ if (has_data_to_send) {
                      E_Float* ptrCoefs = param_real_tc + pos;
                      // pos               = param_int_tc[shift_rac + nrac * 12 + 1];
                      // E_Int* rcvPts     = param_int_tc +  pos;
-  
+
                      E_Int nbInterpD = param_int_tc[shift_rac + nrac];
                      E_Float* xPC = NULL;
                      E_Float* xPI = NULL;
@@ -1586,14 +1586,14 @@ if (has_data_to_send) {
                            pt_fin = ideb;
                          }
                        }
- 
+
 
                       noi     = shiftDonor;  // compteur sur le tableau d indices donneur
                       indCoef = ( pt_deb - ideb ) * sizecoefs + shiftCoef;
                       //E_Int NoR = param_int_tc[shift_rac + nrac * 11 + 1];
                       //if (param_int_tc[ech]==0) printf("No rac= %d , NoR= %d, NoD= %d, Ntype= %d, ptdeb= %d, ptfin= %d, NptD= %d, neq= %d, skip= %d, rank= %d, dest= %d,  thread= %d\n",
-                      //irac, NoR,NoD, ntype[ 1 + ndtyp],pt_deb,pt_fin , 
-                      //param_int_tc[ shift_rac + nrac*10+1  ], param_int_tc[ shift_rac + nrac*13+1  ], param_int_tc[ shift_rac + nrac*15+1  ], 
+                      //irac, NoR,NoD, ntype[ 1 + ndtyp],pt_deb,pt_fin ,
+                      //param_int_tc[ shift_rac + nrac*10+1  ], param_int_tc[ shift_rac + nrac*13+1  ], param_int_tc[ shift_rac + nrac*15+1  ],
                       //rank, param_int_tc[ ech  ], ithread );
                       if ( nvars_loc == 5 ) {
 #include "commonInterpTransfersD_reorder_5eq.h"
@@ -1626,17 +1626,17 @@ if (has_data_to_send) {
                       {
                         // tableau temporaire pour utiliser la routine commune K_CONNECTOR::setIBCTransfersCommon
                         for ( E_Int noind = pt_deb; noind < pt_fin; noind++ ) rcvPts[noind] = noind;
-	  	        setIBCTransfersCommonVar2(ibcType, rcvPts, nbRcvPts, pt_deb, pt_fin, ithread, 
-			                                      xPC, xPC + nbRcvPts, xPC + nbRcvPts * 2, 
-							      xPW, xPW + nbRcvPts, xPW + nbRcvPts * 2, 
+	  	        setIBCTransfersCommonVar2(ibcType, rcvPts, nbRcvPts, pt_deb, pt_fin, ithread,
+			                                      xPC, xPC + nbRcvPts, xPC + nbRcvPts * 2,
+							      xPW, xPW + nbRcvPts, xPW + nbRcvPts * 2,
 							      xPI, xPI + nbRcvPts, xPI + nbRcvPts * 2,
-							      densPtr, 
+							      densPtr,
 							      ipt_tmp, size,
 							      param_real[ NoD ],
 							      //gamma, cv, muS, Cs, Ts, Pr,
 							      vectOfDnrFields, vectOfRcvFields,
 							      nbptslinelets, linelets, indexlinelets);
-                  
+
                       }  // ibc*/
 	              E_Int PtlistDonor  = param_int_tc[shift_rac + nrac * 12 + 1];
 	              E_Int* ipt_listRcv = param_int_tc + PtlistDonor;
@@ -1694,7 +1694,7 @@ if (has_data_to_send) {
 // in place + from zone + tc compact
 //=============================================================================
 void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& param_int, E_Int*& param_int_tc, std::pair<RecvQueue*, SendQueue*>*& pair_of_queue_loc, E_Int*& grp2transfer) {
-  
+
   if( nbcom != 0)
   {
      // Attente finalisation de la reception :
@@ -1714,13 +1714,13 @@ void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& p
 
      E_Int beg_param_grp = 0;
      E_Int nbgrptot      = 0;
-   
+
      if (grp2transfer[0]>0)
      { // dNami transfer groups from varstored
 
      beg_param_grp = 13 + param_int[0][4] + param_int[0][5] + 1 + param_int[0][19 + param_int[0][4] + param_int[0][5] ] + 6 + 6 + 6;
      nbgrptot      = param_int[0][beg_param_grp];
-/*       std:cout << "\n [Recv] param_grp "; 
+/*       std:cout << "\n [Recv] param_grp ";
        for (E_Int addr = 0;addr<5 ;addr++){
          std::cout <<  param_int[0][beg_param_grp+addr]<< " ";
        }
@@ -1748,18 +1748,18 @@ void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& p
 
          //recuperation des infos raccord en sequentiel
          for (E_Int irac = 0; irac < recv_nrac; ++irac)
-         { 
+         {
           recv_buffer >> recv_nozone[irac] >> recv_frp[irac] >> recv_listRc[irac];
 
           recv_size[irac] = recv_listRc[irac].size();
-          recv_nvarloc[irac] = recv_frp[irac].size() / recv_size[irac]; 
+          recv_nvarloc[irac] = recv_frp[irac].size() / recv_size[irac];
            /*printf("FIRST PASS Nozone Verif= %d %d %d %d %d \n", recv_nozone[irac],recv_size[irac], irac, recv_nvarloc[irac],rank );*/
          }
 
 #pragma omp parallel
          {
           for (E_Int irac = 0; irac < recv_nrac; ++irac)
-          { 
+          {
             E_Int NoR = recv_nozone[irac];
 
 /*            printf("Nozone Verif= %d , irac= %d, recv_nrac= %d , rank=, %d \n", NoR,irac,recv_nrac,rank);
@@ -1776,38 +1776,38 @@ void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& p
 
             if (grp2transfer[0]>0)
             {
-                 
 
-             E_Int eqst = 0; 
+
+             E_Int eqst = 0;
              E_Int beg_param_grpR = 13 + param_int[NoR][4] + param_int[NoR][5] + 1 + param_int[NoR][19 + param_int[NoR][4] + param_int[NoR][5] ] + 6 + 6 + 6;
 
              for (E_Int g = 1 ; g <= grp2transfer[0]; g++){
-           
+
                  E_Int grpId        = grp2transfer[g];
                  E_Int nbvars_grpId = param_int[NoR][beg_param_grpR + nbgrptot + grpId]; // same number of variables for all zones. Here we take it from zone 0
-            
+
                  E_Int shift_grpIdR = param_int[NoR][beg_param_grpR + grpId];
 
-                 for (E_Int varst = 0; varst < nbvars_grpId; varst++){ 
+                 for (E_Int varst = 0; varst < nbvars_grpId; varst++){
 
                      #pragma omp for nowait
 
                      for (E_Int irecv = 0; irecv < sz; ++irecv)
                      {
-                      ilistrecv = recv_listRc[irac] [irecv];             
-                     
-                      ipt_ro[NoR][ilistrecv + varst*decal + shift_grpIdR] = recv_frp[irac][irecv + eqst * sz];                      
+                      ilistrecv = recv_listRc[irac] [irecv];
+
+                      ipt_ro[NoR][ilistrecv + varst*decal + shift_grpIdR] = recv_frp[irac][irecv + eqst * sz];
                      }
 
                      eqst += 1;
-                 } 
+                 }
              }
             }
             else if (recv_nvarloc[irac] == 5)
             {
               //#pragma omp for nowait
               #pragma omp for
-              for (E_Int irecv = 0; irecv < sz; ++irecv) 
+              for (E_Int irecv = 0; irecv < sz; ++irecv)
                {
 
                 ilistrecv = recv_listRc[irac] [irecv];
@@ -1818,7 +1818,7 @@ void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& p
                 ipt_ro[NoR][ilistrecv + 3*decal] = recv_frp[irac][irecv + 3 * sz];
                 ipt_ro[NoR][ilistrecv + 4*decal] = recv_frp[irac][irecv + 4 * sz];
                }
-            } 
+            }
             else if (recv_nvarloc[irac] == 6)
             {
             //#pragma omp for nowait
@@ -1826,7 +1826,7 @@ void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& p
             for (E_Int irecv = 0; irecv < sz; ++irecv)
                {
 
-                ilistrecv = recv_listRc[irac] [irecv]; 
+                ilistrecv = recv_listRc[irac] [irecv];
 
                 ipt_ro[NoR][ilistrecv          ] = recv_frp[irac][irecv];
                 ipt_ro[NoR][ilistrecv +   decal] = recv_frp[irac][irecv + 1 * sz];
@@ -1842,12 +1842,12 @@ void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& p
                   #pragma omp for nowait
                   for (E_Int irecv = 0; irecv < sz; ++irecv)
                    {
-                    ilistrecv = recv_listRc[irac] [irecv]; 
+                    ilistrecv = recv_listRc[irac] [irecv];
 
                     /*printf("irac=%d recv_nvarloc[irac]=%d, irecv=%d \n\n\n\n",irac,recv_nvarloc[irac],irecv);*/
 
                     ipt_ro[NoR][ilistrecv + eq*decal] = recv_frp[irac][irecv + eq * sz];
-                   }  
+                   }
                  }
                 }
           }// rac
@@ -1860,7 +1860,7 @@ void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& p
          pt_rcv_queue.pop(it);
        }  // end if (it != pt_msg_manager->end()infos
     }    // End  while (not pt_msg_manager->empty())
-  }    // End if  nbcom=0 
+  }    // End if  nbcom=0
 
   SendQueue* pt_snd_queue =  pair_of_queue_loc->second;
   pt_snd_queue->waitAll();

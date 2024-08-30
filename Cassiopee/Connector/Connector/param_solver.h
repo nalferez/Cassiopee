@@ -74,8 +74,7 @@
 
 #define NBR_SOCKET      1
 
-/*PARAM INT*/
-#define NIJK              0
+#define NIJK            1
 #define NIJK_MTR          5
 #define NELTS             7
 #define NELTS_0           8
@@ -107,7 +106,7 @@
 #define NEQ_K          38
 #define NEQ_COE        39
 #define NEQ_VENT       40
-#define NDIMDX         41
+#define NDIMDX         8
 #define NDIMDX_XYZ     42
 #define NDIMDX_MTR     43
 #define NDIMDX_VENT    44
