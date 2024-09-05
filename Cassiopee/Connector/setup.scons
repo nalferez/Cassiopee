@@ -25,9 +25,20 @@ installPath = Dist.getInstallPath(prefix)
 # Test if kcore exists =======================================================
 (kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkKCore()
 
+# Test if kcore exists =======================================================
+(xcoreVersion, xcoreIncDir, xcoreLibDir) = Dist.checkXCore()
+
+# Test if libmpi exists ======================================================
+(mpi, mpiIncDir, mpiLibDir, mpiLibs) = Dist.checkMpi(additionalLibPaths,
+                                                     additionalIncludePaths)
+
+(mpi4py, mpi4pyIncDir, mpi4pyLibDir) = Dist.checkMpi4py(additionalLibPaths,
+                                                        additionalIncludePaths)
+
+
 # Setting libraryDirs and libraries ===========================================
-libraryDirs = ['..', '.', pythonLibDir, kcoreLibDir]
-includeDirs = ["Connector", "Connector/CMP/include"]+additionalIncludePaths+[pythonIncDir, numpyIncDir, kcoreIncDir]
+libraryDirs = ['..', '.', pythonLibDir, kcoreLibDir,xcoreLibDir]
+includeDirs = ["Connector", "Connector/CMP/include"]+additionalIncludePaths+[pythonIncDir, numpyIncDir, kcoreIncDir,xcoreIncDir]
 libraries = ["kcore"]
 (ok, libs, paths) = Dist.checkFortranLibs([], additionalLibPaths)
 libraryDirs += paths; libraries += libs
@@ -35,6 +46,12 @@ libraryDirs += paths; libraries += libs
 libraryDirs += paths; libraries += libs
 
 ADDITIONALCPPFLAGS = []
+
+if mpi:
+    libraryDirs.append(mpiLibDir)
+    includeDirs.append(mpiIncDir)
+    libraries += mpiLibs    
+    ADDITIONALCPPFLAGS += ['-D_MPI']
 
 # Env =========================================================================
 import srcs
