@@ -1594,6 +1594,19 @@ def _setInterpDataForGhostCellsStruct__(aR, aD, storage='direct', loc='nodes'):
                     Periodic = Internal.getNodeFromType2(join, 'Periodic_t')
                     RotationAngle=None; RotationCenter=None
                     if Periodic is not None:
+
+                    # Hack NA: to extend donor/receiver windows to first layer of GC. Done everywhere (can be improved)
+                        # print("IN OversetData !! \n\n")
+                        for indRange in prange:
+                            if indRange[0] != indRange[1]:
+                                indRange[0] = indRange[0] - 1
+                                indRange[1] = indRange[1] + 1
+
+                        for indRange in prangedonor:
+                            if indRange[0] != indRange[1]:
+                                indRange[0] = indRange[0] - 1
+                                indRange[1] = indRange[1] + 1
+
                         RotationAngle = Internal.getNodeFromName1(Periodic,'RotationAngle')
                         RotationCenter = Internal.getNodeFromName1(Periodic,'RotationCenter')
                         if RotationAngle is not None:
