@@ -88,8 +88,6 @@ void DataDL::renderGPUSMeshZone(StructZone* zonep, E_Int zone)
   double pt1[3]; double pt2[3]; double pt3[3]; double pt4[3];
 
   E_Float nz = 1./_numberOfStructZones;
-#include "meshStyles.h"  
-
   double* x = zonep->x;
   double* y = zonep->y;
   double* z = zonep->z;
@@ -99,10 +97,11 @@ void DataDL::renderGPUSMeshZone(StructZone* zonep, E_Int zone)
   E_Int nj = zonep->nj;
   E_Int nk = zonep->nk;
   if (ptrState->dim == 2) nk = 1;
-  
-  if (ni*nj == 1 || ni*nk == 1 || nj*nk == 1) 
-  { glLineWidth(3.); color2[0] = 0.1; color2[1] = 0.1; color2[2] = 1.; }
-#include "selection.h"
+  bool is1D = false;
+  if (ni*nj == 1 || ni*nk == 1 || nj*nk == 1) is1D = true;
+
+  #include "meshStyles.h"
+  #include "selection.h"
   
   d = dist2BB(_view.xcam, _view.ycam, _view.zcam,
               zonep->xmin, zonep->ymin, zonep->zmin,
@@ -120,7 +119,7 @@ void DataDL::renderGPUSMeshZone(StructZone* zonep, E_Int zone)
   glLineWidth(1.);
 
   // Zones 1D: on ajoute les noeuds
-  if (nj*nk == 1 || ni*nk == 1 || ni*nj == 1)
+  if (is1D)
   {
     glBegin(GL_QUADS);  
     if (zonep->blank == 0)

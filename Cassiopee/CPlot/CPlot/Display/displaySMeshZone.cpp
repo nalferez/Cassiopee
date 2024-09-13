@@ -88,7 +88,6 @@ void Data::displaySMeshZone(StructZone* zonep, E_Int zone)
   double pt1[3]; double pt2[3]; double pt3[3]; double pt4[3];
 
   E_Float nz = 1./_numberOfStructZones;
-#include "meshStyles.h"
   
   // Grid dimensions
   E_Int ni = zonep->ni;
@@ -96,11 +95,11 @@ void Data::displaySMeshZone(StructZone* zonep, E_Int zone)
   E_Int nk = zonep->nk;
   if (ptrState->dim == 2) nk = 1;
   E_Int nij = ni*nj;
-  
-  if (ni*nj == 1 || ni*nk == 1 || nj*nk == 1) 
-  { glLineWidth(3.); color2[0] = 0.1; color2[1] = 0.1; color2[2] = 1.; }
+  bool is1D = false;
+  if (ni*nj == 1 || ni*nk == 1 || nj*nk == 1) is1D = true;
 
-#include "selection.h"
+  #include "meshStyles.h"
+  #include "selection.h"
  
   d = dist2BB(_view.xcam, _view.ycam, _view.zcam,
               zonep->xmin, zonep->ymin, zonep->zmin,
@@ -109,10 +108,10 @@ void Data::displaySMeshZone(StructZone* zonep, E_Int zone)
   // steps
   computeSteps(zonep, stepi, stepj, stepk);
 
-#include "displaySMeshZone.h"
+  #include "displaySMeshZone.h"
 
   // Zones 1D: on ajoute les noeuds
-  if (nj*nk == 1 || ni*nk == 1 || ni*nj == 1)
+  if (is1D)
   {
     glBegin(GL_QUADS);
     if (zonep->blank == 0)

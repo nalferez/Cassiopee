@@ -80,6 +80,7 @@ PyObject* K_CONVERTER::convertUnstruct2NGon(PyObject* self, PyObject* args)
     {
       PyErr_SetString(PyExc_TypeError, 
                     "convertUnstruct2NGon: elt type of array (%d) is invalid.");
+      for (size_t v = 0; v < eltTypes.size(); v++) delete [] eltTypes[v];
       RELEASESHAREDU(array, f, cnl); return NULL;  
     }
 
@@ -381,10 +382,14 @@ PyObject* K_CONVERTER::convertUnstruct2NGon(PyObject* self, PyObject* args)
   E_Bool rmOverlappingPts=true; E_Bool rmOrphanPts=false;
   E_Bool rmDuplicatedFaces=true; E_Bool rmDuplicatedElts=false;
   E_Bool rmDegeneratedFaces=false; E_Bool rmDegeneratedElts=false;
-  tpl = K_CONNECT::V_cleanConnectivity(varString, *f2, *cn2, "NGON", tol,
-                                       rmOverlappingPts, rmOrphanPts,
-                                       rmDuplicatedFaces, rmDuplicatedElts,
-                                       rmDegeneratedFaces, rmDegeneratedElts);
-  delete f2; delete cn2;
-  return tpl;  
+  PyObject* tplClean = K_CONNECT::V_cleanConnectivity(
+      varString, *f2, *cn2, "NGON", tol,
+      rmOverlappingPts, rmOrphanPts,
+      rmDuplicatedFaces, rmDuplicatedElts,
+      rmDegeneratedFaces, rmDegeneratedElts
+  );
+  
+  RELEASESHAREDU(tpl, f2, cn2);
+  if (tplClean == NULL) return tpl;
+  else { Py_DECREF(tpl); return tplClean; }
 }

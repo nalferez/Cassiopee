@@ -31,54 +31,45 @@
 
 PyObject *K_XCORE::prepareMeshesForIntersection(PyObject *self, PyObject *args)
 {
-    PyObject *MASTER, *SLAVE, *PATCH, *TAG;
+    PyObject *MASTER, *SLAVE, *TAG;
   
-    if (!PYPARSETUPLE_(args, OOOO_, &MASTER, &SLAVE, &PATCH, &TAG)) {
+    if (!PYPARSETUPLE_(args, OOO_, &MASTER, &SLAVE, &TAG)) {
         RAISE("Bad input.");
         return NULL;
     }
 
-    Karray marray;
+    if (!PyCapsule_IsValid(MASTER, "IntersectMesh")) {
+        RAISE("Bad mesh hook.");
+        return NULL;
+    }
+
+    IMesh &M = *(IMesh *)PyCapsule_GetPointer(MASTER, "IntersectMesh");
+
+    M.make_skin();
+    assert(M.patch.empty());
+    for (E_Int fid : M.skin) {
+        assert(fid < M.nf);
+        M.patch.insert(fid);
+    }
+
     Karray sarray;
 
     E_Int ret;
 
-    ret = Karray_parse_ngon(MASTER, marray);
-
-    if (ret != 0) return NULL;
-
     ret = Karray_parse_ngon(SLAVE, sarray);
 
     if (ret != 0) {
-        Karray_free_ngon(marray);
+        RAISE("Bad slave mesh.");
         return NULL;
     }
 
-    // Init and orient master/slave meshes
-    IMesh M(*marray.cn, marray.X, marray.Y, marray.Z, marray.npts);
-    IMesh S(*sarray.cn, sarray.X, sarray.Y, sarray.Z, sarray.npts);
-
-    // Check intersection patch
-    E_Int *mpatch = NULL;
-    E_Int mpatch_size = -1;
-    ret = K_NUMPY::getFromNumpyArray(PATCH, mpatch, mpatch_size, true);
-    if (ret != 1) {
-        Karray_free_ngon(marray);
-        Karray_free_ngon(sarray);
-        RAISE("Bad master patch.");
-        return NULL;
-    }
-
-    printf("Master patch: " SF_D_ " faces\n", mpatch_size);
-
-    for (E_Int i = 0; i < mpatch_size; i++) M.patch.insert(mpatch[i]-1);
+    puts("Preparing meshes for intersection...");
 
     // Check slave point tags
     E_Float *tag = NULL;
     E_Int tag_size = -1;
     ret = K_NUMPY::getFromNumpyArray(TAG, tag, tag_size, true);
     if (ret != 1) {
-        Karray_free_ngon(marray);
         Karray_free_ngon(sarray);
         RAISE("Bad slave points tag.");
         return NULL;
@@ -86,8 +77,13 @@ PyObject *K_XCORE::prepareMeshesForIntersection(PyObject *self, PyObject *args)
  
     // Extract Mf and Sf, the planar surfaces to intersect
     // TODO(Imad): quasi-planar surfaces
-    for (E_Int i = 0; i < S.nf; i++) {
-        const auto &pn = S.F[i];
+
+    // Init master/slave meshes
+    IMesh S(*sarray.cn, sarray.X, sarray.Y, sarray.Z, sarray.npts);
+    S.make_skin();
+
+    for (E_Int fid : S.skin) {
+        const auto &pn = S.F[fid];
         size_t stride = pn.size();
         assert(stride == 3 || stride == 4);
 
@@ -101,66 +97,51 @@ PyObject *K_XCORE::prepareMeshesForIntersection(PyObject *self, PyObject *args)
             }
         }
 
-        if (keep) S.patch.insert(i);
+        if (keep) S.patch.insert(fid);
     }
+
+    puts("Adapting intersection zones...");
 
     ret = meshes_mutual_refinement(M, S);
     if (ret != 0) {
-        Karray_free_ngon(marray);
         Karray_free_ngon(sarray);
+        RAISE("Bad mesh mutual refinement.");
         return NULL;
     }
 
-    M = M.extract_conformized();
+    puts("Extracting conformized meshes...");
+
     S = S.extract_conformized();
+    M = M.extract_conformized();
     
     // Export
-    PyObject *Mout = M.export_karray();
+    puts("Exporting to CGNS format...");
+
     PyObject *Sout = S.export_karray();
 
     PyObject *Out = PyList_New(0);
-    PyList_Append(Out, Mout);
+
     PyList_Append(Out, Sout);
-    Py_DECREF(Mout);
+
     Py_DECREF(Sout);
-    Karray_free_ngon(marray);
+
     Karray_free_ngon(sarray);
 
-    // All the spoints should belong to an mface
-    std::set<E_Int> spoints;
-    for (E_Int sface : S.patch) {
-        assert(S.face_is_active(sface));
-        const auto &pn = S.F[sface];
-        
-        for (E_Int spt : pn) {
-            if (spoints.find(spt) != spoints.end()) continue;
-            spoints.insert(spt);
-            auto pf = M.locate(spt, S.X[spt], S.Y[spt], S.Z[spt], M.patch);
-            assert(!pf.empty());
-        }
-    }
-
     // Extract master and slave patches
+    puts("Saving slave intersection patch...");
     npy_intp dims[2];
     dims[1] = 1;
-    
-    dims[0] = (npy_intp)M.patch.size();
-    PyArrayObject *MP = (PyArrayObject *)PyArray_SimpleNew(1, dims, E_NPY_INT);
-    E_Int *mptr = (E_Int *)PyArray_DATA(MP);
-    E_Int *ptr = mptr;
-    for (E_Int face : M.patch) *ptr++ = face+1;
 
     dims[0] = (npy_intp)S.patch.size();
     PyArrayObject *SP = (PyArrayObject *)PyArray_SimpleNew(1, dims, E_NPY_INT);
     E_Int *sptr = (E_Int *)PyArray_DATA(SP);
-    ptr = sptr;
-    for (E_Int face : S.patch) *ptr++ = face+1;
+    E_Int *ptr = sptr;
+    for (E_Int face : S.patch) *ptr++ = face + 1;
 
-    PyList_Append(Out, (PyObject *)MP);
     PyList_Append(Out, (PyObject *)SP);
-    Py_DECREF(MP);
-    Py_DECREF(SP);
 
+    Py_DECREF(SP);
+    Py_DECREF(TAG);
 
     return Out;
 }

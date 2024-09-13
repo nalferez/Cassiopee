@@ -15,7 +15,7 @@ import numpy
 __all__ = ['convertCAD2Arrays', 'switch2UV', 'switch2UV2', '_scaleUV', '_unscaleUV',
 'allTFI', 'meshSTRUCT', 'meshSTRUCT__', 'meshTRI', 'meshTRI__', 'meshTRIU__', 
 'meshTRIHO', 'meshQUAD', 'meshQUAD__', 'meshQUADHO', 'meshQUADHO__', 
-'ultimate', 'meshAllEdges', 'meshAllFaces']
+'ultimate', 'meshAllEdges', 'meshAllFacesTri', 'meshAllFacesStruct']
 
 # algo=0: mailleur open cascade (chordal_error)
 # algo=1: algorithme T3mesher (h, chordal_error, growth_ratio)
@@ -471,84 +471,6 @@ def _enforceEdgesInFace(a, edges):
         c += npts
     return None
 
-#===============================================================================
-# Mesh Face no i of CAD with TRIs from parametrized edges
-# IN: hook; cad hook
-# IN: i: no de la face
-# IN: edges structured one per wire
-# hmax: hmin/hmax/hausd par face
-#===============================================================================
-def meshFaceWithMetric(hook, i, edges, hmin, hmax, hausd, mesh, FAILED):
-    
-    # save edges
-    edgesSav = []
-    for e in edges: edgesSav.append(Converter.copy(e))
-
-    # must close in uv space
-    edges = switch2UV2(edges)
-    T = _scaleUV(edges)
-    edges = Converter.convertArray2Tetra(edges)
-    edges = Transform.join(edges)
-    edges = Generator.close(edges, 1.e-10)
-    _unscaleUV([edges], T)
-    pt = edges[1]
-    edges = occ.evalFace(hook, edges, i)
-    edges = Converter.addVars(edges, ['u','v'])
-    edges[1][3,:] = pt[3,:]
-    edges[1][4,:] = pt[4,:]
-        
-    if edges[2].shape[1] == 0: return True # pass
-    
-    # supprime les edges collapsed
-    #edges2 = Generator.close(edges, 1.e-6)
-    
-    # Scale UV des edges
-    _scaleUV([edges], vu='u', vv='v')
-    try:
-        a = occ.trimesh(hook, edges, i, hmin, hmax, hausd, 1.1)
-        _enforceEdgesInFace(a, edgesSav)
-        if occ.getFaceOrientation(hook, i) == 0: 
-            a = Transform.reorder(a, (-1,))
-        mesh.append(a)
-        SUCCESS = True
-    except Exception as e:
-        SUCCESS = False
-        Converter.convertArrays2File(edges, '%03d_edgeUV.plt'%i) # pas vraiment UV
-        FAILED.append(i)
-        
-    return SUCCESS
-
-# Mesh face regular in UV space
-def meshFaceInUV(hook, i, edges, grading, mesh, FAILED):
-    
-    # save edges
-    edgesSav = []
-    for e in edges: edgesSav.append(Converter.copy(e))
-    
-    # Passage des edges dans espace uv
-    edges = switch2UV(edges)
-    T = _scaleUV(edges)
-    edges = Converter.convertArray2Tetra(edges)
-    edges = Transform.join(edges)
-        
-    # Maillage de la face
-    try:
-        a = Generator.T3mesher2D(edges, grading=grading)    
-        _unscaleUV([a], T)
-        o = occ.evalFace(hook, a, i)
-        _enforceEdgesInFace(o, edgesSav)
-        if occ.getFaceOrientation(hook, i) == 0:
-            o = Transform.reorder(o, (-1,))
-        mesh.append(o)
-        SUCCESS = True
-    except Exception as e:
-        SUCCESS = False
-        Converter.convertArrays2File(edges, '%03d_edgeUV.plt'%i)
-        mesh.append(None)
-        FAILED.append(i)
-    
-    return SUCCESS
-
 # hmax: hmax sur les edges et dans les faces (constant)
 # hausd: erreur de corde, pas pris en compte
 def ultimate(hook, hmax, hausd=-1, metric=True):
@@ -601,16 +523,95 @@ def ultimate(hook, hmax, hausd=-1, metric=True):
 # BACK AGAIN
 #=======================================================================================
 
-# mesh all CAD edges
-def meshAllEdges(hook, hmax, hausd):
+#===============================================================================
+# TRI Mesh Face no i of CAD from parametrized edges
+# IN: hook; cad hook
+# IN: i: no de la face
+# IN: edges structured one per wire
+# hmax: hmin/hmax/hausd par face
+#===============================================================================
+def meshFaceWithMetric(hook, i, edges, hmin, hmax, hausd, mesh, FAILED):
+    
+    # save edges
+    edgesSav = []
+    for e in edges: edgesSav.append(Converter.copy(e))
+
+    # must close in uv space
+    edges = switch2UV2(edges)
+    T = _scaleUV(edges)
+    edges = Converter.convertArray2Tetra(edges)
+    edges = Transform.join(edges)
+    edges = Generator.close(edges, 1.e-10)
+    _unscaleUV([edges], T)
+    pt = edges[1]
+    edges = occ.evalFace(hook, edges, i)
+    edges = Converter.addVars(edges, ['u','v'])
+    edges[1][3,:] = pt[3,:]
+    edges[1][4,:] = pt[4,:]
+        
+    if edges[2].shape[1] == 0: return True # pass
+    
+    # supprime les edges collapsed
+    #edges2 = Generator.close(edges, 1.e-6)
+    
+    # Scale UV des edges
+    _scaleUV([edges], vu='u', vv='v')
+    try:
+        a = occ.trimesh(hook, edges, i, hmin, hmax, hausd, 1.1)
+        _enforceEdgesInFace(a, edgesSav)
+        if occ.getFaceOrientation(hook, i) == 0: 
+            a = Transform.reorder(a, (-1,))
+        mesh.append(a)
+        SUCCESS = True
+    except Exception as e:
+        SUCCESS = False
+        Converter.convertArrays2File(edges, '%03d_edgeUV.plt'%i) # pas vraiment UV
+        FAILED.append(i)
+        
+    return SUCCESS
+
+# TRI mesh face regular in UV space
+def meshFaceInUV(hook, i, edges, grading, mesh, FAILED):
+    
+    # save edges
+    edgesSav = []
+    for e in edges: edgesSav.append(Converter.copy(e))
+    
+    # Passage des edges dans espace uv
+    edges = switch2UV(edges)
+    T = _scaleUV(edges)
+    edges = Converter.convertArray2Tetra(edges)
+    edges = Transform.join(edges)
+        
+    # Maillage de la face
+    try:
+        a = Generator.T3mesher2D(edges, grading=grading)    
+        _unscaleUV([a], T)
+        o = occ.evalFace(hook, a, i)
+        _enforceEdgesInFace(o, edgesSav)
+        if occ.getFaceOrientation(hook, i) == 0:
+            o = Transform.reorder(o, (-1,))
+        mesh.append(o)
+        SUCCESS = True
+    except Exception as e:
+        SUCCESS = False
+        Converter.convertArrays2File(edges, '%03d_edgeUV.plt'%i)
+        mesh.append(None)
+        FAILED.append(i)
+    
+    return SUCCESS
+
+# mesh all CAD edges with hmax, hausd
+def meshAllEdges(hook, hmax, hausd, N):
     nbEdges = occ.getNbEdges(hook)
     dedges = []
     for i in range(nbEdges):
-        e = occ.meshOneEdge(hook, i+1, hmax, hausd, None)
+        e = occ.meshOneEdge(hook, i+1, hmax, hausd, N, None)
         dedges.append(e)
     return dedges
 
-# mesh some CAD faces from discrete edges + hList
+#=================================================================
+# mesh TRI given CAD faces from discrete edges U + hList
 # IN: hook: hook of cad
 # IN: hmax: hmax size
 # IN: hausd: hausd size
@@ -618,7 +619,8 @@ def meshAllEdges(hook, hmax, hausd):
 # IN: metric: if True use metric else mesh in uv
 # IN: faceList: list of faces to mesh (start 1)
 # IN: hList: list of (hmin, hmax, hausd) for each face to mesh
-def meshAllFaces(hook, dedges, metric=True, faceList=[], hList=[]):
+#==================================================================
+def meshAllFacesTri(hook, dedges, metric=True, faceList=[], hList=[]):
     nbFaces = occ.getNbFaces(hook)
     FAILED1 = []; FAILED2 = []; dfaces = []
     for c, i in enumerate(faceList):
@@ -657,3 +659,49 @@ def meshAllFaces(hook, dedges, metric=True, faceList=[], hList=[]):
         print("FINAL FAILED on face = %03d_edgeUV.plt"%f)
     
     return dfaces
+
+#==================================================================
+# mesh STRUCT given CAD faces from discrete edges U
+#==================================================================
+def meshAllFacesStruct(hook, dedges, faceList=[]):
+    nbFaces = occ.getNbFaces(hook)
+    FAILED1 = []; dfaces = []
+    nloct = []; nofacet = [] # nbre de grilles pour la face c; no de la face
+    for c, i in enumerate(faceList):
+
+        print("========== face %d / %d ==========="%(i,nbFaces))
+        
+        wires = occ.meshEdgesOfFace(hook, i, dedges)
+        edges = wires[0] # only first for now
+
+        SUCCESS = False
+        edges = switch2UV(edges)
+        # scale uv
+        T = _scaleUV(edges)
+        # force la fermeture des boucles
+        #edges = Generator.close(edges, 1.e-6) # the weakness
+        # TFI dans espace uv
+        try:
+            als = allTFI(edges)
+            # unscale uv
+            _unscaleUV(als, T)
+            for c, a in enumerate(als):
+                # evaluation sur la CAD
+                o = occ.evalFace(hook, a, i)
+                dfaces.append(o)
+                nofacet.append(i)
+                nloct.append(c+1)
+        except Exception as e:
+            print(str(e))
+            Converter.convertArrays2File(edges, "edgesOfFace%03d.plt"%i)
+            FAILED1.append(i)
+            dfaces.append(None)
+            nofacet.append(i)
+            nloct.append(0)
+
+    FAIL1 = len(FAILED1)
+    print("STRUCTFAILURE = %d / %d"%(FAIL1, nbFaces))
+    for f in FAILED1:
+        print("STRUCTFAILED on face = %03d_edgeUV.plt"%f)
+    
+    return dfaces, nloct, nofacet

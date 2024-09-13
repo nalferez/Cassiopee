@@ -42,3 +42,11 @@
       color2[0] = 0.;  color2[1] = 0.;  color2[2] = 1;
       break;
   }
+  // Ecrasement si renderTag
+  if (zonep->colorR > -0.5)
+  {color1[0] = zonep->colorR; color1[1] = zonep->colorG; color1[2] = zonep->colorB;}
+
+  // specifique aux zones 1D
+  if (is1D && ptrState->mode == RENDER) glLineWidth(1.+5*zonep->shaderParam1);
+  else if (is1D) glLineWidth(3.);
+  else glLineWidth(1.);
