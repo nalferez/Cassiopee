@@ -663,7 +663,7 @@ void setInterpTransfersIntra(E_Float**& ipt_ro, E_Int& vartype         , E_Int*&
 
   /* Functions used for gatherMatching functions */
   void compIncrement(E_Int indwA1, E_Int imw1, E_Float* oppositeWins, E_Float* oppositePts,
-                      E_Int& inci, E_Int& incj, E_Int& inciopp, E_Int& incjopp);
+                     E_Int dimPb, E_Int& inci, E_Int& incj, E_Int& inciopp, E_Int& incjopp);
 
   void compTrirac(E_Int im1, E_Int jm1, E_Int im2, E_Int jm2,
                   E_Int typewin1, E_Int inc1, E_Int inc2,

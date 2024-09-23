@@ -16,35 +16,24 @@
     You should have received a copy of the GNU General Public License
     along with Cassiopee.  If not, see <http://www.gnu.org/licenses/>.
 */
-// CAD split for parallel
+// Remove CAD faces and rebuild compound
 #include "occ.h"
 
 #include "TopoDS.hxx"
 #include "BRep_Tool.hxx"
-#include "ShapeAnalysis.hxx"
-#include "BRepAdaptor_Curve.hxx"
 #include "TopExp.hxx"
 #include "TopExp_Explorer.hxx"
 #include "TopTools_IndexedMapOfShape.hxx"
-#include "ShapeUpgrade_FaceDivide.hxx"
-#include "ShapeUpgrade_ShapeDivideArea.hxx"
-#include "ShapeUpgrade_ShapeDivideClosed.hxx"
-#include "ShapeUpgrade_ClosedFaceDivide.hxx"
-#include "ShapeUpgrade_SplitSurfaceArea.hxx"
-#include "TColGeom_SequenceOfSurface.hxx"
-#include "ShapeExtend_CompositeSurface.hxx"
 #include "ShapeBuild_ReShape.hxx"
 #include "BRep_Builder.hxx"
-#include "ShapeUpgrade_ShapeDivideClosedEdges.hxx"
-#include "BRepBuilderAPI_Sewing.hxx"
 
 //=====================================================================
-// Sew faces removing extra edges
+// Remove some faces and rebuild compound
 //=====================================================================
-PyObject* K_OCC::sewing(PyObject* self, PyObject* args)
+PyObject* K_OCC::removeFaces(PyObject* self, PyObject* args)
 {
-  PyObject* hook; PyObject* listFaces; E_Float tol; 
-  if (!PYPARSETUPLE_(args, OO_ R_, &hook, &listFaces, &tol)) return NULL;
+  PyObject* hook; PyObject* listFaces;
+  if (!PYPARSETUPLE_(args, OO_, &hook, &listFaces)) return NULL;
 
   void** packet = NULL;
 #if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
@@ -53,73 +42,45 @@ PyObject* K_OCC::sewing(PyObject* self, PyObject* args)
   packet = (void**) PyCapsule_GetPointer(hook, NULL);
 #endif
 
+  // get top shape
+  TopoDS_Shape* shp = (TopoDS_Shape*)packet[0];
   //TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
   TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
+  E_Int nbFaces = surfaces.Extent();
 
-  // try on top shape
-  TopoDS_Shape* shp = (TopoDS_Shape*)packet[0];
-  const Standard_Real tolerance = tol;
-  BRepBuilderAPI_Sewing sewer(tolerance);
-  
-  TopoDS_Shape shc;
-  E_Int nfaces = PyList_Size(listFaces); 
-  nfaces = 0; // force car le code par subfaces semble ne pas marcher
-  if (nfaces == 0)
+  ShapeBuild_ReShape reshaper;
+  for (E_Int no = 0; no < PyList_Size(listFaces); no++)
   {
-    // top shape
-    printf("Info: sewing top shape.\n");
-    sewer.Add(*shp);
-    sewer.Perform();
-    shc = sewer.SewedShape();
-  }
-  else
-  {
-    // ce code ne fonctionne pas, on utilise tout le temps la topshape
-    for (E_Int no = 0; no < PyList_Size(listFaces); no++)
+    PyObject* noFaceO = PyList_GetItem(listFaces, no);
+    E_Int noFace = PyInt_AsLong(noFaceO);
+    if (noFace >= 1 && noFace <= nbFaces)
     {
-      PyObject* noFaceO = PyList_GetItem(listFaces, no);
-      E_Int noFace = PyInt_AsLong(noFaceO);
       const TopoDS_Face& F = TopoDS::Face(surfaces(noFace));
-      sewer.Add(F);
-    } 
-    sewer.Perform();
-    TopoDS_Shape shs = sewer.SewedShape();
-
-    ShapeBuild_ReShape reshaper;
-    TopTools_IndexedMapOfShape faces;
-    TopExp::MapShapes(shs, TopAbs_FACE, faces);
-
-    for (E_Int i = 0; i < faces.Extent(); i++) 
-    {
-      PyObject* noFaceO = PyList_GetItem(listFaces, i);
-      E_Int noFace = PyInt_AsLong(noFaceO);
-      const TopoDS_Face& F = TopoDS::Face(surfaces(noFace));
-      const TopoDS_Face& F2 = TopoDS::Face(faces(i+1));
-      printf("replace face %d with %d\n", noFace, i+1);
-      reshaper.Replace(F, F2);
+      printf("Info: removing face %d\n", noFace);
+      reshaper.Remove(F);
     }
-    shc = reshaper.Apply(*shp);
+    else printf("Warning: removeFaces: invalid face number.\n");
   }
+  TopoDS_Shape shc = reshaper.Apply(*shp);
 
   // export
   delete shp;
   TopoDS_Shape* newshp = new TopoDS_Shape(shc);
+
+  // Export
   packet[0] = newshp;
-  // Extract surfaces
   TopTools_IndexedMapOfShape* ptr = (TopTools_IndexedMapOfShape*)packet[1];
   delete ptr;
   TopTools_IndexedMapOfShape* sf = new TopTools_IndexedMapOfShape();
   TopExp::MapShapes(*newshp, TopAbs_FACE, *sf);
   packet[1] = sf;
-
-  // Extract edges
   TopTools_IndexedMapOfShape* ptr2 = (TopTools_IndexedMapOfShape*)packet[2];
   delete ptr2;
   TopTools_IndexedMapOfShape* se = new TopTools_IndexedMapOfShape();
   TopExp::MapShapes(*newshp, TopAbs_EDGE, *se);
   packet[2] = se;
-  printf("INFO: after sewing: Nb edges=%d\n", se->Extent());
-  printf("INFO: after sewing: Nb faces=%d\n", sf->Extent());
+  printf("INFO: after removeFaces: Nb edges=%d\n", se->Extent());
+  printf("INFO: after removeFaces: Nb faces=%d\n", sf->Extent());
 
   Py_INCREF(Py_None);
   return Py_None;
