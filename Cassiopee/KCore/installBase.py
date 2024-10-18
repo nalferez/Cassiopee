@@ -743,7 +743,7 @@ True, # useCuda
 # [] # NvccAdditionalOptions
 # ],
 ###############################################################################
-'azure': [ 'Linux ubuntu 24.04 - Github Actions',
+'azure': [ 'Linux ubuntu 20.04 - Github Actions',
 'gfortran', # f77compiler
 'gfortran', # f90compiler
 'gcc', # Cppcompiler
