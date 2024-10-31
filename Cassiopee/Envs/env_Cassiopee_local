@@ -2,6 +2,7 @@
 # *Cassiopee* machine specific (local) variables
 
 # Preliminary checks
+unset ELSAPROD
 if ($?CASSIOPEE == 0) then
     echo "You must specify a CASSIOPEE variable in your environment."
     echo "This variable specifies the installation path of *Cassiopee*."
@@ -38,37 +39,41 @@ set MAC0=`echo $KC | grep 'node6.cluster'`; if ($%MAC0 != 0) set MAC="macosx"
 set MAC0=`echo $KC | grep 'topaze'`; if ($%MAC0 != 0) set MAC="topaze"
 
 # Detect MAC environment from MACHINE
-set INTTYPE=""
-set DBGMODE=""
-if ($?MACHINE == 0) then
-    if ($?MAC == 0) then
-        echo 'Your machine is not known by uname. Try to set MACHINE.'
+set EXT=""
+if ($?MACHINE != 0) then
+    set INTTYPE=""
+    set DBGMODE=""
+    set BRANCHNAME=""
+    set MACHINETMP="$MACHINE"
+
+    if ("$MACHINETMP" =~ *_DBG*) then
+        set MACHINETMP=`echo "$MACHINETMP" | sed 's/_DBG//g'`
+        set DBGMODE="_DBG"
     endif
-else
-    if ("$MACHINE" == "i8") then
+
+    if ("$MACHINETMP" =~ *_i8*) then
+        set MACHINETMP=`echo "$MACHINETMP" | sed 's/_i8//g'`
         set INTTYPE="_i8"
-    else if ("$MACHINE" == "DBG") then
-        set DBGMODE="_DBG"
-    else if ("$MACHINE" == "i8_DBG") then
-        set INTTYPE="_i8"
-        set DBGMODE="_DBG"
-    else if ("$MACHINE" =~ "*_DBG") then
-        set MAC=`echo $MACHINE | rev | cut -c 5- | rev`
-        set DBGMODE="_DBG"
-        if ("$MAC" =~ "*_i8") then
-            set MAC=`echo $MACHINE | rev | cut -c 4- | rev`
-            set INTTYPE="_i8"
-        endif
-    else    
-        if ("$MACHINE" =~ "*_i8") then
-            set MAC=`echo $MACHINE | rev | cut -c 4- | rev`
-            set INTTYPE="_i8"
-        else
-            set MAC=$MACHINE
-        endif
     endif
+
+    if ("$MACHINETMP" =~ *_b-*) then
+        set BRANCHNAME=`echo "$MACHINETMP" | sed -n 's/.*_b-\(.*\)/\1/p'`
+        set BRANCHNAME=`echo "$BRANCHNAME" | sed 's/_.*//g'`
+        set MACHINETMP=`echo "$MACHINETMP" | sed "s/_b-$BRANCHNAME//"`
+        set MACHINETMP=`echo "$MACHINETMP" | sed 's/_$//'`
+        set BRANCHNAME="_$BRANCHNAME"
+    endif
+
+    set MAC="$MACHINETMP"
+    set EXT="$BRANCHNAME$INTTYPE$DBGMODE"
+    unset MACHINETMP BRANCHNAME INTTYPE DBGMODE
 endif
-set EXT=$INTTYPE$DBGMODE
+
+# Check if MAC is empty
+if ("$MAC" == "") then
+    echo 'Your machine is not known by uname. Try to set MACHINE.'
+    return 1
+endif
 
 
 # ----------------------------- Prods ------------------------------------------
@@ -254,15 +259,13 @@ else if ($MAC == "visio_python3") then
             module unload $x
         end
         module load python/3.6.1
-        # Set next two lines only if python is not python
         setenv PYTHONEXE python3
         module load gcc/4.8.1
         module load intel/17.0.4
         module load impi/17
         # Nombre de threads
         setenv OMP_NUM_THREADS 16
-        #setenv KMP_AFFINITY "verbose,granularity=fine,proclist=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],explicit"
-
+        
 else if ($MAC == "visio") then
 #------------------------------- visio ---------------------------------------
         setenv ELSAPROD vis_r8
@@ -277,8 +280,7 @@ else if ($MAC == "visio") then
         module load impi/17
         # Nombre de threads
         setenv OMP_NUM_THREADS 16
-        #setenv KMP_AFFINITY "verbose,granularity=fine,proclist=[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],explicit"
-
+        
 else if ($MAC == "visung") then
 #------------------------------- visung ---------------------------------------
         setenv ELSAPROD visung_r8
@@ -672,6 +674,7 @@ else if ($MAC == "juno") then
         unsetenv I_MPI_FABRICS
         unsetenv I_MPI_PMI_LIBRARY
         unsetenv I_MPI_TCP_NETMASK
+        unsetenv I_MPI_HYDRA_BOOTSTRAP_EXEC_EXTRA_ARGS I_MPI_HYDRA_BOOTSTRAP HYDRA_BOOTSTRAP
         unsetenv SLURM*
         setenv OMP_PLACES cores
         setenv PYTHONEXE python3

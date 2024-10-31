@@ -728,20 +728,50 @@ True, # useCuda
 [] # NvccAdditionalOptions
 ],
 ###############################################################################
-# 'ubuntu': [ 'Linux ubuntu 24.04',
-# 'gfortran', # f77compiler
-# 'gfortran', # f90compiler
-# 'gcc', # Cppcompiler
-# [], # CppAdditionalOptions
-# [], # f77AdditionalOptions
-# True, # useOMP
-# False, # static
-# ['/usr/include', '/usr/include/hdf5/openmpi', '/usr/lib/x86_64-linux-gnu/openmpi/include'], # additionalIncludePaths
-# ['gfortran', 'gomp'], # additionalLibs
-# ['/usr/lib/x86_64-linux-gnu/hdf5/openmpi', '/usr/lib/x86_64-linux-gnu'], # additionalLibPaths
-# False, # useCuda
-# [] # NvccAdditionalOptions
-# ],
+'adastra_cpu': [ 'Machine CINES Cray',
+'gfortran', # f77compiler
+'gfortran', # f90compiler
+'gcc', # Cppcompiler
+[], # CppAdditionalOptions
+[], # f77AdditionalOptions
+True, # useOMP
+False, # static
+[], # additionalIncludePaths
+[], # additionalLibs
+[],  # additionalLibPaths
+False, # useCuda
+[]  # NvccAdditionalOptions
+],
+###############################################################################
+'adastra_gpu': [ 'Machine CINES Cray',
+'ftn', # f77compiler
+'ftn', # f90compiler
+'cc', # Cppcompiler
+[], # CppAdditionalOptions
+[], # f77AdditionalOptions
+True, # useOMP
+False, # static
+[], # additionalIncludePaths
+[], # additionalLibs
+[],  # additionalLibPaths
+False, # useCuda
+[]  # NvccAdditionalOptions
+],
+###############################################################################
+'ubuntu': [ 'Linux ubuntu 24.04',
+'gfortran', # f77compiler
+'gfortran', # f90compiler
+'gcc', # Cppcompiler
+[], # CppAdditionalOptions
+[], # f77AdditionalOptions
+True, # useOMP
+False, # static
+['/usr/include', '/usr/include/hdf5/openmpi', '/usr/lib/x86_64-linux-gnu/openmpi/include'], # additionalIncludePaths
+['gfortran', 'gomp'], # additionalLibs
+['/usr/lib/x86_64-linux-gnu/hdf5/openmpi', '/usr/lib/x86_64-linux-gnu'], # additionalLibPaths
+False, # useCuda
+[] # NvccAdditionalOptions
+],
 ###############################################################################
 'azure': [ 'Linux ubuntu 20.04 - Github Actions',
 'gfortran', # f77compiler
