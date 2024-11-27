@@ -73,12 +73,12 @@ KNOWNBCS = ['BCWall', 'BCWallInviscid','BCWallViscous', 'BCWallViscousIsothermal
 
 
 try:
-    import dNami.rhsinfo as rhs
-    newbc_names = list(rhs.bc_info[0].keys())
-    KNOWNBCS = KNOWNBCS + newbc_names
+  import dNami.rhsinfo as rhs
+  newbc_names = list(rhs.bc_info[0].keys())
+  KNOWNBCS = KNOWNBCS + newbc_names
 except:
-    pass  
-    
+  pass  
+
 #import math
 __DEG2RAD__ = 0.017453292519943295 #math.pi/180.
 __RAD2DEG__ = 57.29577951308232    #180./math.pi
