@@ -41,7 +41,7 @@ D_IBM._setIBCType(tb, 'wiremodel')
 tboffset = D_Offset.offsetSurface(tb, offset=0.025*3, pointsPerUnitLength=400, dim=2)
 D_IBM._setSnear(tboffset, 0.0025)
 tboffset = C.newPyTree(['Base', tboffset])
-    
+
 ##PREP
 dfars     = 5
 snears    = 1
@@ -49,9 +49,9 @@ vmin      = 11
 
 X_IBM.prepareIBMData(tb               , tFile        , tcFile   , tbox=tboffset,      
                      snears=snears    , dfars=dfars  , vmin=vmin, 
-                     check=True       , frontType=1  , cartesian=False)
+                     check=False       , frontType=1  , cartesian=False)
 App._distribute(tFile, tcFile, NP=Cmpi.size)
-t       = Fast.loadTree(tFile , split='single',  mpirun=True)
+t       = Fast.loadTree(os.path.basename(tFile), directory=LOCAL, split='single',  mpirun=True)
 tc,graph= Fast.loadFile(tcFile, split='single',  mpirun=True, graph=True)
 
 if Cmpi.rank == 0:
@@ -90,15 +90,16 @@ FastC._setNum2Base(t, numb)
 FastC._setNum2Zones(t, numz)
 ts = None
 (t, tc, metrics) = FastS.warmup(t, tc, graph,tmy=ts)
+graphInvIBCD_WM  = Cmpi.computeGraph(tc, type='INV_IBCD', procDict=graph['procDict'])
 
 file_select = 1
 time_step   = Internal.getNodeFromName(t, 'time_step')
 time_step   = Internal.getValue(time_step)
 
 for it in range(NIT):
-    FastS._compute(t, metrics, it, tc, graph, layer="Python")
+    FastS._compute(t, metrics, it, tc, graph, layer="Python", graphInvIBCD_WM=graphInvIBCD_WM)
     time0 += time_step
-    
+
     if it%display_probe_freq == 0:
         if Cmpi.rank==0: print('- %d / %d - %f'%(it+it0, NIT+it0, time0))
         FastS.display_temporal_criteria(t, metrics, it, format='double')
@@ -115,7 +116,7 @@ if Cmpi.rank == 0:
     Internal._rmNodesByName(tc, '.Solver#Param')
     Internal._rmNodesByName(tc, '.Solver#ownData')
     Internal._rmNodesByName(tc, '.Solver#dtloc')
-    
+
     test.testT(t , 3)
     test.testT(tc, 4)
 
