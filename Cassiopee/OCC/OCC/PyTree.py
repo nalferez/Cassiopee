@@ -652,7 +652,7 @@ def _remeshTreeFromEdges(hook, t, edges):
     for edge in edges:
         edgeno = getNo(edge)
         aedge = C.getFields([Internal.__GridCoordinates__, Internal.__FlowSolutionNodes__], edge, api=2)[0]
-        e = occ.meshOneEdge(hook, edgeno, -1, -1, -1, aedge)
+        e = occ.meshOneEdge(hook, edgeno, -1, -1, -1, -1, aedge)
         dedges[edgeno-1] = e
         cad = Internal.getNodeFromName1(edge, 'CAD')
         render = Internal.getNodeFromName1(edge, '.RenderInfo')
@@ -778,7 +778,7 @@ def _remeshAllEdgesOdd(hook, t):
             D._getCurvilinearAbscissa(edge)
             edgeno = getNo(edge)
             aedge = C.getFields([Internal.__GridCoordinates__, Internal.__FlowSolutionNodes__], edge, api=2)[0]
-            e = occ.meshOneEdge(hook, edgeno, -1, -1, -1, aedge)
+            e = occ.meshOneEdge(hook, edgeno, -1, -1, -1, -1, aedge)
             cad = Internal.getNodeFromName1(edge, 'CAD')
             render = Internal.getNodeFromName1(edge, '.RenderInfo')
             z = Internal.createZoneNode('edge%03d'%(edgeno), e, [],
@@ -795,7 +795,7 @@ def getCADcontainer(t):
     CAD = Internal.getNodeFromName1(t, 'CAD')
     if CAD is None: return [hmin, hmax, hausd]
     hmin = Internal.getNodeFromName1(CAD, 'hmin')
-    if hmin is not None: hmax = Internal.getValue(hmin)
+    if hmin is not None: hmin = Internal.getValue(hmin)
     hmax = Internal.getNodeFromName1(CAD, 'hmax')
     if hmax is not None: hmax = Internal.getValue(hmax)
     hausd = Internal.getNodeFromName1(CAD, 'hausd')
@@ -934,6 +934,7 @@ def _meshAllFacesStruct(hook, t, faceList=None):
 # set color red to lonelyEdges
 def _setLonelyEdgesColor(t):
     import CPlot.PyTree as CPlot
+    import Geom.PyTree as D
     b = Internal.getNodeFromName1(t, 'EDGES')
     if b is None: return None
     zones = Internal.getZones(b)
@@ -942,16 +943,19 @@ def _setLonelyEdgesColor(t):
         faceList = Internal.getNodeFromName1(CAD, 'faceList')
         if faceList is not None:
             size = faceList[1].size
-            if size == 2: # ok: blue
+            if size == 2: # ok: green
                 CPlot._addRender2Zone(ze, color='Green')
             elif size == 1: # lonely: red
-                CPlot._addRender2Zone(ze, color='Red')
-            else: # strange!!
-                CPlot._addRender2Zone(ze, color='Red')
+                L = D.getLength(ze)
+                if L > 1.e-16: CPlot._addRender2Zone(ze, color='Red')
+                else: CPlot._addRender2Zone(ze, color='Green') 
+            else: # strange!!                
+                CPlot._addRender2Zone(ze, color='Green')
     return None
 
 # Return the number of lonely edges in t
 def getNbLonelyEdges(t):
+    import Geom.PyTree as D
     b = Internal.getNodeFromName1(t, 'EDGES')
     if b is None: return 0
     nb = 0
@@ -961,7 +965,10 @@ def getNbLonelyEdges(t):
         faceList = Internal.getNodeFromName1(CAD, 'faceList')
         if faceList is not None:
             size = faceList[1].size
-            if size == 1: nb += 1
+            if size == 1:
+                # check that edge is not degenerated
+                L = D.getLength(ze)
+                if L > 1.e-16: nb += 1
     return nb
 
 #===========================================================================================
