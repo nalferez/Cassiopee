@@ -312,10 +312,10 @@ def miseAPlatDonorTree__(zones, tc, graph=None, list_graph=None, nbpts_linelets=
 
 
     if not graphliste: # Si le graph n est pas une liste, on n'est pas en explicite local
-                       #on determine la liste des processus pour lequel rank  est Receveur
+        #on determine la liste des processus pour lequel rank  est Receveur
         graphIBCrcv=[];graphIDrcv=[]
         if graphIBCD is not None:
-                    #on recupere les infos Steady
+
             graphIBCrcv_=[]; pos_IBC=[]; S_IBC= 1; graphloc=[]
             S_IBC = _procSource(rank, S_IBC,  pos_IBC, graphIBCD, graphloc, graphIBCrcv_)
 
@@ -328,7 +328,9 @@ def miseAPlatDonorTree__(zones, tc, graph=None, list_graph=None, nbpts_linelets=
             #on ajoute les infos UNsteady
             for nstep in range(numero_min,numero_max+1):
                 graphloc=[]
+
                 S_ID = _procSource(rank, S_ID, pos_ID, graphID_U[nstep], graphloc, graphIDrcv_, filterGraph= graphrcv_S)
+
 
             graphIDrcv   = pos_ID  + graphIDrcv_
 
@@ -1216,7 +1218,7 @@ def triMultiType(Nbpts_D, Nbpts, Nbpts_InterpD, meshtype, noi, lst,lstD,l0,ctyp,
                 elif ltype == 4: sizecoef=4
 
             if ltype == ntype:
-            # recopie interpolantType
+                # recopie interpolantType
                 param_int[ ptTy + shift_typ + l + l0 ] = ltype
 
                 # recopie pointlist
@@ -1889,4 +1891,3 @@ def _procSource(rank, S_pos, pos_list, graph, graphloc, graphrcv_, filterGraph=N
     #print("Spos=", S_pos,graphrcv_, filterGraph )
 
     return S_pos
-
