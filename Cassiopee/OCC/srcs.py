@@ -39,6 +39,8 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
         'OCC/Atomic/mergeCAD.cpp',
         'OCC/Atomic/freeHook.cpp',
 
+        'OCC/Atomic/printOCAF.cpp',
+
         'OCC/Atomic/bottle.cpp',
         'OCC/Atomic/addSphere.cpp',
         'OCC/Atomic/addSquare.cpp',
@@ -71,7 +73,8 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
         'OCC/Atomic/scale.cpp',
         'OCC/Atomic/rotate.cpp',
 
-        'OCC/Atomic/getOppData.cpp']
+        'OCC/Atomic/getOppData.cpp',
+        'OCC/Atomic/identifyTags.cpp']
 
 import KCore.Dist as Dist
 
