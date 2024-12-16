@@ -77,7 +77,7 @@ try:
   newbc_names = list(rhs.bc_info[0].keys())
   KNOWNBCS = KNOWNBCS + newbc_names
 except:
-  pass  
+  pass
 
 #import math
 __DEG2RAD__ = 0.017453292519943295 #math.pi/180.

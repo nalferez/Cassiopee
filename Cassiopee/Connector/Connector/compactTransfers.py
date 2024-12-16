@@ -329,7 +329,7 @@ def miseAPlatDonorTree__(zones, tc, graph=None, list_graph=None, nbpts_linelets=
             for nstep in range(numero_min,numero_max+1):
                 graphloc=[]
 
-                S_ID = _procSource(rank, S_ID, pos_ID, graphID_U[nstep], graphloc, graphIDrcv_, filterGraph= graphrcv_S)
+                S_ID = _procSource(rank, S_ID, pos_ID, graphID_U[nstep], graphloc, graphIDrcv_, filterGraph=graphrcv_S)
 
 
             graphIDrcv   = pos_ID  + graphIDrcv_
