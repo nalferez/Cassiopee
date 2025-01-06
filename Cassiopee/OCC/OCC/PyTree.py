@@ -947,7 +947,7 @@ def _setLonelyEdgesColor(t):
                 CPlot._addRender2Zone(ze, color='Green')
             elif size == 1: # lonely: red
                 L = D.getLength(ze)
-                if L > 1.e-16: CPlot._addRender2Zone(ze, color='Red')
+                if L > 1.e-11: CPlot._addRender2Zone(ze, color='Red')
                 else: CPlot._addRender2Zone(ze, color='Green')
             else: # strange!!
                 CPlot._addRender2Zone(ze, color='Green')
@@ -1382,7 +1382,7 @@ def identifyTags__(a):
     array = C.getFields(Internal.__FlowSolutionNodes__, a, "__tag__", api=3)[0]
     return OCC.identifyTags__(array)
 
-def getComponents(t, tol=1.e-10):
+def getComponents(t):
     """Return the number of components in t, taggings faces with component number."""
     import Transform.PyTree as T
     # init FACES with a tag
@@ -1397,9 +1397,10 @@ def getComponents(t, tol=1.e-10):
         C._initVars(z, '__tag__ = %d'%no)
 
     # join all zones
-    a = G.zip(zones, tol)
+    G._zip(zones, 1.e-10) # volontairement in place, maybe useless
     a = T.join(zones)
-    a = T.splitConnexity(a)
+    #a = T.splitConnexity(a)
+    a = T.splitManifold(a)
 
     # Identify faces in component
     tags = {}
