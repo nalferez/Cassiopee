@@ -16,9 +16,9 @@ installDict = {
                          [], # f77AdditionalOptions
                          True, # useOMP
                          False, # static
-                         ['/usr/include/mpi', '/usr/include/hdf5/serial','/opt/intel/oneapi/vtune/2023.1.0/include/','/opt/intel/oneapi/advisor/2023.1.0/include/'], # additionalIncludePaths
+                         ['/usr/include/hdf5/serial','/opt/intel/oneapi/vtune/latest/include/','/opt/intel/oneapi/advisor/latest/include/'], # additionalIncludePaths
                          ['gfortran', 'gomp', 'pthread'], # additionalLibs
-                         ['/usr/lib/x86_64-linux-gnu','/usr/lib/x86_64-linux-gnu/hdf5/serial/','/opt/intel/oneapi/vtune/2023.1.0/lib64/','/opt/intel/oneapi/advisor/2023.1.0/lib64/'], # additionalLibPaths
+                         ['/usr/lib/x86_64-linux-gnu/hdf5/serial/','/opt/intel/oneapi/vtune/latest/lib64/','/opt/intel/oneapi/advisor/latest/lib64/'], # additionalLibPaths
                          False, # useCuda
                          [] # NvccAdditionalOptions
                          ],
