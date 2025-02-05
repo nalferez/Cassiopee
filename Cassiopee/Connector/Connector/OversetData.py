@@ -61,6 +61,9 @@ for ibctypename in TypesOfIBC:
     ibctypeint = TypesOfIBC[ibctypename]
     IBCTypes[ibctypeint] = ibctypename
 
+#Hack For dNami
+from dNtools import ptrge2dir,zoneBClist,detectSingularPoints,transformdir,dir2index
+
 #=============================================================================
 # Ajout du cellN pour une zone qui ne le contient pas. celln=1
 #=============================================================================
@@ -1554,9 +1557,22 @@ def _setInterpDataForGhostCellsStruct__(aR, aD, storage='direct', loc='nodes'):
     if loc == 'nodes': locR = 0; locS = 'Vertex'
     else: locR = 1; locS = 'CellCenter'
 
+    #Hack dNami (only uniforme zone dimensions)
+    dimZone = Internal.getZoneDim(Internal.getZones(aR)[0])
+    dim = 3
+    if dimZone[3] == 1:
+      dim = 2
+    hlo = Internal.getNodeFromType1(Internal.getZones(aR)[0], 'Rind_t')[1][0]
+    out = detectSingularPoints(Internal.getZones(aR),dim,hlo)
+    SPdic = out[0]
+
     for zp in Internal.getZones(aR):
         zname = zp[0]
         zoneDimR = Internal.getZoneDim(zp)
+
+        #Hack for dNami:
+        zonebc = zoneBClist(zp)
+
         if zoneDimR[0] == 'Unstructured': continue
         else: # Structured
             dimPb = zoneDimR[4]
@@ -1590,20 +1606,21 @@ def _setInterpDataForGhostCellsStruct__(aR, aD, storage='direct', loc='nodes'):
                         if dimPb == 3: trirac[2] = transfo[1][2]
                     Periodic = Internal.getNodeFromType2(join, 'Periodic_t')
                     RotationAngle=None; RotationCenter=None
+
                     if Periodic is not None:
 
-                        if dimPb == 3:
-                            # Hack NA: to extend donor/receiver windows to first layer of GC. Done everywhere (can be improved)
-                            # print("IN OversetData !! \n\n")
-                            for indRange in prange:
-                                if indRange[0] != indRange[1]:
-                                    indRange[0] = indRange[0] - 1
-                                    indRange[1] = indRange[1] + 1
+                        # if dimPb == 3:
+                        #     # Hack NA: to extend donor/receiver windows to first layer of GC. Done everywhere (can be improved)
+                        #     # print("IN OversetData !! \n\n")
+                        #     for indRange in prange:
+                        #         if indRange[0] != indRange[1]:
+                        #             indRange[0] = indRange[0] - 1
+                        #             indRange[1] = indRange[1] + 1
 
-                            for indRange in prangedonor:
-                                if indRange[0] != indRange[1]:
-                                    indRange[0] = indRange[0] - 1
-                                    indRange[1] = indRange[1] + 1
+                        #     for indRange in prangedonor:
+                        #         if indRange[0] != indRange[1]:
+                        #             indRange[0] = indRange[0] - 1
+                        #             indRange[1] = indRange[1] + 1
 
                         RotationAngle = Internal.getNodeFromName1(Periodic,'RotationAngle')
                         RotationCenter = Internal.getNodeFromName1(Periodic,'RotationCenter')
@@ -1630,6 +1647,43 @@ def _setInterpDataForGhostCellsStruct__(aR, aD, storage='direct', loc='nodes'):
                     zoneDimD = Internal.getZoneDim(zdonor)
                     imd = zoneDimD[1]; jmd = zoneDimD[2]; kmd = zoneDimD[3]
                     if locR == 1: imd=imd-1; jmd=jmd-1; kmd=kmd-1
+
+                    #
+                    # HACK dNami
+                    #
+                    cncdir = ptrge2dir(prange)
+                    edir = 'ijk'
+                    dirs2index = {'i':0,'j':1,'k':2}
+                    loc2index  = {'min':0,'max':1}
+                    loc2shift  = {'min':-1,'max':1}
+                    if dimPb == 2: edir = 'ij'
+                    edir = edir.replace(cncdir[0],'')
+
+                    # print(zname,zonebc)
+
+                    for normdir in edir:
+                        for dzbc in zonebc:
+                            if dzbc[0] == normdir:
+                                if (zonebc[dzbc] != []) and (zonebc[dzbc] != ['Periodic']):
+                                    index,val = dir2index(dzbc,zoneDimR,hlo)
+                                    # print(zname,prange[dirs2index[dzbc[0]]])
+                                    if(prange[dirs2index[dzbc[0]]][loc2index[dzbc[1:]]] == val):
+
+                                        dzbcdonnor = transformdir(dzbc,trirac)
+
+                                        # print(zname,cncdir,dzbc,prange,zoneDimR,prange[dirs2index[dzbc[0]]],index,val)
+                                        # print(zname,cncdir,dzbc,prangedonor,zoneDimD,dir2index(dzbcdonnor,zoneDimD,hlo))
+
+                                        prange[dirs2index[dzbc[0]]][loc2index[dzbc[1:]]] = prange[dirs2index[dzbc[0]]][loc2index[dzbc[1:]]] + loc2shift[dzbc[1:]]
+                                        prangedonor[dirs2index[dzbcdonnor[0]]][loc2index[dzbcdonnor[1:]]] = prangedonor[dirs2index[dzbcdonnor[0]]][loc2index[dzbcdonnor[1:]]] + loc2shift[dzbcdonnor[1:]]
+
+                                    # print(zname,cncdir,dzbc,prange)
+                                    # print(zname,cncdir,dzbc,prangedonor)
+                        # #
+                    # END HACK
+                    #
+
+
 
                     # rind for donor
                     rindnode = Internal.getNodeFromType1(zdonor, 'Rind_t')
