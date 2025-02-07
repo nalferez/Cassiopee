@@ -1563,7 +1563,7 @@ def _setInterpDataForGhostCellsStruct__(aR, aD, storage='direct', loc='nodes'):
     if dimZone[3] == 1:
       dim = 2
     hlo = Internal.getNodeFromType1(Internal.getZones(aR)[0], 'Rind_t')[1][0]
-    out = detectSingularPoints(Internal.getZones(aR),dim,hlo)
+    out = detectSingularPoints(Internal.getZones(aR),dim,hlo,connector=True)
     SPdic = out[0]
 
     for zp in Internal.getZones(aR):
@@ -1572,6 +1572,7 @@ def _setInterpDataForGhostCellsStruct__(aR, aD, storage='direct', loc='nodes'):
 
         #Hack for dNami:
         zonebc = zoneBClist(zp)
+        sgptzone = SPdic[zname]
 
         if zoneDimR[0] == 'Unstructured': continue
         else: # Structured
@@ -1608,19 +1609,6 @@ def _setInterpDataForGhostCellsStruct__(aR, aD, storage='direct', loc='nodes'):
                     RotationAngle=None; RotationCenter=None
 
                     if Periodic is not None:
-
-                        # if dimPb == 3:
-                        #     # Hack NA: to extend donor/receiver windows to first layer of GC. Done everywhere (can be improved)
-                        #     # print("IN OversetData !! \n\n")
-                        #     for indRange in prange:
-                        #         if indRange[0] != indRange[1]:
-                        #             indRange[0] = indRange[0] - 1
-                        #             indRange[1] = indRange[1] + 1
-
-                        #     for indRange in prangedonor:
-                        #         if indRange[0] != indRange[1]:
-                        #             indRange[0] = indRange[0] - 1
-                        #             indRange[1] = indRange[1] + 1
 
                         RotationAngle = Internal.getNodeFromName1(Periodic,'RotationAngle')
                         RotationCenter = Internal.getNodeFromName1(Periodic,'RotationCenter')
@@ -1664,7 +1652,13 @@ def _setInterpDataForGhostCellsStruct__(aR, aD, storage='direct', loc='nodes'):
                     for normdir in edir:
                         for dzbc in zonebc:
                             if dzbc[0] == normdir:
-                                if (zonebc[dzbc] != []) and (zonebc[dzbc] != ['Periodic']):
+
+                                isingular = (cncdir+','+dzbc in sgptzone ) or (dzbc+','+cncdir in sgptzone)
+
+                                # print(zname,cncdir,dzbc,isingular,sgptzone)
+
+
+                                if (zonebc[dzbc] != []) and (zonebc[dzbc] != ['Periodic']) and not isingular :
                                     index,val = dir2index(dzbc,zoneDimR,hlo)
                                     # print(zname,prange[dirs2index[dzbc[0]]])
                                     if(prange[dirs2index[dzbc[0]]][loc2index[dzbc[1:]]] == val):
