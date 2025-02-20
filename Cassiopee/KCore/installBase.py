@@ -797,9 +797,9 @@ installDict = {
                [], # f77AdditionalOptions
                True, # useOMP
                False, # static
-               [], # additionalIncludePaths
-               [], # additionalLibs
-               [], # additionalLibPaths
+               ['/usr/include', '/usr/include/hdf5/openmpi', '/usr/lib/x86_64-linux-gnu/openmpi/include'], # additionalIncludePaths
+               ['gfortran', 'gomp'], # additionalLibs
+               ['/usr/lib/x86_64-linux-gnu/hdf5/openmpi', '/usr/lib/x86_64-linux-gnu'], # additionalLibPaths
                False, # useCuda
                [] # NvccAdditionalOptions
                ],

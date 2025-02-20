@@ -1,5 +1,5 @@
 /*    
-    Copyright 2013-2024 Onera.
+    Copyright 2013-2025 Onera.
 
     This file is part of Cassiopee.
 
@@ -36,6 +36,7 @@ static PyMethodDef Pyocc [] =
   
   {"printOCAF", K_OCC::printOCAF, METH_VARARGS},
   {"printShapeOCAF", K_OCC::printShapeOCAF, METH_VARARGS},
+  {"getFaceNameInOCAF", K_OCC::getFaceNameInOCAF, METH_VARARGS},
   
   {"bottle", K_OCC::bottle, METH_VARARGS},
   {"addSphere", K_OCC::addSphere, METH_VARARGS},
@@ -81,6 +82,7 @@ static PyMethodDef Pyocc [] =
   {"removeFaces", K_OCC::removeFaces, METH_VARARGS},
   {"fillHole", K_OCC::fillHole, METH_VARARGS},
   {"addFillet", K_OCC::addFillet, METH_VARARGS},
+  {"mergeFaces", K_OCC::mergeFaces, METH_VARARGS},
 
   {"translate", K_OCC::translate, METH_VARARGS},
   {"scale", K_OCC::scale, METH_VARARGS},

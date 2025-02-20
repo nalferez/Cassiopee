@@ -1,5 +1,5 @@
 /*    
-    Copyright 2013-2024 Onera.
+    Copyright 2013-2025 Onera.
 
     This file is part of Cassiopee.
 
@@ -169,7 +169,7 @@ std::set<E_Int> Smesh::extract_covering_faces(const Smesh &Sf,
         E_Float cur_pos[3] = {px, py, pz};
 
         E_Int walk = 0;
-        E_Int max_walks = 20;
+        E_Int max_walks = 100;
 
         while (!found_tail && walk <= max_walks) {
             

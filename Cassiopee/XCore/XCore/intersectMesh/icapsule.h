@@ -1,5 +1,5 @@
 /*    
-    Copyright 2013-2024 Onera.
+    Copyright 2013-2025 Onera.
 
     This file is part of Cassiopee.
 
@@ -23,6 +23,11 @@
 struct ICapsule {
     IMesh M;
     std::vector<IMesh> Ss;
+
+    E_Float NEAR_EDGE_TOL = 1e-3;
+    E_Float NEAR_VERTEX_TOL = 1e-3;
+
+    ICapsule(){}
 
     ICapsule(const Karray &marray, const std::vector<Karray> &sarrays,
         const std::vector<E_Float *> &ptags);

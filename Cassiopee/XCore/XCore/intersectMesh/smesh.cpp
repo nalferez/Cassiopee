@@ -1,5 +1,5 @@
 /*    
-    Copyright 2013-2024 Onera.
+    Copyright 2013-2025 Onera.
 
     This file is part of Cassiopee.
 
@@ -194,6 +194,7 @@ Smesh::Smesh(const IMesh &M, const std::vector<E_Int> &fids, bool check_Euler_)
     make_edges();
     make_point_faces();
     make_point_edges();
+    make_bbox();
 }
 
 Smesh::Smesh(const Smesh &Mf, const std::set<E_Int> &fids, bool check_Euler_)
@@ -253,6 +254,7 @@ Smesh::Smesh(const Smesh &Mf, const std::set<E_Int> &fids, bool check_Euler_)
     make_edges();
     make_point_faces();
     make_point_edges();
+    make_bbox();
 }
 
 o_edge::o_edge(E_Int P, E_Int Q)
