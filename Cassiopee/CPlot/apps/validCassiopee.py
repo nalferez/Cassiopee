@@ -324,17 +324,20 @@ def ljust(text, size):
 #==============================================================================
 def buildString(module, test, CPUtime='...', coverage='...%', status='...',
                 tag=' '):
-    global TESTMETA, TESTMETA_UPDATE
+    global TESTMETA_UPDATE
     testName = module+'/'+test
     refDate = '...'
     if testName not in TESTMETA:
         TESTMETA_UPDATE = True
-        TESTMETA[testName] = newMetadata()
-    elif TESTMETA[testName].get('ref', []):
-        refDate = TESTMETA[module+'/'+test]['ref'][0].get('date', '...')
-    refCoverage = TESTMETA[module+'/'+test].get('coverage', '...%')
-    refCPUtime = TESTMETA[module+'/'+test].get('time', '...')
-    refTag = TESTMETA[module+'/'+test].get('tag', ' ')
+        refCoverage = '...%'
+        refCPUtime = '...'
+        refTag = ' '
+    else:
+        if TESTMETA[testName].get('ref', []):
+            refDate = TESTMETA[testName]['ref'][0].get('date', '...')
+        refCoverage = TESTMETA[testName].get('coverage', '...%')
+        refCPUtime = TESTMETA[testName].get('time', '...')
+        refTag = TESTMETA[testName].get('tag', ' ')
 
     execTime = '../../.. ..h..'
     if status != '...': # Not First call
@@ -601,6 +604,7 @@ def runSingleUnitaryTest(no, module, test, update=False):
 
     m1 = expTest1.search(test) # seq (True) ou distribue (False)
 
+    nthreads = KCore.kcore.getOmpMaxThreads()
     nthreads = int(Threads.get())
     bktest = "bk_{0}".format(test) # backup
 
@@ -680,11 +684,11 @@ def runSingleUnitaryTest(no, module, test, update=False):
     if not os.access(fileTime, os.F_OK):
         writeTime(fileTime, CPUtime, coverage)
 
+    if update or (module+'/'+test not in TESTMETA):  # Update test metadata
+        updateTestMetadata(module, test, CPUtime)
+
     # Recupere le tag local
     tag = TESTMETA[module+'/'+test]['tag']
-
-    if update:  # Update test metadata
-        updateTestMetadata(module, test, CPUtime)
 
     # update status
     if success == 0: status = 'OK'
@@ -721,6 +725,7 @@ def runSingleCFDTest(no, module, test, update=False):
         try: import mpi4py
         except: m1 = None
 
+    nthreads = KCore.kcore.getOmpMaxThreads()
     nthreads = int(Threads.get())
 
     if mySystem == 'mingw' or mySystem == 'windows':
@@ -782,11 +787,11 @@ def runSingleCFDTest(no, module, test, update=False):
     if not os.access(fileTime, os.F_OK):
         writeTime(fileTime, CPUtime, coverage)
 
+    if update or (module+'/'+test not in TESTMETA):  # Update test metadata
+        updateTestMetadata(module, test, CPUtime)
+
     # Recupere le tag local
     tag = TESTMETA[module+'/'+test]['tag']
-
-    if update:  # Update test metadata
-        updateTestMetadata(module, test, CPUtime)
 
     # update status
     if success == 0: status = 'OK'
@@ -1551,7 +1556,8 @@ def tagSelection(event=None):
         tag = splits[6].strip()
         if not tag: tag = '*'
         else: tag = tagSymbols[(tagSymbols.index(tag)+1)%ntags]
-        TESTMETA[module+'/'+test]['tag'] = tag
+        if module+'/'+test in TESTMETA:
+            TESTMETA[module+'/'+test]['tag'] = tag
         splits[6] = ' {} '.format(tag)
         s = separator.join(i for i in splits)
         regTest = re.compile(' '+test+' ')
@@ -1574,7 +1580,8 @@ def untagSelection(event=None):
         splits = t.split(separator)
         module = splits[0].strip()
         test = splits[1].strip()
-        TESTMETA[module+'/'+test]['tag'] = ' '
+        if module+'/'+test in TESTMETA:
+            TESTMETA[module+'/'+test]['tag'] = ' '
         splits[6] = ' '*3
         s = separator.join(i for i in splits)
         regTest = re.compile(' '+test+' ')

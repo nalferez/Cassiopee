@@ -78,13 +78,14 @@ def readGitInfo(filename):
     return gitInfo
 
 # Find a two session logs of validCassiopee for a given production
-def findLogs(prodname):
+def findLogs(prodname, findRef=True):
     validDataFolder = "/stck/cassiope/git/Cassiopee/Cassiopee/ValidData_{}".format(prodname)
     if not os.access(validDataFolder, os.R_OK):
         raise Exception("Session logs can't be retrieved in {}".format(validDataFolder))
 
     logs = None
-    refLogs = sorted(glob(os.path.join(validDataFolder, "REF-session-*.log")))
+    refLogs = []
+    if findRef: refLogs = sorted(glob(os.path.join(validDataFolder, "REF-session-*.log")))
     sessionLogs = sorted(glob(os.path.join(validDataFolder, "session-*.log")))
     if refLogs: logs = [refLogs[-1], sessionLogs[-1]]
     elif len(sessionLogs) > 1: logs = sessionLogs[-2:]
@@ -205,8 +206,8 @@ def checkInstallStatus():
     gitInfo = "Git origin: {}".format(gitOrigin)
 
     baseState = 'OK'
-    messageText = "Installation of Cassiopee, Fast and all "\
-        "PModules:\n{}\n\n{}\n\n".format(48*'-', gitInfo)
+    messageText = "Installation of Cassiopee and all "\
+        "PModules:\n{}\n\n{}\n\n".format(42*'-', gitInfo)
     messageText += '{:^22} | {:^6} | {:^7} | {:^24} | {:^10}\n{}\n'.format(
         "PROD.", "BRANCH", "HASH", "DATE", "STATUS", 83*'-')
     for log_machine in log_entries:
@@ -253,8 +254,8 @@ def checkCheckoutStatus(sendEmail=False):
         gitOrigin, gitBranch, gitHash)
 
     messageSubject = "[Checkout Cassiopee] State: FAILED"
-    messageText = "Pulling updates for Cassiopee, Fast and all "\
-        "PModules:\n{}\n\n{}\n\n".format(52*'-', gitInfo)
+    messageText = "Pulling updates for Cassiopee and all "\
+        "PModules:\n{}\n\n{}\n\n".format(46*'-', gitInfo)
     messageText += '{:^20} | {:^15} | {:^30} | {:^10}\n{}\n'.format(
         "PROD.", "PCKG.", "DATE", "STATUS", 85*'-')
     for log_machine in log_entries:
@@ -286,8 +287,8 @@ def checkValidStatus():
     gitInfo = "Git origin: {}".format(gitOrigin)
 
     vnvState = 'OK'
-    messageText = "Non-regression testing of Cassiopee, Fast and all "\
-        "PModules:\n{}\n\n{}\n\n".format(58*'-', gitInfo)
+    messageText = "Non-regression testing of Cassiopee and all "\
+        "PModules:\n{}\n\n{}\n\n".format(52*'-', gitInfo)
     messageText += '{:^22} | {:^6} | {:^7} | {:^24} | {:^10}\n{}\n'.format(
         "PROD.", "BRANCH", "HASH", "DATE", "STATUS", 83*'-')
     for log_machine in log_entries:
@@ -320,6 +321,10 @@ def compareSessionLogs(logFiles=[], showExecTimeDiffs=False,
 
     # Get prod name
     prod = getProd(logFiles[1])
+
+    # Delete tests that were not run
+    refSession = [test for test in refSession if test[-1] != '...']
+    newSession = [test for test in newSession if test[-1] != '...']
 
     # Draw a one-to-one correspondance between tests of each session
     # (module + testname)
@@ -458,20 +463,21 @@ if __name__ == '__main__':
         messageSubject, messageText = checkCheckoutStatus(sendEmail=scriptArgs.email)
     elif scriptArgs.valid:
         mode = "overview"
-        if scriptArgs.logs:
-            scriptArgs.logs = scriptArgs.logs.split(' ')
-            if len(scriptArgs.logs) != 2:
-                raise Exception("Two session logs must be provided using the "
-                                "flag -l or --logs")
-            mode = "compare"
-        elif scriptArgs.prod:
-            scriptArgs.logs = findLogs(scriptArgs.prod)
+        if scriptArgs.prod:
+            findRef = False if scriptArgs.logs == "latest" else True
+            scriptArgs.logs = findLogs(scriptArgs.prod, findRef=findRef)
             if not(
                 isinstance(scriptArgs.logs, list) and
                 len(scriptArgs.logs) == 2
             ):
                 raise Exception("Two session logs were not found for "
                                 "prod. {}".format(scriptArgs.prod))
+            mode = "compare"
+        elif scriptArgs.logs:
+            scriptArgs.logs = scriptArgs.logs.split(' ')
+            if len(scriptArgs.logs) != 2:
+                raise Exception("Two session logs must be provided using the "
+                                "flag -l or --logs")
             mode = "compare"
 
         if mode == "overview":
