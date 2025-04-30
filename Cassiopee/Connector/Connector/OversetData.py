@@ -1557,7 +1557,7 @@ def _setInterpDataForGhostCellsStruct__(aR, aD, storage='direct', loc='nodes'):
     if loc == 'nodes': locR = 0; locS = 'Vertex'
     else: locR = 1; locS = 'CellCenter'
 
-    #Hack dNami (only uniforme zone dimensions)
+    #Hack dNami (only uniforme zone dimensions, all 3D or 2D)
     dimZone = Internal.getZoneDim(Internal.getZones(aR)[0])
     dim = 3
     if dimZone[3] == 1:

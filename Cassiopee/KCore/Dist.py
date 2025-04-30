@@ -195,18 +195,18 @@ def checkNumpy():
 def getInstallPath(prefix, type=0):
     mySystem = getSystem()[0]; bits = getSystem()[1]
 
-    import site
-    a = site.getsitepackages()[0].split('/')[-4:]
-    if type == 0:
-        if a[0] != 'local':
-            installPath = '%s/%s/%s/%s'%(prefix, a[1], a[2], a[3])  # 'prefix/lib/python3.12/site-packages'
-        else:
-            installPath = '%s/%s/%s/%s/%s'%(prefix, a[0], a[1], a[2], a[3])  # 'prefix/local/lib/python3.12/site-packages'
-    else:
-        installPath = {'lib': a[1], 'pyversion': a[2], 'site': a[3]}  # {'lib': 'lib', 'pyversion': 'python3.12', 'site': 'site-packages'}
-    return installPath
+    # import site
+    # a = site.getsitepackages()[0].split('/')[-4:]
+    # if type == 0:
+    #     if a[0] != 'local':
+    #         installPath = '%s/%s/%s/%s'%(prefix, a[1], a[2], a[3])  # 'prefix/lib/python3.12/site-packages'
+    #     else:
+    #         installPath = '%s/%s/%s/%s/%s'%(prefix, a[0], a[1], a[2], a[3])  # 'prefix/local/lib/python3.12/site-packages'
+    # else:
+    #     installPath = {'lib': a[1], 'pyversion': a[2], 'site': a[3]}  # {'lib': 'lib', 'pyversion': 'python3.12', 'site': 'site-packages'}
+    # return installPath
 
-    '''
+
     # Based on distutils (to be sure)
     if os.environ['ELSAPROD'][0:6] == 'msys64' or os.environ['ELSAPROD'] == 'win64':
         pythonLib = sysconfig.get_python_lib()
@@ -242,15 +242,15 @@ def getInstallPath(prefix, type=0):
         Lib = pythonLib[-3]
         installPath = '%s/%s/%s/site-packages'%(prefix, Lib, pythonVersion)
 
-    # temporary for tests
-    if installPath != retn:
-        print("WARNING: new installPath is not correct.")
-        print("WARNING: old: ", installPath)
-        print("WARNING: new: ", retn)
+    # # temporary for tests
+    # if installPath != retn:
+    #     print("WARNING: new installPath is not correct.")
+    #     print("WARNING: old: ", installPath)
+    #     print("WARNING: new: ", retn)
 
     if type == 0: return installPath
     else: return {'lib': Lib, 'pyversion': pythonVersion, 'site': Site}
-    '''
+
 
 #==============================================================================
 # Functions returning the names of the remote repo & branch and the commit hash
@@ -323,13 +323,13 @@ def writeInstallPath():
         raise SystemError("Error: can not open file installPath.py for writing.")
     p.write('installPath = \'%s\'\n'%installPath)
 
-    import site
-    a = site.getsitepackages()[0].split('/')[-4:]
-    if a[0] != 'local': libPath = '%s/%s'%(prefix, a[1])  # 'prefix/lib'
-    else: libPath = '%s/%s/%s'%(prefix, a[0], a[1])  # 'prefix/local/lib'
-    p.write('libPath = \'%s\'\n'%libPath)
+    # import site
+    # a = site.getsitepackages()[0].split('/')[-4:]
+    # if a[0] != 'local': libPath = '%s/%s'%(prefix, a[1])  # 'prefix/lib'
+    # else: libPath = '%s/%s/%s'%(prefix, a[0], a[1])  # 'prefix/local/lib'
+    # p.write('libPath = \'%s\'\n'%libPath)
 
-    '''
+
     mySystem = getSystem()[0]; bits = getSystem()[1]
     if mySystem == 'Windows' or mySystem == 'mingw': Lib = 'Lib'
     elif mySystem == 'Darwin': Lib = 'lib'
@@ -342,7 +342,7 @@ def writeInstallPath():
     else:
         libPath = '%s/%s'%(prefix,Lib)
     p.write('libPath = \'%s\'\n'%libPath)
-    '''
+
 
     cwd = os.getcwd()
     p.write('includePath = \'%s\'\n'%(cwd))
