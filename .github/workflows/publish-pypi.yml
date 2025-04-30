@@ -1,6 +1,7 @@
 name: publish PyPI
 
 on:
+  workflow_dispatch:  # allows manual trigger
   push:
     tags:
       - 'v*'

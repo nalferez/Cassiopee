@@ -95,10 +95,12 @@ namespace K_CONVERTER
   PyObject* convertPyTree2File(PyObject* self, PyObject* args);
   PyObject* convertFile2PyTreeFromPath(PyObject* self, PyObject* args);
   PyObject* convertPyTree2FilePartial(PyObject* self, PyObject* args);
-  PyObject* convertPyTree2FFD(PyObject* self, PyObject* args);
   PyObject* readPyTreeFromPaths(PyObject* self, PyObject* args);
   PyObject* writePyTreePaths(PyObject* self, PyObject* args);
   PyObject* deletePyTreePaths(PyObject* self, PyObject* args);
+  PyObject* convertFile2PyTreeTau(PyObject* self, PyObject* args);
+  PyObject* convertFile2PyTreeFsdm(PyObject* self, PyObject* args);
+  PyObject* convertPyTree2FFD(PyObject* self, PyObject* args);
   PyObject* cpyGhost2Real(PyObject* self, PyObject* args);
   PyObject* cpyReal2Ghost(PyObject* self, PyObject* args);
   PyObject* cpyConnectA2ConnectP(PyObject* self, PyObject* args);
@@ -160,6 +162,7 @@ namespace K_CONVERTER
   PyObject* adaptBCC2BCFace(PyObject* self, PyObject* args);
   PyObject* adaptNGon42NGon3(PyObject* self, PyObject* args);
   PyObject* adaptNGon32NGon4(PyObject* self, PyObject* args);
+  PyObject* adaptShiftedPE2PE(PyObject* self, PyObject* args);
   PyObject* adapt2FastP(PyObject* self, PyObject* args);
   PyObject* createElsaHybrid(PyObject* self, PyObject* args);
   PyObject* diffIndex(PyObject* self, PyObject* args);

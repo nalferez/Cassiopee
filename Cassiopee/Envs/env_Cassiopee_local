@@ -658,11 +658,10 @@ else if ($MAC == "juno_coda") then
         setenv ELSAPROD "$ELSAPROD$EXT"
         # Number of threads
         setenv OMP_NUM_THREADS 48
-        # modules
-        module purge
         setenv MODULEPATH /stck/rhea/coda_modules:$MODULEPATH
         set CASSIOPEESAV=$CASSIOPEE
         set ELSAPRODSAV=$ELSAPROD
+        module purge
         module load fssuite/2025.02.0-gnu1210
         setenv CASSIOPEE $CASSIOPEESAV
         setenv ELSAPROD $ELSAPRODSAV
@@ -784,9 +783,10 @@ if ($?PYTHONEXE) then
 else
     set pyversion="python"`python -c "import sys; print('.'.join(str(n) for n in sys.version_info[:2]))"`
 endif
+set pyenv=`$PYTHONEXE -c 'import sys; print("pyenv" in sys.executable)'`
 set pylib=lib
 set pysite=site-packages
-if ($MAC == "ubuntu") then
+if ($MAC == "ubuntu" && "$pyenv" == "False") then
     set pylib=local/"$pylib"
     set pysite=dist-packages
 endif
