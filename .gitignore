@@ -9,6 +9,7 @@ docs/doc/*.pdf
 docs/Download
 Cassiopee/KCore/merge.l
 Cassiopee/XCore/merge.l
+Cassiopee/Modeler/merge.l
 Cassiopee/KCore/buildInfo.py
 Cassiopee/KCore/installPath.py
 Cassiopee/KCore/doc/source/*.rst
@@ -17,6 +18,8 @@ ValidData*
 Data*
 *~
 *.g
+*.grid
+*.h5
 *.pyc
 *.plt
 *.tp

@@ -558,7 +558,7 @@ def prepareIBMDataAdapt(t_case, t_out, tc_out, t_in,
 
     import time as python_time
 
-    if model is None: raise ValueError('prepareIBMDataAdapt: input tree is missing.')
+    if t_in is None: raise ValueError('prepareIBMDataAdapt: input tree is missing.')
 
     if isinstance(t_in, str): t = Cmpi.convertFile2PyTree(t_in, proc=Cmpi.rank)
     else: t = Internal.copyTree(t_in)
@@ -644,7 +644,7 @@ def prepareIBMDataAdapt(t_case, t_out, tc_out, t_in,
     #===================
     if verbose: pt0 = python_time.time(); printTimeAndMemory__('initialize and clean', time=-1)
 
-    t, tc, tc2 = initializeIBM(Internal.copyRef(t), tc, tb, dimPb=dimPb, twoFronts=twoFronts)
+    _, tc, tc2 = initializeIBM(None, tc, tb, dimPb=dimPb, twoFronts=twoFronts)
 
     _redispatch__(t=t, tc=tc, tc2=tc2)
 
@@ -818,7 +818,7 @@ def _dist2wallIBM(t, tb, dimPb=3, frontType=1, Reynolds=1.e6, yplus=100, Lref=1.
             if dimPb == 3: tb2 = tb
             for body in Internal.getNodesFromType(tb2, 'Zone_t'):
                 if body[0] != "sym" and ("closure" not in body[0]):
-                    # Create extanded BBox around each body
+                    # Create extended BBox around each body
                     bboxBody = G.BB(body)
                     coordX = Internal.getNodeFromName(bboxBody, 'CoordinateX')[1]
                     coordX[0] = coordX[0] - shiftDist
@@ -893,14 +893,14 @@ def _blankingIBM__(t, tb, dimPb=3, frontType=1, IBCType=1, depth=2, Reynolds=1.e
     minval     = Cmpi.allreduce(minval, op=Cmpi.MIN)
     if minval<0: isSkipDist=True
 
-    snear_min = 10e10
+    snear_min = 10.e10
     for z in Internal.getZones(tb):
         sdd = Internal.getNodeFromName1(z, ".Solver#define")
         if sdd is not None:
             snearl = Internal.getNodeFromName1(sdd, "snear")
             if snearl is not None:
                 snearl = Internal.getValue(snearl)
-        if snearl is not None:  snear_min = min(snear_min,snearl)
+                snear_min = min(snear_min, snearl)
     snear_min = Cmpi.allreduce(snear_min, op=Cmpi.MIN)
 
     cellNIBC_blank = Internal.getNodeFromName(t, 'cellNIBC_blank')
@@ -1206,7 +1206,7 @@ def _pushBackImageFront2__(t, tc, tbbc, cartesian=True):
     # bboxDict needed for optimised AddXZones (i.e. "layers" not None)
     # Return a dict with the zones of t as keys and their specific bboxes as key values
     bboxDict  = Cmpi.createBboxDict(t)
-    interDict = X.getIntersectingDomains(tbbc)
+    interDict = X.getIntersectingDomains(tbbc, taabb=tbbc)
     graph     = Cmpi.computeGraph(tbbc, type='bbox', intersectionsDict=interDict, reduction=False)
 
     interpDataType = 0 if cartesian else 1
@@ -1220,7 +1220,7 @@ def _pushBackImageFront2__(t, tc, tbbc, cartesian=True):
 
     # Zones of tc are modified after addXZones, new tbbc, interDict and intersectionDict
     tbbcx             = G.BB(tc)
-    interDict         = X.getIntersectingDomains(tbbcx)
+    #interDict         = X.getIntersectingDomains(tbbcx)
     intersectionsDict = X.getIntersectingDomains(tbbcx, method='AABB', taabb=tbbcx)
 
     # Reconstruction of cellNFront and cellN from cellNIBC (reduce the communications)
@@ -1828,7 +1828,7 @@ def initializeIBM(t, tc, tb, tinit=None, tbCurvi=None, dimPb=3, twoFronts=False,
     if ibctypes is None: raise ValueError('initializeIBM: ibctype is missing in input geometry tree.')
     ibctypes = list(set(Internal.getValue(ibc) for ibc in ibctypes))
 
-    if model != 'Euler':
+    if model != 'Euler' and t is not None:
         _recomputeDistForViscousWall__(t, tb, tbCurvi=tbCurvi, dimPb=dimPb, tbFilament=tbFilament)
         # if not cleanCellN: C._initVars(t, '{centers:TurbulentDistanceWallBC}={centers:TurbulentDistance}')
 
@@ -1845,7 +1845,7 @@ def initializeIBM(t, tc, tb, tinit=None, tbCurvi=None, dimPb=3, twoFronts=False,
         tc2 = None
 
     _tcInitialize__(tc, tc2=tc2, ibctypes=ibctypes, isWireModel=isWireModel)
-    if t: _tInitialize__(t, tinit=tinit, model=model, isWireModel=isWireModel)
+    if t is not None: _tInitialize__(t, tinit=tinit, model=model, isWireModel=isWireModel)
 
     return t, tc, tc2
 
@@ -2371,11 +2371,16 @@ def getAllIBMPoints(t, loc='nodes', hi=0., he=0., tb=None, tfront=None, frontTyp
             ah = C.getField('he', z)[0]
             if ah != []: an = Converter.addVars([an,ah])
             correctedPts = Connector.getInterpolatedPoints__(an)
+            allCorrectedPts.append(correctedPts)
             xt = C.getField('CoordinateX', z)[0][1][0]
             snearl = xt[1]-xt[0]
+            if twoFronts: snearl *= 2
             listOfSnearsLoc.append(snearl)
-            allCorrectedPts.append(correctedPts)
-            if frontType == 42: listOfModelisationHeightsLoc.append(G_IBM_Height.computeModelisationHeight(Re=Reynolds, yplus=yplus, L=Lref))
+
+            if frontType == 42:
+                hmod = G_IBM_Height.computeModelisationHeight(Re=Reynolds, yplus=yplus, L=Lref)
+                if twoFronts: hmod *= 2
+                listOfModelisationHeightsLoc.append(hmod)
             else:
                 listOfModelisationHeightsLoc.append(0.)
     else:
@@ -2397,9 +2402,13 @@ def getAllIBMPoints(t, loc='nodes', hi=0., he=0., tb=None, tfront=None, frontTyp
             allCorrectedPts.append(correctedPts)
             xt = C.getField('CoordinateX',z)[0][1][0]
             snearl = xt[1]-xt[0]
-
+            if twoFronts: snearl *= 2
             listOfSnearsLoc.append(snearl)
-            if frontType == 42: listOfModelisationHeightsLoc.append(G_IBM_Height.computeModelisationHeight(Re=Reynolds, yplus=yplus, L=Lref))
+
+            if frontType == 42:
+                hmod = G_IBM_Height.computeModelisationHeight(Re=Reynolds, yplus=yplus, L=Lref)
+                if twoFronts: hmod *= 2
+                listOfModelisationHeightsLoc.append(hmod)
             else:
                 listOfModelisationHeightsLoc.append(0.)
     #-------------------------------------------
@@ -4163,7 +4172,7 @@ def _setInjOutlet__(tc, tb):
         if sol:
             ibctype = Internal.getValue(Internal.getNodeFromName(sol, 'ibctype'))
             if ibctype == 'outpress':
-                famName = Internal.getValue(Internal.getNodeFromName(z, 'FamilyName'));
+                famName = Internal.getValue(Internal.getNodeFromName(z, 'FamilyName'))
                 if Internal.getNodeFromName(sol, 'pStatic'):
                     pStatic  = Internal.getValue(Internal.getNodeFromName(sol, 'pStatic'));
                     isDensity = Internal.getValue(Internal.getNodeFromName(sol, 'isDensityConstant'));
@@ -4239,13 +4248,26 @@ def _writeOutputProject__(outputProjection, tLocal):
 ## construction info pour raccord nearmatch conservatif
 def _buildConservativeFlux(t, tc, verbose=0):
 
+
+    bases = Internal.getNodesFromType1(t, 'CGNSBase_t')
+    for b in bases:
+        model = "Euler"
+        a = Internal.getNodeFromName2(b, 'GoverningEquations')
+        if a is not None: model = Internal.getValue(a)
+        neq = 5
+        if model == 'nsspalart' or model =='NSTurbulent': neq = 6
+
     ## determine dx=dy for each zone & store per zone
     levelZone={}
+    deltaZ={}
     for z in Internal.getZones(t):
         level = Internal.getNodeFromName(z,'niveaux_temps')
+        coordz = Internal.getNodeFromName(z,'CoordinateZ')[1]
+        dz = coordz[0,0,1]-coordz[0,0,0]
+        deltaZ[ z[0] ]= dz
+
         if level is not None:
             levelZone[ z[0] ] = level[1][0]
-
         else:
             hmin_loc = 1.e30
             for z in Internal.getZones(t):
@@ -4269,9 +4291,6 @@ def _buildConservativeFlux(t, tc, verbose=0):
                 levelZone[i]= math.log( int(levelZone[i]/hmin + 0.00000001)  , 2)
                 if levelZone[i] +1  > Nlevels : Nlevels = int(levelZone[i]) +1
 
-    ## partage des info level en mpi
-    levelZone = Cmpi.allgatherDict(levelZone)
-
 
     #construction arbre skeleton global (tcs) pour calcul graph
     if Cmpi.size > 1:
@@ -4280,6 +4299,9 @@ def _buildConservativeFlux(t, tc, verbose=0):
         graph     = Cmpi.computeGraph(tcs, type='ID', reduction=True)
         procDict  = Cmpi.getProcDict(tcs)
         rank      = Cmpi.rank
+        ## partage des info level delta_z en mpi
+        levelZone = Cmpi.allgatherDict(levelZone)
+        deltaZ    = Cmpi.allgatherDict(deltaZ)
     else:
         graph=None
         rank = 0
@@ -4288,17 +4310,17 @@ def _buildConservativeFlux(t, tc, verbose=0):
             procDict[ z[0] ]=0
 
     #construction list pour envoie fenetre zone distante
+    ratio={}
     datas = {}
-
     dimR_loc={}
     for z in Internal.getZones(tc):
         dimR_loc[ z[0] ] = Internal.getZoneDim(z) # taille en centre
-    dimR_loc = Cmpi.allgatherDict(dimR_loc)
+
+    if Cmpi.size > 1: dimR_loc = Cmpi.allgatherDict(dimR_loc)
 
     for z in Internal.getZones(tc):
 
         zd_t  = Internal.getNodeFromName(t, z[0])
-
         levelD = levelZone[z[0]]
         subRegions =  Internal.getNodesFromType1(z, 'ZoneSubRegion_t')
         for s in subRegions:
@@ -4311,6 +4333,15 @@ def _buildConservativeFlux(t, tc, verbose=0):
                 dimD   = Internal.getZoneDim(z)  # taille en centre
                 dimR   = dimR_loc[ zRname ]
                 dimPb  = dimR[4]
+
+                ratio_k=1
+                if dimPb !=2:
+                    dz_R = deltaZ[ zRname ]
+                    dz_D = deltaZ[ z[0] ]
+                    if dz_R/dz_D < 0.9999 or dz_R/dz_D > 1.0001: ratio_k=2
+
+                ratio[z[0]]=[2,2,ratio_k]
+
                 sh =[ dimR[1],dimR[2],dimR[3] ]
                 shD=[ dimD[1],dimD[2],dimD[3] ]
                 #print("dimR", dimR, "dimD", dimD)
@@ -4338,6 +4369,7 @@ def _buildConservativeFlux(t, tc, verbose=0):
                 c0=0;c1=0;c2=0;c3=0;c4=0;c5=0
                 count = numpy.zeros( 6, Internal.E_NpyInt)
                 lmin  = numpy.zeros( 6, Internal.E_NpyInt)
+
                 for l in range( numpy.size(ptListD)):
                    #i,j,k receveur
                     k =  ptListD[l]//(sh[0]*sh[1])
@@ -4365,40 +4397,62 @@ def _buildConservativeFlux(t, tc, verbose=0):
                             if i > win[1,idir]: win[1,idir]=i
                             count[idir]+=1
                     else:  #Pb 3D
-                        if j > 1 and j < dimR[2]-1 and k > 1 and k < dimR[3]-2:
+                       #print('k,j,i:', k,j,i)
+                        if i==1 and j > 1 and j < dimR[2]-2 and k > 1 and k < dimR[3]-2:  #flux en imin
 
-                            if   i ==1        : idir=0
-                            elif i ==dimR[1]-2: idir=1
-                            else: idir=-1
-                            if idir !=-1:
-                                if j < win[2,idir]: win[2,idir]=j
-                                if j > win[3,idir]: win[3,idir]=j
-                                if k < win[4,idir]: win[4,idir]=k
-                                if k > win[5,idir]: win[5,idir]=k
-                                if win[4,idir]==k and win[2,idir]==j: lmin[idir]= ptList[l]
-                                count[idir]+=1
-                        elif i > 1 and i < dimR[1]-2 and k > 1 and k < dimR[3]-2: #flux en jmin
-                            if   j ==1        : idir=2
-                            elif j ==dimR[2]-2: idir=3
-                            else: idir=-1
-                            if idir !=-1:
-                                if i < win[0,idir]: win[0,idir]=i
-                                if i > win[1,idir]: win[1,idir]=i
-                                if k < win[4,idir]: win[4,idir]=k
-                                if k > win[5,idir]: win[5,idir]=k
-                                if win[4,idir]==k and win[0,idir]==i: lmin[idir]= ptList[l]
-                                count[idir]+=1
-                        elif j > 1 and j < dimR[2]-2 and i > 1 and i < dimR[1]-2: #flux en kmin
-                            if   k ==1        : idir=4
-                            elif k ==dimR[3]-2: idir=5
-                            else: idir=-1
-                            if idir !=-1:
-                                if i < win[0,idir]: win[0,idir]=i
-                                if i > win[1,idir]: win[1,idir]=i
-                                if j < win[2,idir]: win[2,idir]=j
-                                if j > win[3,idir]: win[3,idir]=j
-                                if win[2,idir]==j and win[0,idir]==i: lmin[idir]= ptList[l]
-                                count[idir]+=1
+                            idir=0
+                            if j < win[2,idir]: win[2,idir]=j
+                            if j > win[3,idir]: win[3,idir]=j
+                            if k < win[4,idir]: win[4,idir]=k
+                            if k > win[5,idir]: win[5,idir]=k
+                            if win[4,idir]==k and win[2,idir]==j: lmin[idir]= ptList[l]
+                            count[idir]+=1
+
+                        elif i==dimR[1]-2 and j > 1 and j < dimR[2]-2 and k > 1 and k < dimR[3]-2:  #flux en imin
+
+                            idir=1
+                            if j < win[2,idir]: win[2,idir]=j
+                            if j > win[3,idir]: win[3,idir]=j
+                            if k < win[4,idir]: win[4,idir]=k
+                            if k > win[5,idir]: win[5,idir]=k
+                            if win[4,idir]==k and win[2,idir]==j: lmin[idir]= ptList[l]
+                            count[idir]+=1
+
+                        elif j ==1 and i > 1 and i < dimR[1]-2 and k > 1 and k < dimR[3]-2    :
+                            idir=2
+                            if i < win[0,idir]: win[0,idir]=i
+                            if i > win[1,idir]: win[1,idir]=i
+                            if k < win[4,idir]: win[4,idir]=k
+                            if k > win[5,idir]: win[5,idir]=k
+                            if win[4,idir]==k and win[0,idir]==i: lmin[idir]= ptList[l]
+                            count[idir]+=1
+
+                        elif j == dimR[2]-2 and i > 1 and i < dimR[1]-2 and k > 1 and k < dimR[3]-2    :
+                            idir=3
+                            if i < win[0,idir]: win[0,idir]=i
+                            if i > win[1,idir]: win[1,idir]=i
+                            if k < win[4,idir]: win[4,idir]=k
+                            if k > win[5,idir]: win[5,idir]=k
+                            if win[4,idir]==k and win[0,idir]==i: lmin[idir]= ptList[l]
+                            count[idir]+=1
+
+                        elif k==1 and j > 1 and j < dimR[2]-2 and i > 1 and i < dimR[1]-2: #flux en kmin
+                            idir=4
+                            if i < win[0,idir]: win[0,idir]=i
+                            if i > win[1,idir]: win[1,idir]=i
+                            if j < win[2,idir]: win[2,idir]=j
+                            if j > win[3,idir]: win[3,idir]=j
+                            if win[2,idir]==j and win[0,idir]==i: lmin[idir]= ptList[l]
+                            count[idir]+=1
+
+                        elif k==dimR[3]-2 and j > 1 and j < dimR[2]-2 and i > 1 and i < dimR[1]-2: #flux en kmin
+                            idir=5
+                            if i < win[0,idir]: win[0,idir]=i
+                            if i > win[1,idir]: win[1,idir]=i
+                            if j < win[2,idir]: win[2,idir]=j
+                            if j > win[3,idir]: win[3,idir]=j
+                            if win[2,idir]==j and win[0,idir]==i: lmin[idir]= ptList[l]
+                            count[idir]+=1
 
                 #Adressage Fast
                 #receveur
@@ -4411,6 +4465,9 @@ def _buildConservativeFlux(t, tc, verbose=0):
                 idirs=[]
                 for i in range(6):
                     if count[i] !=0: idirs.append(i)
+
+                #print('idirs', idirs)
+
                 for idir in idirs:
 
                     #ijkminD,...: adresse C
@@ -4418,7 +4475,8 @@ def _buildConservativeFlux(t, tc, verbose=0):
                     jminD =  (lmin[idir] -kminD*shD[0]*shD[1])//shD[0]
                     iminD =  lmin[idir] -kminD*shD[0]*shD[1] -jminD*shD[0]
                     k1D = kminD-1
-                    k2D = kminD-2+(win[5,idir]-win[4,idir]+1)*2
+                    #k2D = kminD-2+(win[5,idir]-win[4,idir]+1)*2
+                    k2D = kminD-2+(win[5,idir]-win[4,idir]+1)*ratio_k
                     if dimPb==2: k1D=1; k2D=1
 
                     if idir < 2:
@@ -4467,8 +4525,9 @@ def _buildConservativeFlux(t, tc, verbose=0):
                         winD[2,idir]  =jminD-1
                         winD[3,idir]  =jminD-2+(win[3,idir]-win[2,idir]+1)*2
 
+                    #print("verif count",sz , count[idir], ratio_k )
                     if sz== count[idir]:
-                        if verbose==1:
+                        if verbose==0:
                             #print('min ', imin,jmin,kmin, 'max ', imax, jmax,kmax)
                             #print('minD', iminD,jminD,kminD, k1D, k2D)
                             name1="#Flux_"+zRname+'_'+name
@@ -4478,17 +4537,61 @@ def _buildConservativeFlux(t, tc, verbose=0):
 
                         if proc == rank:
                             zr_t= Internal.getNodeFromName(t, zRname)
-                            C._addBC2Zone(zr_t, name4, 'BCFluxOctreeC', wrange=win[:,idir])
+                            #on nome le type BC avec name4 pour la retrouver apres et eviter le renommage des node par cassiopee
+                            C._addBC2Zone(zr_t, name4, name4, wrange=win[:,idir])
+                            bcs   = Internal.getNodesFromType2(zr_t, 'BC_t')
+                            for bc in bcs:
+                                btype = Internal.getValue(bc)
+                                if btype == name4:
+                                    Internal.setValue(bc,'BCFluxOctreeC')
+                                    Prop = Internal.getNodeFromName(bc,'.Solver#Property')
+                                    if Prop is None:
+                                        Internal.createUniqueChild(bc,'.Solver#Property','UserDefinedData_t')
+                                    Prop = Internal.getNodeFromName(bc,'.Solver#Property')
+
+                                    ratioNM =  numpy.ones(3, numpy.float64)
+                                    ratioNM[0]= ratio[zd_t[0]][0]
+                                    ratioNM[1]= ratio[zd_t[0]][1]
+                                    ratioNM[2]= ratio[zd_t[0]][2]
+                                    Internal.createUniqueChild(Prop, 'ratioNM', 'DataArray_t', value=ratioNM)
+
+                                    ptrange = Internal.getNodesFromType1(bc, 'IndexRange_t')
+                                    rg  = ptrange[0][1]
+                                    sz  = max(1, rg[0,1]-rg[0,0]+1) * max(1, rg[1,1]-rg[1,0]+1) * max(1, rg[2,1]-rg[2,0]+1)
+                                    tab =  numpy.ones(sz*neq, numpy.float64)
+                                    Internal.createUniqueChild(Prop, 'FluxFaces', 'DataArray_t', value=tab)
+
                         else:
-                            if proc not in datas: datas[proc] = [ [ zRname, name4, win[:,idir] ] ]
-                            else: datas[proc] += [ [ zRname, name4, win[:,idir] ] ]
+                            if proc not in datas: datas[proc] = [ [ zRname, name4, win[:,idir], ratio ] ]
+                            else: datas[proc] += [ [ zRname, name4, win[:,idir], ratio ] ]
 
                         if name[2]=='i':
                             name2= name[0:2]+'ax'
                         else:
                             name2= name[0:2]+'in'
                         name4 = 'Flux_'+ zRname +'_'+name2
-                        C._addBC2Zone(zd_t, name4, 'BCFluxOctreeF', wrange=winD[:,idir])
+                        C._addBC2Zone(zd_t, name4, name4, wrange=winD[:,idir])
+                        bcs   = Internal.getNodesFromType2(zd_t, 'BC_t')
+                        for bc in bcs:
+                            btype = Internal.getValue(bc)
+                            if btype == name4:
+                                Internal.setValue(bc,'BCFluxOctreeF')
+                                Prop = Internal.getNodeFromName(bc,'.Solver#Property')
+                                if Prop is None:
+                                    Internal.createUniqueChild(bc,'.Solver#Property','UserDefinedData_t')
+                                Prop = Internal.getNodeFromName(bc,'.Solver#Property')
+
+                                ratioNM =  numpy.ones(3, numpy.float64)
+                                ratioNM[0]= ratio[zd_t[0]][0]
+                                ratioNM[1]= ratio[zd_t[0]][1]
+                                ratioNM[2]= ratio[zd_t[0]][2]
+                                Internal.createUniqueChild(Prop, 'ratioNM', 'DataArray_t', value=ratioNM)
+
+                                ptrange = Internal.getNodesFromType1(bc, 'IndexRange_t')
+                                rg  = ptrange[0][1]
+                                sz  = max(1, rg[0,1]-rg[0,0]+1) * max(1, rg[1,1]-rg[1,0]+1) * max(1, rg[2,1]-rg[2,0]+1)
+                                tab =  numpy.ones(sz*neq, numpy.float64)
+                                Internal.createUniqueChild(Prop, 'FluxFaces', 'DataArray_t', value=tab)
 
                     else:  print("Error: build flux conservative octree"+name, sz, count[idir],  win[:,idir])
 
@@ -4504,4 +4607,25 @@ def _buildConservativeFlux(t, tc, verbose=0):
                 #print('reception', Cmpi.rank, rcvName, flush=True)
                 ptlistD = n[1]
                 zr_t  = Internal.getNodeFromName(t,rcvName)
-                C._addBC2Zone(zr_t, n[1], 'BCFluxOctreeC', wrange=n[2])
+                C._addBC2Zone(zr_t, n[1], n[1], wrange=n[2])
+                bcs   = Internal.getNodesFromType2(zr_t, 'BC_t')
+                for bc in bcs:
+                    btype = Internal.getValue(bc)
+                    if btype == n[1]:
+                        Internal.setValue(bc,'BCFluxOctreeC')
+                        Prop = Internal.getNodeFromName(bc,'.Solver#Property')
+                        if Prop is None:
+                            Internal.createUniqueChild(bc,'.Solver#Property','UserDefinedData_t')
+                        Prop = Internal.getNodeFromName(bc,'.Solver#Property')
+
+                        ratioNM =  numpy.ones(3, numpy.float64)
+                        ratioNM[0]= n[3][0]
+                        ratioNM[1]= n[3][1]
+                        ratioNM[2]= n[3][2]
+                        Internal.createUniqueChild(Prop, 'ratioNM', 'DataArray_t', value=ratioNM)
+
+                        ptrange = Internal.getNodesFromType1(bc, 'IndexRange_t')
+                        rg  = ptrange[0][1]
+                        sz  = max(1, rg[0,1]-rg[0,0]+1) * max(1, rg[1,1]-rg[1,0]+1) * max(1, rg[2,1]-rg[2,0]+1)
+                        tab =  numpy.ones(sz*neq, numpy.float64)
+                        Internal.createUniqueChild(Prop, 'FluxFaces', 'DataArray_t', value=tab)

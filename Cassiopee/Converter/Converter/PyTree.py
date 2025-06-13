@@ -997,7 +997,7 @@ def convertFile2PyTree(fileName, format=None, nptsCurve=20, nptsLine=2,
                        density=-1., skeletonData=None, dataShape=None,
                        links=None, skipTypes=None, uncompress=True,
                        hmax=0.0, hausd=1., grow=0.0, mergeTol=-1, occAlgo=4,
-                       oldcompress=False, readMode=0, api=1):
+                       oldcompress=False, readIntMode=0, api=1):
     """Read a file and return a pyTree containing file data.
     Usage: convertFile2PyTree(fileName, format, options)"""
     if format is None:
@@ -1011,7 +1011,7 @@ def convertFile2PyTree(fileName, format=None, nptsCurve=20, nptsLine=2,
 
     if format == 'bin_cgns' or format == 'bin_adf' or format == 'bin_hdf':
         try:
-            t = Converter.converter.convertFile2PyTree(fileName, format, skeletonData, dataShape, links, skipTypes, readMode)
+            t = Converter.converter.convertFile2PyTree(fileName, format, skeletonData, dataShape, links, skipTypes, readIntMode)
             t = Internal.createRootNode(children=t[2])
             _upgradeTree(t, uncompress, oldcompress)
             CAD = Internal.getNodeFromName1(t, 'CAD')
@@ -1029,14 +1029,14 @@ def convertFile2PyTree(fileName, format=None, nptsCurve=20, nptsLine=2,
         except:
             if format == 'bin_cgns' or format == 'bin_adf':
                 try:
-                    t = Converter.converter.convertFile2PyTree(fileName, 'bin_hdf', skeletonData, dataShape, links, skipTypes, readMode)
+                    t = Converter.converter.convertFile2PyTree(fileName, 'bin_hdf', skeletonData, dataShape, links, skipTypes, readIntMode)
                     t = Internal.createRootNode(children=t[2])
                     _upgradeTree(t, uncompress, oldcompress)
                     return t
                 except: pass
             else: # adf par defaut
                 try:
-                    t = Converter.converter.convertFile2PyTree(fileName, 'bin_adf', skeletonData, dataShape, links, skipTypes, readMode)
+                    t = Converter.converter.convertFile2PyTree(fileName, 'bin_adf', skeletonData, dataShape, links, skipTypes, readIntMode)
                     t = Internal.createRootNode(children=t[2])
                     _upgradeTree(t)
                     return t
@@ -1056,13 +1056,13 @@ def convertFile2PyTree(fileName, format=None, nptsCurve=20, nptsLine=2,
 
     elif format == 'unknown':
         try:
-            t = Converter.converter.convertFile2PyTree(fileName, 'bin_adf', skeletonData, dataShape, links, skipTypes, readMode)
+            t = Converter.converter.convertFile2PyTree(fileName, 'bin_adf', skeletonData, dataShape, links, skipTypes, readIntMode)
             t = Internal.createRootNode(children=t[2])
             _upgradeTree(t)
             return t
         except: pass
         try:
-            t = Converter.converter.convertFile2PyTree(fileName, 'bin_hdf', skeletonData, dataShape, links, skipTypes, readMode)
+            t = Converter.converter.convertFile2PyTree(fileName, 'bin_hdf', skeletonData, dataShape, links, skipTypes, readIntMode)
             t = Internal.createRootNode(children=t[2])
             _upgradeTree(t)
             return t
@@ -1218,8 +1218,9 @@ def _relaxCGNSProfile__(t):
     return None
 
 # -- convertPyTree2File
-def convertPyTree2File(t, fileName, format=None, isize=4, rsize=8,
-                       endian='big', colormap=0, dataFormat='%.9e ', links=[]):
+def convertPyTree2File(t, fileName, format=None, isize=8, rsize=8,
+                       endian='big', colormap=0, dataFormat='%.9e ',
+                       links=[]):
     """Write a pyTree to a file.
     Usage: convertPyTree2File(t, fileName, format, options)"""
     if t == []: print('Warning: convertPyTree2File: nothing to write.'); return
@@ -1232,11 +1233,13 @@ def convertPyTree2File(t, fileName, format=None, isize=4, rsize=8,
         Internal._adaptZoneNamesForSlash(tp)
         Internal._correctBaseZonesDim(tp, splitBases=False)
         _forceCGNSProfile__(tp)
-        Converter.converter.convertPyTree2File(tp[2], fileName, format, links)
+        Converter.converter.convertPyTree2File(tp[2], fileName, format, links, isize, rsize)
     elif format == 'bin_tau':
-        Converter.converter.convertPyTree2FileTau(t, fileName, format)
+        tp, ntype = Internal.node2PyTree(t)
+        Converter.converter.convertPyTree2FileTau(tp, fileName, format)
     elif format == 'bin_fsdm':
-        Converter.converter.convertPyTree2FileFsdm(t, fileName, format)
+        tp, ntype = Internal.node2PyTree(t)
+        Converter.converter.convertPyTree2FileFsdm(tp, fileName, format)
     elif format == 'bin_pickle':
         try: import cPickle as pickle
         except: import pickle
@@ -1257,7 +1260,7 @@ def convertPyTree2File(t, fileName, format=None, isize=4, rsize=8,
 # Fonction utilisee dans PPart
 def convertFile2PartialPyTreeFromPath(fileName, Filter, comm=None,
                                       format=None, nptsCurve=20, nptsLine=2,
-                                      density=-1., skeletonData=None, readMode=0):
+                                      density=-1., skeletonData=None, readIntMode=0):
     """Convert a file to pyTree.
     Usage: convertFile2PartialPyTree(fileName, format, options)"""
     if format is None:
@@ -1266,7 +1269,7 @@ def convertFile2PartialPyTreeFromPath(fileName, Filter, comm=None,
     try: file = open(fileName, 'r')
     except: raise IOError("convertFile2PartialPyTreeFromPath: file %s not found."%fileName)
     file.close()
-    t = Converter.converter.convertFile2PartialPyTree(fileName, format, skeletonData, comm, Filter, readMode)
+    t = Converter.converter.convertFile2PartialPyTree(fileName, format, skeletonData, comm, Filter, readIntMode)
     return t
 
 # Fonction utilisee dans PPart
@@ -3584,47 +3587,6 @@ def _conformizeNGon(a, tol=1.e-6):
     _TZGC1(a, 'nodes', True, Converter.conformizeNGon, tol)
     return None
 
-# -- convertSurfaceNGon
-def convertSurfaceNGon(a, rmEmptyNFaceElements=True):
-    """Convert a surface NGon from (A: NGON=bars, NFACE=polygon)
-    to (B: NGON=polygon, NFACE=NULL), or vice versa.
-    Usage: convertSurfaceNGon(a)"""
-    # add NFace node if necessary
-    for z in Internal.getZones(a):
-        nFace = Internal.getNodeFromName(z, 'NFaceElements')
-        if nFace is None:
-            nGon = Internal.getNodeFromName(z, 'NGonElements')
-            offset = Internal.getNodeFromName(nGon, 'ElementStartOffset')
-            api = 3 if offset is not None else 2
-            rnGon = Internal.getNodeFromName(nGon, 'ElementRange')[1]
-
-            nface = Internal.createNode('NFaceElements', 'Elements_t', parent=z,
-                                        value=numpy.array([23,0],
-                                                          dtype=Internal.E_NpyInt, order='F'))
-
-            value = numpy.array([rnGon[1]+1, rnGon[1]+1],
-                                dtype=Internal.E_NpyInt, order='F')
-            Internal.createNode('ElementRange', 'IndexRange_t',
-                                parent=nface, value=value)
-            value = numpy.array([], dtype=Internal.E_NpyInt, order='F')
-            Internal.createNode('ElementConnectivity', 'DataArray_t',
-                                parent=nface, value=value)
-            if api == 3:
-                value = numpy.array([0], dtype=Internal.E_NpyInt, order='F')
-            else: value =  numpy.array([], dtype=Internal.E_NpyInt, order='F')
-            Internal.createNode('ElementStartOffset', 'DataArray_t',
-                                parent=nface, value=value)
-
-    a = TZGC3(a, 'nodes', True, Converter.convertSurfaceNGon)
-
-    if rmEmptyNFaceElements:
-        for z in Internal.getZones(a):
-            nFace = Internal.getNodeFromName(z, 'NFaceElements')
-            cnFace = Internal.getNodeFromName(nFace, 'ElementConnectivity')[1]
-            if cnFace.size == 0: Internal._rmNodesByName(z, 'NFaceElements')
-
-    return a
-
 #=============================================================================
 # -- Create BC(s) to a zone node --
 #=============================================================================
@@ -4120,10 +4082,10 @@ def _addBC2UnstructZone__(z, bndName, bndType, elementList, elementRange,
 
     # si subzone: on cree la connectivite BC, on passe en elementRange
     if subzone is not None and pointList is None:
-        bcn = Internal.getNodeFromName1(z, subzone[0])
+        bcn = Internal.getChildFromName(z, subzone[0])
         if bcn is None:
             _mergeConnectivity(z, subzone, boundary=1)
-        bcn = Internal.getNodeFromName1(z, subzone[0])
+        bcn = Internal.getChildFromName(z, subzone[0])
         bcnr = Internal.getNodeFromName1(bcn, 'ElementRange')
         elementRange = [bcnr[1][0], bcnr[1][1]]
 
@@ -7372,7 +7334,8 @@ def _mergeConnectivity(z1, z2=None, boundary=0, shared=False):
         if len(zones) > 1:
             # Merge all BE connectivities within z1
             return _mergeConnectivities(zones, boundary, shared)
-        else: return z1
+        else:
+            return z1
 
     # Analyse zone z2
     dims = Internal.getZoneDim(z2)
@@ -8137,7 +8100,7 @@ def convertMIXED2NGon(a, recoverBC=True, merged=False):
             namebc = split[0]
             bctype = split[-1]
 
-            if len(split)>2:
+            if len(split) > 2:
                 for nosuff in range(1,len(split)-1): namebc+='-%s'%(split[nosuff])
 
             ebc = Internal.getNodeFromName1(z, namebc)
@@ -8169,7 +8132,7 @@ def convertMIXED2NGon(a, recoverBC=True, merged=False):
     importG = False
     try:
         import Generator.PyTree as G
-        tb = G.close(tb,tol=1e-6)
+        tb = G.close(tb, tol=1e-6)
         importG = True
     except:
         pass
@@ -8224,19 +8187,19 @@ def convertMIXED2NGon(a, recoverBC=True, merged=False):
             if bcname not in dictOfBCsPerBCName:
                 dictOfBCsPerBCName[bcname]=[zs]
             else:
-                #check connect
-                zsref=dictOfBCsPerBCName[bcname][0]
-                ecref = Internal.getNodeFromType(zsref,'Elements_t')
-                ecref = Internal.getNodeFromName(ecref,'ElementConnectivity')
+                # check connect
+                zsref = dictOfBCsPerBCName[bcname][0]
+                ecref = Internal.getNodeFromType(zsref, 'Elements_t')
+                ecref = Internal.getNodeFromName(ecref, 'ElementConnectivity')
                 ecref = Internal.getValue(ecref)
                 # to compare with
-                ec = Internal.getNodeFromType(zs,'Elements_t')
-                ec = Internal.getNodeFromName(ec,'ElementConnectivity')
+                ec = Internal.getNodeFromType(zs, 'Elements_t')
+                ec = Internal.getNodeFromName(ec, 'ElementConnectivity')
                 ec = Internal.getValue(ec)
                 if not numpy.array_equal(ecref, ec):
                     dictOfBCsPerBCName[bcname].append(zs)
                 else:
-                    print("WARNING: deux BCs identiques : %s : %s et %s !"%(bcname, zsref[0], zs[0]))
+                    print("WARNING: deux BCs identiques: %s : %s et %s !"%(bcname, zsref[0], zs[0]))
 
         for noz, z in enumerate(Internal.getZones(a)):
             AllBCs = []; AllBCNames = []; AllBCTypes = []

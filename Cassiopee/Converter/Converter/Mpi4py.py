@@ -7,12 +7,16 @@ from . import converter
 # Acces a Distributed
 from .Distributed import readZones, _readZones, convert2PartialTree, _convert2PartialTree, convert2SkeletonTree, readNodesFromPaths, readPyTreeFromPaths, writeNodesFromPaths, mergeGraph, splitGraph
 
-__all__ = ['rank', 'size', 'KCOMM', 'COMM_WORLD', 'SUM', 'MIN', 'MAX', 'LAND',
-           'setCommunicator', 'barrier', 'send', 'recv', 'sendRecv', 'sendRecvC',
+__all__ = ['rank', 'size', 'master', 'KCOMM', 'COMM_WORLD', 'SUM',
+           'MIN', 'MAX', 'LAND',
+           'setCommunicator', 'barrier', 'send', 'isend', 'recv', 'requestWaitall',
+
+           'sendRecv', 'sendRecvC',
            'bcast', 'Bcast', 'gather', 'Gather',
            'reduce', 'Reduce', 'allreduce', 'Allreduce',
            'bcastZone', 'gatherZones', 'allgatherZones',
-           'createBBTree', 'intersect', 'intersect2', 'allgatherDict',
+           'createBBTree', 'intersect', 'intersect2',
+           'allgatherDict', 'allgatherDict2',
            'allgather', 'readZones', 'writeZones', 'convert2PartialTree',
            'convert2SkeletonTree',
            'readNodesFromPaths', 'readPyTreeFromPaths', 'writeNodesFromPaths',
@@ -32,6 +36,7 @@ KCOMM = COMM_WORLD
 
 rank = KCOMM.rank
 size = KCOMM.size
+master = (rank == 0)
 
 SUM = MPI.SUM
 MAX = MPI.MAX
@@ -89,6 +94,13 @@ def Isend(obj, dest=None, tag=0):
 #==============================================================================
 def recv(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG):
     return KCOMM.recv(source=source, tag=tag)
+
+#==============================================================================
+# Wait for all requests
+#==============================================================================
+def requestWaitall(reqs):
+    MPI.Request.waitall(reqs)
+    return None
 
 #==============================================================================
 # Reduce to root (using pickle, small data)
@@ -239,30 +251,37 @@ def intersect2(t, BBTree):
 #    return dictIntersect
 
 #==============================================================================
-# allGather dictionnaire (rejete les doublons de keys et values)
+# allGather dictionnaire
+# si: dict[key] = [value],
+# retourne dict[key] = [all values] (rejete les doublons de keys et doublons de values)
 #==============================================================================
 def allgatherDict(data):
     ret = KCOMM.allgather(data)
-    if isinstance(data, dict):
-        out = {}
-        for r in ret:
-            for k in r:
-                # if rank==0: print('PROC%d : k=%s'%(rank, k), flush=True)
-                if k not in out:
-                    out[k] = []
-                    for data in r[k]:
-                        if data not in out[k]:
-                            # if rank==0: print('PROC%d : data=%s ; out[k] = '%(rank, k), out[k], flush=True)
-                            out[k].append(data)
-                            # if rank==0: print('PROC%d : out[k] = '%(rank), out[k], flush=True)
+    if not isinstance(data, dict): return ret
+    out = {}
+    for r in ret: # all proc return
+        for k in r: # for each key in dict
+            if k not in out:
+                out[k] = []
+                for data in r[k]:
+                    if data not in out[k]: out[k].append(data)
+            else:
+                for data in r[k]:
+                    if data not in out[k]: out[k].append(data)
+    return out
 
-                else:
-                    for data in r[k]:
-                        # if rank==0: print('PROC%d : data=%s ; out[k] = '%(rank, k), out[k], flush=True)
-                        if data not in out[k]: out[k].append(data)
-                        # if rank==0: print('PROC%d : out[k] = '%(rank), out[k], flush=True)
-        return out
-    else: return ret
+#==============================================================================
+# allGather dictionnaire
+# si: dict[key] = value, retourne dict[key] = value (en choisi une value si doublon de key)
+#==============================================================================
+def allgatherDict2(data):
+    ret = KCOMM.allgather(data)
+    if not isinstance(data, dict): return ret
+    out = {}
+    for r in ret: # all proc return
+        for k in r: # for each key in dict
+            if k not in out: out[k] = r[k]
+    return out
 
 #==============================================================================
 # allgather
@@ -505,6 +524,7 @@ def _merge__(t):
 # sans zones (pour recuperer toutes les bases et les data des bases)
 #==============================================================================
 def convertPyTree2File(t, fileName, format=None, links=[],
+                       isize=8, rsize=8,
                        ignoreProcNodes=False, merge=True):
     """Write a skeleton or partial tree."""
     tp = convert2PartialTree(t)
@@ -515,7 +535,7 @@ def convertPyTree2File(t, fileName, format=None, links=[],
     nzones = len(Internal.getZones(tp))
     if rank == 0:
         if nzones > 0:
-            C.convertPyTree2File(tp, fileName, format=format, links=links); go = 1
+            C.convertPyTree2File(tp, fileName, format=format, links=links, isize=isize, rsize=rsize); go = 1
         else: go = 0
         if size > 1: KCOMM.send(go, dest=1)
     else:
@@ -525,7 +545,7 @@ def convertPyTree2File(t, fileName, format=None, links=[],
             else: Distributed.writeZones(tp, fileName, format=format, proc=rank, links=links)
         else:
             if nzones > 0:
-                C.convertPyTree2File(tp, fileName, format=format, links=links); go = 1
+                C.convertPyTree2File(tp, fileName, format=format, links=links, isize=isize, rsize=rsize); go = 1
         if rank < size-1: KCOMM.send(go, dest=rank+1)
     barrier()
 

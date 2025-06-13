@@ -1564,12 +1564,12 @@ def checkOSMesa(additionalLibPaths=[], additionalIncludePaths=[]):
         return (False, i, l, libname)
 
 #=============================================================================
-# Check for OCE (open cascade edition library)
+# Check for OCC/OCE (open cascade classic or community edition)
 # additionalPaths: chemins d'installation non standards: ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkOCE(additionalLibPaths=[], additionalIncludePaths=[]):
-    #print("INFO: dependance to OCE STUBED.")
+def checkOCC(additionalLibPaths=[], additionalIncludePaths=[]):
+    #print("INFO: dependance to OCC/OCE STUBED.")
     #return (False, None, None)
     l = checkLibFile__('libTKernel.so', additionalLibPaths)
     if l is None:
@@ -1582,12 +1582,79 @@ def checkOCE(additionalLibPaths=[], additionalIncludePaths=[]):
         i = checkIncFile__('opencascade/TopTools.hxx', additionalIncludePaths)
         if i is not None: i = i+'/opencascade'
     if i is not None and l is not None:
-        print('Info: libOCE detected at %s.'%l)
+        print('Info: opencascade detected at %s.'%l)
         return (True, i, l)
     else:
-        # On n'affiche pas ici le message, car il peut y avoir un installation locale de OCE
-        #print('Info: libOCE or oce/*.hxx was not found on your system. No IGES/STEP support.')
+        # On n'affiche pas ici le message, car il peut y avoir un installation locale de OCC/OCE
+        #print('Info: libOCC/OCE or oce/*.hxx was not found on your system. No IGES/STEP support.')
         return (False, i, l)
+
+# Return open-cascade module names depending on version
+def getOCCModules():
+    allMods6 = ["FWOSPlugin", "TKPLCAF", "PTKernel", "TKPrim",
+                "TKAdvTools", "TKPShape", "TKBinL", "TKService",
+                "TKBin", "TKShapeSchema", "TKBinTObj", "TKShHealing",
+                "TKBinXCAF", "TKStdLSchema", "TKBool", "TKStdSchema",
+                "TKBO", "TKSTEP209", "TKBRep", "TKSTEPAttr",
+                "TKCAF", "TKSTEPBase", "TKCDF", "TKSTEP",
+                "TKernel", "TKSTL", "TKFeat", "TKTObj",
+                "TKFillet", "TKTopAlgo", "TKG2d", "TKV3d",
+                "TKG3d", "TKVoxel", "TKGeomAlgo", "TKVRML",
+                "TKGeomBase", "TKXCAFSchema", "TKHLR", "TKXCAF",
+                "TKIGES", "TKXDEIGES", "TKLCAF", "TKXDESTEP",
+                "TKMath", "TKXMesh", "TKMesh", "TKXmlL",
+                "TKMeshVS", "TKXml", "TKNIS", "TKXmlTObj",
+                "TKOffset", "TKXmlXCAF", "TKOpenGl", "TKXSBase",
+                "TKPCAF"]
+
+    allMods75 = ["TKBinL", "TKBin", "TKBinTObj",
+                 "TKBinXCAF", "TKBool", "TKBO", "TKBRep",
+                 "TKCAF", "TKCDF", "TKDCAF", "TKDraw", "TKernel",
+                 "TKFeat", "TKFillet", "TKG2d", "TKG3d", "TKGeomAlgo",
+                 "TKGeomBase", "TKHLR", "TKIGES", "TKLCAF", "TKMath",
+                 "TKMesh", "TKMeshVS", "TKOffset", "TKOpenGl", "TKPrim",
+                 "TKQADraw", "TKRWMesh", "TKService", "TKShHealing", "TKStdL",
+                 "TKStd", "TKSTEP209", "TKSTEPAttr", "TKSTEPBase", "TKSTEP",
+                 "TKSTL", "TKTObjDRAW", "TKTObj", "TKTopAlgo", "TKTopTest",
+                 "TKV3d", "TKVCAF", "TKViewerTest", "TKVRML", "TKXCAF", "TKXDEDRAW",
+                 "TKXDEIGES", "TKXDESTEP", "TKXMesh", "TKXmlL", "TKXml", "TKXmlTObj",
+                 "TKXmlXCAF", "TKXSBase", "TKXSDRAW"]
+
+    allMods75W = ["TKBin", "TKBinL", "TKBinTObj", "TKBinXCAF", "TKBO",
+                  "TKBool", "TKBRep", "TKCAF", "TKCDF", "TKernel",
+                  "TKFeat", "TKFillet", "TKG2d", "TKG3d", "TKGeomAlgo",
+                  "TKGeomBase", "TKHLR", "TKIGES", "TKLCAF", "TKMath",
+                  "TKMesh", "TKMeshVS", "TKOffset", "TKOpenGl",
+                  "TKPrim", "TKService",
+                  "TKShHealing", "TKStdLSchema",
+                  "TKStdSchema", "TKSTEP", "TKSTEP209", "TKSTEPAttr",
+                  "TKSTEPBase", "TKSTL", "TKTObj", "TKTopAlgo",
+                  "TKV3d", "TKVoxel", "TKVRML", "TKXCAF", "TKXCAFSchema",
+                  "TKXDEIGES", "TKXDESTEP", "TKXMesh", "TKXml",
+                  "TKXmlL", "TKXmlTObj", "TKXmlXCAF", "TKXSBase",
+                  "TKPCAF", "TKPLCAF", "TKNIS", "TKPShape", "TKShapeSchema"]
+
+    allMods78 = ["TKBO", "TKBRep", "TKBin", "TKBinL", "TKBinTObj",
+                 "TKBinXCAF", "TKBool", "TKCAF", "TKCDF", "TKD3DHost",
+                 "TKD3DHostTest", "TKDCAF", "TKDE", "TKDECascade", "TKDEGLTF",
+                 "TKDEIGES", "TKDEOBJ", "TKDEPLY", "TKDESTEP", "TKDESTL",
+                 "TKDEVRML", "TKDraw", "TKExpress", "TKFeat", "TKFillet",
+                 "TKG2d", "TKG3d", "TKGeomAlgo", "TKGeomBase",
+                 "TKHLR", "TKIVtk", "TKIVtkDraw", "TKLCAF",
+                 "TKMath", "TKMesh", "TKMeshVS", "TKOffset",
+                 "TKOpenGl", "TKOpenGlTest", "TKPrim", "TKQADraw",
+                 "TKRWMesh", "TKService", "TKShHealing", "TKStd",
+                 "TKStdL", "TKTObj", "TKTObjDRAW", "TKTopAlgo",
+                 "TKTopTest", "TKV3d", "TKVCAF",
+                 "TKViewerTest", "TKXCAF", "TKXDEDRAW",
+                 "TKXMesh", "TKXSBase", "TKXSDRAW",
+                 "TKXSDRAWDE", "TKXSDRAWGLTF", "TKXSDRAWIGES",
+                 "TKXSDRAWOBJ", "TKXSDRAWPLY", "TKXSDRAWSTEP",
+                 "TKXSDRAWSTL", "TKXSDRAWVRML", "TKXml",
+                 "TKXmlL", "TKXmlTObj", "TKXmlXCAF", "TKernel"]
+    if getSystem()[0] == 'mingw': allMods = allMods78
+    else: allMods = allMods75
+    return allMods
 
 #=============================================================================
 # Check for png (libpng)
@@ -2403,13 +2470,14 @@ def checkLibFile__(file, additionalLibPaths):
         if p1 is not None: p += p1.split(';')
     elif mySystem[0] == 'mingw':
         p1 = env.get('PATH', None)
-        if p1 is not None:
-            p += p1.split(';')
+        if p1 is not None: p += p1.split(';')
+        p1 = env.get('LD_LIBRARY_PATH', None)
+        if p1 is not None: p += p1.split(';')
     else: # unix
         p1 = env.get('LD_LIBRARY_PATH', None)
         if p1 is not None: p += p1.split(':')
         p1 = env.get('PATH', None)
-        if p1 is not None: p += p1.split(';')
+        if p1 is not None: p += p1.split(':')
     p1 = env.get('CMAKE_PREFIX_PATH', None)
     if p1 is not None: p += [path+'/lib' for path in p1.split(':')]
     #p += ['/usr/local/lib', '/opt/lib', '/usr/lib', '/opt/local/lib']
@@ -2432,20 +2500,24 @@ def checkIncFile__(file, additionalIncludePaths):
     if mySystem[0] == 'Windows':
         p1 = env.get('PATH', None)
         if p1 is not None: pp += p1.split(';')
+        sep = '\\'
     elif mySystem[0] == 'mingw':
         p1 = env.get('PATH', None)
-        if p1 is not None:
-            pp += p1.split(';')
+        if p1 is not None: pp += p1.split(';')
+        p1 = env.get('LD_LIBRARY_PATH', None)
+        if p1 is not None: pp += p1.split(';')
+        sep = '\\'
     else: # unix
         p1 = env.get('LD_LIBRARY_PATH', None)
         if p1 is not None: pp += p1.split(':')
         p1 = env.get('PATH', None)
         if p1 is not None: pp += p1.split(':')
+        sep = '/'
     #p += ['/usr/local/include', '/opt/include', '/usr/include', '/opt/local/include']
     p1 = env.get('CMAKE_PREFIX_PATH', None)
     if p1 is not None: pp += [path+'/lib' for path in p1.split(':')]
     for i, v in enumerate(pp):
-        s = v.split('/'); ls = len(s)
+        s = v.split(sep); ls = len(s)
         if ls > 0 and s[-1] == 'lib': s[-1] = 'include'
         if ls > 1 and s[-2] == 'lib': s[-2] = 'include'; s[-1] = ''
         if ls > 0 and s[-1] == 'lib64': s[-1] = 'include'
@@ -2951,7 +3023,9 @@ def createStaticLibrary(env, ppf, parentFolder, moduleName):
                 elsaprod, moduleName, c+1)
         mergeL += "save\nend"
         filename = os.path.join(parentFolder, 'merge.l')
-        with open(filename, 'w') as f: f.write(mergeL)
+        with open(filename, 'w') as f:
+            f.write(mergeL)
+            f.close()
         env.Command(
             staticLib,
             [chunkedStaticLib.format(moduleName, c+1) for c in range(nchunks)] + ['merge.l'],

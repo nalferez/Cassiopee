@@ -182,11 +182,15 @@ def getInstallPaths():
         fastIncDir = os.path.dirname(fastIncDir)
     except:
         fastIncDir = None
-    pmodulesDir = os.path.join(os.path.dirname(os.path.dirname(cassiopeeIncDir)),
-                               'PModules')
+    parentDirname = os.path.dirname(os.path.dirname(cassiopeeIncDir))
+    pmodulesDir = os.path.join(parentDirname, 'PModules')
     if not os.path.isdir(pmodulesDir): pmodulesDir = None
-
-    return cassiopeeIncDir, fastIncDir, pmodulesDir
+    if '_coda' in os.getenv("ELSAPROD"):
+        fspluginsDir = os.path.join(parentDirname, 'FSPlugins')
+        if not os.path.isdir(fspluginsDir):
+            fspluginsDir = os.getenv('FSPLUGINS', None)
+    else: fspluginsDir = None
+    return cassiopeeIncDir, fastIncDir, pmodulesDir, fspluginsDir
 
 def checkEnvironment():
     # Check environment
@@ -346,7 +350,7 @@ def buildString(module, test, CPUtime='...', coverage='...%', status='...',
     if coverage == '...%': coverage = refCoverage
     if tag == ' ': tag = refTag
 
-    s = ljust(module, 13)+separatorl+ljust(test, 40)+separatorl+\
+    s = ljust(module, 16)+separatorl+ljust(test, 40)+separatorl+\
         ljust(CPUtime, 10)+separatorl+ljust(refCPUtime, 10)+separatorl+\
         ljust(refDate, 16)+separatorl+ljust(coverage, 5)+separatorl+\
         tag.ljust(2)+separatorl+' '+ljust(status, 10)
@@ -357,16 +361,16 @@ def buildString(module, test, CPUtime='...', coverage='...%', status='...',
 # CFDBase both locally and globally. Set paths for ValidData directories
 #==============================================================================
 def setPaths():
-    def _setModuleDirs(cassiopeeIncDir, fastIncDir, pmodulesIncDir, loc='LOCAL'):
+    def _setModuleDirs(*args, **kwargs):
         global MODULESDIR
+        loc = kwargs.get('loc', 'LOCAL')
         if loc not in ['LOCAL', 'GLOBAL']: loc = 'LOCAL'
         notTested = ['Upmost', 'FastP']
-        paths = [fastIncDir, pmodulesIncDir]
+        cassiopeeIncDir = args[0]
+        paths = list(args)[1:]
         for path in paths:
             if path is None: continue
-            print('Info: getting {} module tests in: {}.'.format(
-                loc.lower(), path))
-
+            print('Info: getting {} module tests in: {}.'.format(loc.lower(), path))
             try: mods = os.listdir(path)
             except: mods = []
             for mod in mods:
@@ -381,8 +385,7 @@ def setPaths():
                         a = os.access(os.path.join(pathMod, mod, 'test'), os.F_OK) # PModules git
                         if a: MODULESDIR[loc][mod] = pathMod
 
-        print('Info: getting {} module names in: {}.'.format(
-            loc.lower(), cassiopeeIncDir))
+        print('Info: getting {} module names in: {}.'.format(loc.lower(), cassiopeeIncDir))
         try: mods = os.listdir(cassiopeeIncDir)
         except: mods = []
         for mod in mods:
@@ -395,8 +398,8 @@ def setPaths():
 
     global VALIDDIR
     # Module paths when the local base is used
-    cassiopeeIncDir, fastIncDir, pmodulesIncDir = getInstallPaths()
-    _setModuleDirs(cassiopeeIncDir, fastIncDir, pmodulesIncDir, loc='LOCAL')
+    allPackageDirs = getInstallPaths()
+    _setModuleDirs(*allPackageDirs, loc='LOCAL')
 
     # Local valid paths
     VALIDDIR['LOCAL'] = os.path.join(os.getenv('CASSIOPEE'), 'Cassiopee',
@@ -620,13 +623,17 @@ def runSingleUnitaryTest(no, module, test, update=False):
         # Unix - le shell doit avoir l'environnement cassiopee
         #sformat = r'"real\t%E\nuser\t%U\nsys\t%S"'
         if m1 is None:
-            sanitizerFlag = '' # TODO LSAN always return a seg fault in parallel
+            sanitizerFlag = '' # LSAN always return a seg fault in parallel
             cmd = 'cd %s; time kpython %s -n 2 -t %d %s'%(
                 path, sanitizerFlag, nthreads//2, test)
         else:
             sanitizerFlag = '-s' if any(USE_ASAN) else ''
-            cmd = 'cd %s; time kpython %s -t %d %s'%(
-                path, sanitizerFlag, nthreads, test)
+            if module.startswith('FS'):
+                cmd = 'cd %s; time kpython %s -n 1 -t %d %s'%(
+                    path, sanitizerFlag, nthreads, test)
+            else:
+                cmd = 'cd %s; time kpython %s -t %d %s'%(
+                    path, sanitizerFlag, nthreads, test)
 
     try:
         if mySystem == 'mingw' or mySystem == 'windows':
@@ -1876,7 +1883,7 @@ if __name__ == '__main__':
         Frame.columnconfigure(1, weight=1)
         Frame.grid(row=0, column=0, sticky=TK.EW)
 
-        Listbox = TK.Listbox(Frame, selectmode=TK.EXTENDED, width=120,
+        Listbox = TK.Listbox(Frame, selectmode=TK.EXTENDED, width=125,
                              height=39, background='White')
         Listbox.grid(row=0, column=0, columnspan=11, sticky=TK.NSEW)
 

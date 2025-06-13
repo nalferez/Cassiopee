@@ -25,6 +25,32 @@
 #include "kcore.h"
 
 /* ------------------------------------------------------------------------- */
+// return new index when input is global orig index in connectivities
+/* ------------------------------------------------------------------------- */
+E_Int newIndex(E_Int index, 
+               std::vector<E_Int>& oldStart, std::vector<E_Int>& oldEnd,
+               std::vector<E_Int>& newStart)
+{
+  E_Int b = -1;
+  for (size_t i = 0; i < oldStart.size(); i++)
+  {
+    if (index >= oldStart[i] && index <= oldEnd[i]) { b = i; break; }
+  }
+  if (b == -1)
+  {
+    printf("Error: tauwrite: PL index out of range: " SF_D_ "\n", index);
+    return 0;
+  }
+
+  E_Int offset = index-oldStart[b];
+  //printf("%d %d %d %d\n", index, oldStart[i], newStart[i], offset);
+  //printf("%d %d\n", index, newStart[i]+offset);
+  return newStart[b]+offset-1;
+}
+
+/* ------------------------------------------------------------------------- */
+// Create GridElement node for basic elements connectivity
+/* ------------------------------------------------------------------------- */
 E_Int createGridElements4Tau(E_Int eltType, const char* name, E_Int ncells, E_Int istart, 
   PyArrayObject* rc, PyObject*& GE)
 {
@@ -55,12 +81,12 @@ E_Int createGridElements4Tau(E_Int eltType, const char* name, E_Int ncells, E_In
   pp2[0] = istart; pp2[1] = istart+ncells-1;
   PyObject* children2 = PyList_New(0);
   PyObject* er = Py_BuildValue("[sOOs]", "ElementRange", r2, children2, "IndexRange_t");
-  PyList_Append(children1, er); Py_INCREF(er);
+  PyList_Append(children1, er); Py_DECREF(er);
 
   // Element connectivity
   PyObject* children3 = PyList_New(0);
   PyObject* ec = Py_BuildValue("[sOOs]", "ElementConnectivity", rc, children3, "DataArray_t");
-  PyList_Append(children1, ec); Py_INCREF(ec);
+  PyList_Append(children1, ec); Py_DECREF(ec);
 
   return 0;
 }
@@ -356,7 +382,7 @@ E_Int K_IO::GenIO::tauread(char* file, PyObject*& tree)
   float* pf2 = (float*)PyArray_DATA(r2);
   pf2[0] = 4.0;
   PyObject* version = Py_BuildValue("[sOOs]", "CGNSLibraryVersion", (PyObject*)r2, children2, "CGNSLibraryVersion_t");
-  PyList_Append(children1, version); Py_INCREF(version);
+  PyList_Append(children1, version); Py_DECREF(version);
   
   // Create Base
   npy_dim_vals[0] = 2;
@@ -370,7 +396,7 @@ E_Int K_IO::GenIO::tauread(char* file, PyObject*& tree)
   pp3[0] = 3; pp3[1] = 3;
   PyObject* children3 = PyList_New(0);
   PyObject* base = Py_BuildValue("[sOOs]", "Base", r3, children3, "CGNSBase_t");
-  PyList_Append(children1, base); Py_INCREF(base);
+  PyList_Append(children1, base); Py_DECREF(base);
   
   // Create Zone
   npy_dim_vals[0] = 1; npy_dim_vals[1] = 3;
@@ -384,91 +410,89 @@ E_Int K_IO::GenIO::tauread(char* file, PyObject*& tree)
   pp4[0] = 0; pp4[1] = 0; pp4[2] = 0;
   PyObject* children4 = PyList_New(0);
   PyObject* zone = Py_BuildValue("[sOOs]", "Zone", r4, children4, "Zone_t");
-  PyList_Append(children3, zone); Py_INCREF(zone);
+  PyList_Append(children3, zone); Py_DECREF(zone);
   
   // Create ZoneType
   PyObject* children9 = PyList_New(0);
   npy_dim_vals[0] = 12;
   PyArrayObject* r9 = (PyArrayObject*)PyArray_EMPTY(1, &npy_dim_vals[0], NPY_STRING, 1);
   char* pp9 = (char*)PyArray_DATA(r9);
-  strcpy(pp9, "Unstructured");
+  K_STRING::cpy(pp9, "Unstructured", 12, false);
   PyObject* zoneType = Py_BuildValue("[sOOs]", "ZoneType", r9, children9, "ZoneType_t");
-  PyList_Append(children4, zoneType); Py_INCREF(zoneType);
+  PyList_Append(children4, zoneType); Py_DECREF(zoneType);
   
   // Create GridCoordinates
   PyObject* children5 = PyList_New(0);
   PyObject* GC = Py_BuildValue("[sOOs]", "GridCoordinates", Py_None, children5, "GridCoordinates_t");
-  PyList_Append(children4, GC); Py_INCREF(GC);
+  PyList_Append(children4, GC); Py_DECREF(GC);
   
   // CoordinateX
   PyObject* children6 = PyList_New(0);
   PyObject* nxc = Py_BuildValue("[sOOs]", "CoordinateX", xc, children6, "DataArray_t");
-  PyList_Append(children5, nxc); Py_INCREF(nxc);
+  PyList_Append(children5, nxc); Py_DECREF(nxc);
 
   // CoordinateY
   PyObject* children7 = PyList_New(0);
   PyObject* nyc = Py_BuildValue("[sOOs]", "CoordinateY", yc, children7, "DataArray_t");
-  PyList_Append(children5, nyc); Py_INCREF(nyc);
+  PyList_Append(children5, nyc); Py_DECREF(nyc);
 
   // CoordinateZ
   PyObject* children8 = PyList_New(0);
   PyObject* nzc = Py_BuildValue("[sOOs]", "CoordinateZ", zc, children8, "DataArray_t");
-  PyList_Append(children5, nzc); Py_INCREF(nzc);
+  PyList_Append(children5, nzc); Py_DECREF(nzc);
 
   // Create GridElements
   PyObject* GE; E_Int istart=1;
   if (hexa != NULL) 
   {
     createGridElements4Tau(17, "HEXA", nhexa, istart, hexa, GE);
-    PyList_Append(children4, GE); Py_INCREF(GE);
+    PyList_Append(children4, GE); Py_DECREF(GE);
     istart += nhexa;
     ncells += nhexa;
   }
   if (tetra != NULL) 
   {
     createGridElements4Tau(10, "TETRA", ntetra, istart, tetra, GE);
-    PyList_Append(children4, GE); Py_INCREF(GE);
+    PyList_Append(children4, GE); Py_DECREF(GE);
     istart += ntetra;
     ncells += ntetra;
   }
   if (penta != NULL) 
   {
     createGridElements4Tau(14, "PENTA", npenta, istart, penta, GE);
-    PyList_Append(children4, GE); Py_INCREF(GE);
+    PyList_Append(children4, GE); Py_DECREF(GE);
     istart += npenta;
     ncells += npenta;
   }
   if (pyra != NULL) 
   {
     createGridElements4Tau(12, "PYRA", npyra, istart, pyra, GE);
-    PyList_Append(children4, GE); Py_INCREF(GE);
+    PyList_Append(children4, GE); Py_DECREF(GE);
     istart += npyra;
     ncells += npyra;
   }
   if (tri != NULL) 
   {
     createGridElements4Tau(5, "TRI", ntri, istart, tri, GE);
-    PyList_Append(children4, GE); Py_INCREF(GE);
+    PyList_Append(children4, GE); Py_DECREF(GE);
     istart += ntri;
-    //ncells += ntri;
   }
   if (quad != NULL) 
   {
     createGridElements4Tau(7, "QUAD", nquad, istart, quad, GE);
-    PyList_Append(children4, GE); Py_INCREF(GE);
+    PyList_Append(children4, GE); Py_DECREF(GE);
     istart += nquad;
-    //ncells += nquad;
   }
   if (bctag != NULL)
   {
     // Create ZoneBC
     PyObject* children9 = PyList_New(0);
     PyObject* nzbc = Py_BuildValue("[sOOs]", "ZoneBC", Py_None, children9, "ZoneBC_t");
-    PyList_Append(children4, nzbc); Py_INCREF(nzbc);
+    PyList_Append(children4, nzbc); Py_DECREF(nzbc);
 
     // Build PL corresponding to tags
     size_t size = ntri+nquad;
-    size_t offset = ntetra + nhexa + npenta + npyra;
+    size_t nvol = ntetra + nhexa + npenta + npyra;
     std::map<E_Int, E_Int> tagmap; // tag -> nbre elements tagged
     for (size_t i = 0; i < size; i++)
     {
@@ -485,16 +509,16 @@ E_Int K_IO::GenIO::tauread(char* file, PyObject*& tree)
       // Create BC_t for tag
       PyObject* children10 = PyList_New(0);
       strcpy(bctype, "FamilySpecified");
-      sprintf(bcname, "BC%d", tag);
+      sprintf(bcname, "BC" SF_D_, tag);
       npy_dim_vals[0] = strlen(bctype);
       PyArrayObject* r10 = (PyArrayObject*)PyArray_EMPTY(1, &npy_dim_vals[0], NPY_STRING, 1);
       char* pp10 = (char*)PyArray_DATA(r10);
-      strcpy(pp10, bctype);
+      K_STRING::cpy(pp10, bctype, strlen(bctype), false);
       PyObject* bc = Py_BuildValue("[sOOs]", bcname, r10, children10, "BC_t");
-      PyList_Append(children9, bc); Py_INCREF(bc);
+      PyList_Append(children9, bc); Py_DECREF(bc);
       // Create point list
       npy_dim_vals[0] = 1;
-      npy_dim_vals[0] = nfaces;
+      npy_dim_vals[1] = nfaces;
 #ifdef E_DOUBLEINT
       PyArrayObject* r11 = (PyArrayObject*)PyArray_EMPTY(2, &npy_dim_vals[0], NPY_INT64, 1);
       int64_t* pp11 = (int64_t*)PyArray_DATA(r11);
@@ -505,28 +529,28 @@ E_Int K_IO::GenIO::tauread(char* file, PyObject*& tree)
       E_Int c = 0;
       for (size_t i = 0; i < size; i++)
       {
-        if (bctag[i] == tag) { pp11[c] = i+1+offset; c++; }
+        if (bctag[i] == tag) { pp11[c] = i+1+nvol; c++; }
       }
       PyObject* children11 = PyList_New(0);
       PyObject* pl = Py_BuildValue("[sOOs]", "PointList", r11, children11, "IndexArray_t");
-      PyList_Append(children10, pl); Py_INCREF(pl);
+      PyList_Append(children10, pl); Py_DECREF(pl);
       // Create GridLocation
       npy_dim_vals[0] = 10;
       PyArrayObject* r12 = (PyArrayObject*)PyArray_EMPTY(1, &npy_dim_vals[0], NPY_STRING, 1);
       char* pp12 = (char*)PyArray_DATA(r12);
-      strcpy(pp12, "FaceCenter");
+      K_STRING::cpy(pp12, "FaceCenter", 10, false);
       PyObject* children12 = PyList_New(0);
       PyObject* gl = Py_BuildValue("[sOOs]", "GridLocation", r12, children12, "GridLocation_t");
-      PyList_Append(children10, gl); Py_INCREF(gl);
+      PyList_Append(children10, gl); Py_DECREF(gl);
       // Create BC FamilyName
       PyObject* children13 = PyList_New(0);
-      sprintf(bctype, "BCType%d", tag);
+      sprintf(bctype, "BCType" SF_D_, tag);
       npy_dim_vals[0] = strlen(bctype);
       PyArrayObject* r13 = (PyArrayObject*)PyArray_EMPTY(1, &npy_dim_vals[0], NPY_STRING, 1);
       char* pp13 = (char*)PyArray_DATA(r13);
-      strcpy(pp13, bctype);
+      K_STRING::cpy(pp13, bctype, strlen(bctype), false);
       PyObject* famName = Py_BuildValue("[sOOs]", "FamilyName", r13, children13, "FamilyName_t");
-      PyList_Append(children10, famName); Py_INCREF(famName);
+      PyList_Append(children10, famName); Py_DECREF(famName);
     }
   }
 
@@ -574,6 +598,9 @@ E_Int K_IO::GenIO::tauwrite(char* file, PyObject* tree)
   
   PyObject* zone = zones[0];
 
+  // Write file attributes
+  nc_put_att_text(ncid, NC_GLOBAL, "type", 24, "Primary Grid: Tau Format");
+
   // Write connectivities
   std::vector<PyObject*> connects;
   K_PYTREE::getNodesFromType1(zone, "Elements_t", connects);
@@ -581,7 +608,8 @@ E_Int K_IO::GenIO::tauwrite(char* file, PyObject* tree)
   std::vector<PyArrayObject*> hook;
   int ni_tetra, ni_hexa, ni_penta, ni_pyra, ni_tri, ni_quad;
   int nj_tetra, nj_hexa, nj_penta, nj_pyra, nj_tri, nj_quad;
-  int ni_xc, ni_yc, ni_zc, ni_markers;
+  int no_of_points, no_of_markers;
+  int no_of_elements, no_of_surfaceelements;
   int var_tetra, var_hexa, var_penta, var_pyra, var_tri, var_quad;
   int var_xc, var_yc, var_zc, var_markers;
   E_Int nhexa=0; E_Int ntetra=0; E_Int npenta=0; E_Int npyra=0; E_Int ntri=0; E_Int nquad=0;
@@ -595,79 +623,109 @@ E_Int K_IO::GenIO::tauwrite(char* file, PyObject* tree)
     PyObject* er = K_PYTREE::getNodeFromName1(connects[i], "ElementRange");
     E_Int* erv = K_PYTREE::getValueAI(er, hook);
     E_Int eltType = cv[0];
-    E_Int size = erv[1]-erv[0]+1;
+    E_Int size0 = erv[1]-erv[0]+1;
     
+    // count elements
     if (eltType == 17) // HEXA
     {
-      nc_def_dim(ncid, "ni_of_hexaeders", size, &ni_hexa);
-      nc_def_dim(ncid, "nj_of_hexaeders", 8, &nj_hexa);
-      dimids[0] = ni_hexa; dimids[1] = nj_hexa;
-      nc_def_var(ncid, "points_of_hexaeders", NC_INT, 2, dimids, &var_hexa);
-      nhexa = size;
+      nhexa += size0;
     }
     else if (eltType == 10) // TETRA
     {
-      nc_def_dim(ncid, "ni_of_tetraeders", size, &ni_tetra);
-      nc_def_dim(ncid, "nj_of_tetraeders", 4, &nj_tetra);
-      dimids[0] = ni_tetra; dimids[1] = nj_tetra;
-      nc_def_var(ncid, "points_of_tetraeders", NC_INT, 2, dimids, &var_tetra);
-      ntetra = size;
+      ntetra += size0;
     }
     else if (eltType == 14) // PENTA
     {
-      nc_def_dim(ncid, "ni_of_prisms", size, &ni_penta);
-      nc_def_dim(ncid, "nj_of_prisms", 6, &nj_penta);
-      dimids[0] = ni_penta; dimids[1] = nj_penta;
-      nc_def_var(ncid, "points_of_prisms", NC_INT, 2, dimids, &var_penta);
-      npenta = size;
+      npenta += size0;
     }
     else if (eltType == 12) // PYRA
     {
-      nc_def_dim(ncid, "ni_of_pyramids", size, &ni_pyra);
-      nc_def_dim(ncid, "nj_of_pyramids", 5, &nj_pyra);
-      dimids[0] = ni_pyra; dimids[1] = nj_pyra;
-      nc_def_var(ncid, "points_of_pyramids", NC_INT, 2, dimids, &var_pyra);
-      npyra = size;
+      npyra += size0;
     }
     else if (eltType == 5) // TRI
     {
-      nc_def_dim(ncid, "ni_of_surfacetriangles", size, &ni_tri);
-      nc_def_dim(ncid, "nj_of_surfacetriangles", 3, &nj_tri);
-      dimids[0] = ni_tri; dimids[1] = nj_tri;
-      nc_def_var(ncid, "points_of_surfacetriangles", NC_INT, 2, dimids, &var_tri);
-      ntri = size;
+      ntri += size0;
     }
     else if (eltType == 7) // QUADS
     {
-      nc_def_dim(ncid, "ni_of_surfacequadrilaterals", size, &ni_quad);
-      nc_def_dim(ncid, "nj_of_surfacequadrilaterals", 4, &nj_quad);
-      dimids[0] = ni_quad; dimids[1] = nj_quad;
-      nc_def_var(ncid, "points_of_surfacequadrilaterals", NC_INT, 2, dimids, &var_quad);
-      nquad = size;
+      nquad += size0;
     }
   }
+
+  // create dim id and vars
+  if (nhexa > 0) // HEXA
+  {
+    nc_def_dim(ncid, "no_of_hexaeders", nhexa, &ni_hexa);
+    nc_def_dim(ncid, "points_per_hexaeder", 8, &nj_hexa);
+    dimids[0] = ni_hexa; dimids[1] = nj_hexa;
+    nc_def_var(ncid, "points_of_hexaeders", NC_INT, 2, dimids, &var_hexa);
+  }
+  if (ntetra > 0) // TETRA
+  {
+    nc_def_dim(ncid, "no_of_tetraeders", ntetra, &ni_tetra);
+    nc_def_dim(ncid, "points_per_tetraeder", 4, &nj_tetra);
+    dimids[0] = ni_tetra; dimids[1] = nj_tetra;
+    nc_def_var(ncid, "points_of_tetraeders", NC_INT, 2, dimids, &var_tetra);
+  }
+  if (npenta > 0) // PENTA
+  {
+    nc_def_dim(ncid, "no_of_prisms", npenta, &ni_penta);
+    nc_def_dim(ncid, "points_per_prism", 6, &nj_penta);
+    dimids[0] = ni_penta; dimids[1] = nj_penta;
+    nc_def_var(ncid, "points_of_prisms", NC_INT, 2, dimids, &var_penta);
+  }
+  if (npyra > 0) // PYRA
+  {
+    nc_def_dim(ncid, "no_of_pyramids", npyra, &ni_pyra);
+    nc_def_dim(ncid, "points_per_pyramids", 5, &nj_pyra);
+    dimids[0] = ni_pyra; dimids[1] = nj_pyra;
+    nc_def_var(ncid, "points_of_pyramids", NC_INT, 2, dimids, &var_pyra);
+  }
+  if (ntri > 0) // TRI
+  {
+    nc_def_dim(ncid, "no_of_surfacetriangles", ntri, &ni_tri);
+    nc_def_dim(ncid, "points_per_surfacetriangle", 3, &nj_tri);
+    dimids[0] = ni_tri; dimids[1] = nj_tri;
+    nc_def_var(ncid, "points_of_surfacetriangles", NC_INT, 2, dimids, &var_tri);
+  }
+  if (nquad > 0) // QUAD
+  {      
+    nc_def_dim(ncid, "no_of_surfacequadrilaterals", nquad, &ni_quad);
+    nc_def_dim(ncid, "points_per_surfacequadrilateral", 4, &nj_quad);
+    dimids[0] = ni_quad; dimids[1] = nj_quad;
+    nc_def_var(ncid, "points_of_surfacequadrilaterals", NC_INT, 2, dimids, &var_quad);
+  }
+
+  nc_def_dim(ncid, "no_of_elements", nhexa+ntetra+npenta+npyra, &no_of_elements);
+  nc_def_dim(ncid, "no_of_surfaceelements", ntri+nquad, &no_of_surfaceelements);
   
   E_Int nvertex = K_PYTREE::getNumberOfPointsOfZone(zone, hook);
     
-  nc_def_dim(ncid, "ni_of_xc", nvertex, &ni_xc);
-  dimids[0] = ni_xc;
+  nc_def_dim(ncid, "no_of_points", nvertex, &no_of_points);
+  dimids[0] = no_of_points;
   nc_def_var(ncid, "points_xc", NC_DOUBLE, 1, dimids, &var_xc);
-
-  nc_def_dim(ncid, "ni_of_yc", nvertex, &ni_yc);
-  dimids[0] = ni_yc;
   nc_def_var(ncid, "points_yc", NC_DOUBLE, 1, dimids, &var_yc);
-
-  nc_def_dim(ncid, "ni_of_zc", nvertex, &ni_zc);
-  dimids[0] = ni_zc;
   nc_def_var(ncid, "points_zc", NC_DOUBLE, 1, dimids, &var_zc);
 
-  nc_def_dim(ncid, "ni_of_markers", ntri+nquad, &ni_markers);
-  dimids[0] = ni_markers;
+  PyObject* zbc = K_PYTREE::getNodeFromName1(zone, "ZoneBC");
+  std::vector<PyObject*> BCs;
+  if (zbc != NULL) K_PYTREE::getNodesFromType1(zbc, "BC_t", BCs);
+  nc_def_dim(ncid, "no_of_markers", BCs.size(), &no_of_markers);
+  
+  dimids[0] = no_of_surfaceelements;
   nc_def_var(ncid, "boundarymarker_of_surfaces", NC_INT, 1, dimids, &var_markers);
 
   nc_enddef(ncid); // end of define mode
 
-  // Write arrays
+  // Write arrays, connectivities are concatenated
+  std::vector<E_Int> oldStart(connects.size()); // old start of connect
+  std::vector<E_Int> oldEnd(connects.size()); // old end of connect
+  std::vector<E_Int> newStart(connects.size()); // new start of connect
+  int shexa=0, stetra=0, spenta=0, spyra=0, stri=0, squad=0;
+  int phexa=1, ptetra=nhexa+1, ppenta=nhexa+ntetra+1, ppyra=nhexa+ntetra+npenta+1;
+  int ptri=nhexa+ntetra+npenta+npyra+1, pquad=nhexa+ntetra+npenta+npyra+ntri+1;
+  size_t start[2]; size_t scount[2];
+
   for (size_t i = 0; i < connects.size(); i++)
   {
     E_Int* cv = K_PYTREE::getValueAI(connects[i], hook);
@@ -677,6 +735,8 @@ E_Int K_IO::GenIO::tauwrite(char* file, PyObject* tree)
     E_Int* erv = K_PYTREE::getValueAI(er, hook);
     E_Int eltType = cv[0];
     E_Int size = erv[1]-erv[0]+1;
+    E_Int size0 = size;
+
     if (eltType == 17) // HEXA
     { size *= 8; }
     else if (eltType == 10) // TETRA
@@ -691,35 +751,85 @@ E_Int K_IO::GenIO::tauwrite(char* file, PyObject* tree)
     { size *= 4; }
 
     int32_t* ecv2 = new int32_t [size];
-    for (E_Int i = 0; i < size; i++) { ecv2[i] = ecv[i]-1; }
+    for (E_Int j = 0; j < size; j++) { ecv2[j] = ecv[j]-1; }
 
     if (eltType == 17) // HEXA
     {
-      nc_put_var_int(ncid, var_hexa, ecv2);
+      //nc_put_var_int(ncid, var_hexa, ecv2);
+      start[0]=shexa; start[1]=0;
+      scount[0]=size0; scount[1]=8;
+      nc_put_vara_int(ncid, var_hexa, start, scount, ecv2);
+      shexa += size0;
+      oldStart[i] = erv[0]; oldEnd[i] = erv[1];
+      newStart[i] = phexa;
+      phexa += size0;
     }
     else if (eltType == 10) // TETRA
     {
-      nc_put_var_int(ncid, var_tetra, ecv2);
+      //nc_put_var_int(ncid, var_tetra, ecv2);
+      start[0]=stetra; start[1]=0;
+      scount[0]=size0; scount[1]=4;
+      nc_put_vara_int(ncid, var_tetra, start, scount, ecv2);
+      stetra += size0;
+      oldStart[i] = erv[0]; oldEnd[i] = erv[1];
+      newStart[i] = ptetra;
+      ptetra += size0;
     }
     else if (eltType == 14) // PENTA
     {
-      nc_put_var_int(ncid, var_penta, ecv2);
+      //nc_put_var_int(ncid, var_penta, ecv2);
+      start[0]=spenta; start[1]=0;
+      scount[0]=size0; scount[1]=6;
+      nc_put_vara_int(ncid, var_penta, start, scount, ecv2);
+      spenta += size0;
+      oldStart[i] = erv[0]; oldEnd[i] = erv[1];
+      newStart[i] = ppenta;
+      ppenta += size0;
     }
     else if (eltType == 12) // PYRA
     {
-      nc_put_var_int(ncid, var_pyra, ecv2);
+      //nc_put_var_int(ncid, var_pyra, ecv2);
+      start[0]=spyra; start[1]=0;
+      scount[0]=size0; scount[1]=5;
+      nc_put_vara_int(ncid, var_pyra, start, scount, ecv2);
+      spyra += size0;
+      oldStart[i] = erv[0]; oldEnd[i] = erv[1];
+      newStart[i] = ppyra;
+      ppyra += size0;
     }
     else if (eltType == 5) // TRI
     {
-      nc_put_var_int(ncid, var_tri, ecv2);
+      //nc_put_var_int(ncid, var_tri, ecv2);
+      start[0]=stri; start[1]=0;
+      scount[0]=size0; scount[1]=3;
+      nc_put_vara_int(ncid, var_tri, start, scount, ecv2);
+      stri += size0;
+      oldStart[i] = erv[0]; oldEnd[i] = erv[1];
+      newStart[i] = ptri;
+      ptri += size0;
     }
     else if (eltType == 7) // QUADS
     {
-      nc_put_var_int(ncid, var_quad, ecv2);
+      //nc_put_var_int(ncid, var_quad, ecv2);
+      start[0]=squad; start[1]=0;
+      scount[0]=size0; scount[1]=4;
+      nc_put_vara_int(ncid, var_quad, start, scount, ecv2);
+      squad += size0;
+      oldStart[i] = erv[0]; oldEnd[i] = erv[1];
+      newStart[i] = pquad;
+      pquad += size0;
     }
     delete [] ecv2;
   }
 
+  E_Int possurf = nhexa+ntetra+npenta+npyra;
+  //printf("possurf=%d\n", possurf);
+  //for (size_t i = 0; i < oldStart.size(); i++)
+  //{
+  //  printf("oldStart[%d] = %d | ", i, oldStart[i]);
+  //  printf("newStart[%d] = %d\n", i, newStart[i]);
+  //}
+  
   // Write coordinates
   PyObject* gc = K_PYTREE::getNodeFromName1(zone, "GridCoordinates");
     
@@ -734,16 +844,11 @@ E_Int K_IO::GenIO::tauwrite(char* file, PyObject* tree)
   PyObject* zc = K_PYTREE::getNodeFromName1(gc, "CoordinateZ");
   E_Float* zcv = K_PYTREE::getValueAF(zc, hook);
   nc_put_var_double(ncid, var_zc, zcv);
-
+  
   // Write boundary markers
-  PyObject* zbc = K_PYTREE::getNodeFromName1(zone, "ZoneBC");
-
-  std::vector<PyObject*> BCs;
-  K_PYTREE::getNodesFromType1(zbc, "BC_t", BCs);
-
   E_Int nmarkers = ntri+nquad;
-  E_Int nvol = ntetra+nhexa+npyra+npenta;
-  E_Int* markers = new E_Int [nmarkers];
+  //E_Int nvol = ntetra+nhexa+npyra+npenta;
+  int32_t* markers = new int32_t [nmarkers];
   for (E_Int i = 0; i < nmarkers; i++) markers[i] = 0;
 
   E_Int count = 1; // BC count (=marker count)
@@ -751,14 +856,19 @@ E_Int K_IO::GenIO::tauwrite(char* file, PyObject* tree)
   {
     // PointRange
     PyObject* er = K_PYTREE::getNodeFromName1(BCs[i], "ElementRange");
+    if (er == NULL) er = K_PYTREE::getNodeFromName1(BCs[i], "PointRange");
     if (er != NULL)
     {
       E_Int* erv = K_PYTREE::getValueAI(er, hook);
-      for (E_Int j = erv[0]; j < erv[1]; j++)
+      //printf("BC %d: %d %d\n", count, erv[0], erv[1]);
+      for (E_Int j = erv[0]; j <= erv[1]; j++)
       {
-        off = j-1-nvol;
+        //off = j-1-nvol;
+        off = newIndex(j, oldStart, oldEnd, newStart)-possurf;
+        //if (off != j-1-nvol) 
+        //printf("off=%d %d -> count=%d\n", off, j-1-nvol, count);
         off = std::min(off, nmarkers-1);
-        off = std::max(off, 0);
+        off = std::max(off, E_Int(0));
         markers[off] = count;
       }
     }
@@ -771,9 +881,11 @@ E_Int K_IO::GenIO::tauwrite(char* file, PyObject* tree)
       E_Int* plv = K_PYTREE::getValueAI(pl, ni, nj, hook);
       for (E_Int j = 0; j < ni*nj; j++)
       {
-        off = plv[j]-1-nvol;
+        //off = plv[j]-1-nvol;
+        off = newIndex(plv[j], oldStart, oldEnd, newStart)-possurf;
+        //printf("off=%d %d\n", off, plv[j]-1-nvol);
         off = std::min(off, nmarkers-1);
-        off = std::max(off, 0);
+        off = std::max(off, E_Int(0));
         markers[off] = count;
       }
     }

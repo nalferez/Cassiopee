@@ -147,8 +147,7 @@ def generateIBMMesh_legacy(tb, vmin=15, snears=0.01, dfar=10., dfarList=[], DEPT
 
     # retourne les 4 quarts (en 2D) de l'octree parent 2 niveaux plus haut
     # et les 8 octants en 3D sous forme de listes de zones non structurees
-    parento = buildParentOctrees__(o, tb, snears=snears, snearFactor=4., dfar=dfar, dfarList=dfarList, to=to, tbox=tbox, snearsf=snearsf,
-                                   dimPb=dimPb, vmin=vmin, fileout=None, rank=0, dfarDir=dfarDir, octreeMode=octreeMode)
+    parento = buildParentOctrees__(o, tb, dimPb=dimPb, vmin=vmin, snears=snears, snearFactor=4., dfars=dfar, dfarDir=dfarDir, to=to, tbox=tbox, snearsf=snearsf, octreeMode=octreeMode)
     res = generateCartMesh__(o, parento=parento, dimPb=dimPb, vmin=vmin, DEPTH=DEPTH, sizeMax=sizeMax,
                              check=check, externalBCType=externalBCType)
     return res
@@ -688,17 +687,9 @@ def buildParentOctrees__(o, tb, dimPb=3, vmin=15, snears=0.01, snearFactor=1., d
                     OCTREEPARENTS.append(parento2)
     return OCTREEPARENTS
 
-# main function
-def generateIBMMesh(tb, dimPb=3, vmin=15, snears=0.01, dfars=10., dfarDir=0,
-                    tbox=None, snearsf=None, check=False, to=None,
-                    ext=2, optimized=1, expand=3, octreeMode=0):
-    """Generates the full Cartesian mesh for IBMs."""
-    import KCore.test as test
-    # refinementSurfFile: surface meshes describing refinement zones
-    if tbox is not None:
-        if isinstance(tbox, str): tbox = C.convertFile2PyTree(tbox)
-        else: tbox = tbox
-
+def generateIBMOctree(tb, dimPb=3, vmin=15, snears=0.01, dfars=10., dfarDir=0,
+                      tbox=None, snearsf=None, check=False, to=None,
+                      expand=3, octreeMode=0):
     ## tbox = tbox(area refinement)[legacy tbox] + tb(area for one over)[tbOneOver] + tb(zones to keep as F1)[tbF1]
     ## here we divide tbox into tbOneOver (rectilinear region)  & tbF1 (WM F1 approach region) & tbox; tbox will henceforth only consist of the area that will be refined.
     ## Note: tb(zones to keep as F1)[tbF1] is still in development, is experimental, & subject to major/minor changes with time. Please use with a lot of caution & see A.Jost @ DAAA/DEFI [28/08/2024] as
@@ -706,11 +697,13 @@ def generateIBMMesh(tb, dimPb=3, vmin=15, snears=0.01, dfars=10., dfarDir=0,
     tbOneOverF1 = None
     tbOneOver   = None
     tbF1        = None
+    tbRM        = None
     if tbox:
+        tbRM        = Internal.getNodesFromNameAndType(tbox, '*RM*'     , 'CGNSBase_t')
         tbOneOver   = Internal.getNodesFromNameAndType(tbox, '*OneOver*', 'CGNSBase_t')
         tbF1        = Internal.getNodesFromNameAndType(tbox, '*KeepF1*' , 'CGNSBase_t')
         tbOneOverF1 = tbOneOver+tbF1
-        tbox        = Internal.rmNodesByName(Internal.rmNodesByName(tbox, '*OneOver*'), '*KeepF1*')
+        tbox        = Internal.rmNodesByName(Internal.rmNodesByName(Internal.rmNodesByName(tbox, '*OneOver*'), '*KeepF1*'), '*RM*')
         if len(Internal.getBases(tbox))==0: tbox=None
 
     # Octree identical on all procs
@@ -725,10 +718,10 @@ def generateIBMMesh(tb, dimPb=3, vmin=15, snears=0.01, dfars=10., dfarDir=0,
         o = buildOctree(tb, dimPb=dimPb, vmin=vmin, snears=snears, snearFactor=1., dfars=dfars, dfarDir=dfarDir,
                         tbox=tbox, snearsf=snearsf, to=to, expand=expand, octreeMode=octreeMode)
 
-    # build parent octree 3 levels higher
-    # returns a list of 4 octants of the parent octree in 2D and 8 in 3D
-    parento = buildParentOctrees__(o, tb, dimPb=dimPb, vmin=vmin, snears=snears, snearFactor=4., dfars=dfars, dfarDir=dfarDir,
-                                   tbox=tbox, snearsf=snearsf, to=to, octreeMode=octreeMode)
+        # build parent octree 3 levels higher
+        # returns a list of 4 octants of the parent octree in 2D and 8 in 3D
+        parento = buildParentOctrees__(o, tb, dimPb=dimPb, vmin=vmin, snears=snears, snearFactor=4., dfars=dfars, dfarDir=dfarDir,
+                                       tbox=tbox, snearsf=snearsf, to=to, octreeMode=octreeMode)
 
     # adjust the extent of the box defining the symmetry plane if in tb
     baseSYM = Internal.getNodeFromName1(tb,"SYM")
@@ -767,7 +760,37 @@ def generateIBMMesh(tb, dimPb=3, vmin=15, snears=0.01, dfars=10., dfarDir=0,
             to = P.selectCells(to,'{centers:cellN}>0.')
             o = Internal.getZones(to)[0]
 
+    if tbRM:
+        to       = C.newPyTree(["OCTREE",o])
+        bodies   = [Internal.getBases(tbRM)]
+        nBasesRM = len(bodies)
+        BM2      = numpy.ones((2,nBasesRM),dtype=Internal.E_NpyInt)
+        if dimPb ==2:
+            XRAYDIM1 = 20000; XRAYDIM2 = XRAYDIM1
+            to = X.blankCells(to, bodies, BM2, blankingType='node_in', XRaydim1=XRAYDIM1, XRaydim2=XRAYDIM2, dim=dimPb, cellNName='cellN')
+        else:
+            to = X.blankCellsTri(to, bodies, BM2, blankingType='node_in', cellNName='cellN')
+        to = P.selectCells(to,'{cellN}<=0.',strict=1)
+        C._initVars(to,'{cellN}=1')
+        o = Internal.getZones(to)[0]
+
     if Cmpi.rank==0 and check: C.convertPyTree2File(o, 'octree.cgns')
+    return o, parento, tbOneOver, tbF1, tbOneOverF1, symmetry
+
+# main function
+def generateIBMMesh(tb, dimPb=3, vmin=15, snears=0.01, dfars=10., dfarDir=0,
+                    tbox=None, snearsf=None, check=False, to=None,
+                    ext=2, optimized=1, expand=3, octreeMode=0):
+    """Generates the full Cartesian mesh for IBMs."""
+    import KCore.test as test
+    # refinementSurfFile: surface meshes describing refinement zones
+    if tbox is not None:
+        if isinstance(tbox, str): tbox = C.convertFile2PyTree(tbox)
+        else: tbox = tbox
+
+    o, parento, tbOneOver, tbF1, tbOneOverF1, symmetry = generateIBMOctree(tb, dimPb=dimPb, vmin=vmin, snears=snears, dfars=dfars, dfarDir=dfarDir,
+                                                                           tbox=tbox, snearsf=snearsf, check=check, to=to,
+                                                                           expand=expand, octreeMode=octreeMode)
 
     # Split octree
     bb = G.bbox(o)
@@ -857,14 +880,16 @@ def generateIBMMesh(tb, dimPb=3, vmin=15, snears=0.01, dfars=10., dfarDir=0,
 
     test.printMem(">>> cart grids --> rectilinear grids [end]")
 
-    zones = Internal.getZones(t)
-    coords = C.getFields(Internal.__GridCoordinates__, zones, api=2)
     if symmetry==0: extBnd = 0
     else: extBnd = ext-1 # nb de ghost cells = ext-1
-    coords, rinds = Generator.extendCartGrids(coords, ext=ext, optimized=optimized, extBnd=extBnd)
-    C.setFields(coords, zones, 'nodes')
-    for noz in range(len(zones)):
-        Internal.newRind(value=rinds[noz], parent=zones[noz])
+    if ext > 0:
+        zones = Internal.getZones(t)
+        coords = C.getFields(Internal.__GridCoordinates__, zones, api=2)
+        coords, rinds = Generator.extendCartGrids(coords, ext=ext, optimized=optimized, extBnd=extBnd)
+        C.setFields(coords, zones, 'nodes')
+        for noz in range(len(zones)):
+            Internal.newRind(value=rinds[noz], parent=zones[noz])
+
     Cmpi._rmXZones(t)
     coords = None; zones = None
 
@@ -1130,7 +1155,7 @@ def buildOctree(tb, dimPb=3, vmin=15, snears=0.01, snearFactor=1., dfars=10., df
 #==============================================================================
 #
 #==============================================================================
-def createRefinementBodies(tb, dimPb=3, hmod=0.01, pointsPerUnitLength=None):
+def createRefinementBodies(tb, dimPb=3, hmod=0.01, hmax=None, pointsPerUnitLength=None):
     """Creates refinement bodies from the immersed boundaries to extend the finest resolution in the fluid domain."""
     import Geom.IBM as D_IBM
     import Geom.Offset as O
@@ -1144,13 +1169,14 @@ def createRefinementBodies(tb, dimPb=3, hmod=0.01, pointsPerUnitLength=None):
     tb = Internal.rmNodesFromName(tb, "SYM")
     tb = Internal.rmNodesFromName(tb, "*_sym")
 
-    snears    = Internal.getNodesFromName(tb, 'snear')
-    h         = min(snears, key=lambda x: x[1])[1][0]
+    if hmax is None:
+        snears = Internal.getNodesFromName(tb, 'snear')
+        hmax   = min(snears, key=lambda x: x[1])[1][0]
 
     for z in Internal.getZones(tb):
         snear = Internal.getNodeFromName(z, 'snear')[1]
         zname = z[0]
-        if snear <= 1.5*h:
+        if snear <= 1.5*hmax:
             if dimPb == 2:
                 z2 = D_IBM.closeContour(z)
             else:
@@ -1476,7 +1502,7 @@ def _dist2wallNearBody__(t, tb, type='ortho', signed=0, dim=3, loc='centers', mo
         tbBB=G.BB(tb)
 
         ##PRT1 - Zones flagged by the intersection of the bounding boxes of t and tb
-        interDict = X.getIntersectingDomains(tBB, tbBB)
+        interDict = X.getIntersectingDomains(tBB, tbBB, taabb=tBB, taabb2=tbBB)
         zt       = []
         zt_names = []
         for i in interDict:
