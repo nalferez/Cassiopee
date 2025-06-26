@@ -81,13 +81,13 @@ def Send(obj, dest=None, tag=0):
 # isend - non blocking send data from a proc to another proc (using pickle, small data)
 #=====================================================================================
 def isend(obj, dest=None, tag=0):
-    KCOMM.isend(obj, dest, tag=tag)
+    return KCOMM.isend(obj, dest, tag=tag)
 
 #=====================================================================================
 # iSend - non blocking send data from a proc to another proc (for numpys)
 #=====================================================================================
 def Isend(obj, dest=None, tag=0):
-    KCOMM.Isend(obj, dest, tag=tag)
+    return KCOMM.Isend(obj, dest, tag=tag)
 
 #==============================================================================
 # receive - receive data from a proc
@@ -541,8 +541,8 @@ def convertPyTree2File(t, fileName, format=None, links=[],
     else:
         go = KCOMM.recv(source=rank-1)
         if go == 1:
-            if ignoreProcNodes: Distributed.writeZones(tp, fileName, format=format, proc=-1, links=links)
-            else: Distributed.writeZones(tp, fileName, format=format, proc=rank, links=links)
+            if ignoreProcNodes: Distributed.writeZones(tp, fileName, format=format, proc=-1, links=links, isize=isize, rsize=rsize)
+            else: Distributed.writeZones(tp, fileName, format=format, proc=rank, links=links, isize=isize, rsize=rsize)
         else:
             if nzones > 0:
                 C.convertPyTree2File(tp, fileName, format=format, links=links, isize=isize, rsize=rsize); go = 1
