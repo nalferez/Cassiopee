@@ -464,7 +464,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
 
   nvars = 0;
 
-  beg_param_grp = 13 + param_int[0][4] + param_int[0][19] + 1 + param_int[0][19 + 1 + param_int[0][4] + param_int[0][19] ] + 6 + 6 + 6 +1;
+  beg_param_grp = 13 + param_int[0][4] + param_int[0][22] + 1 + param_int[0][22 + 1 + param_int[0][4] + param_int[0][22] ] + 6 + 6 + 6 +1+3;
   nbgrptot      = param_int[0][beg_param_grp];
 
   for (E_Int g = 1 ; g <= grp2transfer[0]; g++)
@@ -699,8 +699,8 @@ void K_CONNECTOR::setInterpTransfersIntra(
           {*/
            if (varType == 112)
            {
-              E_Int beg_param_grpR = 13 + param_int[NoR][4] + param_int[NoR][19] + 1 + param_int[NoR][19 + 1+ param_int[NoR][4] + param_int[NoR][19] ] + 6 + 6 + 6 +1;
-              E_Int beg_param_grpD = 13 + param_int[NoD][4] + param_int[NoD][19] + 1 + param_int[NoD][19 + 1+ param_int[NoD][4] + param_int[NoD][19] ] + 6 + 6 + 6 +1;
+              E_Int beg_param_grpR = 13 + param_int[NoR][4] + param_int[NoR][22] + 1 + param_int[NoR][22 + 1+ param_int[NoR][4] + param_int[NoR][22] ] + 6 + 6 + 6 +1+3;
+              E_Int beg_param_grpD = 13 + param_int[NoD][4] + param_int[NoD][22] + 1 + param_int[NoD][22 + 1+ param_int[NoD][4] + param_int[NoD][22] ] + 6 + 6 + 6 +1+3;
 /*
               std:cout << "\n zone donnor : " << NoD << " zone receveur " << NoR << "\n"<<"\n param_grp NoD ";
 
@@ -1048,7 +1048,7 @@ void K_CONNECTOR::setInterpTransfersInter(
 
   nvars = 0;
 
-  beg_param_grp = 13 + param_int[0][4] + param_int[0][19] + 1 + param_int[0][19 + 1 + param_int[0][4] + param_int[0][19] ] + 6 + 6 + 6 +1;
+  beg_param_grp = 13 + param_int[0][4] + param_int[0][22] + 1 + param_int[0][22 + 1 + param_int[0][4] + param_int[0][22] ] + 6 + 6 + 6 +1+3;
   nbgrptot      = param_int[0][beg_param_grp];
 
 
@@ -1447,7 +1447,7 @@ if (has_data_to_send) {
                       if (varType == 112)
                       {
 
-                       E_Int beg_param_grpD = 13 + param_int[NoD][4] + param_int[NoD][19] + 1 + param_int[NoD][19 + 1 + param_int[NoD][4] + param_int[NoD][19] ] + 6 + 6 + 6 +1;
+                       E_Int beg_param_grpD = 13 + param_int[NoD][4] + param_int[NoD][22] + 1 + param_int[NoD][22 + 1 + param_int[NoD][4] + param_int[NoD][22] ] + 6 + 6 + 6 +1+3;
 
                        E_Int eqst = 0;
 
@@ -1719,7 +1719,7 @@ void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& p
      if (grp2transfer[0]>0)
      { // dNami transfer groups from varstored
 
-     beg_param_grp = 13 + param_int[0][4] + param_int[0][19] + 1 + param_int[0][19 + 1 + param_int[0][4] + param_int[0][19] ] + 6 + 6 + 6 +1;
+     beg_param_grp = 13 + param_int[0][4] + param_int[0][22] + 1 + param_int[0][22 + 1 + param_int[0][4] + param_int[0][22] ] + 6 + 6 + 6 +1+3;
      nbgrptot      = param_int[0][beg_param_grp];
 /*       std:cout << "\n [Recv] param_grp ";
        for (E_Int addr = 0;addr<5 ;addr++){
@@ -1780,7 +1780,7 @@ void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& p
 
 
              E_Int eqst = 0;
-             E_Int beg_param_grpR = 13 + param_int[NoR][4] + param_int[NoR][19] + 1 + param_int[NoR][19 + 1 + param_int[NoR][4] + param_int[NoR][19] ] + 6 + 6 + 6 +1;
+             E_Int beg_param_grpR = 13 + param_int[NoR][4] + param_int[NoR][22] + 1 + param_int[NoR][22 + 1 + param_int[NoR][4] + param_int[NoR][22] ] + 6 + 6 + 6 +1+3;
 
              for (E_Int g = 1 ; g <= grp2transfer[0]; g++){
 

@@ -1,4 +1,4 @@
-/*    
+/*
     Copyright 2013-2025 Onera.
 
     This file is part of Cassiopee.
@@ -68,13 +68,13 @@
 #define VECLENGTH     8
 #elif (CACHELINE == 32)
 #define VECLENGTH     4
-#else 
+#else
 #define VECLENGTH     4
 #endif
 
 #define NBR_SOCKET      1
 
-#define NIJK            1
+#define NIJK            19
 #define NIJK_MTR          5
 #define NELTS             7
 #define NELTS_0           8
@@ -85,7 +85,7 @@
 #define NFACE_ELCON_SIZE 12
 #define NIJK_VENT      15
 #define IJKV           20
-#define EFF_LOOP       23   
+#define EFF_LOOP       23
 #define NDIMD_SDM      23
 #define MXSSDOM_LU     24
 #define ITYPZONE       25
@@ -93,14 +93,14 @@
 #define IFLOW          27
 #define ILES           28
 #define ITYPCP         29
-#define EFF_I0         29   
+#define EFF_I0         29
 #define SIZE_SSDOM     30
 #define KFLUDOM        33
 #define LALE           34
 #define IFLAGFLT       35
-#define EFF_NONZ       34   
-#define EFF_IDIR       35   
-#define EFF_NDF        36   
+#define EFF_NONZ       34
+#define EFF_IDIR       35
+#define EFF_NDF        36
 #define NEQ            36
 #define NEQ_IJ         37
 #define NEQ_K          38
@@ -111,9 +111,9 @@
 #define NDIMDX_MTR     43
 #define NDIMDX_VENT    44
 #define IO_THREAD      45
-#define DTLOC          46   
+#define DTLOC          46
 #define SA_INT         47
-                                                  
+
 #define RK	       52
 #define LEVEL	       53
 #define EXPLOC         54
@@ -150,22 +150,22 @@
 
 /*LBM*/
 #define NEQ_LBM             89
-#define PT_LBM_Cs           90  
-#define PT_LBM_Ws           91 
-#define LBM_COL_OP          92 
-#define LBM_COLL_MODEL      92 
-#define PT_LBM_Cminus       93 
-#define PT_LBM_BC           94 
-#define LBM_NQ_BC           95 
-#define PT_LBM_H2H3         96 
-#define PT_LBM_SPEC         97 
-#define LBM_FILTER          98 
-#define PT_LBM_FILTER_WGHT  99 
-#define LBM_FILTER_SZ       100 
-#define PT_LBM_FILTER_STNCL 101 
-#define LBM_SPONGE          102 
-#define LBM_SPONGE_SIZE     103 
-#define LBM_SPONGE_PREP     104 
+#define PT_LBM_Cs           90
+#define PT_LBM_Ws           91
+#define LBM_COL_OP          92
+#define LBM_COLL_MODEL      92
+#define PT_LBM_Cminus       93
+#define PT_LBM_BC           94
+#define LBM_NQ_BC           95
+#define PT_LBM_H2H3         96
+#define PT_LBM_SPEC         97
+#define LBM_FILTER          98
+#define PT_LBM_FILTER_WGHT  99
+#define LBM_FILTER_SZ       100
+#define PT_LBM_FILTER_STNCL 101
+#define LBM_SPONGE          102
+#define LBM_SPONGE_SIZE     103
+#define LBM_SPONGE_PREP     104
 
 #define flag_streaming              105
 #define flag_macro                  106
@@ -175,7 +175,7 @@
 #define LBM_BConQstar               110
 #define flag_BConQstar_switch       111
 
-/*LBM - IBM*/ 
+/*LBM - IBM*/
 #define LBM_IBC             112
 #define LBM_IBC_NUM         113
 #define PT_LBM_IBC_LIST     114
@@ -187,9 +187,9 @@
 
 /*Sponge*/
 #define LBM_spng_xmin         119
-#define LBM_spng_xmax         120 
+#define LBM_spng_xmax         120
 #define LBM_spng_ymin         121
-#define LBM_spng_ymax         122 
+#define LBM_spng_ymax         122
 #define LBM_spng_zmin         123
 #define LBM_spng_zmax         124
 #define LBM_CORR_TERM         125
@@ -197,7 +197,7 @@
 #define LBM_HLBM              127
 #define LBM_NS                128
 
-/*IBM*/ 
+/*IBM*/
 #define IBC_PT_FLUX           129
 
 /* SA options */
@@ -219,7 +219,7 @@
 #define BC_FEN        2
 #define BC_NBDATA     8
 
- 
+
 
 /*PARAM REAL*/
 #define DTC          0
@@ -238,9 +238,9 @@
 #define XMUL0       11
 #define TEMP0       12
 #define CS          13
-#define EPSI_NEWTON 14  
-#define CFL         15  
-#define SA_REAL     16  
+#define EPSI_NEWTON 14
+#define CFL         15
+#define SA_REAL     16
 #define VXINF       19
 #define VYINF       20
 #define VZINF       21
@@ -257,10 +257,10 @@
 #define PSIROE      34
 #define SFD_CHI     35
 #define SFD_DELTA   36
-#define EPSI_INFLOW 37  
-#define PRANDT_TUR  38  
-#define EPSI_LINEAR 39  
-#define HPC_CUPS    40  
+#define EPSI_INFLOW 37
+#define PRANDT_TUR  38
+#define EPSI_LINEAR 39
+#define HPC_CUPS    40
 #define BC_DATA     41
 
 /*LBM*/
@@ -279,7 +279,7 @@
 #define LBM_DX                  54
 
 /*schema HYPERSONIC*/
-#define HYPER_COEF1  55  
+#define HYPER_COEF1  55
 #define HYPER_COEF2  56
 
 /*IBM WL*/
@@ -288,9 +288,9 @@
 #define NBPTS_LINELETS 59
 
 /*Wire Model - IBM*/
-#define DeltaVWire   60  
+#define DeltaVWire   60
 #define KWire        61
-#define DiameterWire 62  
+#define DiameterWire 62
 #define CtWire       63
 
 /*Rotation - IBM*/
@@ -306,7 +306,7 @@
 #define NUDGING_EQ6   71
 
 /*CONSTANTS*/
-#define SA_CKARM    0.41 
+#define SA_CKARM    0.41
 #define SA_CB1      0.1355
 #define SA_CB2      0.622
 #define SA_CV1      357.911
@@ -320,23 +320,23 @@
 #define SA_RCTEDES  0.65
 #define SA_CROT     2.0
 
-#define SA_IDES      1   
-#define SA_IDIST     2   
-#define SA_ISPAX     3   
-#define SA_IZGRIS    4   
-#define SA_IPROD     5   
-#define SA_AZGRIS    1   
-#define SA_ADDES     2   
-#define SA_RATIOM    3   
+#define SA_IDES      1
+#define SA_IDIST     2
+#define SA_ISPAX     3
+#define SA_IZGRIS    4
+#define SA_IPROD     5
+#define SA_AZGRIS    1
+#define SA_ADDES     2
+#define SA_RATIOM    3
 
-#define METRIC_TI    0   
-#define METRIC_TI0   1   
-#define METRIC_VENT  2   
-#define METRIC_TIDF  3   
-#define METRIC_RDM   4   
-#define METRIC_INDM  5   
-#define METRIC_ITLU  6   
-#define METRIC_DEGEN 7   
+#define METRIC_TI    0
+#define METRIC_TI0   1
+#define METRIC_VENT  2
+#define METRIC_TIDF  3
+#define METRIC_RDM   4
+#define METRIC_INDM  5
+#define METRIC_ITLU  6
+#define METRIC_DEGEN 7
 
 #define METRIC_TI_NG    0
 #define METRIC_VOL_NG   1

@@ -38,7 +38,7 @@ switch (type)
       }
     }
     break;
-    
+
   case 2: // Structure Lineaire O2 par tetra
    for (E_Int ne    = 0     ; ne    < nvars_loc ; ne++)
     {
@@ -51,14 +51,14 @@ switch (type)
       indR   = rcvPts[noind];
       ind000 = donorPts[noind];
 
-      ind100 = ind000 +1; 
-      ind010 = ind000 +imd; 
-      ind110 = ind100 +imd; 
+      ind100 = ind000 +1;
+      ind010 = ind000 +imd;
+      ind110 = ind100 +imd;
       ind001 = ind000+imdjmd;
       ind101 = ind100+imdjmd;
       ind011 = ind010+imdjmd;
       ind111 = ind110+imdjmd;
-    
+
       val  = ptrCoefs[ indCoef     ]*vectOfDnrFields[ne][ind000];
       val += ptrCoefs[ indCoef + 1 ]*vectOfDnrFields[ne][ind100];
       val += ptrCoefs[ indCoef + 2 ]*vectOfDnrFields[ne][ind010];
@@ -73,7 +73,7 @@ switch (type)
      }
     }
     break;
-    
+
   case 22:// O2CF 2D
     for (E_Int ne    = 0     ; ne    < nvars_loc ; ne++)
     {
@@ -85,9 +85,9 @@ switch (type)
     {
       indR  = rcvPts[noind];
       ind00 = donorPts[noind];
-      ind10 = ind00 +1; 
-      ind01 = ind00 +imd; 
-      ind11 = ind10 +imd; 
+      ind10 = ind00 +1;
+      ind01 = ind00 +imd;
+      ind11 = ind10 +imd;
 
       val  = ptrCoefs[ indCoef     ]*vectOfDnrFields[ne][ind00];
       val += ptrCoefs[ indCoef + 1 ]*vectOfDnrFields[ne][ind10];
@@ -102,7 +102,7 @@ switch (type)
 
   case 3: // Lagrange O3
    for (E_Int ne    = 0     ; ne    < nvars_loc ; ne++)
-   { 
+   {
    indCoef   = (pt_deb-ideb)*sizecoefs +  shiftCoef;
      for (E_Int noind = pt_deb; noind < pt_fin; noind++)
      {
@@ -111,7 +111,7 @@ switch (type)
       k     = indD0/imdjmd;
       j     = (indD0-k*imdjmd)/imd;
       i     = (indD0-j*imd-k*imdjmd);
-    
+
       val=0.;
       for (E_Int kk=0; kk<3; kk++)
         for (E_Int jj=0; jj<3; jj++)
@@ -127,10 +127,10 @@ switch (type)
      }
    }
    break;
-     
+
   case 44: // Lagrange O4
    for (E_Int ne    = 0     ; ne    < nvars_loc ; ne++)
-   { 
+   {
    indCoef   = (pt_deb-ideb)*sizecoefs +  shiftCoef;
      for (E_Int noind = pt_deb; noind < pt_fin; noind++)
      {
@@ -139,7 +139,7 @@ switch (type)
       k     = indD0/imdjmd;
       j     = (indD0-k*imdjmd)/imd;
       i     = (indD0-j*imd-k*imdjmd);
-    
+
       val=0.;
       for (E_Int kk=0; kk<4; kk++)
         for (E_Int jj=0; jj<4; jj++)
@@ -156,7 +156,7 @@ switch (type)
    }
    break;
 
- 
+
   case 4: // Tetra O2
    for (E_Int ne    = 0     ; ne    < nvars_loc ; ne++)
    {
@@ -169,7 +169,7 @@ switch (type)
       indR  = rcvPts[noind];
       indD0 = donorPts[noind];  //car type 0 est toujour traité en dernier. Sinon noind pas valable
       // indD0 est le no de l elt, et les coefs sont aux noeuds
-    
+
       ind00 = ptrcnd[indD0*cnNfldD   ] -1;
       ind01 = ptrcnd[indD0*cnNfldD +1] -1;
       ind02 = ptrcnd[indD0*cnNfldD +2] -1;
@@ -184,7 +184,7 @@ switch (type)
     }
    }
    break;
-      
+
   case 5: // Lagrange O5
    for (E_Int ne    = 0     ; ne    < nvars_loc ; ne++)
    {
@@ -209,6 +209,6 @@ switch (type)
     }
    }
    break;
-      
+
   default: ;
 }
