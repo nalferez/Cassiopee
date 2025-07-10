@@ -1,8 +1,5 @@
-from __future__ import print_function
-try: range = xrange
-except: pass
-
 from . import Converter
+from . import converter
 from . import Internal
 import KCore
 import numpy, fnmatch, re, os.path
@@ -5554,8 +5551,8 @@ def computeBCMatchField(z, allMatch, variables=None):
             if Internal.getType(fs) == 'DataArray_t':
                 varList.append(Internal.getName(fs))
 
-    # Traitement pour maillage struture
-    # =================================
+    # Traitement pour maillage structure
+    # ==================================
     if zoneType == 1: # Structured mesh
         # Tableau des champs a extraire
         for var in varList:
@@ -7309,6 +7306,57 @@ def _recoverGlobalIndex(a, b):
     return __TZA2(a, 'nodes', Converter._recoverGlobalIndex, fb)
 
 #==============================================================================
+# Construction de la structure de recherche BBTree
+#==============================================================================
+def createBBTree(t):
+    """Create BBtree."""
+    zones = Internal.getZones(t)
+    minBBoxes = []; maxBBoxes = []
+    for z in zones:
+        # BBox de la zone
+        gc = Internal.getNodeFromName1(z, Internal.__GridCoordinates__)
+        xCoords = Internal.getNodeFromName1(gc, 'CoordinateX')[1]
+        yCoords = Internal.getNodeFromName1(gc, 'CoordinateY')[1]
+        zCoords = Internal.getNodeFromName1(gc, 'CoordinateZ')[1]
+        minBBoxes.append([numpy.min(xCoords), numpy.min(yCoords), numpy.min(zCoords)])
+        maxBBoxes.append([numpy.max(xCoords), numpy.max(yCoords), numpy.max(zCoords)])
+
+    return converter.createBBTree(minBBoxes, maxBBoxes)
+
+#==============================================================================
+# Recherche des intersections entre une bbox de zone et un arbre de BBox
+# IN: Bbox d'une zone + arbre de recherche de BBox
+# OUT: tableau de taille de nombre des BBox avec True or False
+#==============================================================================
+def intersect(zone, BBTree):
+    """Check intersection using BBTree."""
+    gc = Internal.getNodeFromName1(zone, Internal.__GridCoordinates__)
+    xCoords = Internal.getNodeFromName1(gc, 'CoordinateX')[1]
+    yCoords = Internal.getNodeFromName1(gc, 'CoordinateY')[1]
+    zCoords = Internal.getNodeFromName1(gc, 'CoordinateZ')[1]
+    minBBox = [numpy.min(xCoords), numpy.min(yCoords), numpy.min(zCoords)]
+    maxBBox = [numpy.max(xCoords), numpy.max(yCoords), numpy.max(zCoords)]
+    return converter.intersect(minBBox, maxBBox, BBTree)
+
+def intersect2(t, BBTree):
+    """Check intersection using BBTree."""
+    zones = Internal.getZones(t)
+    inBB = numpy.empty((6*len(zones)), dtype=numpy.float64)
+    for c, z in enumerate(zones):
+        gc = Internal.getNodeFromName1(z, Internal.__GridCoordinates__)
+        xCoords = Internal.getNodeFromName1(gc, 'CoordinateX')[1]
+        yCoords = Internal.getNodeFromName1(gc, 'CoordinateY')[1]
+        zCoords = Internal.getNodeFromName1(gc, 'CoordinateZ')[1]
+        inBB[6*c  ] = xCoords[0,0,0]
+        inBB[6*c+1] = yCoords[0,0,0]
+        inBB[6*c+2] = zCoords[0,0,0]
+        inBB[6*c+3] = xCoords[1,0,0]
+        inBB[6*c+4] = yCoords[0,1,0]
+        inBB[6*c+5] = zCoords[0,0,1]
+
+    return converter.intersect2(inBB, BBTree)
+
+#==============================================================================
 # -- Connectivity management --
 #==============================================================================
 
@@ -7623,6 +7671,27 @@ def _mergeConnectivities(z, boundary=0, shared=False):
             Internal.createUniqueChild(node, 'ElementConnectivity', 'DataArray_t',
                                        value=newc)
     return None
+
+# -- sliceNGonFaces
+def sliceNGonFaces(z, indices=None):
+    """Slice an NGON connectivity using a list of face indices. Return two numpy
+    arrays: an array of face vertices and an array of face offsets."""
+    if indices is None:
+        return [], []
+    elif isinstance(indices, list):
+        indices = numpy.array(indices, dtype=Internal.E_NpyInt)
+
+    faceVertices = []; faceOffset = []
+    zdim = Internal.getZoneDim(z)
+    if zdim[0] != 'Unstructured': return [], []
+
+    elts = Internal.getNodesFromType1(z, 'Elements_t')
+    for elt in elts:
+        val = Internal.getValue(elt)[0]
+        if val in [22, 23]:  # NGon zone
+            array = getFields('coords', z, api=3)[0]
+            return Converter.converter.sliceNGonFaces(array, indices)
+    return faceVertices, faceOffset
 
 #============================================
 # Soit z une sous zone de zt
