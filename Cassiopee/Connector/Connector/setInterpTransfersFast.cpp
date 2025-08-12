@@ -477,13 +477,13 @@ void K_CONNECTOR::setInterpTransfersIntra(
   }
   }
 
-/* std::cout << "nvars is " << nvars<<"\n";
+/*  std::cout << "nvars is " << nvars<<"\n";
   std:cout << "\n param_grp ";
   for (E_Int addr = 0;addr<1+nbgrptot*2 ;addr++){
     std::cout <<  param_int[0][beg_param_grp+addr]<< " ";
   }
-  std::cout<<'\n';
-*/
+  std::cout<<'\n';*/
+
 
 /*  printf("nvars is %d",nvars);*/
 
@@ -730,6 +730,8 @@ void K_CONNECTOR::setInterpTransfersIntra(
 
                     eqst += 1;
                 }
+
+/*            std::cout << "Done setting vectOfDnrFields/vectOfRcvFields " << irac  << " " << irac_deb << " " << irac_fin << "\n";*/
             }
            }
            else
@@ -818,6 +820,8 @@ void K_CONNECTOR::setInterpTransfersIntra(
           pos = param_int_tc[shift_rac + nrac * 6];      E_Int* donorPts = param_int_tc  + pos;
           pos = param_int_tc[shift_rac + nrac * 12 + 1]; E_Int* rcvPts   = param_int_tc  + pos;  // donor et receveur inverser car storage donor
           pos = param_int_tc[shift_rac + nrac * 8];    E_Float* ptrCoefs = param_real_tc + pos;
+
+/*          cout << "donorPts rcvPts " << donorPts << " " << rcvPts << "\n";*/
 
           E_Int nbInterpD = param_int_tc[shift_rac + nrac];
           E_Float* xPC = NULL;
@@ -978,7 +982,11 @@ void K_CONNECTOR::setInterpTransfersIntra(
 
                    }// type
               #pragma omp barrier
+
 	          } //autorisation transfert
+
+
+
                 }//irac
                }//pass_inst
               #pragma omp barrier
@@ -1505,8 +1513,8 @@ if (has_data_to_send) {
                      */
                      for (E_Int eq = 0; eq < nvars_loc; eq++) { vectOfRcvFields[eq] = frp[count_rac] + eq * nbRcvPts; }
 
-                     imd = param_int[ NoD ][ NIJK   ];
-                     jmd = param_int[ NoD ][ NIJK+1 ];
+                     imd = param_int[ NoD ][ NIJK   ] + 2*param_int[ NoD ][ 0 ];
+                     jmd = param_int[ NoD ][ NIJK+1 ] + 2*param_int[ NoD ][ 0 ];
 
                      imdjmd = imd * jmd;
                      ////
