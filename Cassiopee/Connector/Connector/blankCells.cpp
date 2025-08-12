@@ -459,7 +459,7 @@ PyObject* K_CONNECTOR::_blankCells(PyObject* self, PyObject* args)
     FldArrayF* f; FldArrayI* cn;
     char* varString; char* eltType;
     PyObject* array = PyList_GetItem(coordArrays, i);
-    E_Int ret = K_ARRAY::getFromArray2(array, varString, f, nil, njl, nkl,
+    E_Int ret = K_ARRAY::getFromArray3(array, varString, f, nil, njl, nkl,
                                        cn, eltType);
     if (ret != 1)
     {
@@ -504,7 +504,7 @@ PyObject* K_CONNECTOR::_blankCells(PyObject* self, PyObject* args)
     FldArrayF* f; FldArrayI* cn;
     char* varString; char* eltType;
     PyObject* array = PyList_GetItem(cellNArrays, i);
-    E_Int ret = K_ARRAY::getFromArray2(array, varString, f, nil, njl, nkl,
+    E_Int ret = K_ARRAY::getFromArray3(array, varString, f, nil, njl, nkl,
                                        cn, eltType);
     if (ret != 1)
     {
@@ -555,8 +555,8 @@ PyObject* K_CONNECTOR::_blankCells(PyObject* self, PyObject* args)
     FldArrayF* f; FldArrayI* cn;
     char* varString; char* eltType;
     PyObject* array = PyList_GetItem(bodyArrays, i);
-    E_Int ret = K_ARRAY::getFromArray(array, varString, f, nil, njl, nkl,
-                                      cn, eltType, true);
+    E_Int ret = K_ARRAY::getFromArray3(array, varString, f, nil, njl, nkl,
+                                       cn, eltType);
     if (ret != 2)
     {
       RELEASEDATA1; RELEASEDATA2; RELEASEDATA3;
@@ -730,10 +730,10 @@ PyObject* K_CONNECTOR::blankCells(PyObject* self, PyObject* args)
   vector<E_Int> nit; vector<E_Int> njt; vector<E_Int> nkt;
   vector<FldArrayI*> cnt; vector<char*> eltType;
   vector<PyObject*> objs, obju;
-  E_Boolean skipNoCoord = true;
-  E_Boolean skipStructured = false;
-  E_Boolean skipUnstructured = false;
-  E_Boolean skipDiffVars = true;
+  E_Bool skipNoCoord = true;
+  E_Bool skipStructured = false;
+  E_Bool skipUnstructured = false;
+  E_Bool skipDiffVars = true;
   E_Int isOk = K_ARRAY::getFromArrays(
     coordArrays, resl, structVarString, unstrVarString,
     structF, unstrF, nit, njt, nkt, cnt, eltType, objs, obju,

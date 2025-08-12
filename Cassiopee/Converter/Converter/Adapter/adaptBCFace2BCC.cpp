@@ -33,7 +33,7 @@ PyObject* K_CONVERTER::adaptBCFace2BCC(PyObject* self, PyObject* args)
 
   // Check numpy (BCFace)
   FldArrayI* BCFace;
-  E_Int res = K_NUMPY::getFromNumpyArray(BCFaceO, BCFace, true);
+  E_Int res = K_NUMPY::getFromPointList(BCFaceO, BCFace);
   E_Int* faces = BCFace->begin();
   E_Int nint = BCFace->getSize();
   if (res == 0)
@@ -45,7 +45,7 @@ PyObject* K_CONVERTER::adaptBCFace2BCC(PyObject* self, PyObject* args)
 
   // Check numpy (cn)
   FldArrayI* cn;
-  res = K_NUMPY::getFromNumpyArray(cnO, cn, true);
+  res = K_NUMPY::getFromNumpyArray(cnO, cn);
   if (res == 0)
   {
     RELEASESHAREDN(BCFaceO, BCFace);

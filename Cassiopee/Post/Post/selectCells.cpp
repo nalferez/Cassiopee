@@ -39,7 +39,7 @@ PyObject* K_POST::selectCellsBoth(PyObject* self, PyObject* args)
 		                 &arrayNodes, &arrayCenters, &tag, &strict, &PE,
                      &cleanConnectivity))
   {
-      return NULL;
+    return NULL;
   }
   // Extract array
   char* varString; char* eltType;
@@ -723,7 +723,7 @@ PyObject* K_POST::selectCellsBoth(PyObject* self, PyObject* args)
     {
       // Check numpy (parentElement)
       FldArrayI* cFE;
-      E_Int res = K_NUMPY::getFromNumpyArray(PE, cFE, true);
+      E_Int res = K_NUMPY::getFromNumpyArray(PE, cFE);
       
       if (res == 0)
       {
@@ -838,7 +838,7 @@ PyObject* K_POST::selectCells3(PyObject* self, PyObject* args)
   }
   else // numpy
   {
-    res2 = K_NUMPY::getFromNumpyArray(tag, f2, true);
+    res2 = K_NUMPY::getFromNumpyArray(tag, f2);
     if (res2 == 0)
     {
       PyErr_SetString(PyExc_TypeError,
@@ -916,8 +916,8 @@ PyObject* K_POST::selectCells(PyObject* self, PyObject* args)
   char* varString; char* eltType;
   FldArrayF* f; FldArrayI* cnp;
   E_Int ni, nj, nk;
-  E_Int res = K_ARRAY::getFromArray(array, varString, f, ni, nj, nk, 
-                                    cnp, eltType, true);
+  E_Int res = K_ARRAY::getFromArray3(array, varString, f, ni, nj, nk, 
+                                     cnp, eltType);
   
   if (res != 1 && res != 2)
   {
@@ -931,8 +931,7 @@ PyObject* K_POST::selectCells(PyObject* self, PyObject* args)
   FldArrayF* f2; FldArrayI* cnp2;
   E_Int ni2, nj2, nk2;
   E_Int res2 = 
-    K_ARRAY::getFromArray(tag, varString2, f2, ni2, nj2, nk2, cnp2, eltType2, 
-                          true);
+    K_ARRAY::getFromArray3(tag, varString2, f2, ni2, nj2, nk2, cnp2, eltType2);
 
   if (res2 != 1 && res2 != 2)
   {
@@ -1535,7 +1534,7 @@ PyObject* K_POST::selectCells(PyObject* self, PyObject* args)
     {
       // Check numpy (parentElement)
       FldArrayI* cFE;
-      E_Int res = K_NUMPY::getFromNumpyArray(PE, cFE, true);
+      E_Int res = K_NUMPY::getFromNumpyArray(PE, cFE);
           
       if (res == 0)
       {

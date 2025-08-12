@@ -37,7 +37,7 @@ PyObject* K_CONVERTER::extractBCMatchNG(PyObject* self, PyObject* args )
                &GridCoordinates, &FlowSolutionNodes, &FlowSolutionCenters )) 
      return NULL;
   
-  // Zone 
+  // Zone
   // ~~~~
   E_Int ni, nj, nk, cnSize, cnNfld ; 
   char* varString; char* eltType;
@@ -132,7 +132,7 @@ PyObject* K_CONVERTER::extractBCMatchNG(PyObject* self, PyObject* args )
   // Indices des faces 
   // ~~~~~~~~~~~~~~~~~
   FldArrayI* ind;
-  E_Int res = K_NUMPY::getFromPointList(pyIndices, ind, true);
+  E_Int res = K_NUMPY::getFromPointList(pyIndices, ind);
 
   if (res == 0)
   {
@@ -1120,7 +1120,7 @@ PyObject* K_CONVERTER::buildBCMatchFieldNG(PyObject* self, PyObject* args )
   // Indices des faces 
   // ~~~~~~~~~~~~~~~~~
   FldArrayI* indR;
-  E_Int res = K_NUMPY::getFromPointList(pyIndR, indR, true);
+  E_Int res = K_NUMPY::getFromPointList(pyIndR, indR);
 
   if (res == 0)
   {
@@ -1216,7 +1216,7 @@ PyObject* K_CONVERTER::buildBCMatchFieldStruct(PyObject* self, PyObject* args )
   // Get index of boundary faces in current zone
   // ============================================
   FldArrayI* indR;
-  E_Int resi = K_NUMPY::getFromNumpyArray(pyIndR, indR, true);
+  E_Int resi = K_NUMPY::getFromNumpyArray(pyIndR, indR);
   if ( resi == 0)
   {
      PyErr_SetString(PyExc_TypeError, "buildBCMatchFieldStruct: not a valid numpy for indices of BC (indR).");
@@ -1233,7 +1233,7 @@ PyObject* K_CONVERTER::buildBCMatchFieldStruct(PyObject* self, PyObject* args )
     
   if (pyNcnt != Py_None)
   {
-    E_Int resi = K_NUMPY::getFromNumpyArray(pyNcnt, ncount, true);
+    E_Int resi = K_NUMPY::getFromNumpyArray(pyNcnt, ncount);
     if (resi == 0)
     {
       PyErr_SetString(PyExc_TypeError, "buildBCMatchFieldStruct: not a valid numpy for ncount array.");

@@ -438,7 +438,7 @@ void K_COMPGEOM::boundingBoxOfStructCell(E_Int ind, E_Int im, E_Int jm, E_Int km
 
   E_Int im1 = K_FUNC::E_max(1, im-1);
   E_Int jm1 = K_FUNC::E_max(1, jm-1);
-  E_Int km1 = K_FUNC::E_max(1, km-1);
+  //E_Int km1 = K_FUNC::E_max(1, km-1);
   E_Int imjm = im*jm;
   E_Int im1jm1 = im1*jm1;
   
@@ -721,7 +721,7 @@ K_COMPGEOM::compCEBBIntersection(E_Int ni1, E_Int nj1, E_Int nk1,
   
   FldArrayF cartEltArray1;
   FldArrayF cartEltArray2;
-  E_Boolean isDegenerated = true;
+  E_Bool isDegenerated = true;
 
   for (E_Int dir1 = 1; dir1 <= 3; dir1++)
   {

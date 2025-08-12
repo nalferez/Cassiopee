@@ -110,8 +110,8 @@ PyObject* K_POST::computeCurl(PyObject* self, PyObject* args)
   char* varString; char* eltType;
   FldArrayF* f; FldArrayI* cn;
   E_Int ni, nj, nk; // number of points of array
-  E_Int res = K_ARRAY::getFromArray(array, varString, f, ni, nj, nk, cn, 
-                                    eltType, true);
+  E_Int res = K_ARRAY::getFromArray3(array, varString, f, ni, nj, nk, cn, eltType);
+  
   if (res != 1 && res != 2) 
   {
     PyErr_SetString(PyExc_TypeError, 
@@ -363,7 +363,7 @@ E_Int K_POST::computeCurlNGon(E_Float* xt, E_Float* yt, E_Float* zt,
   K_METRIC::compNGonFacesSurf(xt, yt, zt, cn, sxp, syp, szp, snp, cFE);
   delete cFE;
   E_Float* volp = new E_Float [nelts];
-  K_METRIC::CompNGonVol(xt, yt, zt, cn, volp); 
+  K_METRIC::compNGonVol(xt, yt, zt, cn, volp); 
   // Connectivite Element/Noeuds
   vector< vector<E_Int> > cnEV(nelts);
   K_CONNECT::connectNG2EV(cn, cnEV); //deja calculee dans NGONVol

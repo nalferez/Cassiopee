@@ -5,6 +5,8 @@ from . import generator
 __version__ = Generator.__version__
 import numpy
 
+from .AMR import generateAMRMesh
+
 try:
     import Converter.PyTree as C
     import Converter.Internal as Internal
@@ -968,7 +970,7 @@ def _close(t, tol=1.e-12, rmOverlappingPts=True, rmOrphanPts=True,
            rmDuplicatedFaces=True, rmDuplicatedElts=True,
            rmDegeneratedFaces=True, rmDegeneratedElts=True,
            indices=None):
-    fields = C.getAllFields(t, 'nodes')
+    fields = C.getAllFields(t, 'nodes', api=1)
     fields = Generator.close(fields, tol, rmOverlappingPts, rmOrphanPts,
                              rmDuplicatedFaces, rmDuplicatedElts,
                              rmDegeneratedFaces, rmDegeneratedElts,
