@@ -27,7 +27,6 @@
 #include <stdlib.h>
 #include <cmath>
 
-#include "Fld/FldFortranVecP.h"
 #include "Def/DefFunction.h"
 #include "parallel.h"
 
@@ -37,32 +36,11 @@
 // Triggers or not copy by memcpy instead of setallvaluesf
 #define MEMCOPY
 
-extern "C" void k6fldcopyfrom_(const E_Int& deb,
-                               const E_Int& sizerhs,
-                               const E_Int& sizelhs,
-                               const E_Int& nfld,
-                               const E_Float* rhs,
-                               E_Float* lhs);
-extern "C" void k6fldintcopyfrom_(const E_Int& deb,
-                                  const E_Int& sizerhs,
-                                  const E_Int& sizelhs,
-                                  const E_Int& nfld,
-                                  const E_Int* rhs,
-                                  E_Int* lhs);
-extern "C" void k6setallbvaluesatf_(const E_Int& sizeLoc,
-                                    const E_Int& nfldLoc,
-                                    E_Float* _data,
-                                    const E_Float& val,
-                                    const E_Int& ni,
-                                    const E_Int& nj,
-                                    const E_Int& nk,
-                                    const E_Int& border);
-
 // Set rake for a compact array
 #define SETRAKE                                                         \
   if (_stride == 1)                                                     \
   { for (E_Int i = 0; i < _nfldLoc; i++) _rake[i] = _data+i*_sizeLoc; } \
-  else                                                              \
+  else                                                                  \
   { for (E_Int i = 0; i < _nfldLoc; i++) _rake[i] = _data+i; }
 
 namespace K_FLD
@@ -76,7 +54,7 @@ namespace K_FLD
 
 > Caution: indices for elements go from 0 to size-1
 >          indices for number of fields go from NUMFIELD0 to NUMFIELD0+nfld-1
-
+Add
 */
 // ============================================================================
 TEMPLATE_T class ArrayAccessor; //forward dec for frienship (gcc)
@@ -133,7 +111,7 @@ class FldArray
              value_type* indPG, value_type* indPH, 
              E_Int sizeNGon, E_Int sizeNFace, value_type* PE=NULL);
     /** Constructor for ME connectivities (shared, array3). */
-    FldArray(std::vector< FldArray<T>* >& list);
+    FldArray(std::vector<FldArray<T>* >& list);
     
     /** Destructor */
     ~FldArray();
@@ -148,9 +126,9 @@ class FldArray
 
     ///+ 3- Operators
     /** Result of = operator has new (duplicated) data. */
-    FldArray& operator=  (const FldArray& rhs);
+    FldArray& operator= (const FldArray& rhs);
     /** Init a already dimensionned array to a value */
-    FldArray& operator=  (T val);
+    FldArray& operator= (T val);
     /** Copy from indice beg the field rhs as a subpart of the
         current array (static interface only). */
     void copyFrom(E_Int beg, const FldArray& rhs);
@@ -186,13 +164,17 @@ class FldArray
     /** GetApi (1: compact, 2: rake) */
     inline E_Int getApi() { if (_compact == false) return 2; else return 1; }
 
+    /** Get dimensionality, NGon and ME. */
+    inline E_Int getDim(char* eltType=NULL);
+    /** Get number of elements, NGon and ME. */
+    inline E_Int getNElts();
+
     /** Get/Set NGon */
     inline E_Int isNGon() const { return _ngon; }
     // 1: compact array1 CGNSv3, 2: rake CGNSv3, 3: rake CGNSv4
     void setNGon(E_Int ngon) { _ngon = ngon; };
-    /** Only if  ngon */
+    /** Only if NGon */
     inline E_Int getNFaces();
-    inline E_Int getNElts();
     inline E_Int* getNGon();
     inline E_Int* getNFace();
     inline E_Int* getIndPG();
@@ -352,7 +334,7 @@ class FldArray
     E_Int _sizeNFace; // taille de la connectivite NFace (NGON)
 
     /* si multiple element connectivities */
-    std::vector< FldArray<T>* > _BEConnects; 
+    std::vector<FldArray<T>* > _BEConnects; 
 
     /* The data array (deprecated) */
     value_type* _data;
@@ -499,22 +481,67 @@ E_Int FldArray<T>::getNFaces()
 
 //==============================================================================
 TEMPLATE_T
+E_Int FldArray<T>::getDim(char* eltType)
+{
+  E_Int size0;  // number of vertices of the first face
+  E_Int dim = 3;
+  if (_ngon > 0)  // NGon
+  {
+    if (_ngon == 3)  // Array3
+    {
+      E_Int* ngon = _rake[0];
+      E_Int* indPG = _rake[2];
+      E_Int pos0 = indPG[0];
+      size0 = indPG[1] - pos0;
+    }
+    else if (_ngon == 2)  // Array 2
+    {
+      E_Int* ngon = _rake[0];
+      E_Int* indPG = _rake[2];
+      E_Int pos0 = indPG[0];
+      size0 = ngon[pos0];
+    }
+    else // Array1
+    {
+      E_Int* ngon = _rake[0]+2;
+      E_Int* indPG = getIndPG();
+      E_Int pos0 = indPG[0];
+      size0 = ngon[pos0];
+    }
+    if (size0 == 1) dim = 1;
+    else if (size0 == 2) dim = 2;
+  }
+  else  // ME connectivity
+  {
+    assert((eltType != NULL) && "The first eltType must be provided.");
+    if (strcmp(eltType, "NODE") == 0) dim = 0;
+    else if (strcmp(eltType, "BAR") == 0) dim = 1;
+    else if (strcmp(eltType, "TRI") == 0 || strcmp(eltType, "QUAD") == 0) dim = 2;
+  }
+  return dim;
+}
+
+//==============================================================================
+TEMPLATE_T
 E_Int FldArray<T>::getNElts()
 {
   if (_ngon >= 2) // Array2/3
   {
     return _nelts;
   }
-  else // Array1
+  else //if (_ngon == 1) // Array1
   {
     E_Int sizeNGon = _rake[0][1];
     return _rake[0][sizeNGon+2]; 
   }
-  /*
-  else // suppose a BE connectivity
-  {
-      return _sizeLoc;
-  }*/
+  // else // ME connectivity
+  // {
+  //   if (_nelts > 0) { return _nelts; }
+  //   _nelts = 0;
+  //   for (size_t i = 0; i < _BEConnects.size(); i++)
+  //     _nelts += _BEConnects[i]->getSize();
+  //   return _nelts;
+  // }
 }
 
 //==============================================================================
@@ -1035,8 +1062,10 @@ FldArray<T>& FldArray<T>::operator= (const FldArray<T>& rhs)
   return (*this);
 }
 
-SPECIALISE inline void FldArray<E_Float>::__setSubArrValuesAt(E_Float* data, E_Int first, E_Int last, E_Float val) {k6operatoregalf_(data, first, last, val);}
-SPECIALISE inline void FldArray<E_Int>::__setSubArrValuesAt(E_Int* data, E_Int first, E_Int last, E_Int val) {for (E_Int i=first; i<last; ++i)data[i] = val;}
+SPECIALISE inline void FldArray<E_Float>::__setSubArrValuesAt(E_Float* data, E_Int first, E_Int last, E_Float val) 
+{ for (E_Int i=first; i<last; ++i) data[i] = val; }
+SPECIALISE inline void FldArray<E_Int>::__setSubArrValuesAt(E_Int* data, E_Int first, E_Int last, E_Int val) 
+{ for (E_Int i=first; i<last; ++i) data[i] = val; }
 
 //OK---------------------------------------------------------------------------
 TEMPLATE_T
@@ -1055,20 +1084,13 @@ TEMPLATE_T
 void FldArray<T>::copyFrom(E_Int deb, const FldArray<T>& rhs)
 {
   assert( rhs.getNfld() == getNfld() );
-  __cpyFrom(deb, rhs.getSize(), _sizeMax, _nfldLoc, rhs.begin(), _data);
+  E_Int sizerhs = rhs.getSize();
+  E_Int sizelhs = _sizeMax;
+  const T* rhsb = rhs.begin();
+  for (E_Int ifld = 0; ifld < _nfldLoc; ifld++)
+    for (E_Int no = 0; no < sizerhs; no++)
+      _data[no+deb+ifld*sizelhs] = rhsb[no+ifld*sizerhs];
 }
-
-SPECIALISE inline void FldArray<E_Float>::__cpyFrom(
-  const E_Int& deb, const E_Int& sizerhs, const E_Int& sizelhs,
-  const E_Int& nfld, const E_Float* rhs, E_Float* lhs)
-{k6fldcopyfrom_(deb, sizerhs, sizelhs, nfld, rhs, lhs);}
-SPECIALISE inline void FldArray<E_Int>::__cpyFrom(
-  const E_Int& deb, const E_Int& sizerhs, const E_Int& sizelhs,
-  const E_Int& nfld, const E_Int* rhs, E_Int* lhs)
-{k6fldintcopyfrom_(deb, sizerhs, sizelhs, nfld, rhs, lhs);}
-//SPECIALISE inline void FldArray<short>::__cpyFrom(const E_Int& deb, const E_Int& sizerhs, const E_Int& sizelhs,
-//                               const E_Int& nfld, const short* rhs, short* lhs)
-//                               {}
 
 //==============================================================================
 TEMPLATE_T
@@ -1177,11 +1199,6 @@ void FldArray<T>::__setAllValues(E_Int size, T* to, const T* from)
   for (E_Int i = 0; i < size; i++) to[i] = from[i];
 }
 
-#ifndef PURE_C
-SPECIALISE inline void FldArray<E_Float>::__setAllValues(E_Int size, E_Float* to, const E_Float* from){k6setallvaluesf_(size, to, from);}
-SPECIALISE inline void FldArray<E_Int>::__setAllValues(E_Int size, E_Int* to, const E_Int* from){k6setallvaluesi_(size, to, from);}
-#endif
-
 // ---------------------------------------------------------------------------
 TEMPLATE_T
 void FldArray<T>::setByField(const FldArray<T>& valuesoffields)
@@ -1223,22 +1240,6 @@ void FldArray<T>::__setAllValuesAt(E_Int size, T* to, T val)
   for (E_Int i = 0; i < size; ++i) to[i] = val;
 }
 
-#ifndef PURE_C
-SPECIALISE inline void FldArray<E_Float>::__setAllValuesAt(E_Int size, E_Float* to, E_Float val) {k6setallvaluesatf_(size, to, val);}
-SPECIALISE inline void FldArray<E_Int>::__setAllValuesAt(E_Int size, E_Int* to, E_Int val) {k6setallvaluesati_(size, to, val);}
-#endif
-
-// ----------------------------------------------------------------------------
-/*
-SPECIALISE
-inline void FldArray<E_Float>::setAllBorderValuesAt(E_Float val,
-                                     E_Int ni, E_Int nj, E_Int nk,
-                                     E_Int border)
-{
-  assert(ni*(nj-1)*(nk-1)+(ni-1)*nj*(nk-1)+(ni-1)*(nj-1)*nk == _sizeLoc);
-  k6setallbvaluesatf_(_sizeMax, _nfldLoc, _data, val, ni, nj, nk, border);
-}
-*/
 // ----------------------------------------------------------------------------
 TEMPLATE_T
 void FldArray<T>::setOneField(const FldArray<T>& fromValArray,
@@ -1286,7 +1287,6 @@ void FldArray<T>::resize(E_Int size, E_Int nfld)
 //-----------------------------------------------------------------------------
 SPECIALISE inline E_Float FldArray<E_Float>::badValue() {return K_CONST::E_BADVALUE_F;}
 SPECIALISE inline E_Int FldArray<E_Int>::badValue() {return K_CONST::E_BADVALUE_I;}
-//SPECIALISE inline E_Bool FldArray<E_Bool>::badValue() {return K_CONST::E_BADVALUE_B;}
 
 SPECIALISE inline E_Float FldArray<E_Float>::Zero() {return K_CONST::E_ZERO_FLOAT;}
 SPECIALISE inline E_Int FldArray<E_Int>::Zero() {return K_CONST::E_ZERO_INT;}
@@ -1477,87 +1477,6 @@ void FldArray<T>::reAllocMatSeq(E_Int size, E_Int nfld)
   //_rake = new T* [nfld];
   SETRAKE;
 }
-//-----------------------------------------------------------------------------
-/*
-SPECIALISE
-inline void FldArray<E_Float>::matMultVec(const FldArray<E_Float>& array)
-{
-  const E_Float* tab = array.begin();
-  k6multmatvecf_(_sizeLoc, _nfldLoc, _data, tab);
-}
-*/
-//-----------------------------------------------------------------------------
-/*
-SPECIALISE
-inline void FldArray<E_Float>::matMult(FldArray<E_Float>& array)
-{
-#ifdef DEBUG
-  E_Int sizeOfarray = array._sizeLoc;
-  E_Int nfldOfarray = array._nfldLoc;
-  assert(sizeOfarray == nfldOfarray);
-  assert(_sizeLoc   == _nfldLoc);
-  assert(_sizeLoc   == sizeOfarray);
-#endif
-
-  E_Int il, ic, lc;
-  E_Float* dataProv = new value_type[_sizeLoc*_nfldLoc];
-  E_Float resProv;
-  for (E_Int l = 0; l < _sizeLoc; l++)
-  for (E_Int c = 1; c <= _nfldLoc; c++)
-  {
-    resProv = 0.;
-    lc = c-1 + l*_nfldLoc;
-    for (E_Int i = 1; i <= _sizeLoc; i++)
-    {
-      ic = (i-1)+l*_sizeLoc;
-      il = c-1 + (i-1)*_sizeLoc;
-      resProv = resProv + _data[ic]*array._data[il];
-    }
-    dataProv[lc] = resProv;
-  }
-
-  for (E_Int l = 0; l < _sizeLoc*_nfldLoc; l++)
-    _data[l] = dataProv[l];
-
-  delete [] dataProv;
-}
-*/
-//-----------------------------------------------------------------------------
-/*
-SPECIALISE
-inline void FldArray<E_Float>::matMultTrans(FldArray<E_Float>& array)
-{
-#ifdef DEBUG
-  E_Int sizeOfarray = array._sizeLoc;
-  E_Int nfldOfarray = array._nfldLoc;
-  assert (sizeOfarray == nfldOfarray);
-  assert (_sizeLoc   == _nfldLoc);
-  assert (_sizeLoc   == sizeOfarray);
-#endif
-
-  E_Int il, ic, lc;
-  E_Float* dataProv = new value_type[_sizeLoc*_nfldLoc];
-  E_Float resProv;
-  for (E_Int l = 0; l < _sizeLoc; l++)
-  for (E_Int c = 1; c <= _nfldLoc; c++)
-  {
-    resProv = 0.;
-    lc = c-1 + l*_nfldLoc;
-    for (E_Int i = 1; i <= _sizeLoc; i++)
-    {
-      ic = (i-1)+l*_sizeLoc;
-      il = i-1 + (c-1)*_sizeLoc;
-      resProv = resProv + _data[ic]*array._data[il];
-    }
-    dataProv[lc] = resProv;
-  }
-
-  for (E_Int l = 0; l < _sizeLoc*_nfldLoc; l++)
-    _data[l] = dataProv[l];
-
-  delete [] dataProv;
-}
-*/
 //OK===========================================================================
 TEMPLATE_T
 void FldArray<T>::setAllValuesAtNull()
@@ -1764,7 +1683,7 @@ TEMPLATE_T
 template <typename Vector1, typename Vector2>
 E_Int FldArray<T>::compact(FldArray& a, const Vector1& keep, Vector2& new_Ids)
 {
-  E_Int   cols(a._sizeLoc);
+  E_Int cols(a._sizeLoc);
   // Fast returns
   if (cols == 0)   return 0;
 

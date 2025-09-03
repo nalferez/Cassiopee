@@ -38,11 +38,11 @@ void K_METRIC::compNormUnstructSurf(
 
   for (E_Int ic = 0; ic < nc; ic++)
   {
+    K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
+    E_Int nelts = cm.getSize();
+      
     if (strcmp(eltTypes[ic], "TRI") == 0)
     {
-      K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
-      E_Int nelts = cm.getSize();
-
       #pragma omp parallel
       {
         E_Int ind1, ind2, ind3, pos;
@@ -80,7 +80,7 @@ void K_METRIC::compNormUnstructSurf(
     else
     {
       fprintf(stderr, "Error in K_METRIC::compNormUnstructSurf.\n");
-      fprintf(stderr, "Element type can be TRI only.\n");
+      fprintf(stderr, "Element type can be TRI only, not %s.\n", eltTypes[ic]);
       exit(0);
     }
   }
@@ -144,7 +144,7 @@ void K_METRIC::compNormUnstructSurft(
     else
     {
       fprintf(stderr, "Error in K_METRIC::compNormUnstructSurft.\n");
-      fprintf(stderr, "Element type can be TRI only.\n");
+      fprintf(stderr, "Element type can be TRI only, not %s.\n", eltTypes[ic]);
       exit(0);
     }
   }
