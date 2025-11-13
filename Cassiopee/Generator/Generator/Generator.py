@@ -821,8 +821,7 @@ def closeLegacy(array, tol=1.e-12, suppressDegeneratedNGons=False):
     if isinstance(array[0], list):
         out = []
         for a in array:
-
-            if len(a)==5: # merge intra-borders (C-type meshes)
+            if len(a) == 5: # merge intra-borders (C-type meshes)
                 outl = generator.closeBorders([a], [], tol)[0]
             else:
                 outl = generator.closeMeshLegacy(a, tol, suppressDegeneratedNGons)
@@ -2453,7 +2452,7 @@ def quad2Pyra(array, hratio=1.):
     Usage: quad2Pyra(array, hratio)"""
     return generator.quad2Pyra(array, hratio)
 
-def getMeshFieldInfo___(array, field, critValue, verbose):
+def getMeshFieldInfo__(array, field, critValue, verbose):
     fmin  = 1.e32
     fsum  = 0
     fmax  = -1.

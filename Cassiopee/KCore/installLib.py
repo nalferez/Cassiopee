@@ -41,6 +41,8 @@ shutil.copyfile("config.py", installPath+"/config.py")
 shutil.copyfile("Dist.py", installPath+"/Dist.py")
 shutil.copyfile("installPath.py", installPath+"/installPath.py")
 shutil.copyfile("installBase.py", installPath+"/installBase.py")
+if os.access("installBaseUser.py", os.R_OK):
+    shutil.copyfile("installBaseUser.py", installPath+"/installBaseUser.py")
 shutil.copyfile("test/notify.py", installPath+"/notify.py")
 
 # Ecrit les infos d'install
@@ -48,4 +50,4 @@ Dist.writeBuildInfo()
 shutil.copyfile("buildInfo.py", installPath+"/buildInfo.py")
 
 # Ecrit les fichiers d'environnement
-Dist.writeEnvs()
+# Dist.writeEnvs()

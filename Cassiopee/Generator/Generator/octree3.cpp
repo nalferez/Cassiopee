@@ -28,13 +28,6 @@
 using namespace std;
 using namespace K_FLD;
 using namespace K_SEARCH;
-extern "C"
-{
-  void k6boundboxunstr_(const E_Int& npts, 
-                        const E_Float* x, const E_Float* y, const E_Float* z, 
-                        E_Float& xmax, E_Float& ymax, E_Float& zmax, 
-                        E_Float& xmin, E_Float& ymin, E_Float& zmin);
-}
 
 namespace K_GENERATOR 
 {
@@ -119,10 +112,11 @@ PyObject* octree3(PyObject* self, PyObject* args)
   E_Int res = K_ARRAY::getFromArrays(
     stlArrays, resl, structVarString, unstrVarString,
     structF, unstrF, nit, njt, nkt, cnt, eltTypet, objst, objut, 
-    skipDiffVars, skipNoCoord, skipStructured, skipUnstructured);
+    skipDiffVars, skipNoCoord, skipStructured, skipUnstructured, true);
   if (res == -1) 
   {
-    K_ARRAY::cleanUnstrFields(unstrF, cnt, eltTypet);
+    for (size_t v = 0; v < structF.size(); v++) RELEASESHAREDS(objst[v], structF[v]);
+    for (size_t v = 0; v < unstrF.size(); v++) RELEASESHAREDU(objut[v], unstrF[v], cnt[v]);            
     PyErr_SetString(PyExc_TypeError, 
                     "octree3: 1st arg is not valid.");
     return NULL;
@@ -137,7 +131,8 @@ PyObject* octree3(PyObject* self, PyObject* args)
       if ( dim == -1 ) dim = 3;
       else if ( dim != 3) 
       {
-        K_ARRAY::cleanUnstrFields(unstrF, cnt, eltTypet);
+        for (size_t v = 0; v < structF.size(); v++) RELEASESHAREDS(objst[v], structF[v]);
+        for (size_t v = 0; v < unstrF.size(); v++) RELEASESHAREDU(objut[v], unstrF[v], cnt[v]);                
         PyErr_SetString(PyExc_TypeError, 
                         "octree3: 1st arg must be a list of TRI zones.");
         return NULL;
@@ -148,7 +143,8 @@ PyObject* octree3(PyObject* self, PyObject* args)
       if ( dim == -1 ) dim = 2;
       else if ( dim != 2) 
       {
-        K_ARRAY::cleanUnstrFields(unstrF, cnt, eltTypet);
+        for (size_t v = 0; v < structF.size(); v++) RELEASESHAREDS(objst[v], structF[v]);
+        for (size_t v = 0; v < unstrF.size(); v++) RELEASESHAREDU(objut[v], unstrF[v], cnt[v]);                
         PyErr_SetString(PyExc_TypeError, 
                         "octree3: 1st arg must be a list of BAR zones.");
         return NULL;
@@ -156,7 +152,8 @@ PyObject* octree3(PyObject* self, PyObject* args)
     }
     else 
     {
-      K_ARRAY::cleanUnstrFields(unstrF, cnt, eltTypet);
+      for (size_t v = 0; v < structF.size(); v++) RELEASESHAREDS(objst[v], structF[v]);
+      for (size_t v = 0; v < unstrF.size(); v++) RELEASESHAREDU(objut[v], unstrF[v], cnt[v]);              
       PyErr_SetString(PyExc_TypeError, 
                       "octree3: 1st arg must be a list of TRI or BAR zones.");
       return NULL; 
@@ -177,7 +174,8 @@ PyObject* octree3(PyObject* self, PyObject* args)
   E_Int nsnear = PyList_Size(listOfSnears);
   if ( nzones != nsnear )
   {
-    K_ARRAY::cleanUnstrFields(unstrF, cnt, eltTypet);
+    for (size_t v = 0; v < structF.size(); v++) RELEASESHAREDS(objst[v], structF[v]);
+    for (size_t v = 0; v < unstrF.size(); v++) RELEASESHAREDU(objut[v], unstrF[v], cnt[v]);            
     PyErr_SetString(PyExc_TypeError, 
                     "octree3: 1st and 2nd args must be consistent.");
     return NULL;
@@ -189,7 +187,8 @@ PyObject* octree3(PyObject* self, PyObject* args)
     tpl = PyList_GetItem(listOfSnears, i);
     if (PyFloat_Check(tpl) == 0 && PyInt_Check(tpl) == 0)
     {
-      K_ARRAY::cleanUnstrFields(unstrF, cnt, eltTypet);
+      for (size_t v = 0; v < structF.size(); v++) RELEASESHAREDS(objst[v], structF[v]);
+      for (size_t v = 0; v < unstrF.size(); v++) RELEASESHAREDU(objut[v], unstrF[v], cnt[v]);              
       PyErr_SetString(PyExc_TypeError, 
                       "octree3: not a valid value for snear.");
       return NULL;
@@ -220,8 +219,9 @@ PyObject* octree3(PyObject* self, PyObject* args)
     FldArrayF& f2 = *unstrF[v]; FldArrayI& cn2 = *cnt[v];
     posx2 = posxt[v]; posy2 = posyt[v]; posz2 = poszt[v];
     //bounding box globale ? 
-    k6boundboxunstr_(f2.getSize(), f2.begin(posx2), f2.begin(posy2), f2.begin(posz2),
-                     xmaxloc, ymaxloc, zmaxloc, xminloc, yminloc, zminloc);
+    K_COMPGEOM::boundingBoxUnstruct(f2.getSize(),
+                                    f2.begin(posx2), f2.begin(posy2), f2.begin(posz2),
+                                    xminloc, yminloc, zminloc, xmaxloc, ymaxloc, zmaxloc);
     xmino = K_FUNC::E_min(xminloc,xmino); xmaxo = K_FUNC::E_max(xmaxloc,xmaxo);
     ymino = K_FUNC::E_min(yminloc,ymino); ymaxo = K_FUNC::E_max(ymaxloc,ymaxo);
     if (dim == 2) {zmino = 0.; zmaxo = 0.;}
@@ -493,6 +493,9 @@ PyObject* octree3(PyObject* self, PyObject* args)
   tpl = K_ARRAY::buildArray(*coords, "x,y,z", *cn, -1, eltType, false);
   // nettoyage
   delete coords; delete cn;
+  for (size_t v = 0; v < structF.size(); v++) RELEASESHAREDS(objst[v], structF[v]);
+  for (size_t v = 0; v < unstrF.size(); v++) RELEASESHAREDU(objut[v], unstrF[v], cnt[v]);            
+
   return tpl;
 }
 //=============================================================================

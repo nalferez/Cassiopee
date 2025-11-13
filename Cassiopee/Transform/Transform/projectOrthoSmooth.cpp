@@ -30,7 +30,7 @@ using namespace std;
 PyObject* K_TRANSFORM::projectOrthoSmooth(PyObject* self, PyObject* args)
 {
   PyObject* arrays; PyObject* array2;
-  if (!PyArg_ParseTuple(args, "OO", &arrays, &array2))
+  if (!PYPARSETUPLE_(args, OO_, &arrays, &array2))
   {
     return NULL;
   }
@@ -215,7 +215,7 @@ PyObject* K_TRANSFORM::projectOrthoSmooth(PyObject* self, PyObject* args)
       nz[i] = z[i]-zo[i];
     }
     E_Int im = nit[nos]; E_Int jm = njt[nos]; E_Int km = nkt[nos];
-    K_METRIC::compStructSurft(im, jm, km, x, y, z, q);
+    K_METRIC::compSurfStruct2D(im, jm, km, x, y, z, q);
     no++;
   }
   for (E_Int nou = 0; nou < nu; nou++)

@@ -23,39 +23,13 @@
 # include "Def/DefCplusPlusConst.h"
 # include "Def/DefFunction.h"
 # include "Metric/metric.h"
-
+# include "CompGeom/compGeom.h"
 using namespace K_FUNC;
 using namespace std;
 using namespace K_FLD;
 
 extern "C"
-{
-  void k6rotatemesh_(const E_Int& dim, const E_Float* center,
-                     const E_Float* axis, const E_Float& teta,
-                     E_Float* x, E_Float* y, E_Float* z);
-  
-  void k6boundbox_(const E_Int& im, const E_Int& jm, const E_Int& km,
-                   const E_Float* x, const E_Float* y, const E_Float* z,
-                   E_Float& xmax, E_Float& ymax, E_Float& zmax, 
-                   E_Float& xmin, E_Float& ymin, E_Float& zmin );
-  
-  void k6boundbox2_(const E_Int& im, const E_Int& jm, const E_Int& km,
-                    const E_Float* x, const E_Float* y, const E_Float* z,
-                    const E_Float* m,const E_Float* r0,const E_Float* xc0, 
-                    E_Float& xmax, E_Float& ymax, E_Float& zmax, 
-                    E_Float& xmin, E_Float& ymin, E_Float& zmin );
-
-  void k6boundboxunstr_(const E_Int& npts, 
-                        const E_Float* x, const E_Float* y, const E_Float* z, 
-                        E_Float& xmax, E_Float& ymax, E_Float& zmax, 
-                        E_Float& xmin, E_Float& ymin, E_Float& zmin);
-
-  void k6boundboxunstr2_(const E_Int& npts, 
-                         const E_Float* x, const E_Float* y, const E_Float* z, 
-                         const E_Float* m, const E_Float* r0, const E_Float* xc0,
-                         E_Float& xmax, E_Float& ymax, E_Float& zmax, 
-                         E_Float& xmin, E_Float& ymin, E_Float& zmin);
-
+{   
   void k6compcartelembox_(const E_Int& is1, const E_Int& is2,
                           const E_Int& js1, const E_Int& js2,
                           const E_Int& ks1, const E_Int& ks2,
@@ -206,7 +180,7 @@ FldArrayF& K_KINTERP::KMesh::getCellVol()
     FldArrayF surf(nbInt, 3);
     FldArrayF snorm(nbInt);
     FldArrayF centerInt(nbInt, 3);
-    K_METRIC::compStructMetric(
+    K_METRIC::compMetricStruct(
       _im, _jm, _km,
       nbInti, nbIntj, nbIntk,
       _coord.begin(1), _coord.begin(2), _coord.begin(3), 
@@ -223,7 +197,7 @@ FldArrayF& K_KINTERP::KMesh::getCellVol()
     E_Int nfacets = 4*nelts;
     FldArrayF snx(nfacets), sny(nfacets), snz(nfacets), surf(nfacets);
     _cellVol.malloc(nelts);
-    K_METRIC::compUnstructMetric(
+    K_METRIC::compMetricUnstruct(
       _cn, "TETRA", _coord.begin(1), _coord.begin(2), _coord.begin(3),
       snx.begin(), sny.begin(), snz.begin(), surf.begin(), _cellVol.begin()
     );
@@ -577,8 +551,9 @@ void K_KINTERP::KMesh::createDuplicatedExtendedPeriodMesh(const KMesh& origMesh,
         zt[pos] = zo[pos];
       }
   
-  k6rotatemesh_(dim1, axisPnt.begin(), axisVct.begin(), theta, 
-                coord.begin(1), coord.begin(2), coord.begin(3));
+  K_COMPGEOM::rotateMesh(dim1, theta,
+			 axisPnt.begin(), axisVct.begin(), 
+			 coord.begin(1), coord.begin(2), coord.begin(3));
   
   E_Float* xn = _coord.begin(1);
   E_Float* yn = _coord.begin(2);
@@ -596,38 +571,20 @@ void K_KINTERP::KMesh::createDuplicatedExtendedPeriodMesh(const KMesh& origMesh,
 //=============================================================================
 void
 K_KINTERP::KMesh::boundingBox(E_Float& xmax, E_Float& ymax, E_Float& zmax, 
-                             E_Float& xmin, E_Float& ymin, E_Float& zmin) const
+                             E_Float& xmin, E_Float& ymin, E_Float& zmin)
 {
   if ( _isStruct == true)
-    k6boundbox_(_im, _jm, _km, _coord.begin(1), _coord.begin(2), 
-                _coord.begin(3), xmax, ymax, zmax, xmin, ymin, zmin);
+    K_COMPGEOM::boundingBoxStruct(_im, _jm, _km, 
+                                  _coord.begin(1), _coord.begin(2), 
+                                  _coord.begin(3),
+                                  xmin, ymin, zmin, xmax, ymax, zmax);
   else 
-    k6boundboxunstr_(_npts, 
-                     _coord.begin(1), _coord.begin(2), _coord.begin(3), 
-                     xmax, ymax, zmax, xmin, ymin, zmin);
+    K_COMPGEOM::boundingBoxUnstruct(_npts,
+                                    _coord.begin(1), _coord.begin(2), 
+                                    _coord.begin(3),
+                                    xmin, ymin, zmin, xmax, ymax, zmax);
 }
 
-//=============================================================================
-/* Find the bounding box of a mesh in the absolute frame */
-//=============================================================================
-void
-K_KINTERP::KMesh::boundingBox(E_Float& xmax, E_Float& ymax, E_Float& zmax, 
-                             E_Float& xmin, E_Float& ymin, E_Float& zmin,
-                             const FldArrayF& m, 
-                             const FldArrayF& r0,
-                             const FldArrayF& xc0) const
-{
-  if ( _isStruct == true)
-    k6boundbox2_(_im, _jm, _km, 
-                 _coord.begin(1), _coord.begin(2), _coord.begin(3), 
-                 m.begin(), r0.begin(), xc0.begin(),
-                 xmax, ymax, zmax, xmin, ymin, zmin);
-  else 
-    k6boundboxunstr2_(_npts, 
-                      _coord.begin(1), _coord.begin(2), _coord.begin(3), 
-                      m.begin(), r0.begin(), xc0.begin(),
-                      xmax, ymax, zmax, xmin, ymin, zmin);
-}
 //=============================================================================
 /* Find the cartesian elements bounding box (CEBB) in the Z direction */
 //=============================================================================

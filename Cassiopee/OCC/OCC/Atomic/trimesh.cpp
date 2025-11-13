@@ -50,7 +50,7 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
   // Get from array
   FldArrayF* fi; E_Int ni, nj, nk;
   char* varString; FldArrayI* ci; char* eltType;
-  E_Int ret = K_ARRAY::getFromArray2(arrayUV, varString, fi, ni, nj, nk, ci, eltType);
+  E_Int ret = K_ARRAY::getFromArray3(arrayUV, varString, fi, ni, nj, nk, ci, eltType);
   if (ret != 2)
   {
     PyErr_SetString(PyExc_TypeError, "trimesh: invalid array.");
@@ -61,6 +61,7 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
   DELAUNAY::SurfaceMesher<OCCSurface> mesher;
 
   // Recuperation des donnees
+  //E_Int api = fi->getApi();
   E_Int n = fi->getSize();
   K_FLD::FloatArray pos3D(3, n); // pos3D: les coords reelles
   for (E_Int i = 0; i < n; i++) pos3D(0,i) = (*fi)(i,1);

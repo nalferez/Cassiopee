@@ -30,14 +30,14 @@ using namespace K_FLD;
 PyObject* K_POST::computeIndicatorValue(PyObject* self, PyObject* args)
 {
   PyObject *octree, *zones, *fieldA; 
-  if (!PyArg_ParseTuple(args, "OOO", &octree, &zones, &fieldA)) return NULL;
+  if (!PYPARSETUPLE_(args, OOO_, &octree, &zones, &fieldA)) return NULL;
 
   // Verif octree HEXA/QUAD
   E_Int ni, nj, nk;
   FldArrayF* f; FldArrayI* cn;
   char* varString; char* eltType;
-  E_Int res = K_ARRAY::getFromArray(octree, varString, f, ni, nj, nk, 
-                                    cn, eltType, true);
+  E_Int res = K_ARRAY::getFromArray3(octree, varString, f, ni, nj, nk, 
+                                     cn, eltType);
   if (res != 2) 
   {
     PyErr_SetString(PyExc_TypeError, 
@@ -102,6 +102,8 @@ PyObject* K_POST::computeIndicatorValue(PyObject* self, PyObject* args)
     fieldA, resl, structVarString2, unstrVarString2,
     structF2, unstrF2, nit2, njt2, nkt2, cnt2, eltTypet2, objst2, objut2, 
     skipDiffVars, skipNoCoord, skipStructured, skipUnstructured, true);
+  
+  E_Int api = f->getApi();
   E_Int nzones2 = structF2.size();
   if (nzones2 != nzones) 
   {
@@ -145,8 +147,12 @@ PyObject* K_POST::computeIndicatorValue(PyObject* self, PyObject* args)
   vector<BBox3DType*> boxes(nzones);// liste des bbox
   for (E_Int v = 0; v < nzones; v++)
   {
-    K_COMPGEOM::boundingBox(nit[v], njt[v], nkt[v], posx, posy, posz, *structF[v], 
-                            bboxes(v,1), bboxes(v,2), bboxes(v,3),bboxes(v,4),bboxes(v,5),bboxes(v,6));
+    K_COMPGEOM::boundingBoxStruct(nit[v], njt[v], nkt[v],
+                                  structF[v]->begin(posx), 
+                                  structF[v]->begin(posy), 
+                                  structF[v]->begin(posz),
+                                  bboxes(v,1), bboxes(v,2), bboxes(v,3),
+                                  bboxes(v,4), bboxes(v,5), bboxes(v,6));
   }
   E_Float* xmin = bboxes.begin(1); E_Float* xmax = bboxes.begin(4);
   E_Float* ymin = bboxes.begin(2); E_Float* ymax = bboxes.begin(5);
@@ -297,7 +303,7 @@ PyObject* K_POST::computeIndicatorValue(PyObject* self, PyObject* args)
 
   vector<char*> vars;
   K_ARRAY::extractVars(structVarString2[0], vars); 
-  PyObject* tpl = K_ARRAY::buildArray(*field, vars[0], *cn, -1, eltType, true);
+  PyObject* tpl = K_ARRAY::buildArray3(*field, vars[0], *cn, eltType, api);
   
   for (E_Int v = 0; v < nzones; v++) delete boxes[v];
   delete field;  RELEASESHAREDB(res, octree, f, cn); 

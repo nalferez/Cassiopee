@@ -30,8 +30,8 @@ PyObject* K_POST::computeDiv2NGon(PyObject* self, PyObject* args)
   PyObject* array; PyObject* arrayc;
   PyObject* volc; PyObject* cellNc;
   PyObject* indices; PyObject* fieldX; PyObject* fieldY; PyObject* fieldZ;
-  if (!PyArg_ParseTuple(args, "OOOOOOOO", &array, &arrayc, &volc, &cellNc,
-                        &indices, &fieldX, &fieldY, &fieldZ)) return NULL;
+  if (!PYPARSETUPLE_(args, OOOO_ OOOO_, &array, &arrayc, &volc, &cellNc,
+                      &indices, &fieldX, &fieldY, &fieldZ)) return NULL;
 
   // Check array
   char* varString; char* eltType;
@@ -256,7 +256,7 @@ PyObject* K_POST::computeDiv2NGon(PyObject* self, PyObject* args)
   E_Float* volp = vol.begin(1);
   if (volc == Py_None)
   { 
-    K_METRIC::compNGonVol(f->begin(posx), f->begin(posy),
+    K_METRIC::compVolNGon(f->begin(posx), f->begin(posy),
                           f->begin(posz), *cn, volp);
   }
   else
@@ -324,8 +324,8 @@ PyObject* K_POST::computeDiv2Struct(PyObject* self, PyObject* args)
 {
   PyObject* array; PyObject* arrayc; PyObject* cellNc;
   PyObject* indices; PyObject* fieldX; PyObject* fieldY; PyObject* fieldZ;
-  if (!PyArg_ParseTuple(args, "OOOOOOO", &array, &arrayc, &cellNc,
-                        &indices, &fieldX, &fieldY, &fieldZ)) return NULL;
+  if (!PYPARSETUPLE_(args, OOOO_ OOO_, &array, &arrayc, &cellNc,
+                      &indices, &fieldX, &fieldY, &fieldZ)) return NULL;
 
   // Check array
   char* varString; char* eltType;
@@ -816,7 +816,7 @@ PyObject* K_POST::computeDiv2Struct3D(
   E_Float* snp = surfnorm.begin();
   FldArrayF vol(ncells); E_Float* volp = vol.begin();
 
-  K_METRIC::compStructMetric(
+  K_METRIC::compMetricStruct(
     ni, nj, nk, nbIntI, nbIntJ, nbIntK,
     xt, yt, zt,
     volp, sxp, syp, szp, snp,

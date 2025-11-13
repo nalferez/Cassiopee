@@ -146,8 +146,6 @@ PyObject* K_TRANSFORM::joinAll(PyObject* self, PyObject* args)
     E_Int len = strlen(newEltType);
     newEltType[len-1] = '\0';
     
-    // ME: api = 3 only
-    if (nc > 1) api = 3;
     if (nc == 2 && dimRef == 3)
     {
       // HEXA & TETRA cannot be joined in a conformal mesh, skipping the last
@@ -486,9 +484,6 @@ PyObject* K_TRANSFORM::joinAllBoth(PyObject* self, PyObject* args)
     // Remove trailing comma in newEltType
     E_Int len = strlen(newEltType);
     newEltType[len-1] = '\0';
-    
-    // ME: api = 3 only
-    if (nc > 1) api = 3;
 
     vector<char*> newEltTypes;
     K_ARRAY::extractVars(newEltType, newEltTypes);
@@ -674,20 +669,23 @@ PyObject* K_TRANSFORM::joinAllBoth(PyObject* self, PyObject* args)
   PyObject* l = PyList_New(0);
   if (posx > 0 && posy > 0 && posz > 0)
   {
-    PyObject* tpln2 = K_CONNECT::V_cleanConnectivity(
-      unstructVarString[0], *f, *cno, newEltType, tol);
-    PyList_Append(l, tpln2); Py_DECREF(tpln2);
+    K_CONNECT::cleanConnectivity(posx, posy, posz, tol, newEltType, *f, *cno);
+    // PyObject* tpln2 = K_CONNECT::V_cleanConnectivity(
+    //  unstructVarString[0], *f, *cno, newEltType, tol);
+    // PyList_Append(l, tpln2); Py_DECREF(tpln2);
   }
-  else
-  {
-    PyList_Append(l, tpln);
-  }
+  // else
+  // {
+  //  PyList_Append(l, tpln);
+  // }
+  PyObject* tpln2 = K_ARRAY::buildArray3(*f, unstructVarString[0], *cno, newEltType);
+  PyList_Append(l, tpln2); Py_DECREF(tpln2);
 
   char newEltTypec[K_ARRAY::VARSTRINGLENGTH];
   K_ARRAY::starVarString(newEltType, newEltTypec);
   PyObject* tplc = K_ARRAY::buildArray3(*fc, unstructVarStringc[0], 
                                         *cno, newEltTypec);
   PyList_Append(l, tplc); Py_DECREF(tplc); delete fc;
-  RELEASESHAREDU(tpln, f, cno); Py_DECREF(tpln);
+  RELEASESHAREDU(tpln, f, cno);
   return l;
 }

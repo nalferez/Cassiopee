@@ -156,7 +156,7 @@ def _perturbate(a, radius, dim=3):
 
 def smoothField(t, eps=0.1, niter=1, type=0, varNames=[]):
     """Smooth given fields."""
-    return C.TZA2(t, 'nodes', 'nodes', False, Transform.smoothField, eps, niter, type, varNames)
+    return C.TZA3(t, 'nodes', 'nodes', False, Transform.smoothField, eps, niter, type, varNames)
 
 def _smoothField(t, eps=0.1, niter=1, type=0, varNames=[]):
     """Smooth given fields."""
@@ -167,8 +167,8 @@ def _smoothField(t, eps=0.1, niter=1, type=0, varNames=[]):
             if s[0] == 'centers': varCenters.append(s[1])
             else: varNodes.append(s[0])
         else: varNodes.append(v)
-    if varNodes != []: C.__TZA2(t, 'nodes', Transform._smoothField, eps, niter, type, varNodes)
-    if varCenters != []: C.__TZA2(t, 'centers', Transform._smoothField, eps, niter, type, varCenters)
+    if varNodes != []: C.__TZA3(t, 'nodes', Transform._smoothField, eps, niter, type, varNodes)
+    if varCenters != []: C.__TZA3(t, 'centers', Transform._smoothField, eps, niter, type, varCenters)
     return None
 
 def smooth(t, eps=0.5, niter=4, type=0, fixedConstraints=[],
@@ -250,6 +250,27 @@ def _deformMesh(a, surfDelta, beta=4., type='nearest'):
     """Deform a mesh a wrt surfDelta defining surface grids and deformation vector on it."""
     info = C.getAllFields(surfDelta, 'nodes')
     return C._TZA1(a, 'nodes', 'nodes', True, Transform.deformMesh, info, beta, type)
+
+def controlPoints(a, N=(2,2,2)):
+    """Create control points for free form."""
+    import Generator.PyTree as G
+    bb = G.bbox(a)
+    b = G.cart((bb[0],bb[1],bb[2]),(bb[3]-bb[0],bb[4]-bb[1],bb[5]-bb[2]),N)
+    C._addVars(b, ['dx','dy','dz'])
+    return b
+
+def freeForm(a, controlPoints):
+    """Coupute free form deformation vector."""
+    b = Internal.copyRef(a)
+    _freeForm(b, controlPoints)
+    return b
+
+def _freeForm(a, controlPoints):
+    """Coupute free form deformation vector."""
+    array = C.getAllFields(a, 'nodes')
+    control = C.getAllFields(controlPoints, 'nodes')
+    Transform.freeForm(array, control)
+    return None
 
 def join(t, t2=None, tol=1.e-10):
     """Join two zones in one or join a list of zones in one.
@@ -340,7 +361,7 @@ def mergeCart(t, sizeMax=1000000000, tol=1.e-10):
     Usage: mergeCart(t, sizeMax, tol)"""
     Internal._orderFlowSolution(t, loc='both')
     allBCInfos = C.extractBCInfo(t)
-    A = C.getAllFields(t, 'nodes', api=2)
+    A = C.getAllFields(t, 'nodes', api=3)
     A = Transform.mergeCart(A, sizeMax, tol)
     for noz in range(len(A)):
         A[noz] = C.convertArrays2ZoneNode('Cart',[A[noz]])
@@ -2045,11 +2066,11 @@ def _projectRay(t1, t2, Pt): # t1 is modified
 
 def alignVectorFieldWithRadialCylindricProjection(t, axisPassingPoint=(0,0,0), axisDirection=(1,0,0), vectorNames=[]):
     """Perform a cylindric radial projection of a vector field."""
-    return C.TZA2(t, 'nodes', 'nodes', False, Transform.alignVectorFieldWithRadialCylindricProjection, axisPassingPoint, axisDirection, vectorNames)
+    return C.TZA3(t, 'nodes', 'nodes', False, Transform.alignVectorFieldWithRadialCylindricProjection, axisPassingPoint, axisDirection, vectorNames)
 
 def _alignVectorFieldWithRadialCylindricProjection(t, axisPassingPoint=(0,0,0), axisDirection=(1,0,0), vectorNames=[]):
     """Perform a cylindric radial projection of a vector field."""
-    C.__TZA2(t, 'nodes', Transform._alignVectorFieldWithRadialCylindricProjection, axisPassingPoint, axisDirection, vectorNames)
+    C.__TZA3(t, 'nodes', Transform._alignVectorFieldWithRadialCylindricProjection, axisPassingPoint, axisDirection, vectorNames)
 
 # Split au milieu
 def _splitSize__(z, N, multigrid, dirs, t, stack):

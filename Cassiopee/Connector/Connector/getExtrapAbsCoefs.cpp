@@ -29,7 +29,7 @@ PyObject* K_CONNECTOR::getExtrapAbsCoefs(PyObject* self, PyObject* args)
   PyObject *pyIndExtrap;
   PyObject *pyArrayTypes;
   PyObject *pyArrayCoefs;
-  if (!PyArg_ParseTuple(args, "OOOO",
+  if (!PYPARSETUPLE_(args, OOO_ O_,
                         &pyIndRcv, &pyIndExtrap, &pyArrayTypes, &pyArrayCoefs))
   {
     return NULL;
@@ -105,8 +105,8 @@ PyObject* K_CONNECTOR::getExtrapAbsCoefs(PyObject* self, PyObject* args)
       {indices.push_back(noind); break;}
     }
   E_Int nindices = indices.size();  
-  PyObject* tpl = K_ARRAY::buildArray(1,"extrapolated", nindices, 1, 1);
-  E_Float* sumCfp = K_ARRAY::getFieldPtr(tpl);   
+  PyObject* tpl = K_ARRAY::buildArray(1, "extrapolated", nindices, 1, 1);
+  E_Float* sumCfp = K_ARRAY::getFieldPtr(tpl);
   
   for (E_Int noe = 0; noe < nindices; noe++)
   {        

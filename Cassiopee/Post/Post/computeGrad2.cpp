@@ -31,8 +31,8 @@ PyObject* K_POST::computeGrad2NGon(PyObject* self, PyObject* args)
   PyObject* array; PyObject* arrayc;
   PyObject* volc; PyObject* cellNc;
   PyObject* indices; PyObject* field;
-  if (!PyArg_ParseTuple(args, "OOOOOO", &array, &arrayc, &volc, &cellNc,
-                        &indices, &field)) return NULL;
+  if (!PYPARSETUPLE_(args, OOOO_ OO_, &array, &arrayc, &volc, &cellNc,
+                      &indices, &field)) return NULL;
 
   // Check array
   char* varString; char* eltType;
@@ -244,7 +244,7 @@ PyObject* K_POST::computeGrad2NGon(PyObject* self, PyObject* args)
   { 
     vol.malloc(nelts);
     volp = vol.begin(1);  
-    K_METRIC::compNGonVol(f->begin(posx), f->begin(posy),
+    K_METRIC::compVolNGon(f->begin(posx), f->begin(posy),
   			  f->begin(posz), *cn, volp);
   }
   else
@@ -290,8 +290,8 @@ PyObject* K_POST::computeGrad2Struct(PyObject* self, PyObject* args)
 {
   PyObject* array; PyObject* arrayc;
   PyObject* indices; PyObject* field; PyObject* cellNc;
-  if (!PyArg_ParseTuple(args, "OOOOO", &array, &arrayc, &cellNc,
-                        &indices, &field)) return NULL;
+  if (!PYPARSETUPLE_(args, OOOO_ O_, &array, &arrayc, &cellNc,
+                      &indices, &field)) return NULL;
 
   // Check array
   char* varString; char* eltType;
@@ -721,7 +721,7 @@ PyObject* K_POST::computeGrad2Struct3D(E_Int ni, E_Int nj, E_Int nk,
   E_Float* snp = surfnorm.begin();
   FldArrayF vol(ncells); E_Float* volp = vol.begin();
 
-  K_METRIC::compStructMetric(
+  K_METRIC::compMetricStruct(
     ni, nj, nk, nbIntI, nbIntJ, nbIntK,
     xt, yt, zt,
     volp, sxp, syp, szp, snp,

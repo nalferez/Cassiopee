@@ -50,8 +50,7 @@ PyObject* K_GENERATOR::extendCartGrids(PyObject* self, PyObject* args)
   vector<FldArrayF*> structF;
   vector<FldArrayF*> unstrF;
   vector<E_Int> nit; vector<E_Int> njt; vector<E_Int> nkt;
-  vector<FldArrayI*> cnt;
-  vector<char*> eltTypet;
+  vector<FldArrayI*> cnt; vector<char*> eltTypet;
   vector<PyObject*> objst, objut;
   E_Bool skipNoCoord = true;
   E_Bool skipStructured = false;
@@ -99,9 +98,13 @@ PyObject* K_GENERATOR::extendCartGrids(PyObject* self, PyObject* args)
   E_Float tol2 = tol*tol;
   for (E_Int v = 0; v < nzones; v++)
   {
-    K_COMPGEOM::boundingBox(
-      nit[v], njt[v], nkt[v], posxt[v], posyt[v], poszt[v], 
-      *structF[v], xminp[v], yminp[v], zminp[v], xmaxp[v], ymaxp[v], zmaxp[v]);
+    K_COMPGEOM::boundingBoxStruct(nit[v], njt[v], nkt[v],
+                                  structF[v]->begin(posxt[v]),
+                                  structF[v]->begin(posyt[v]), 
+                                  structF[v]->begin(poszt[v]),
+                                  xminp[v], yminp[v], zminp[v],
+                                  xmaxp[v], ymaxp[v], zmaxp[v]);
+
     minB[0] = xminp[v]; minB[1] = yminp[v]; minB[2] = zminp[v];
     maxB[0] = xmaxp[v]; maxB[1] = ymaxp[v]; maxB[2] = zmaxp[v];
     if (dim == 2) { minB[2] = 0.; maxB[2] = 1.; }
@@ -1078,12 +1081,12 @@ PyObject* K_GENERATOR::extendCartGrids(PyObject* self, PyObject* args)
 
     if (extBnd > 0) 
     {
-      if ( ext1[v] == 0 && extBnd>0) ext1[v]=extBnd;
-      if ( ext2[v] == 0 && extBnd>0) ext2[v]=extBnd;
-      if ( ext3[v] == 0 && extBnd>0) ext3[v]=extBnd;
-      if ( ext4[v] == 0 && extBnd>0) ext4[v]=extBnd;
-      if ( ext5[v] == 0 && extBnd>0) ext5[v]=extBnd;
-      if ( ext6[v] == 0 && extBnd>0) ext6[v]=extBnd;
+      if (ext1[v] == 0 && extBnd>0) ext1[v]=extBnd;
+      if (ext2[v] == 0 && extBnd>0) ext2[v]=extBnd;
+      if (ext3[v] == 0 && extBnd>0) ext3[v]=extBnd;
+      if (ext4[v] == 0 && extBnd>0) ext4[v]=extBnd;
+      if (ext5[v] == 0 && extBnd>0) ext5[v]=extBnd;
+      if (ext6[v] == 0 && extBnd>0) ext6[v]=extBnd;
     }
 
     E_Float xxor = xp[0]-ext1[v]*dh;
@@ -1093,7 +1096,7 @@ PyObject* K_GENERATOR::extendCartGrids(PyObject* self, PyObject* args)
     E_Int nio = ni+ext1[v]+ext2[v]; E_Int njo = nj+ext3[v]+ext4[v]; E_Int nko = nk+ext5[v]+ext6[v];
     E_Int npts = nio*njo*nko;
     E_Int api = 1;//api 2 plante
-    PyObject* tpl = K_ARRAY::buildArray2(nfldo, structVarString[v], nio, njo, nko, api); 
+    PyObject* tpl = K_ARRAY::buildArray3(nfldo, structVarString[v], nio, njo, nko, api); 
     E_Float* fptr = K_ARRAY::getFieldPtr(tpl);
     FldArrayF newcoords(npts,nfldo, fptr, true);
     E_Float* xn = newcoords.begin(1);

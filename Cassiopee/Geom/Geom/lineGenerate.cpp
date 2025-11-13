@@ -31,7 +31,7 @@ using namespace K_FLD;
 PyObject* K_GEOM::lineGenerateMesh(PyObject* self, PyObject* args)
 {
   PyObject* array; PyObject* arrayLine;
-  if (!PyArg_ParseTuple(args, "OO", &array, &arrayLine)) return NULL;
+  if (!PYPARSETUPLE_(args, OO_, &array, &arrayLine)) return NULL;
   
   // Check array
   E_Int im1, jm1, km1, im2, jm2, km2;
@@ -63,6 +63,7 @@ PyObject* K_GEOM::lineGenerateMesh(PyObject* self, PyObject* args)
                                       cn1, eltType1);
 
   E_Int nfld = f1->getNfld();
+  E_Int api = f1->getApi();
 
   if (res1 == 1) // structured
   {
@@ -212,8 +213,7 @@ PyObject* K_GEOM::lineGenerateMesh(PyObject* self, PyObject* args)
     }
     RELEASESHAREDS(array, f1);
     RELEASESHAREDS(arrayLine, f2);
-    PyObject* tpl = K_ARRAY::buildArray(*coord, varString1, 
-                                        im3, jm3, km3);
+    PyObject* tpl = K_ARRAY::buildArray3(*coord, varString1, im3, jm3, km3);
     delete coord;
     return tpl; 
   }
@@ -340,8 +340,8 @@ PyObject* K_GEOM::lineGenerateMesh(PyObject* self, PyObject* args)
     RELEASESHAREDU(array, f1, cn1);
     RELEASESHAREDS(arrayLine, f2);
 
-    PyObject* tpl = K_ARRAY::buildArray(*coord, varString1, 
-                                        *connect, -1, eltType);
+    PyObject* tpl = K_ARRAY::buildArray3(*coord, varString1, 
+                                         *connect, eltType, api);
     delete coord; delete connect;
     return tpl;
   }

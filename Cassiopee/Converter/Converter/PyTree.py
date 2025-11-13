@@ -1079,8 +1079,7 @@ def convertFile2PyTree(fileName, format=None, nptsCurve=20, nptsLine=2,
         return t
 
     if format == 'bin_pickle':
-        try: import cPickle as pickle
-        except: import pickle
+        import pickle
         print('Reading %s (bin_pickle)...'%fileName, end='')
         try:
             file = open(fileName, 'rb')
@@ -1239,8 +1238,7 @@ def convertPyTree2File(t, fileName, format=None, isize=8, rsize=8,
         tp, ntype = Internal.node2PyTree(t)
         Converter.converter.convertPyTree2FileFsdm(tp, fileName, format)
     elif format == 'bin_pickle':
-        try: import cPickle as pickle
-        except: import pickle
+        import pickle
         file = open(fileName, 'wb')
         print('Writing '+fileName+'...', end='')
         pickle.dump(t, file, protocol=pickle.HIGHEST_PROTOCOL); file.close()
@@ -1402,9 +1400,9 @@ def getField(name, t, api=1):
                     info2 = i[2]
                     for j in info2:
                         if j[0] == name and j[3] == 'DataArray_t':
-                            if api==1: r = Internal.convertDataNode2Array(j, dim, connects, 0)
-                            elif api==2: r = Internal.convertDataNode2Array2(j, dim, connects, 0)
-                            elif api==3: r = Internal.convertDataNode2Array3(j, dim, connects, 0)
+                            if api == 1: r = Internal.convertDataNode2Array(j, dim, connects, 0)
+                            elif api == 2: r = Internal.convertDataNode2Array2(j, dim, connects, 0)
+                            elif api == 3: r = Internal.convertDataNode2Array3(j, dim, connects, 0)
                             else: raise ValueError('getField: unknow api.')
                             a = r[1]
                             if a is not None: break
@@ -1415,9 +1413,9 @@ def getField(name, t, api=1):
                     info2 = i[2]
                     for j in info2:
                         if j[0] == name and j[3] == 'DataArray_t':
-                            if api==1: r = Internal.convertDataNode2Array(j, dim, connects, 1)
-                            elif api==2: r = Internal.convertDataNode2Array2(j, dim, connects, 1)
-                            elif api==3: r = Internal.convertDataNode2Array3(j, dim, connects, 1)
+                            if api == 1: r = Internal.convertDataNode2Array(j, dim, connects, 1)
+                            elif api == 2: r = Internal.convertDataNode2Array2(j, dim, connects, 1)
+                            elif api == 3: r = Internal.convertDataNode2Array3(j, dim, connects, 1)
                             else: raise ValueError('getField: unknow api.')
                             a = r[1]
                             if a is not None: break
@@ -3340,9 +3338,9 @@ def getArgMin(t, var):
         var = v[1]
         if v[0] == 'centers': centers = True
     if centers:
-        A = getFields([Internal.__FlowSolutionCenters__], t, api=2)
+        A = getFields([Internal.__FlowSolutionCenters__], t, api=3)
     else:
-        A = getFields([Internal.__GridCoordinates__, Internal.__FlowSolutionNodes__], t, api=2)
+        A = getFields([Internal.__GridCoordinates__, Internal.__FlowSolutionNodes__], t, api=3)
     return Converter.getArgMin(A, var)
 
 # -- getArgMax (only on nodes or centers separately)
@@ -3355,9 +3353,9 @@ def getArgMax(t, var):
         var = v[1]
         if v[0] == 'centers': centers = True
     if centers:
-        A = getFields([Internal.__FlowSolutionCenters__], t, api=2)
+        A = getFields([Internal.__FlowSolutionCenters__], t, api=3)
     else:
-        A = getFields([Internal.__GridCoordinates__, Internal.__FlowSolutionNodes__], t, api=2)
+        A = getFields([Internal.__GridCoordinates__, Internal.__FlowSolutionNodes__], t, api=3)
     return Converter.getArgMax(A, var)
 
 # -- getMinValue
@@ -3413,7 +3411,7 @@ def getMeanValue(t, var):
 def getMeanRangeValue(t, var, rmin, rmax):
     """Get the mean value of variable defined by var in the sorted range between rmin and rmax.
     Usage: getMeanRangeValue(t, var, rmin, rmax)"""
-    A = getField(var, t, api=2)
+    A = getField(var, t, api=3)
     v = var.split(':')
     if len(v) > 1: var = v[1]
     return Converter.getMeanRangeValue(A, var, rmin, rmax)
@@ -5627,7 +5625,6 @@ def computeBCMatchField(z, allMatch, variables=None):
 
                 if key in allCount.keys():
                     ncount = allCount[key]
-                    # print(key, ncount)
                 else:
                     ncount = None
 
@@ -7162,7 +7159,7 @@ def createHook(a, function='None'):
 
 def createHookAdtCyl(a, center=(0,0,0), axis=(0,0,1), depth=0, thetaShift=0.):
     """Create a hook for a cylindrical adt."""
-    fields = getFields(Internal.__GridCoordinates__, a, api=2)
+    fields = getFields(Internal.__GridCoordinates__, a, api=3)
     return Converter.createHookAdtCyl(fields, center, axis, depth, thetaShift)
 
 # -- createGlobalHook
@@ -7281,30 +7278,30 @@ def nearestElements(hook, a):
 # Create global index
 def createGlobalIndex(a, start=0):
     """Create the global index field."""
-    return TZA2(a, 'nodes', 'nodes', Converter.createGlobalIndex, start)
+    return TZA3(a, 'nodes', 'nodes', Converter.createGlobalIndex, start)
 
 def _createGlobalIndex(a, start=0):
     """Create the global index field."""
     _initVars(a, 'globalIndex', 0)
-    return __TZA2(a, 'nodes', Converter._createGlobalIndex, start)
+    return __TZA3(a, 'nodes', Converter._createGlobalIndex, start)
 
 # Recover field from global index
 def recoverGlobalIndex(a, b):
     """Recover fields of b in a following the global index field."""
-    fb = getFields(Internal.__FlowSolutionNodes__, b, api=2)[0]
-    return TZA2(a, 'nodes', 'nodes', Converter.recoverGlobalIndex, fb)
+    fb = getFields(Internal.__FlowSolutionNodes__, b, api=3)[0]
+    return TZA3(a, 'nodes', 'nodes', Converter.recoverGlobalIndex, fb)
 
 def _recoverGlobalIndex(a, b):
     """Recover fields of b in a following the global index field."""
     variables = getVarNames(b)[0]
     _addVars(a, variables)
-    fx = getFields(Internal.__GridCoordinates__, b, api=2)[0]
-    fb = getFields(Internal.__FlowSolutionNodes__, b, api=2)[0]
+    fx = getFields(Internal.__GridCoordinates__, b, api=3)[0]
+    fb = getFields(Internal.__FlowSolutionNodes__, b, api=3)[0]
     if fx != [] and fb != []:
         fb[0] = fb[0]+','+fx[0]
         fb[1] = fb[1]+fx[1]
     elif fb == []: fb = fx
-    return __TZA2(a, 'nodes', Converter._recoverGlobalIndex, fb)
+    return __TZA3(a, 'nodes', Converter._recoverGlobalIndex, fb)
 
 #==============================================================================
 # Construction de la structure de recherche BBTree

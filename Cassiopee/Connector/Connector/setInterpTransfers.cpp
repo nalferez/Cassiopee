@@ -49,8 +49,8 @@ PyObject* K_CONNECTOR::setInterpTransfers(PyObject* self, PyObject* args)
   E_Int imr, jmr, kmr;
   FldArrayF* fr; FldArrayI* cnr;
   char* varStringR; char* eltTypeR;
-  E_Int resr = K_ARRAY::getFromArray(arrayR, varStringR, fr,
-                                     imr, jmr, kmr, cnr, eltTypeR, true);
+  E_Int resr = K_ARRAY::getFromArray3(arrayR, varStringR, fr,
+                                      imr, jmr, kmr, cnr, eltTypeR);
   if (resr != 2 && resr != 1)
   {
     PyErr_SetString(PyExc_TypeError,
@@ -63,8 +63,8 @@ PyObject* K_CONNECTOR::setInterpTransfers(PyObject* self, PyObject* args)
   E_Int imd, jmd, kmd, imdjmd;
   FldArrayF* fd; FldArrayI* cnd;
   char* varStringD; char* eltTypeD;
-  E_Int resd = K_ARRAY::getFromArray(arrayD, varStringD, fd,
-                                     imd, jmd, kmd, cnd, eltTypeD, true);
+  E_Int resd = K_ARRAY::getFromArray3(arrayD, varStringD, fd,
+                                      imd, jmd, kmd, cnd, eltTypeD);
   if (resd != 2 && resd != 1)
   {
     PyErr_SetString(PyExc_TypeError,
@@ -172,11 +172,11 @@ PyObject* K_CONNECTOR::setInterpTransfers(PyObject* self, PyObject* args)
     if (res_type  != 0) { RELEASESHAREDN(pyArrayTypes, typesI     );}
     if (res_coef  != 0) { RELEASESHAREDN(pyArrayCoefs, donorCoefsF);}
     if (res_rcv   != 0) { RELEASESHAREDN(pyIndRcv    , rcvPtsI    );}
-    PyErr_SetString(PyExc_TypeError,"setInterpTransfers: 4th to 6th arg must be a numpy of integers. 7th arg a numpy floats ");
+    PyErr_SetString(PyExc_TypeError, "setInterpTransfers: 4th to 6th arg must be a numpy of integers. 7th arg a numpy floats ");
     return NULL;
   }
 
-  // Extraction de l angle de rotation
+  // Extraction de l'angle de rotation
   E_Int dirR = 0; E_Float theta = 0.;
   if (K_FUNC::E_abs(AngleX) > 0.) {dirR = 1; theta=AngleX;}
   else if (K_FUNC::E_abs(AngleY) > 0.){dirR=2; theta=AngleY;}
@@ -535,7 +535,7 @@ PyObject* K_CONNECTOR::__setInterpTransfers(PyObject* self, PyObject* args)
   E_Int flagIbc = E_Int(flagibc);
   E_Int ibcType =  E_Int(bctype);
   vector<PyArrayObject*> hook;
-  E_Int imdjmd, imd,jmd,kmd, cnNfldD, nvars,ndimdxR, ndimdxD, meshtype;
+  E_Int imdjmd, imd=1, jmd=1, kmd=1, cnNfldD, nvars, ndimdxR, ndimdxD, meshtype;
   E_Float* iptroD; E_Float* iptroR;
 
   E_Int nidom = PyList_Size(zonesR);
@@ -562,9 +562,11 @@ PyObject* K_CONNECTOR::__setInterpTransfers(PyObject* self, PyObject* args)
   /*-------------------------------------*/
   FldArrayI* param_int;
   E_Int res_donor = K_NUMPY::getFromNumpyArray(pyParam_int, param_int);
+  if (res_donor == 0) return NULL;
   E_Int* ipt_param_int = param_int->begin();
   FldArrayF* param_real;
   res_donor = K_NUMPY::getFromNumpyArray(pyParam_real, param_real);
+  if (res_donor == 0) return NULL;
   E_Float* ipt_param_real = param_real->begin();
 
   E_Int nracID = ipt_param_int[0];
@@ -588,7 +590,7 @@ PyObject* K_CONNECTOR::__setInterpTransfers(PyObject* self, PyObject* args)
   if( vartype <= 3 &&  vartype >= 1) nvars =5;
   else                               nvars =6;
 
-  for  (E_Int irac=0; irac< nrac; irac++)
+  for  (E_Int irac=0; irac < nrac; irac++)
   { 
     E_Int pos_rac   = ipt_param_int[ shift_rac +irac];
     E_Int no_zR     = ipt_param_int[ pos_rac   +  6 ];
@@ -605,7 +607,7 @@ PyObject* K_CONNECTOR::__setInterpTransfers(PyObject* self, PyObject* args)
   E_Float** vectOfRcvFields = RcvFields;
   E_Float** vectOfDnrFields = DnrFields;
 
-  for  (E_Int irac=0; irac< nrac; irac++)
+  for (E_Int irac=0; irac< nrac; irac++)
   {
     for (E_Int eq = 0; eq < nvars; eq++)
     {
@@ -773,7 +775,7 @@ PyObject* K_CONNECTOR::___setInterpTransfers(PyObject* self, PyObject* args)
     return NULL;
   }
   E_Int it_target = E_Int(It_target);
-  /* varType :
+  /* vartype :
      1  : conservatives,
      11 : conservatives + ronutildeSA
      2  : (ro,u,v,w,t)
@@ -786,8 +788,6 @@ PyObject* K_CONNECTOR::___setInterpTransfers(PyObject* self, PyObject* args)
      ---------------------------------------------
      5  : (ro,u,v,w,t) + (Sxx,...) Couplage NS LBM
      51 : Couplage NS LBM improved ( a coder ) */
-
-  E_Int varType = E_Int(vartype);
 
   //gestion nombre de pass pour ID et/ou IBC
   E_Int TypeTransfert = E_Int(type_transfert);
@@ -855,15 +855,18 @@ PyObject* K_CONNECTOR::___setInterpTransfers(PyObject* self, PyObject* args)
 
   FldArrayI* dtloc;
   E_Int res_donor = K_NUMPY::getFromNumpyArray(pydtloc, dtloc);
+  if (res_donor == 0) return NULL;
   E_Int* iptdtloc = dtloc->begin();
   /*-------------------------------------*/
   /* Extraction tableau int et real de tc*/
   /*-------------------------------------*/
   FldArrayI* param_int;
   res_donor = K_NUMPY::getFromNumpyArray(pyParam_int, param_int);
+  if (res_donor == 0) return NULL;
   E_Int* ipt_param_int = param_int->begin();
   FldArrayF* param_real;
   res_donor = K_NUMPY::getFromNumpyArray(pyParam_real, param_real);
+  if (res_donor == 0) return NULL;
   E_Float* ipt_param_real = param_real->begin();
 
   /*------------------------------------------------*/
@@ -941,7 +944,7 @@ PyObject* K_CONNECTOR::___setInterpTransfers(PyObject* self, PyObject* args)
   }
   E_Int maxlevel      =  iptdtloc[ 9];  //transfert sur les zones qui recupere leur valeur interpolees en LBM
   E_Int it_cycl_lbm   =  iptdtloc[10];
-  E_Int level_it      =  iptdtloc[13+it_cycl_lbm];
+  //E_Int level_it      =  iptdtloc[13+it_cycl_lbm];
   E_Int max_it        = pow(2, maxlevel-1);
 
   E_Int level_next_it =  maxlevel;
@@ -1051,7 +1054,7 @@ PyObject* K_CONNECTOR::___setInterpTransfers(PyObject* self, PyObject* args)
 # pragma omp parallel default(shared)
   {
       
-    E_Float gamma, cv, muS, Cs, Ts, Pr;
+    //E_Float gamma, cv, muS, Cs, Ts, Pr;
 
 #ifdef _OPENMP
     E_Int  ithread           = omp_get_thread_num()+1;
@@ -1069,7 +1072,7 @@ PyObject* K_CONNECTOR::___setInterpTransfers(PyObject* self, PyObject* args)
     //1ere pass_typ: IBC
     //2eme pass_typ: transfert
 
-    for  (E_Int ipass_typ=pass_deb; ipass_typ< pass_fin; ipass_typ++)
+    for  (E_Int ipass_typ=pass_deb; ipass_typ < pass_fin; ipass_typ++)
     {
       //1ere pass_inst: les raccords fixes
       //2eme pass_inst: les raccords instationnaires
@@ -1426,7 +1429,7 @@ PyObject* K_CONNECTOR::___setInterpTransfers4GradP(PyObject* self, PyObject* arg
 
   E_Float alpha = 0.;
 
-  /* varType :
+  /* vartype :
      1  : conservatives,
      11 : conservatives + ronutildeSA
      2  : (ro,u,v,w,t)
@@ -1435,8 +1438,7 @@ PyObject* K_CONNECTOR::___setInterpTransfers4GradP(PyObject* self, PyObject* arg
      3  : (ro,u,v,w,p)
      31 : (ro,u,v,w,p) + ronutildeSA
      4  : (Q1,..., QN)   LBM  */
-  E_Int varType = E_Int(vartype);
-
+  
   //gestion nombre de pass pour ID et/ou IBC
   E_Int TypeTransfert = E_Int(type_transfert);
   E_Int pass_deb, pass_fin;
@@ -1507,9 +1509,11 @@ PyObject* K_CONNECTOR::___setInterpTransfers4GradP(PyObject* self, PyObject* arg
   /*-------------------------------------*/
   FldArrayI* param_int;
   E_Int res_donor = K_NUMPY::getFromNumpyArray(pyParam_int, param_int);
+  if (res_donor == 0) return NULL;
   E_Int* ipt_param_int = param_int->begin();
   FldArrayF* param_real;
   res_donor = K_NUMPY::getFromNumpyArray(pyParam_real, param_real);
+  if (res_donor == 0) return NULL;
   E_Float* ipt_param_real = param_real->begin();
 
   //On recupere le nom de la 1ere variable a recuperer
@@ -1635,8 +1639,8 @@ PyObject* K_CONNECTOR::___setInterpTransfers4GradP(PyObject* self, PyObject* arg
   if (r != 0) size  = size + 8 - r;           // on rajoute du bas pour alignememnt 64bits
   if (ibcTypeMax <=1 ) size = 0;              // tableau inutile : SP voir avec Ivan
 
-  FldArrayF  tmp(size*17*threadmax_sdm);
-  E_Float* ipt_tmp = tmp.begin();
+  //FldArrayF tmp(size*17*threadmax_sdm);
+  //E_Float* ipt_tmp = tmp.begin();
 
   //# pragma omp parallel default(shared)  num_threads(1)
 # pragma omp parallel default(shared)

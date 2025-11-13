@@ -141,12 +141,19 @@ def getMinimumCartesianSpacing(t):
 # Creation of a case with a symmetry plane
 #==============================================================================
 def _symetrizePb(t, bodySymName, snear_sym, dir_sym=2):
-    base = Internal.getNodeFromName(t, bodySymName)
-    _symetrizeBody(base, dir_sym=dir_sym)
-    _addSymPlane(t, snear_sym, dir_sym=dir_sym)
+    import Converter.Mpi as Cmpi
+    if dir_sym not in [1,2,3]: raise ValueError('The symmetry direction %d is not supported. Must be 1(x), 2(y), or 3(z). Exiting...'%dir_sym)
+    base   = Internal.getNodeFromName(t, bodySymName)
+    minval = C.getMinValue(base, ['CoordinateX', 'CoordinateY','CoordinateZ'])
+    minval = minval[dir_sym-1]
+    if dir_sym==1: symPlane=(minval,0,0)
+    elif dir_sym==2: symPlane=(0,minval,0)
+    else: symPlane=(0,0,minval)
+    _symetrizeBody(base, dir_sym=dir_sym, symPlane=symPlane)
+    _addSymPlane(t, snear_sym, dir_sym=dir_sym, midPlane=minval)
     return None
 
-def _symetrizeBody(base, dir_sym=2):
+def _symetrizeBody(base, dir_sym=2, symPlane=(0.,0.,0.)):
     import Transform.PyTree as T
     zones = Internal.getZones(base)
     C._initVars(zones,'centers:cellN',1.)
@@ -157,14 +164,14 @@ def _symetrizeBody(base, dir_sym=2):
     elif dir_sym == 3:
         v1 = (1,0,0); v2=(0,1,0)
 
-    zones_dup = T.symetrize(zones,(0,0,0),v1, v2)
+    zones_dup = T.symetrize(zones,symPlane,v1, v2)
     for z in zones_dup: z[0] += '_sym'
     T._reorder(zones_dup,(-1,2,3))
     C._initVars(zones_dup,'centers:cellN',0.)
     base[2]+= zones_dup
     return None
 
-def _addSymPlane(tb, snear_sym, dir_sym=2):
+def _addSymPlane(tb, snear_sym, dir_sym=2, midPlane=0):
     import Generator.PyTree as G
     snearList=[]; dfarList=[]
     snearFactor=50
@@ -187,11 +194,11 @@ def _addSymPlane(tb, snear_sym, dir_sym=2):
     L = 0.5*(xmax+xmin); eps = 0.2*L
     xmin = xmin-eps; ymin = ymin-eps; zmin = zmin-eps
     xmax = xmax+eps; ymax = ymax+eps; zmax = zmax+eps
-    if dir_sym==1: coordsym = 'CoordinateX'; xmax=0
-    elif dir_sym==2: coordsym = 'CoordinateY'; ymax=0
-    elif dir_sym==3: coordsym = 'CoordinateZ'; zmax=0
+    if dir_sym==1: coordsym = 'CoordinateX'; xmax=midPlane
+    elif dir_sym==2: coordsym = 'CoordinateY'; ymax=midPlane
+    elif dir_sym==3: coordsym = 'CoordinateZ'; zmax=midPlane
     a = D.box((xmin,ymin,zmin),(xmax,ymax,zmax))
-    C._initVars(a,'{centers:cellN}=({centers:%s}>-1e-8)'%coordsym)
+    C._initVars(a,'{centers:cellN}=({centers:%s}>(%g-1e-8))'%(coordsym,midPlane))
     C._addBase2PyTree(tb,"SYM")
     base = Internal.getNodeFromName(tb,"SYM"); base[2]+=a
     _setSnear(base,snear_sym)
@@ -938,11 +945,21 @@ def naca0012(snear=0.001, ibctype='Musker', alpha=0.):
     return t
 
 #====================================================================================
-#Add .Solver#Define with dirx,diry, & dirz to the base of the rectilinear in tbox
-def _addOneOverLocally(FileName,oneOver):
+#Add .Solver#Define with dirx, diry, dirz, & granularity to the base of the tboneover. tboneover is the
+#PyTree that defines the region in space wherein a one over n coarsening will be pursued
+#during the automatic cartesian grid generator of FastIBC.
+#IN: t: PyTree
+#IN: oneOver: list of list of dirx,diry,dirz,granularity for each base in tboneover. E.g. oneOver=[[1,1,2,0],[1,2,1,0],[2,1,1,1]]
+#             for a tboneover with 3 bases where the 1st base has dirx=1, diry=1, dirz=2, & granularity=0 (coarse)
+#                                                    2nd base has dirx=1, diry=2, dirz=1, & granularity=0 (coarse)
+#                                                    3rd base has dirx=2, diry=1, dirz=1, & granularity=0 (fine)
+#OUT: Nothing. Rewrite tboneover with the same FileName as that original used
+##NOTE # 1: To be run SEQUENTIALLY ONLY. This is ok as we are dealing with a surface geometry which tend to be
+##          relatively small.
+##NOTE # 2: Generation of tboneover is similar to that used for tbox.
+def _addOneOverLocally(t,oneOver):
     count   = 0
-    t_local = C.convertFile2PyTree(FileName)
-    nodes   = Internal.getNodesFromNameAndType(t_local, '*OneOver*', 'CGNSBase_t')
+    nodes   = Internal.getNodesFromNameAndType(t, '*OneOver*', 'CGNSBase_t')
     for b in nodes:
         Internal._createUniqueChild(b, '.Solver#define', 'UserDefinedData_t')
         n = Internal.getNodeFromName1(b, '.Solver#define')
@@ -951,5 +968,4 @@ def _addOneOverLocally(FileName,oneOver):
         Internal._createUniqueChild(n, 'dirz'       , 'DataArray_t', value=oneOver[count][2])
         Internal._createUniqueChild(n, 'granularity', 'DataArray_t', value=oneOver[count][3])
         count+=1
-    C.convertPyTree2File(t_local,FileName)
     return None

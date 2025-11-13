@@ -25,13 +25,6 @@
 using namespace std;
 using namespace K_FLD;
 using namespace K_SEARCH;
-extern "C"
-{
-  void k6boundboxunstr_(const E_Int& npts, 
-                        const E_Float* x, const E_Float* y, const E_Float* z, 
-                        E_Float& xmax, E_Float& ymax, E_Float& zmax, 
-                        E_Float& xmin, E_Float& ymin, E_Float& zmin);
-}
 
 namespace K_GENERATOR 
 {
@@ -123,11 +116,10 @@ PyObject* octree(PyObject* self, PyObject* args)
   E_Bool skipStructured = true;
   E_Bool skipUnstructured = false;
   E_Bool skipDiffVars = true;
-  E_Bool shared = true;
   E_Int res = K_ARRAY::getFromArrays(
     stlArrays, resl, structVarString, unstrVarString,
     structF, unstrF, nit, njt, nkt, cnt, eltTypet, objst, objut, 
-    skipDiffVars, skipNoCoord, skipStructured, skipUnstructured, shared);
+    skipDiffVars, skipNoCoord, skipStructured, skipUnstructured, true);
   if (res == -1) 
   {
     PyErr_SetString(PyExc_TypeError, 

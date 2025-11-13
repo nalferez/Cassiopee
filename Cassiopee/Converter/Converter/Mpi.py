@@ -23,7 +23,7 @@ if 'MPIRUN' in os.environ: # si MPIRUN=0, force sequentiel
         def Gather(a, root=0): return a
         def gatherZones(a, root=0): return a
         def allgather(a): return [a]
-        def allgatherZones(a, root=0): return a
+        def allgatherZones(a, coord=True, variables=[]): return a
         def allgatherTree(a): return a
         def allgatherDict(a): return a
         def allgatherNext(a): return [a]
@@ -71,7 +71,7 @@ else: # try import (may fail - core or hang)
         def Gather(a, root=0): return a
         def gatherZones(a, root=0): return a
         def allgather(a): return [a]
-        def allgatherZones(a, root=0): return a
+        def allgatherZones(a, coord=True, variables=[]): return a
         def allgatherTree(a): return a
         def allgatherDict(a): return a
         def allgatherNext(a): return [a]
@@ -339,7 +339,9 @@ def createBBoxTree(t, method='AABB', weighting=0, tol=0., keepOldNodes=True):
                 if keepOldNodes:
                     # Clean up (zoneSubRegion)
                     Internal._rmNodesFromType(zbb, 'ZoneSubRegion_t')
-                else: C._extractVars(zbb, None, keepOldNodes=False)
+                else:
+                    C._extractVars(zbb, None, keepOldNodes=False)
+                    _setProc(zbb, getProc(z)) # keep proc
                 zb.append(zbb)
 
     # Echanges des zones locales de bounding box

@@ -33,14 +33,14 @@ using namespace K_FLD;
 PyObject* K_CONVERTER::copy(PyObject* self, PyObject* args)
 {
   PyObject* array;  
-  if (!PyArg_ParseTuple(args, "O", &array)) return NULL;
+  if (!PYPARSETUPLE_(args, O_, &array)) return NULL;
 
 #if ARRAYCODE == 1
 /* array1 only code */
   E_Int ni, nj, nk, res;
   FldArrayF* f; FldArrayI* cn;
   char* varString; char* eltType;
-  res = K_ARRAY::getFromArray(array, varString, f, ni, nj, nk, cn, eltType, true);
+  res = K_ARRAY::getFromArray3(array, varString, f, ni, nj, nk, cn, eltType);
 
   if (res == 1)
   { 
@@ -137,7 +137,7 @@ PyObject* K_CONVERTER::copy(PyObject* self, PyObject* args)
       }
     }
     // copie de la connectivite
-    if (sizeNGon > 0 && cn->isNGon() == 2) // NGon pour Array2
+    if (sizeNGon > 0 && cn->getNGonType() == 2) // NGon pour Array2
     { 
       E_Int* ngon = cn->getNGon();
       E_Int* nface = cn->getNFace();
@@ -214,7 +214,6 @@ PyObject* K_CONVERTER::copy(PyObject* self, PyObject* args)
   char* varString; char* eltType;
   res = K_ARRAY::getFromArray3(array, varString, f, ni, nj, nk, cn, eltType);
   E_Int api = f->getApi();
-  if (api == 2) api = 3;
   E_Int nfld = f->getNfld(); E_Int npts = f->getSize();
 
   if (res == 1)
@@ -242,7 +241,7 @@ PyObject* K_CONVERTER::copy(PyObject* self, PyObject* args)
     if (strcmp(eltType, "NGON") == 0 || strcmp(eltType, "NGON*") == 0)
     {
       E_Int dim; 
-      E_Int ngonType = cn->isNGon();
+      E_Int ngonType = cn->getNGonType();
       E_Int nelts = cn->getNElts();
       E_Int nfaces = cn->getNFaces();
       E_Int sizeNGon = cn->getSizeNGon();

@@ -1146,8 +1146,8 @@ PyObject* K_CONNECTOR::blankCells(PyObject* self, PyObject* args)
       E_Float* cellnp = cellnout->begin();
       #pragma omp parallel for
       for (E_Int i = 0; i < ncells; i++) cellnp[i] = E_Float(fp[i]);
-      tpl = K_ARRAY::buildArray(*cellnout, cellNName,
-                                nitc[is], njtc[is], nktc[is]);
+      tpl = K_ARRAY::buildArray3(*cellnout, cellNName,
+                                 nitc[is], njtc[is], nktc[is]);
       delete cellns[is];
       PyList_Append(l, tpl);
       Py_DECREF(tpl);
@@ -1179,11 +1179,11 @@ PyObject* K_CONNECTOR::blankCells(PyObject* self, PyObject* args)
       E_Int* fp = cellnu[iu]->begin();
       FldArrayF* cellnout = new FldArrayF(ncells);
       E_Float* cellnp = cellnout->begin();
+      E_Int api = cellnout->getApi();
       #pragma omp parallel for
       for (E_Int i = 0; i < ncells; i++) cellnp[i] = E_Float(fp[i]);
       FldArrayI* cnout = new K_FLD::FldArrayI(*cntc[iu]);
-      tpl = K_ARRAY::buildArray(*cellnout, cellNName, *cnout, -1, eltTypec[0],
-                                false);
+      tpl = K_ARRAY::buildArray3(*cellnout, cellNName, *cnout, eltTypec[0], api);
       delete cellnu[iu];
       delete cnout;
       PyList_Append(l, tpl); Py_DECREF(tpl);
@@ -1226,11 +1226,15 @@ void K_CONNECTOR::blankCellsUnstr(
 
   // masquage des domaines a masquer
   E_Int nzones = blankedCoords.size();
+  E_Int npts;
   for (E_Int zone = 0; zone < nzones; zone++)
   {
     // intersection des bbox ?
-    K_COMPGEOM::boundingBox(posxt[zone], posyt[zone], poszt[zone],
-                            *blankedCoords[zone],
+    npts = blankedCoords[zone]->getSize();
+    K_COMPGEOM::boundingBoxUnstruct(npts,
+                            blankedCoords[zone]->begin(posxt[zone]),
+                            blankedCoords[zone]->begin(posyt[zone]),
+                            blankedCoords[zone]->begin(poszt[zone]),
                             xminz, yminz, zminz, xmaxz, ymaxz, zmaxz);
     E_Int intersect =
       K_COMPGEOM::compBoundingBoxIntersection(
@@ -1311,15 +1315,20 @@ void K_CONNECTOR::blankCellsStruct(
   // masquage des domaines a masquer
   E_Int nzones = blankedCoords.size();
   E_Int intersect = 1;
+  E_Int npts;
   for (E_Int zone = 0; zone < nzones; zone++)
   {
     intersect = 1;
     if (isNot == 0) // test intersection des bbox que pour les cas de masques classiques
     {
+      npts = blankedCoords[zone]->getSize();
       // intersection des bbox ?
-      K_COMPGEOM::boundingBox(posxt[zone], posyt[zone], poszt[zone],
-                              *blankedCoords[zone],
+      K_COMPGEOM::boundingBoxUnstruct(npts,
+                              blankedCoords[zone]->begin(posxt[zone]),
+                              blankedCoords[zone]->begin(posyt[zone]),
+                              blankedCoords[zone]->begin(poszt[zone]),
                               xminz, yminz, zminz, xmaxz, ymaxz, zmaxz);
+      
       intersect = K_COMPGEOM::compBoundingBoxIntersection(
         xmin, xmax, ymin, ymax, zmin, zmax,
         xminz, xmaxz, yminz, ymaxz, zminz, zmaxz, 1.e-6);

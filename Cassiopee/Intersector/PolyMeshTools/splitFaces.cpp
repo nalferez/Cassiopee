@@ -44,8 +44,7 @@ using ngon_type = ngon_t<K_FLD::IntArray>;
 PyObject* K_INTERSECTOR::updatePointLists(PyObject* self, PyObject* args)
 {
   PyObject *py_oids, *py_ptLists;
-
-  if (!PyArg_ParseTuple(args, "OO", &py_oids, &py_ptLists)) return NULL;
+  if (!PYPARSETUPLE_(args, OO_, &py_oids, &py_ptLists)) return NULL;
 
   E_Int nb_bcs = PyList_Size(py_ptLists);
 
@@ -363,8 +362,8 @@ PyObject* K_INTERSECTOR::computeTNCFields(PyObject* self, PyObject* args)
   FldArrayF* FCenter; FldArrayI* cn;
   char* varString; char* eltType;
   E_Int niB, njB, nkB; // dim zone donneuse (zone B) 
-  E_Int res = K_ARRAY::getFromArray2(py_fields, varString, FCenter, niB, njB, nkB, 
-                                    cn, eltType); 
+  E_Int res = K_ARRAY::getFromArray3(py_fields, varString, FCenter, niB, njB, nkB, 
+                                     cn, eltType); 
 
   if (res != 1)
   {
@@ -380,13 +379,12 @@ PyObject* K_INTERSECTOR::computeTNCFields(PyObject* self, PyObject* args)
   
   // Champ interpole zone A (output)
   // ===============================
-  PyObject *py_fldA = K_ARRAY::buildArray2(nfld,varString,nint,1,1,2);
+  PyObject *py_fldA = K_ARRAY::buildArray3(nfld, varString, nint, 1, 1, 2);
 
-  FldArrayF* fldA; 
-  FldArrayI* cn2;
+  FldArrayF* fldA; FldArrayI* cn2;
   E_Int ni2, nj2, nk2;
   char* varStringTmp;
-  res = K_ARRAY::getFromArray2(py_fldA, varStringTmp, fldA, ni2, nj2, nk2, cn2, eltType);
+  res = K_ARRAY::getFromArray3(py_fldA, varStringTmp, fldA, ni2, nj2, nk2, cn2, eltType);
 
   if (res != 1)
   {
@@ -665,8 +663,7 @@ PyObject* K_INTERSECTOR::superMesh(PyObject* self, PyObject* args)
 PyObject* K_INTERSECTOR::replaceFaces(PyObject* self, PyObject* args)
 {
   PyObject *arr{nullptr}, *arr_soup{nullptr}, *py_vfoid{nullptr};
-
-  if (!PyArg_ParseTuple(args, "OOO", &arr, &arr_soup, &py_vfoid)) return NULL;
+  if (!PYPARSETUPLE_(args, OOO_, &arr, &arr_soup, &py_vfoid)) return NULL;
 
   K_FLD::FloatArray* f1(0);
   K_FLD::IntArray* cn1(0);

@@ -29,17 +29,15 @@ using namespace K_FLD;
 PyObject* K_CONNECTOR::setInterpTransfersD( PyObject* self, PyObject* args ) 
 {
   PyObject *arrayD, *pyIndDonor, *pyArrayTypes, *pyArrayCoefs;
-  if ( !PyArg_ParseTuple( args, "OOOO", &arrayD, &pyIndDonor, &pyArrayTypes, &pyArrayCoefs ) ) { return NULL; }
+  if ( !PYPARSETUPLE_(args, OOOO_, &arrayD, &pyIndDonor, &pyArrayTypes, &pyArrayCoefs) ) { return NULL; }
 
   /*---------------------------------------------*/
   /* Extraction des infos sur le domaine donneur */
   /*---------------------------------------------*/
   E_Int imd, jmd, kmd, imdjmd;
-  FldArrayF* fd;
-  FldArrayI* cnd;
-  char* varStringD;
-  char* eltTypeD;
-  E_Int resd = K_ARRAY::getFromArray( arrayD, varStringD, fd, imd, jmd, kmd, cnd, eltTypeD, true );
+  FldArrayF* fd; FldArrayI* cnd;
+  char* varStringD; char* eltTypeD;
+  E_Int resd = K_ARRAY::getFromArray3(arrayD, varStringD, fd, imd, jmd, kmd, cnd, eltTypeD);
   if (resd != 2 && resd != 1) 
   {
     PyErr_SetString( PyExc_TypeError, "setInterpTransfersD: 1st arg is not a valid array." );
@@ -349,7 +347,7 @@ PyObject* K_CONNECTOR::__setInterpTransfersD(PyObject* self, PyObject* args)
 
   vector< PyArrayObject* > hook;
 
-  E_Int   kmd, cnNfldD, nvars, meshtype, nvars_Pnt2;
+  E_Int kmd, cnNfldD, nvars, meshtype;
 
   /* varType determines the variables to transfer
      varType :
@@ -424,6 +422,7 @@ PyObject* K_CONNECTOR::__setInterpTransfersD(PyObject* self, PyObject* args)
 
   FldArrayI* dtloc;
   E_Int res_donor = K_NUMPY::getFromNumpyArray(pydtloc, dtloc);
+  if (res_donor == 0) return NULL;
   E_Int* iptdtloc = dtloc->begin();
 
   //------------------------------------/
@@ -782,8 +781,8 @@ PyObject* K_CONNECTOR::__setInterpTransfersD(PyObject* self, PyObject* args)
         {
           E_Int shift_rac = ech + 4 + timelevel * 2 + irac; 
 
-          E_Int NoD      =  ipt_param_int[ shift_rac + nrac*5     ];
-          E_Int irac_auto= irac-irac_deb;
+          //E_Int NoD      =  ipt_param_int[ shift_rac + nrac*5     ];
+          E_Int irac_auto = irac-irac_deb;
 
           //printf("verif %d %d irac/nrac= %d %d  past_int=%d , pastType= %d \n", autorisation_transferts[pass_inst][irac_auto] , impli_local[NoD], irac, irac_fin, pass_inst, ipass_typ );
 
@@ -968,7 +967,7 @@ PyObject* K_CONNECTOR::__setInterpTransfersD(PyObject* self, PyObject* args)
             noi     = shiftDonor;  // compteur sur le tableau d indices donneur
             indCoef = ( pt_deb - ideb ) * sizecoefs + shiftCoef;
 
-            E_Int NoR = ipt_param_int[shift_rac + nrac*11]; 
+            //E_Int NoR = ipt_param_int[shift_rac + nrac*11]; 
       
             if (isWireModel==1)
             {
@@ -1104,7 +1103,7 @@ PyObject* K_CONNECTOR::__setInterpTransfersD(PyObject* self, PyObject* args)
         E_Int nbRcvPts  = ipt_param_int[shift_rac + nrac*10];
 
         E_Int nbRcvPts_loc = nbRcvPts;
-        E_Int NoD          = ipt_param_int[ shift_rac + nrac*5 ];
+        //E_Int NoD          = ipt_param_int[ shift_rac + nrac*5 ];
 
         E_Int ibcType = ipt_param_int[shift_rac + nrac*3];
         E_Int ibc = 1; 
@@ -1268,11 +1267,11 @@ PyObject* K_CONNECTOR::__setInterpTransfersD4GradP(PyObject* self, PyObject* arg
   vector< PyArrayObject* > hook;
 
   // E_Int kmd, cnNfldD, nvars,ndimdxR, ndimdxD,meshtype;
-  E_Int   kmd, cnNfldD, nvars, ndimdxD, meshtype, nvars_grad;
+  E_Int   kmd, cnNfldD=1, nvars, meshtype, nvars_grad;
   //E_Float* iptroD;
 
-  if     ( vartype <= 3 &&  vartype >= 1) nvars =5;
-  else if( vartype == 4 ) nvars =27;    // on majore pour la LBM, car nvar sert uniquememnt a dimensionner taille vector
+  if      (vartype <= 3 &&  vartype >= 1) nvars =5;
+  else if (vartype == 4 ) nvars =27;    // on majore pour la LBM, car nvar sert uniquememnt a dimensionner taille vector
   else                    nvars =6;
 
   if (vartype == 22 || vartype == 23 || vartype == 24)
@@ -1325,15 +1324,17 @@ PyObject* K_CONNECTOR::__setInterpTransfersD4GradP(PyObject* self, PyObject* arg
   // Extraction tableau int et real     /
   //------------------------------------/
   FldArrayI* param_int;
-  E_Int      res_donor     = K_NUMPY::getFromNumpyArray( pyParam_int, param_int );
-  E_Int*     ipt_param_int = param_int->begin( );
+  E_Int res_donor = K_NUMPY::getFromNumpyArray( pyParam_int, param_int );
+  if (res_donor == 0) return NULL;
+  E_Int* ipt_param_int = param_int->begin( );
   FldArrayF* param_real;
-  res_donor               = K_NUMPY::getFromNumpyArray( pyParam_real, param_real );
+  res_donor = K_NUMPY::getFromNumpyArray( pyParam_real, param_real );
+  if (res_donor == 0) return NULL;
   E_Float* ipt_param_real = param_real->begin( );
 
   // On recupere le nom de la 1ere variable a recuperer
-  PyObject* tpl0    = PyList_GetItem( pyVariables, 0 );
-  char*     varname = NULL;
+  PyObject* tpl0 = PyList_GetItem( pyVariables, 0 );
+  char* varname = NULL;
   if (PyString_Check(tpl0)) varname = PyString_AsString(tpl0);
 #if PY_VERSION_HEX >= 0x03000000
   else if (PyUnicode_Check(tpl0)) varname = (char*)PyUnicode_AsUTF8(tpl0);
@@ -1524,7 +1525,7 @@ PyObject* K_CONNECTOR::__setInterpTransfersD4GradP(PyObject* self, PyObject* arg
     if ( ibcTypeMax <= 1 ) size = 0;             // tableau inutile : SP ; voir avec Ivan
 
     FldArrayF tmp( size * 17 * threadmax_sdm );
-    E_Float*  ipt_tmp = tmp.begin();
+    //E_Float*  ipt_tmp = tmp.begin();
 
     // tableau temporaire pour utiliser la routine commune setIBCTransfersCommon
     FldArrayI rcvPtsI( nbRcvPts_mx );

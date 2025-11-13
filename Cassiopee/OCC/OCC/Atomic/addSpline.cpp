@@ -29,26 +29,24 @@
 #include "BRepBuilderAPI_MakeWire.hxx"
 #include "BRepBuilderAPI_MakeFace.hxx"
 #include "Geom_BSplineCurve.hxx"
+#include "GeomAPI_PointsToBSpline.hxx"
+#include "TColStd_HArray1OfBoolean.hxx"
+#include "TColgp_Array1OfVec.hxx"
+#include "GeomAPI_Interpolate.hxx"
 
 //=====================================================================
 // Add a spline to CAD hook
 //=====================================================================
 PyObject* K_OCC::addSpline(PyObject* self, PyObject* args)
 {
-  PyObject* hook; PyObject* opc;
-  if (!PYPARSETUPLE_(args, OO_, &hook, &opc)) return NULL;
+  PyObject* hook; PyObject* opc; E_Int method = 0;
+  if (!PYPARSETUPLE_(args, OO_ I_, &hook, &opc, &method)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETSHAPE;
+  GETMAPSURFACES;
+  GETMAPEDGES;
 
-  //TopoDS_Shape* shp = (TopoDS_Shape*) packet[0];
-  TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
-
-  /* generate knots */
+  /* get control points (method0) or through points (method1) */
   K_FLD::FldArrayF* pc;
   E_Int ret = K_NUMPY::getFromNumpyArray(opc, pc);
   if (ret == 0)
@@ -58,54 +56,123 @@ PyObject* K_OCC::addSpline(PyObject* self, PyObject* args)
     return NULL;
   }
   E_Float* x = pc->begin(1);
-  E_Float* y = pc->begin(1);
-  E_Float* z = pc->begin(1);
+  E_Float* y = pc->begin(2);
+  E_Float* z = pc->begin(3);
   
-  // incoming code
+  // incoming numpy
   E_Int ncp = pc->getSize();
-  std::vector<gp_Pnt>::const_iterator iter;
+  //for (E_Int i = 0; i < ncp; i++) printf("%d : %g %g %g\n", i, x[i], y[i], z[i]);
 
-  // compute total length and copy control points
-  gp_Pnt lastP(x[0], y[0], z[0]);
-  E_Float totalLen = 0.;
-  TColgp_Array1OfPnt cp(1, ncp);
-  for (E_Int i = 1; i <= ncp; i++) 
-  {
-    gp_Pnt p(x[i-1],y[i-1],z[i-1]);
-    E_Float segLen = p.Distance(lastP);
-    totalLen += segLen;
-    cp.SetValue(i, p);
-    lastP = p;
-  }
+  TopoDS_Edge edge;
 
-  // compute knots
-  TColStd_Array1OfReal knots(1, ncp);
-  TColStd_Array1OfInteger mults(1, ncp);
-  
-  E_Float lastKnot = 0;
-  lastP.SetCoord(x[0], y[0], z[0]);
-  for (E_Int i = 1; i <= ncp; ++i) 
+  if (method == 0) // linear knots
   {
-    if (i == 1 || i == ncp) 
+    // compute total length and copy control points
+    std::vector<gp_Pnt>::const_iterator iter;
+    gp_Pnt lastP(x[0], y[0], z[0]);
+    E_Float totalLen = 0.;
+    TColgp_Array1OfPnt cp(1, ncp);
+    for (E_Int i = 1; i <= ncp; i++) 
     {
-      mults.SetValue(i, 2);
-    }
-    else 
-    {
-      mults.SetValue(i, 1);
+      gp_Pnt p(x[i-1],y[i-1],z[i-1]);
+      E_Float segLen = p.Distance(lastP);
+      totalLen += segLen;
+      cp.SetValue(i, p);
+      lastP = p;
     }
 
-    E_Float knot = cp.Value(i).Distance(lastP)/totalLen + lastKnot;
-    knots.SetValue(i, knot);
+    // compute knots
+    TColStd_Array1OfReal knots(1, ncp);
+    TColStd_Array1OfInteger mults(1, ncp);
+  
+    E_Float lastKnot = 0.;
+    lastP.SetCoord(x[0], y[0], z[0]);
+    for (E_Int i = 1; i <= ncp; ++i) 
+    {
+      if (i == 1 || i == ncp) mults.SetValue(i, 2);
+      else mults.SetValue(i, 1);
 
-    lastKnot = knot;
-    lastP = cp.Value(i);
+      E_Float knot = cp.Value(i).Distance(lastP)/totalLen + lastKnot;
+      knots.SetValue(i, knot);
+
+      lastKnot = knot;
+      lastP = cp.Value(i);
+    }
+    Handle(Geom_BSplineCurve) spline = new Geom_BSplineCurve(cp, knots, mults, 1, false);
+    edge = BRepBuilderAPI_MakeEdge(spline);
+  }
+  else if (method == 1) // approximation through points
+  {
+    TColgp_Array1OfPnt pointsArray(1, static_cast<Standard_Integer>(ncp));
+    for (E_Int i = 1; i <= ncp; i++) 
+    {
+      gp_Pnt p(x[i-1],y[i-1],z[i-1]);
+      pointsArray.SetValue(i, p);
+    }
+
+    Handle(Geom_BSplineCurve) spline = GeomAPI_PointsToBSpline(
+        pointsArray, 
+        Geom_BSplineCurve::MaxDegree() - 6,
+        Geom_BSplineCurve::MaxDegree(),
+        GeomAbs_C2, 
+        Precision::Confusion()).Curve();
+
+    // This one works around a bug in OpenCascade if a curve is closed and
+    // periodic. After calling this method, the curve is still closed but
+    // no longer periodic, which leads to errors when creating the 3d-lofts
+    // from the curves.
+    spline->SetNotPeriodic();
+    edge = BRepBuilderAPI_MakeEdge(spline);
+
+    // Get control points
+    /*
+    TColgp_Array1OfPnt poles = spline->Poles();
+    for (Standard_Integer i = poles.Lower(); i <= poles.Upper(); ++i) 
+    {
+      gp_Pnt pt = poles.Value(i);
+      std::cout << "Control Point " << i << ": " << pt.X() << ", " << pt.Y() << ", " << pt.Z() << std::endl;
+    }*/
+
+    // Get knots
+    /*
+    TColStd_Array1OfReal knots = spline->Knots();
+    for (Standard_Integer i = knots.Lower(); i <= knots.Upper(); ++i) 
+    {
+      std::cout << "Knot " << i << ": " << knots.Value(i) << std::endl;
+    }*/
+
+    // Get multiplicities
+    /*
+    TColStd_Array1OfInteger mults = spline->Multiplicities();
+    for (Standard_Integer i = mults.Lower(); i <= mults.Upper(); ++i) 
+    {
+      std::cout << "Multiplicity " << i << ": " << mults.Value(i) << std::endl;
+    }*/
+  }
+  else if (method == 3)
+  {
+    // a terminer: modele pour imposer les points et les tangentes
+    Handle(TColgp_HArray1OfPnt) points = new TColgp_HArray1OfPnt(1, 3);
+    points->SetValue(1, gp_Pnt(0, 0, 0));      // Fixed point
+    points->SetValue(2, gp_Pnt(5, 5, 0));      // Tangency constraint
+    points->SetValue(3, gp_Pnt(10, 0, 0));     // Free point
+
+    TColgp_Array1OfVec tangents(1, 3);
+    tangents.SetValue(1, gp_Vec(1, 0, 0));     // Tangent at fixed point
+    tangents.SetValue(2, gp_Vec(0, 1, 0));     // Tangent at middle point
+    tangents.SetValue(3, gp_Vec(0, 0, 0));     // No constraint
+
+    Handle(TColStd_HArray1OfBoolean) tangentFlags = new TColStd_HArray1OfBoolean(1, 3);
+    tangentFlags->SetValue(1, Standard_True);  // Enforce tangent
+    tangentFlags->SetValue(2, Standard_True);  // Enforce tangent
+    tangentFlags->SetValue(3, Standard_False); // No constraint
+
+    GeomAPI_Interpolate interpolator(points, Standard_False, 1e-6);
+    interpolator.Load(tangents, tangentFlags, Standard_True);
+    interpolator.Perform();
+    Handle(Geom_BSplineCurve) constrainedSpline = interpolator.Curve();
   }
 
-  Handle(Geom_BSplineCurve) spline = new Geom_BSplineCurve(cp, knots, mults, 1, false);
-
-  TopoDS_Edge edge = BRepBuilderAPI_MakeEdge(spline);
-  
   // Rebuild a single compound
   BRep_Builder builder;
   TopoDS_Compound compound;
@@ -116,26 +183,19 @@ PyObject* K_OCC::addSpline(PyObject* self, PyObject* args)
     TopoDS_Face F = TopoDS::Face(surfaces(i));
     builder.Add(compound, F);
   }
+  for (E_Int i = 1; i <= edges.Extent(); i++)
+  {
+    TopoDS_Edge E = TopoDS::Edge(edges(i));
+    builder.Add(compound, E);
+  }
   builder.Add(compound, edge);
 
   // export
+  delete shape;
   TopoDS_Shape* newshp = new TopoDS_Shape(compound);
     
-  // Rebuild the hook
-  packet[0] = newshp;
-  // Extract surfaces
-  TopTools_IndexedMapOfShape* ptr = (TopTools_IndexedMapOfShape*)packet[1];
-  delete ptr;
-  TopTools_IndexedMapOfShape* sf = new TopTools_IndexedMapOfShape();
-  TopExp::MapShapes(*newshp, TopAbs_FACE, *sf);
-  packet[1] = sf;
+  SETSHAPE(newshp);
 
-  // Extract edges
-  TopTools_IndexedMapOfShape* ptr2 = (TopTools_IndexedMapOfShape*)packet[2];
-  delete ptr2;
-  TopTools_IndexedMapOfShape* se = new TopTools_IndexedMapOfShape();
-  TopExp::MapShapes(*newshp, TopAbs_EDGE, *se);
-  packet[2] = se;
   printf("INFO: after addSpline: Nb edges=%d\n", se->Extent());
   printf("INFO: after addSpline: Nb faces=%d\n", sf->Extent());
   
@@ -143,5 +203,4 @@ PyObject* K_OCC::addSpline(PyObject* self, PyObject* args)
 
   Py_INCREF(Py_None);
   return Py_None;
-
 }

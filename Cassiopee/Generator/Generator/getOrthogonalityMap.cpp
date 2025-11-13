@@ -43,8 +43,8 @@ PyObject* K_GENERATOR::getOrthogonalityMap(PyObject* self, PyObject* args)
   char* varString; char* eltType;
   E_Int posx, posy, posz;
   E_Int res;
-  res = K_ARRAY::getFromArray(array, varString, f, im, jm, km, cn, 
-                              eltType, true);
+  res = K_ARRAY::getFromArray3(array, varString, f, im, jm, km, cn, 
+                               eltType);
 
   if (res != 1 && res != 2)
   {
@@ -308,7 +308,7 @@ PyObject* K_GENERATOR::getOrthogonalityMap(PyObject* self, PyObject* args)
       FldArrayF nsurfy(nelts, nvpe);
       FldArrayF nsurfz(nelts, nvpe);
       FldArrayF surf(nelts, nvpe);
-      K_METRIC::compUnstructSurf(
+      K_METRIC::compSurfUnstruct(
         *cn, "TETRA", 
         f->begin(posx), f->begin(posy), f->begin(posz), 
         nsurfx.begin(), nsurfy.begin(), nsurfz.begin(), surf.begin());
@@ -361,7 +361,7 @@ PyObject* K_GENERATOR::getOrthogonalityMap(PyObject* self, PyObject* args)
       FldArrayF nsurfy(nelts, nvpe);
       FldArrayF nsurfz(nelts, nvpe);
       FldArrayF surf(nelts, nvpe);
-      K_METRIC::compUnstructSurf(
+      K_METRIC::compSurfUnstruct(
         *cn, "PENTA",
         f->begin(posx), f->begin(posy), f->begin(posz), 
         nsurfx.begin(), nsurfy.begin(), nsurfz.begin(), surf.begin());
@@ -415,7 +415,7 @@ PyObject* K_GENERATOR::getOrthogonalityMap(PyObject* self, PyObject* args)
       FldArrayF nsurfy(nelts, nvpe);
       FldArrayF nsurfz(nelts, nvpe);
       FldArrayF surf(nelts, nvpe);
-      K_METRIC::compUnstructSurf(
+      K_METRIC::compSurfUnstruct(
         *cn, "HEXA",
         f->begin(posx), f->begin(posy), f->begin(posz), 
         nsurfx.begin(), nsurfy.begin(), nsurfz.begin(), surf.begin());

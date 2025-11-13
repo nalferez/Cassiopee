@@ -70,7 +70,6 @@ PyObject* K_ARRAY::buildArray3(E_Int nfld, const char* varString,
    IN: nfld: number of fields
    IN: varString: variable string
    IN: nvertex: number of vertex
-
    IN: nelt: number total of elements
    IN: etString: NGON ou NGON*
    IN: center: set to true if field is localised in the centers of
@@ -386,7 +385,6 @@ PyObject* K_ARRAY::buildArray3(E_Int nfld,
                                E_Bool copyConnect)
 {
   PyObject* tpl = NULL;
-  if (api == 2) api = 3;
   char eltType2[256];
   // Corrige eventuellement eltType si contradictoire avec center
   if (center > 0) K_ARRAY::starVarString(eltType, eltType2);
@@ -399,7 +397,7 @@ PyObject* K_ARRAY::buildArray3(E_Int nfld,
   }
   if (strcmp(eltType2, "NGON") == 0 || strcmp(eltType2, "NGON*") == 0)
   {
-    E_Int ngonType = cn.isNGon();
+    E_Int ngonType = cn.getNGonType();
     E_Int nelts = cn.getNElts();
     E_Int nfaces = cn.getNFaces();
     E_Int sizeNGon = cn.getSizeNGon();
@@ -483,12 +481,11 @@ PyObject* K_ARRAY::buildArray3(FldArrayF& f,
                                E_Int api)
 {
   if (api == -1) { api = f.getApi(); }
-  if (api == 2) api = 3;
   E_Int nfld = f.getNfld(); E_Int npts = f.getSize();
   if (strcmp(eltType, "NGON") == 0 || strcmp(eltType, "NGON*") == 0)
   {
     E_Int dim;
-    E_Int ngonType = cn.isNGon();
+    E_Int ngonType = cn.getNGonType();
     E_Int nelts = cn.getNElts();
     E_Int nfaces = cn.getNFaces();
     E_Int sizeNGon = cn.getSizeNGon();
@@ -588,9 +585,7 @@ PyObject* K_ARRAY::buildArray3(FldArrayF& f,
 PyObject* K_ARRAY::buildArray3(FldArrayF& f, const char* varString,
                                E_Int ni, E_Int nj, E_Int nk, E_Int api)
 {
-  if (api == -1) // copie l'api de f
-  { api = f.getApi(); }
-  if (api == 2) api = 3;
+  if (api == -1) { api = f.getApi(); } // copie l'api de f
   E_Int nfld = f.getNfld(); E_Int npts = f.getSize();
   PyObject* tpl = K_ARRAY::buildArray3(nfld, varString, ni, nj, nk, api);
   FldArrayF* f2;

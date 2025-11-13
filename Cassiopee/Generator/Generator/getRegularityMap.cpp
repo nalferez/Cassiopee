@@ -48,7 +48,7 @@ extern "C"
 PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
 {
   PyObject* array;
-  if (!PyArg_ParseTuple(args, "O", &array)) return NULL;
+  if (!PYPARSETUPLE_(args, O_, &array)) return NULL;
   
   // Check array
   E_Int im, jm, km;
@@ -56,8 +56,7 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
   char* varString; char* eltType;
   E_Int posx, posy, posz;
   E_Int res;
-  res = K_ARRAY::getFromArray(array, varString, f, im, jm, km, cn, 
-                              eltType, true);
+  res = K_ARRAY::getFromArray3(array, varString, f, im, jm, km, cn, eltType);
 
   if (res != 1 && res != 2)
   {
@@ -167,15 +166,15 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
     // calcul du volume
     FldArrayF vol(ncells);
     if (dim == 1)
-      K_METRIC::compStructSurf1dt(im, jm, km, xp, yp, zp, vol.begin());
+      K_METRIC::compSurfStruct1D(im, jm, km, xp, yp, zp, vol.begin());
     else if (dim == 2)
-      K_METRIC::compStructSurft(im, jm, km, xp, yp, zp, vol.begin());
+      K_METRIC::compSurfStruct2D(im, jm, km, xp, yp, zp, vol.begin());
     else
     {
       FldArrayF surf(nint,3);
       FldArrayF snorm(nint);
       FldArrayF centerInt(nint, 3);
-      K_METRIC::compStructMetric(
+      K_METRIC::compMetricStruct(
         im, jm, km, ninti, nintj, nintk,
         xp, yp, zp,
         vol.begin(), surf.begin(1), surf.begin(2), surf.begin(3), 

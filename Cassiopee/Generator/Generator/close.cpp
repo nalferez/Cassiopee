@@ -169,7 +169,7 @@ void K_GENERATOR::closeStructuredMesh(E_Float* xt, E_Float* yt, E_Float* zt,
   if (nk > 1) sizemax = 2*(njnk + nink + ninj);
   else sizemax = 2*(ni + nj);
 
-  // Creation du kdtree et des tableaux d indirection
+  // Creation du kdtree et des tableaux d'indirection
   FldArrayI indirI(sizemax);
   FldArrayF ftemp(sizemax,3);
   E_Float* xp = ftemp.begin(1);
@@ -296,10 +296,10 @@ void K_GENERATOR::closeBARMesh(E_Int posx, E_Int posy, E_Int posz,
 {
   // Verifie que la BAR est dans le plan x,y
   E_Float xmin, ymin, zmin, xmax, ymax, zmax;
-  K_COMPGEOM::boundingBox(posx, posy, posz,
-                          f,
-                          xmin, ymin, zmin,
-                          xmax, ymax, zmax);
+  E_Int npts = f.getSize();
+  K_COMPGEOM::boundingBoxUnstruct(npts, f.begin(posx), f.begin(posy), f.begin(posz),
+                                  xmin, ymin, zmin,
+                                  xmax, ymax, zmax);
   if (fEqualZero(zmax-zmin) == false) return;
 
   E_Int i = 0;

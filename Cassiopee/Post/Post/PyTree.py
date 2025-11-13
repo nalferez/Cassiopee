@@ -106,24 +106,23 @@ def _projectCloudSolution(cloud, surf, dim=3, loc='nodes', ibm=False, isPreProje
     if isPreProjectOrtho:
         print("Project Cloud Solution::performing pre orthogonal projection")
         import Transform.PyTree as T
-        cloud = T.projectOrtho(cloud, surf);
-
+        cloud = T.projectOrtho(cloud, surf)
 
     fc = C.getAllFields(cloud, 'nodes')[0]
     zones = Internal.getZones(surf)
-    for noz in range(len(zones)):
-        interpData = Internal.getNodeFromName(zones[noz], 'POST_MLS')
+    for noz, z in enumerate(zones):
+        interpData = Internal.getNodeFromName(z, 'POST_MLS')
         if interpData is not None:
             offset = Internal.getNodeFromName(interpData, 'offset')[1]
             interpDonor = Internal.getNodeFromName(interpData, 'interpDonor')[1]
             interpCoef = Internal.getNodeFromName(interpData, 'interpCoef')[1]
-            fs = C.getAllFields(zones[noz], 'nodes')[0]
+            fs = C.getAllFields(z, 'nodes')[0]
             res = Post.projectCloudSolutionWithInterpData(fc, fs, offset, interpDonor, interpCoef, dim=dim)
-            C.setFields([res], zones[noz], 'nodes')
+            C.setFields([res], z, 'nodes')
         else:
-            fs = C.getAllFields(zones[noz], 'nodes')[0]
+            fs = C.getAllFields(z, 'nodes')[0]
             res = Post.projectCloudSolution(fc, fs, dim=dim, ibm=ibm, old=old)
-            C.setFields([res], zones[noz], 'nodes')
+            C.setFields([res], z, 'nodes')
     return None
 
 def prepareProjectCloudSolution(cloud, surf, dim=3, loc='nodes', ibm=False):
@@ -150,9 +149,9 @@ def _prepareProjectCloudSolution(cloud, surf, dim=3, loc='nodes', ibm=False):
         interpCoef = numpy.concatenate(interpCoef)
 
         children = []
-        children.append(Internal.createNode('offset' , 'DataArray_t', offset))
-        children.append(Internal.createNode('interpDonor' , 'DataArray_t', interpDonor))
-        children.append(Internal.createNode('interpCoef' , 'DataArray_t', interpCoef))
+        children.append(Internal.createNode('offset', 'DataArray_t', offset))
+        children.append(Internal.createNode('interpDonor', 'DataArray_t', interpDonor))
+        children.append(Internal.createNode('interpCoef', 'DataArray_t', interpCoef))
         Internal._createChild(zones[noz], 'POST_MLS', 'UserDefinedData_t', value=None, children=children)
 
     return None
@@ -173,10 +172,11 @@ def _extractMesh(t, extractionMesh, order=2, extrapOrder=1,
 
     # we sort structured then unstructured
     orderedZones=[]
-    for i,z in enumerate(Internal.getZones(extractionMesh)):
-        if Internal.getZoneType(z)==1: orderedZones.append(i)
-    for i,z in enumerate(Internal.getZones(extractionMesh)):
-        if Internal.getZoneType(z)==2: orderedZones.append(i)
+    zones = Internal.getZones(extractionMesh)
+    for i, z in enumerate(zones):
+        if Internal.getZoneType(z) == 1: orderedZones.append(i)
+    for i, z in enumerate(zones):
+        if Internal.getZoneType(z) == 2: orderedZones.append(i)
 
     if mode == 'robust':
         tc = C.center2Node(t, Internal.__FlowSolutionCenters__)
@@ -689,8 +689,8 @@ def exteriorEltsStructured(t, depth=1):
 
 def _exteriorEltsStructured(t, depth=1):
     """Exterior (border) elts of a mesh as a structured grid."""
-    C._TZA2(t, 'nodes', 'nodes', True, Post.exteriorEltsStructured, depth)
-    C._TZA2(t, 'centers', 'centers', False, Post.exteriorEltsStructured, depth)
+    C._TZA3(t, 'nodes', 'nodes', True, Post.exteriorEltsStructured, depth)
+    C._TZA3(t, 'centers', 'centers', False, Post.exteriorEltsStructured, depth)
     return None
 
 def computeVariables(t, varList,
@@ -856,11 +856,11 @@ def _computeVariables2(t, varList, gamma=-1., rgp=-1., s0=0., betas=-1.,
         else: varnamesn.append(var)
 
     if varnamesn != []:
-        C.__TZC2(t, 'nodes', False,
+        C.__TZC3(t, 'nodes', False,
                  Post._computeVariables2, varnamesn, gamma, rgp, s0, betas, Cs, mus, Ts)
 
     if varnamesc != []:
-        C.__TZC2(t, 'centers', False,
+        C.__TZC3(t, 'centers', False,
                  Post._computeVariables2, varnamesc, gamma, rgp, s0, betas, Cs, mus, Ts)
 
     return None
@@ -1217,27 +1217,27 @@ def zipper(t, options=[]):
     a = Post.zipper(arrays, options)
     return C.convertArrays2ZoneNode('zipper', [a])
 
-def extractArraysForScalarInteg__(t, var=''):
+def extractArraysForScalarInteg__(t, var='', api=1):
     zones = Internal.getZones(t)
     zvars = var.split(':')
     if len(zvars) == 2: loc = 'centers'
     else: loc = 'nodes'
 
-    coords = C.getFields(Internal.__GridCoordinates__, zones)
+    coords = C.getFields(Internal.__GridCoordinates__, zones, api=api)
     fields = []; fieldsc = []
     if var == '':
-        fields = C.getFields(Internal.__FlowSolutionNodes__, zones)
+        fields = C.getFields(Internal.__FlowSolutionNodes__, zones, api=api)
         fields = Converter.addVars([coords,fields])
-        fieldsc = C.getFields(Internal.__FlowSolutionCenters__, zones)
+        fieldsc = C.getFields(Internal.__FlowSolutionCenters__, zones, api=api)
     elif var == Internal.__GridCoordinates__:
         fields = coords
     elif var == Internal.__FlowSolutionNodes__:
-        fields = C.getFields(Internal.__FlowSolutionNodes__, zones)
+        fields = C.getFields(Internal.__FlowSolutionNodes__, zones, api=api)
     elif var == Internal.__FlowSolutionCenters__:
-        fieldsc = C.getFields(Internal.__FlowSolutionCenters__, zones)
+        fieldsc = C.getFields(Internal.__FlowSolutionCenters__, zones, api=api)
     else: # un champ specifique
-        if loc == 'nodes': fields = C.getField(var, zones)
-        else: fieldsc = C.getField(var,zones)
+        if loc == 'nodes': fields = C.getField(var, zones, api=api)
+        else: fieldsc = C.getField(var,zones, api=api)
 
     # mise a jour de fields [[],[],[],..,[]] -> []
     foundn = 0; foundc = 0
@@ -1249,7 +1249,7 @@ def extractArraysForScalarInteg__(t, var=''):
     if foundc == 0: fieldsc = []
     return [coords, fields, fieldsc]
 
-def extractArraysForVectorInteg__(t, vector):
+def extractArraysForVectorInteg__(t, vector, api=1):
     zones = Internal.getZones(t)
     loc = 'unknown'
     if len(vector) != 3: raise ValueError("extractArraysForVectorInteg: vector must be of size 3.")
@@ -1260,15 +1260,15 @@ def extractArraysForVectorInteg__(t, vector):
         elif len(v)  > 1 and loc != 'nodes': loc = 'centers'; zvars.append(v[1])
         else: raise ValueError("extractArraysForVectorInteg: all the components of the vector must have the same location.")
 
-    coords = C.getFields(Internal.__GridCoordinates__, zones)
+    coords = C.getFields(Internal.__GridCoordinates__, zones, api=api)
     fields = []; fieldsc = []
     if vector == ['CoordinateX','CoordinateY','CoordinateZ']: fields = coords
     else:
         if loc == 'nodes':
-            fields = C.getFields(Internal.__FlowSolutionNodes__, zones)
+            fields = C.getFields(Internal.__FlowSolutionNodes__, zones, api=api)
             if fields != []: fields = Converter.extractVars(fields, zvars)
         else:
-            fieldsc = C.getFields(Internal.__FlowSolutionCenters__, zones)
+            fieldsc = C.getFields(Internal.__FlowSolutionCenters__, zones, api=api)
             if fieldsc != []: fieldsc = Converter.extractVars(fieldsc, zvars)
 
     # mise a jour de fields [[],[],[],..,[]] -> []
@@ -1281,11 +1281,11 @@ def extractArraysForVectorInteg__(t, vector):
     if foundc == 0: fieldsc = []
     return [coords, fields, fieldsc]
 
-def extractRatioForInteg__(t):
+def extractRatioForInteg__(t, api=1):
     zones = Internal.getZones(t)
     # extraction des ratios
-    ration = C.getField('ratio', zones)
-    ratioc = C.getField('centers:ratio', zones)
+    ration = C.getField('ratio', zones, api=api)
+    ratioc = C.getField('centers:ratio', zones, api=api)
     foundn = 0; foundc = 0
     for nof in range(len(ration)):
         if ration[nof] != []: foundn = 1
@@ -1299,8 +1299,8 @@ def extractRatioForInteg__(t):
 def integ2(t, var=''):
     """Integral of fields defined in t.
     Usage: integ(t, var)"""
-    info = extractArraysForScalarInteg__(t, var)
-    infor = extractRatioForInteg__(t)
+    info = extractArraysForScalarInteg__(t, var, api=3)
+    infor = extractRatioForInteg__(t, api=3)
     coords = info[0]; fieldsn = info[1]; fieldsc = info[2]
     ration = infor[0]; ratioc = infor[1]
 
@@ -1436,7 +1436,7 @@ def computeGrad(t, var):
             tp = C.center2Node(tp, var)
         gradVar = v[1]
 
-    nodes = C.getAllFields(tp, 'nodes')
+    nodes = C.getAllFields(tp, 'nodes', api=3)
     if posv == -1: C._rmVars(tp, gradVar)
     centers = Post.computeGrad(nodes, gradVar)
     C.setFields(centers, tp, 'centers')
@@ -1630,7 +1630,7 @@ def computeNormGrad(t, var):
             posv = C.isNamePresent(tp, v[1])
             tp = C.center2Node(tp, var)
             gradVar = v[1]
-    nodes = C.getAllFields(tp, 'nodes')
+    nodes = C.getAllFields(tp, 'nodes', api=3)
     if posv == -1: C._rmVars(tp, gradVar)
     centers = Post.computeNormGrad(nodes, gradVar)
     C.setFields(centers, tp, 'centers')
@@ -2031,7 +2031,7 @@ def computeCurl(t, vector):
                 curlVar = v[1]
         curlVector.append(curlVar)
 
-    nodes = C.getAllFields(tp, 'nodes')
+    nodes = C.getAllFields(tp, 'nodes', api=3)
     for i in range(n):
         if posv[i] == -1: tp = C.rmVars(tp, curlVector[i])
 
@@ -2057,7 +2057,7 @@ def computeNormCurl(t, vector):
                 curlVar = v[1]
         curlVector.append(curlVar)
 
-    nodes = C.getAllFields(tp, 'nodes')
+    nodes = C.getAllFields(tp, 'nodes', api=3)
     for i in range(n):
         if posv[i] == -1: tp = C.rmVars(tp, curlVector[i])
     centers = Post.computeNormCurl(nodes, curlVector)

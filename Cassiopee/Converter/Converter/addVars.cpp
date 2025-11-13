@@ -33,7 +33,7 @@ PyObject* K_CONVERTER::addVar(PyObject* self, PyObject* args)
 {
   PyObject* array;
   PyObject* additional;
-  if (!PyArg_ParseTuple(args, "OO", &array, &additional)) return NULL;
+  if (!PYPARSETUPLE_(args, OO_, &array, &additional)) return NULL;
 
   // Check array
   E_Int nil, njl, nkl;
@@ -90,7 +90,7 @@ PyObject* K_CONVERTER::addVar(PyObject* self, PyObject* args)
     E_Int fSize = f->getSize();
     // Building array here
     if (res == 1) 
-      tpl = K_ARRAY::buildArray(sizet, fstring, nil, njl, nkl);
+      tpl = K_ARRAY::buildArray3(sizet, fstring, nil, njl, nkl, f->getApi());
     else
     {
       E_Int csize = cn->getSize()*cn->getNfld();
@@ -211,7 +211,7 @@ PyObject* K_CONVERTER::addVar(PyObject* self, PyObject* args)
     E_Int fSize = f->getSize();
     // Building array here
     if (res == 1) 
-      tpl = K_ARRAY::buildArray(sizet, fstring, nil, njl, nkl);
+      tpl = K_ARRAY::buildArray3(sizet, fstring, nil, njl, nkl, f->getApi());
     else
     {
       E_Int csize = cn->getSize()*cn->getNfld();
@@ -254,7 +254,7 @@ PyObject* K_CONVERTER::addVar(PyObject* self, PyObject* args)
 PyObject* K_CONVERTER::addVars(PyObject* self, PyObject* args)
 {
   PyObject* arrays;
-  if (!PyArg_ParseTuple(args, "O", &arrays)) return NULL;
+  if (!PYPARSETUPLE_(args, O_, &arrays)) return NULL;
 
   // Check array
   if (PyList_Check(arrays) == 0)
@@ -380,7 +380,7 @@ PyObject* K_CONVERTER::addVars(PyObject* self, PyObject* args)
   FldArrayF field(sizeRef, nvarRef, fielp, true);
 
   structured = -1; nvar = 0;
-  for (int l = 0; l < n; l++) 
+  for (E_Int l = 0; l < n; l++) 
   { 
     array = PyList_GetItem(arrays, l);
     res = K_ARRAY::getFromArray3(array, varString, f, nil, njl, nkl, 

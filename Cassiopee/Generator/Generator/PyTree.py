@@ -98,7 +98,7 @@ def octree(surfaces, snearList=[], dfarList=[], dfar=-1., balancing=0, levelMax=
     and the extension dfar of the mesh.
     Usage: octree(surfaces, snearList, dfarList, dfar, balancing, levelMax, ratio)"""
     surfaces = C.convertArray2Tetra(surfaces)
-    stlArrays = C.getFields(Internal.__GridCoordinates__, surfaces, api=2)
+    stlArrays = C.getFields(Internal.__GridCoordinates__, surfaces, api=3)
     #stlArrays = Converter.convertArray2Tetra(stlArrays)
     a = Generator.octree(stlArrays, snearList, dfarList, dfar, balancing, levelMax, ratio, octant, dfarDir, octreeMode)
     return C.convertArrays2ZoneNode('octree', [a])
@@ -141,7 +141,7 @@ def adaptMesh__(a, indicator="indicator", hook=None, dim=3, conformize=False, sp
 
     a = Internal.getZones(a)[0]
     dimZ = Internal.getZoneDim(a)
-    eltType=dimZ[3]
+    eltType = dimZ[3]
 
     conformizei = 0
     if conformize: conformizei=1
@@ -162,7 +162,7 @@ def adaptMesh__(a, indicator="indicator", hook=None, dim=3, conformize=False, sp
     XC.AdaptMesh_Adapt(hook)
     a = XC.AdaptMesh_ExtractMesh(hook, conformize=conformizei)
     a = Internal.getZones(a)[0]
-    if eltType=='NGON':
+    if eltType == 'NGON':
         C._convertArray2NGon(a)
     if not hangHook:
         XC.AdaptMesh_Exit(hook)
@@ -183,13 +183,13 @@ def _createHook4AdaptMesh(a, dim=3, splitInfos=None):
     import XCore.PyTree as XC
     z = Internal.getZones(a)[0]
     dimZ = Internal.getZoneDim(z)
-    eltType=dimZ[3]
-    if dimZ[0]=='Unstructured':
+    eltType = dimZ[3]
+    if dimZ[0] == 'Unstructured':
         if eltType == 'HEXA':
             C._convertArray2NGon(z, recoverBC=True, api=3)
             if splitInfos is not None:
                 print("Warning: createHook4AdaptMesh: splitInfos only valid for NGONs.", flush=True)
-        elif eltType=='NGON':
+        elif eltType == 'NGON':
             pass
         else:
             print("Warning: adaptMesh not implemented for elt type %s. No adaptation performed."%(eltType), flush=True)
@@ -201,7 +201,7 @@ def _createHook4AdaptMesh(a, dim=3, splitInfos=None):
 
     Internal._adaptNGon32NGon4(z)
 
-    if dim==3: normal2D = None
+    if dim == 3: normal2D = None
     else:normal2D = numpy.array([0.0,0.0,1.0])
     if splitInfos is None or eltType != 'NGON':
         ngonelts = Internal.getNodeFromName(z,"NGonElements")
@@ -224,6 +224,7 @@ def freeHook4AdaptMesh(hook):
     import XCore.PyTree as XC
     XC.AdaptMesh_Exit(hook)
     return None
+
 #------------------------------------------------------------------------------
 # Conversion d'un maillage octree en ensemble de grilles cartesiennes
 #------------------------------------------------------------------------------
@@ -262,7 +263,7 @@ def octree2Struct(o, vmin=15, ext=0, optimized=1, merged=1, AMR=0,
     cartzones = None
     # Extension des grilles
     #if ext > 0:
-    #    coords = C.getFields(Internal.__GridCoordinates__, zones, api=2)
+    #    coords = C.getFields(Internal.__GridCoordinates__, zones, api=3)
     #    coords = Generator.extendOctreeGrids__(coords, ext=ext, optimized=optimized)
     #    C.setFields(coords, zones, 'nodes')
 

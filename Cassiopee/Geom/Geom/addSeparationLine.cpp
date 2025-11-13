@@ -33,8 +33,7 @@ PyObject* K_GEOM::addSeparationLineMesh(PyObject* self, PyObject* args)
   E_Float d, x, y, z, x2, y2, z2;
   E_Int i, ind;
   PyObject* array1; PyObject* array2;
-
-  if (!PyArg_ParseTuple(args, "OO", &array1, &array2)) return NULL;
+  if (!PYPARSETUPLE_(args, OO_, &array1, &array2)) return NULL;
 
   // Check array
   E_Int im,im2,jm,jm2,km,km2;
@@ -274,12 +273,11 @@ PyObject* K_GEOM::addSeparationLineMesh(PyObject* self, PyObject* args)
   npt2 = coord2.getSize();
 
   PyObject* l = PyList_New(0);
-  E_Int apif = f1->getApi();
-  if (apif == 2) apif = 3;
+  E_Int api = f1->getApi();
 
   if (npt1 > 0)
   {
-    PyObject* tpl = K_ARRAY::buildArray3(*coord0, varString, npt1, 1, 1, apif);
+    PyObject* tpl = K_ARRAY::buildArray3(*coord0, varString, npt1, 1, 1, api);
     delete coord0;
     PyList_Append(l, tpl);
     Py_DECREF(tpl);
@@ -287,7 +285,7 @@ PyObject* K_GEOM::addSeparationLineMesh(PyObject* self, PyObject* args)
     
   if (npt2 > 0)
   {
-    PyObject* tpl = K_ARRAY::buildArray3(*coord1, varString, npt2, 1, 1, apif);
+    PyObject* tpl = K_ARRAY::buildArray3(*coord1, varString, npt2, 1, 1, api);
     delete coord1;
     PyList_Append(l, tpl);
     Py_DECREF(tpl);

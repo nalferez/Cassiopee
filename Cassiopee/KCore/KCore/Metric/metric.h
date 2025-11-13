@@ -116,7 +116,7 @@ namespace K_METRIC
      IN: cn: connectivite NGon
      OUT: volp: pointeur sur le tableau des volumes calcules aux centres des elements
   */
-  E_Int compNGonVol(
+  E_Int compVolNGon(
     const E_Float* xt, const E_Float* yt, const E_Float* zt, 
     K_FLD::FldArrayI& cn, E_Float* volp);
   
@@ -126,7 +126,7 @@ namespace K_METRIC
     K_FLD::FldArrayI& posElt, K_FLD::FldArrayI& posFace, 
     K_FLD::FldArrayI& dimElt, E_Float& vol);
 
-  E_Int compNGonSurf(
+  E_Int compSurfNGon(
     const E_Float* xt, const E_Float* yt, const E_Float* zt, 
     K_FLD::FldArrayI& cn, 
     E_Float* sxp, E_Float* syp,  E_Float* szp);
@@ -190,7 +190,7 @@ namespace K_METRIC
      OUT: snorm: Norm of the surface vectors
      OUT: cix, ciy, ciz: Interface centers
   */
-  void compStructMetric(
+  void compMetricStruct(
     const E_Int ni, const E_Int nj, const E_Int nk,
     const E_Int nbInti, const E_Int nbIntj, const E_Int nbIntk,
     const E_Float* x, const E_Float* y, const E_Float* z,
@@ -202,7 +202,7 @@ namespace K_METRIC
      IN: xt, yt, zt: Vertex coordinates
      OUT: surface: Mesh area
   */
-  void compStructSurft(
+  void compSurfStruct2D(
     const E_Int ni, const E_Int nj, const E_Int nk,
     const E_Float* xt, const E_Float* yt, const E_Float* zt,
     E_Float* surface);
@@ -212,7 +212,7 @@ namespace K_METRIC
      IN: xt, yt, zt: Vertex coordinates
      OUT: length: Longueur entre chaque sommet
   */
-  void compStructSurf1dt(
+  void compSurfStruct1D(
     const E_Int ni, const E_Int nj, const E_Int nk,
     const E_Float* xt, const E_Float* yt, const E_Float* zt,
     E_Float* length);
@@ -227,15 +227,16 @@ namespace K_METRIC
     const E_Float* xt, const E_Float* yt, const E_Float* zt,
     E_Float& surface);
 
-  /* Compute barycenter of tetra cells.
-     IN: cn: Element-Node connectivity
-     IN: xt, yt, zt: Vertex coordinates
-     OUT: bary: Cell centers
-  */
-  void compTetraCellCenter(
+  //============================================================================
+  // Compute cell barycenter for a ME mesh.
+  // IN: cn: Element-Node connectivity
+  // IN: xt, yt, zt: Vertex coordinates
+  // OUT: xb, yb, zb: Barycenter coordinates
+  //============================================================================
+  void compUnstructCellCenter(
     K_FLD::FldArrayI& cn,
     const E_Float* xt, const E_Float* yt, const E_Float* zt,
-    E_Float* bary);
+    E_Float* xb, E_Float* yb, E_Float* zb);
 
   /* Calcul des centres des interfaces pour des mailles non structurees.
      IN: nedges: nb de facettes par elemt
@@ -260,7 +261,7 @@ namespace K_METRIC
      OUT: surf: aires des facettes
      OUT: vol: volume des cellules
   */
-  void compUnstructMetric(
+  void compMetricUnstruct(
     K_FLD::FldArrayI& cn, const char* eltType,
     const E_Float* coordx, const E_Float* coordy, const E_Float* coordz,
     E_Float* snx, E_Float* sny, E_Float* snz, E_Float* surf, E_Float* vol);
@@ -269,7 +270,7 @@ namespace K_METRIC
      Les normales aux surfaces sont orientees vers l'exterieur de l'element.
      IN: xt, yt, zt: pointeurs sur les coordonnees du maillage
   */
-  void compUnstructSurf(
+  void compSurfUnstruct(
     K_FLD::FldArrayI& cn, const char* eltType,
     const E_Float* xt, const E_Float* yt, const E_Float* zt,
     E_Float* surfnx, E_Float* surfny, E_Float* surfnz, E_Float* surface);
@@ -325,21 +326,24 @@ namespace K_METRIC
     const E_Float* xt, const E_Float* yt, const E_Float* zt,
     E_Float& vol);
 
-  /* Compute barycenter of tetra cells.
-     IN: ind1, ind2, ind3, ind4: Sommets du tetraedre
-     IN: xt, yt, zt: Vertex coordinates
-     OUT: vol: Cell volume
-  */
-  void compVolOfTetraCell(
-    const E_Int ind1, const E_Int ind2, const E_Int ind3, const E_Int ind4,
-    const E_Float* xt, const E_Float* yt, const E_Float* zt,
-    E_Float& vol);
+  //============================================================================
+  // Calcul du volume des elements pour un maillage Multi-Elements.
+  // IN: cn: Element-Node connectivity
+  // IN: eltType: Element names
+  // IN: xint, yint, zint: coordonnees du centre des facettes
+  // IN: snx, sny, snz: normales aux facettes %x, %y, %z
+  // OUT: vol: volume des cellules
+  //============================================================================
+  void compUnstructVol(
+    K_FLD::FldArrayI& cn, const char* eltType,
+    const E_Float* xint, const E_Float* yint, const E_Float* zint,
+    const E_Float* snx, const E_Float* sny, const E_Float* snz, E_Float* vol);
 
   // Compute cell volumes for NGons
   void compute_face_center_and_area(E_Int id, E_Int stride, E_Int *pn,
     E_Float *x, E_Float *y, E_Float *z, E_Float *fc, E_Float *fa);
   
-  E_Int compute_volumes_ngon(E_Float *x, E_Float *y, E_Float *z,
+  E_Int compVolNGonImad(E_Float *x, E_Float *y, E_Float *z,
     K_FLD::FldArrayI &cn, E_Float *cellVols);
 
   void compute_cell_volume(E_Int, K_FLD::FldArrayI &, E_Float *, E_Float *,

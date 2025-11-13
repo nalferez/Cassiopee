@@ -6,6 +6,7 @@ cpp_srcs = ["Transform/coordTransform.cpp",
             "Transform/deform.cpp",
             "Transform/deform2.cpp",
             "Transform/deformMeshStruct.cpp",
+            "Transform/freeForm.cpp",
             "Transform/rotate2.cpp",
             "Transform/translate.cpp",
             "Transform/homothety.cpp",
@@ -58,4 +59,4 @@ cpp_srcs = ["Transform/coordTransform.cpp",
 #==============================================================================
 # Fichiers fortran
 #==============================================================================
-for_srcs = [ 'Transform/Fortran/DeformF.for' ]
+#for_srcs = [ 'Transform/Fortran/DeformF.for' ]

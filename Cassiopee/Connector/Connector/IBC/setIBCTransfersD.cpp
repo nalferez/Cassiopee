@@ -60,10 +60,10 @@ PyObject* K_CONNECTOR::setIBCTransfersD(PyObject* self, PyObject* args)
   E_Int imd, jmd, kmd, imdjmd;
   FldArrayF* fd; FldArrayI* cnd;
   char* varStringD; char* eltTypeD;
-  E_Int resd = K_ARRAY::getFromArray(arrayD, varStringD, fd,
-                                     imd, jmd, kmd, cnd, eltTypeD, true);
+  E_Int resd = K_ARRAY::getFromArray3(arrayD, varStringD, fd,
+                                      imd, jmd, kmd, cnd, eltTypeD);
   E_Int* ptrcnd = NULL;
-  E_Int cndSize = 0;
+  //E_Int cndSize = 0;
   E_Int cnNfldD = 0;
   if (resd != 2 && resd != 1)
   {
@@ -82,7 +82,7 @@ PyObject* K_CONNECTOR::setIBCTransfersD(PyObject* self, PyObject* args)
       return NULL;
     }
     ptrcnd  = cnd->begin();
-    cndSize = cnd->getSize();
+    //cndSize = cnd->getSize();
     cnNfldD = cnd->getNfld();
   }
   E_Int nvars;
@@ -514,19 +514,23 @@ PyObject* K_CONNECTOR::_setIBCTransfersDForPressureGradientsOrder1(PyObject* sel
 
   vector<PyArrayObject*> hook;
 
-  E_Int imdjmd, imd,jmd,kmd, cnNfldD, nvars, meshtype, ndimdxD=1;
-  E_Float* iptroD=NULL;
+  E_Int imdjmd, imd,jmd,kmd, cnNfldD, nvars, meshtype;
+  //E_Float* iptroD=NULL;
 
   # include "extract_interpD.h"
 
   FldArrayF* pressF;
   E_Int okP = K_NUMPY::getFromNumpyArray( pyArrayPressure, pressF);
+  if (okP == 0) return NULL;
   E_Float* pressure = pressF->begin();
 
   FldArrayF* gradxPressF; FldArrayF* gradyPressF; FldArrayF* gradzPressF;
   E_Int okGxP = K_NUMPY::getFromNumpyArray(pyArrayGradxP, gradxPressF);
+  if (okGxP == 0) return NULL;
   E_Int okGyP = K_NUMPY::getFromNumpyArray(pyArrayGradyP, gradyPressF);
+  if (okGyP == 0) return NULL;
   E_Int okGzP = K_NUMPY::getFromNumpyArray(pyArrayGradzP, gradzPressF);
+  if (okGzP == 0) return NULL;
   E_Float* gradxP = gradxPressF->begin();
   E_Float* gradyP = gradyPressF->begin();
   E_Float* gradzP = gradzPressF->begin();
@@ -703,43 +707,55 @@ PyObject* K_CONNECTOR::_setIBCTransfersDForPressureGradientsOrder2(PyObject* sel
 
   vector<PyArrayObject*> hook;
 
-  E_Int imdjmd, imd,jmd,kmd, cnNfldD, nvars, meshtype, ndimdxD=1;
-  E_Float* iptroD=NULL;
-
+  E_Int imdjmd, imd,jmd,kmd, cnNfldD, nvars, meshtype;
+  
   # include "extract_interpD.h"
 
   FldArrayF* pressF;
   E_Int okP = K_NUMPY::getFromNumpyArray( pyArrayPressure, pressF);
+  if (okP == 0) return NULL;
   E_Float* pressure = pressF->begin();
 
   FldArrayF* gradxPressF; FldArrayF* gradyPressF; FldArrayF* gradzPressF;
   E_Int okGxP = K_NUMPY::getFromNumpyArray(pyArrayGradxP, gradxPressF);
+  if (okGxP == 0) return NULL;
   E_Int okGyP = K_NUMPY::getFromNumpyArray(pyArrayGradyP, gradyPressF);
+  if (okGyP == 0) return NULL;
   E_Int okGzP = K_NUMPY::getFromNumpyArray(pyArrayGradzP, gradzPressF);
+  if (okGzP == 0) return NULL;
   E_Float* gradxP = gradxPressF->begin();
   E_Float* gradyP = gradyPressF->begin();
   E_Float* gradzP = gradzPressF->begin();
 
   FldArrayF* gradxxPressF; FldArrayF* gradxyPressF; FldArrayF* gradxzPressF;
   E_Int okGxxP = K_NUMPY::getFromNumpyArray(pyArrayGradxxP, gradxxPressF);
+  if (okGxxP == 0) return NULL;
   E_Int okGxyP = K_NUMPY::getFromNumpyArray(pyArrayGradxyP, gradxyPressF);
+  if (okGxyP == 0) return NULL;
   E_Int okGxzP = K_NUMPY::getFromNumpyArray(pyArrayGradxzP, gradxzPressF);
+  if (okGxzP == 0) return NULL;
   E_Float* gradxxP = gradxxPressF->begin();
   E_Float* gradxyP = gradxyPressF->begin();
   E_Float* gradxzP = gradxzPressF->begin();
 
   FldArrayF* gradyxPressF; FldArrayF* gradyyPressF; FldArrayF* gradyzPressF;
   E_Int okGyxP = K_NUMPY::getFromNumpyArray(pyArrayGradyxP, gradyxPressF);
+  if (okGyxP == 0) return NULL;
   E_Int okGyyP = K_NUMPY::getFromNumpyArray(pyArrayGradyyP, gradyyPressF);
+  if (okGyyP == 0) return NULL;
   E_Int okGyzP = K_NUMPY::getFromNumpyArray(pyArrayGradyzP, gradyzPressF);
+  if (okGyzP == 0) return NULL;
   E_Float* gradyxP = gradyxPressF->begin();
   E_Float* gradyyP = gradyyPressF->begin();
   E_Float* gradyzP = gradyzPressF->begin();
 
   FldArrayF* gradzxPressF; FldArrayF* gradzyPressF; FldArrayF* gradzzPressF;
   E_Int okGzxP = K_NUMPY::getFromNumpyArray(pyArrayGradzxP, gradzxPressF);
+  if (okGzxP == 0) return NULL;
   E_Int okGzyP = K_NUMPY::getFromNumpyArray(pyArrayGradzyP, gradzyPressF);
+  if (okGzyP == 0) return NULL;
   E_Int okGzzP = K_NUMPY::getFromNumpyArray(pyArrayGradzzP, gradzzPressF);
+  if (okGzzP == 0) return NULL;
   E_Float* gradzxP = gradzxPressF->begin();
   E_Float* gradzyP = gradzyPressF->begin();
   E_Float* gradzzP = gradzzPressF->begin();
@@ -937,8 +953,8 @@ PyObject* K_CONNECTOR::_setIBCTransfersD4GradP(PyObject* self, PyObject* args)
     return NULL;
   }
 
-  E_Int bcType  = E_Int(bctype);  // 0: wallslip; 1: noslip; 2: log law of wall; 3: Musker law of wall
-  E_Int varType = E_Int(vartype); // 1:conservatives, 2:(ro,u,v,w,t), 3:(ro,u,v,w,p)
+  //E_Int bcType  = E_Int(bctype);  // 0: wallslip; 1: noslip; 2: log law of wall; 3: Musker law of wall
+  //E_Int varType = E_Int(vartype); // 1:conservatives, 2:(ro,u,v,w,t), 3:(ro,u,v,w,p)
 
   // E_Float alpha = 1.;
   E_Float cvgam = cv*(gamma-1.);
@@ -951,12 +967,16 @@ PyObject* K_CONNECTOR::_setIBCTransfersD4GradP(PyObject* self, PyObject* args)
 
   FldArrayF* pressF;
   E_Int okP = K_NUMPY::getFromNumpyArray( pyArrayPressure, pressF);
+  if (okP == 0) return NULL;
   E_Float* pressure = pressF->begin();
 
   FldArrayF* gradxPressF; FldArrayF* gradyPressF; FldArrayF* gradzPressF;
   E_Int okGxP = K_NUMPY::getFromNumpyArray(pyArrayGradxP, gradxPressF);
+  if (okGxP == 0) return NULL;
   E_Int okGyP = K_NUMPY::getFromNumpyArray(pyArrayGradyP, gradyPressF);
+  if (okGyP == 0) return NULL;
   E_Int okGzP = K_NUMPY::getFromNumpyArray(pyArrayGradzP, gradzPressF);
+  if (okGzP == 0) return NULL;
   E_Float* gradxP = gradxPressF->begin();
   E_Float* gradyP = gradyPressF->begin();
   E_Float* gradzP = gradzPressF->begin();
@@ -966,7 +986,7 @@ PyObject* K_CONNECTOR::_setIBCTransfersD4GradP(PyObject* self, PyObject* args)
   char* eltTypeD=NULL; char* varStringD=NULL;
   char* varStringOut = new char[K_ARRAY::VARSTRINGLENGTH];
 
-  if (compact==0)
+  if (compact == 0)
   {
     E_Int cnSizeD;
     vector<E_Int> locsD;
