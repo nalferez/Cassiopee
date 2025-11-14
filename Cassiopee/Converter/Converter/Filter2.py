@@ -1,8 +1,4 @@
-# Part loader - taken from old maia
-#import Converter.PyTree as C
-#import Converter.Internal as I
-#import Converter.Filter as Filter
-#import Converter.Mpi as Cmpi
+# Part loader
 from . import PyTree as C
 from . import Internal as I
 from . import Filter as Filter
@@ -25,7 +21,7 @@ def _addSizesToZoneTree(zone, zone_path, size_data):
     """
     for elmt in I.getNodesFromType1(zone, 'Elements_t'):
         elmt_path = zone_path+"/"+elmt[0]
-        ec_path   = elmt_path+"/ElementConnectivity"
+        ec_path = elmt_path+"/ElementConnectivity"
         I.newIndexArray('ElementConnectivity#Size', value=size_data[ec_path][2], parent=elmt)
 
     for zone_bc in I.getNodesFromType1(zone, 'ZoneBC_t'):
@@ -596,7 +592,7 @@ def createZoneStdElementsFilter(elmt, zone_path, hdf_filter):
     distrib_elmt = I.getVal(getDistribution(elmt, 'Element'))
     dn_elmt      = distrib_elmt[1] - distrib_elmt[0]
 
-    name, elmt_npe = I.eltNo2EltName(elmt[1][0]) # nbre de vertex de l'element
+    _, elmt_npe = I.eltNo2EltName(elmt[1][0]) # nbre de vertex de l'element
 
     DSMMRYElmt = [[0                       ], [1], [dn_elmt*elmt_npe], [1]]
     DSFILEElmt = [[distrib_elmt[0]*elmt_npe], [1], [dn_elmt*elmt_npe], [1]]
@@ -885,7 +881,7 @@ def chunk2part(dt):
     ngonc = I.getNodeFromName1(ngon, 'ElementConnectivity')[1]
     ngonso = I.getNodeFromName1(ngon, 'ElementStartOffset')[1]
 
-    nface = I.getNodeFromName2(z, 'NFaceElements')
+    nface = I.getNFaceNode(z)
     nfacec = I.getNodeFromName1(nface, 'ElementConnectivity')[1]
     nfaceso = I.getNodeFromName1(nface, 'ElementStartOffset')[1]
 

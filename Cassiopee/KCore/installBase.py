@@ -17,7 +17,7 @@ except ImportError:
 installDict = {
     **installDictUser,
     ###############################################################################
-    'x86_r8': [ 'Alferez Laptop (ubuntu)',
+    'linux': [ 'Alferez Laptop (ubuntu)',
                          'ifort', # f77compiler
                          'ifort', # f90compiler
                          'icpc', # Cppcompiler
@@ -560,40 +560,8 @@ installDict = {
         [] # NvccAdditionalOptions
     ],
     ###############################################################################
-    'ubuntu': [
-        'Linux ubuntu 24.04',
-        'gfortran', # f77compiler
-        'gfortran', # f90compiler
-        'gcc', # Cppcompiler
-        [], # CppAdditionalOptions
-        [], # f77AdditionalOptions
-        True, # useOMP
-        False, # static
-        ['/usr/include', '/usr/include/hdf5/openmpi', '/usr/lib/x86_64-linux-gnu/openmpi/include'], # additionalIncludePaths
-        ['gfortran', 'gomp'], # additionalLibs
-        ['/usr/lib/x86_64-linux-gnu/hdf5/openmpi', '/usr/lib/x86_64-linux-gnu'], # additionalLibPaths
-        False, # useCuda
-        [] # NvccAdditionalOptions
-    ],
-    ###############################################################################
     'azure': [
         'Linux Centos7 - Github Actions',
-        'gfortran', # f77compiler
-        'gfortran', # f90compiler
-        'gcc', # Cppcompiler
-        [], # CppAdditionalOptions
-        [], # f77AdditionalOptions
-        True, # useOMP
-        False, # static
-        ['/usr/include', '/usr/include/hdf5/openmpi', '/usr/lib/x86_64-linux-gnu/openmpi/include'], # additionalIncludePaths
-        ['gfortran', 'gomp'], # additionalLibs
-        ['/usr/lib/x86_64-linux-gnu/hdf5/openmpi', '/usr/lib/x86_64-linux-gnu'], # additionalLibPaths
-        False, # useCuda
-        [] # NvccAdditionalOptions
-    ],
-    ###############################################################################
-    'linux': [
-        'Linux (generic)',
         'gfortran', # f77compiler
         'gfortran', # f90compiler
         'gcc', # Cppcompiler
@@ -641,22 +609,6 @@ installDict = {
     ],
     ###############################################################################
     'sator': [
-        'Cluster de calcul Sator Broadwell (Onera)',
-        'ifort', # f77compiler
-        'ifort', # f90compiler
-        'icc', # Cppcompiler
-        ['-DCACHELINE=32', '-DNB_SOCKET=2', '-DCORE_PER_SOCK=14', '-Dvtune', '-DSIMD=AVX2'], # CppAdditionalOptions
-        [], # f77AdditionalOptions
-        True, # useOMP
-        False, # static
-        [], # additionalIncludePaths
-        [], # additionalLibs
-        [], # additionalLibPaths
-        False, # useCuda
-        [] # NvccAdditionalOptions
-    ],
-    ###############################################################################
-    'sator_brw': [
         'Cluster de calcul Sator Broadwell (Onera)',
         'ifort', # f77compiler
         'ifort', # f90compiler

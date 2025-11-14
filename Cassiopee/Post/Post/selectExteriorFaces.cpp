@@ -54,11 +54,8 @@ PyObject* K_POST::selectExteriorFaces(PyObject* self, PyObject* args)
   {
     if (strcmp(eltType, "NGON") == 0)
     {
-      E_Int nv;
-      E_Int* ngon = cn->getNGon();
-      E_Int* indPG = cn->getIndPG();
-      cn->getFace(0, nv, ngon, indPG);
-      if (nv == 2) tpl = selectExteriorFacesNGon2D(varString, *f, *cn, indices);
+      E_Int dim = cn->getDim();
+      if (dim == 2) tpl = selectExteriorFacesNGon2D(varString, *f, *cn, indices);
       else tpl = selectExteriorFacesNGon3D(varString, *f, *cn, indices);
     }
     else tpl = exteriorFacesBasic(varString, *f, *cn, eltType, indices);
@@ -77,7 +74,7 @@ PyObject* K_POST::exteriorFacesStructured(char* varString, FldArrayF& f,
                                           E_Int ni, E_Int nj, E_Int nk, 
                                           PyObject* indices)
 {
-  E_Int api = 1;
+  E_Int api = f.getApi();
   E_Int nfld = f.getNfld();
   PyObject* tpl = NULL;
   bool boolIndir = false;
@@ -478,7 +475,8 @@ PyObject* K_POST::exteriorFacesStructured(char* varString, FldArrayF& f,
                                    1.e-12, newEltType,
                                    *fnodes, *connect);
 
-    PyObject* tpl2 = K_ARRAY::buildArray3(*fnodes, varString, *connect, newEltType);
+    PyObject* tpl2 = K_ARRAY::buildArray3(*fnodes, varString,
+                                          *connect, newEltType, api);
     RELEASESHAREDU(tpl, fnodes, connect);
     if (boolIndir)
     {
@@ -574,8 +572,7 @@ PyObject* K_POST::exteriorFacesBasic(char* varString, FldArrayF& f,
   }
   else
   {
-    tpl = K_ARRAY::buildArray(f, varString, 
-                              *connect, -1, elttypeout);
+    tpl = K_ARRAY::buildArray3(f, varString, *connect, elttypeout, api);
     delete connect;
   }
 
@@ -803,9 +800,9 @@ PyObject* K_POST::selectExteriorFacesNGon3D(char* varString, FldArrayF& f,
   E_Int* ngon = cn.getNGon();
   E_Int* indPG = cn.getIndPG();
   E_Int nfaces = cn.getNFaces();
-  E_Int npts = f.getSize(), nfld = f.getNfld();
-  E_Int shift = 1, api = f.getApi();
-  if (api == 3) shift = 0;
+  E_Int npts = f.getSize(), nfld = f.getNfld(), api = f.getApi();
+  E_Int ngonType = cn.getNGonType();
+  E_Int shift = 1; if (ngonType == 3) shift = 0;
 
   // cFE: connectivite face/elements.
   // Si une face n'a pas d'element gauche ou droit, retourne 0 pour 
@@ -887,9 +884,6 @@ PyObject* K_POST::selectExteriorFacesNGon3D(char* varString, FldArrayF& f,
   cFE.malloc(0);
   
   // Calcul des nouvelles connectivites Elmt/Faces et Face/Noeuds
-  E_Int ngonType = 1; // CGNSv3 compact array1
-  if (api == 2) ngonType = 2; // CGNSv3, array2
-  else if (api == 3) ngonType = 3; // force CGNSv4, array3
   E_Bool center = false;
   PyObject* tpl = K_ARRAY::buildArray3(nfld, varString, nptsExt, nfacesExt,
                                        nedgesExt, "NGON", sizeFN2, sizeEF2,
@@ -900,7 +894,7 @@ PyObject* K_POST::selectExteriorFacesNGon3D(char* varString, FldArrayF& f,
   E_Int* nface2 = cn2->getNFace();
   E_Int *indPG2 = NULL, *indPH2 = NULL;
   
-  if (api == 2 || api == 3)
+  if (ngonType == 2 || ngonType == 3) // set offsets
   {
     indPG2 = cn2->getIndPG(); indPH2 = cn2->getIndPH();
   }
@@ -913,7 +907,7 @@ PyObject* K_POST::selectExteriorFacesNGon3D(char* varString, FldArrayF& f,
     if (boolIndir) indirp[i] = fidx;
     
     nface2[c2] = nbnodes;
-    if (api == 2 || api == 3) indPH2[i] = nbnodes;
+    if (ngonType == 2 || ngonType == 3) indPH2[i] = nbnodes;
     
     for (E_Int p = 0; p < nbnodes; p++)
     {
@@ -943,9 +937,9 @@ PyObject* K_POST::selectExteriorFacesNGon3D(char* varString, FldArrayF& f,
   #pragma omp parallel
   {
     E_Int indf;
-    if (api == 2 || api == 3)
+    if (ngonType == 2 || ngonType == 3)
     {
-      #pragma omp for
+      #pragma omp for nowait
       for(E_Int i = 0; i < nedgesExt; i++) indPG2[i] = 2;
     }
   
@@ -989,9 +983,9 @@ PyObject* K_POST::selectExteriorFacesNGon2D(char* varString, FldArrayF& f,
   E_Int* ngon = cn.getNGon();
   E_Int* indPG = cn.getIndPG();
   E_Int nfaces = cn.getNFaces();
-  E_Int npts = f.getSize(), nfld = f.getNfld();
-  E_Int shift = 1, api = f.getApi();
-  if (api == 3) shift = 0;
+  E_Int npts = f.getSize(), nfld = f.getNfld(), api = f.getApi();
+  E_Int ngonType = cn.getNGonType();
+  E_Int shift = 1; if (ngonType == 3) shift = 0;
 
   // cFE: connectivite face/elements.
   // Si une face n'a pas d'element gauche ou droit, retourne 0 pour 
@@ -1072,9 +1066,6 @@ PyObject* K_POST::selectExteriorFacesNGon2D(char* varString, FldArrayF& f,
   }
   cFE.malloc(0);
   // Calcul des nouvelles connectivites Elmt/Faces et Face/Noeuds
-  E_Int ngonType = 1; // CGNSv3 compact array1
-  if (api == 2) ngonType = 2; // CGNSv3, array2
-  else if (api == 3) ngonType = 3; // force CGNSv4, array3
   E_Bool center = false;
   PyObject* tpl = K_ARRAY::buildArray3(nfld, varString, nptsExt, nedgesExt,
                                        nptsExt, "NGON", sizeFN2, sizeEF2,
@@ -1084,7 +1075,7 @@ PyObject* K_POST::selectExteriorFacesNGon2D(char* varString, FldArrayF& f,
   E_Int* ngon2 = cn2->getNGon();
   E_Int* nface2 = cn2->getNFace();
   E_Int *indPG2 = NULL, *indPH2 = NULL;
-  if (api == 2 || api == 3)
+  if (ngonType == 2 || ngonType == 3) // set offsets
   {
     indPG2 = cn2->getIndPG(); indPH2 = cn2->getIndPH();
   }
@@ -1093,14 +1084,14 @@ PyObject* K_POST::selectExteriorFacesNGon2D(char* varString, FldArrayF& f,
   {
     E_Int ind, fidx, v1, v2;
 
-    #pragma omp for
+    #pragma omp for nowait
     for(E_Int i = 0; i < nptsExt; i++)
     {
       ind = i*(1+shift);
       ngon2[ind] = 1;
       ngon2[ind+shift] = i+1;
     }
-    #pragma omp for
+    #pragma omp for nowait
     for(E_Int i = 0; i < nedgesExt; i++)
     {
       fidx = exteriorEdges[i];
@@ -1114,11 +1105,11 @@ PyObject* K_POST::selectExteriorFacesNGon2D(char* varString, FldArrayF& f,
       nface2[ind+1+shift] = indirVertices[v2];
     }
 
-    if (api == 2 || api == 3)
+    if (ngonType == 2 || ngonType == 3)
     {
-      #pragma omp for
+      #pragma omp for nowait
       for(E_Int i = 0; i < nptsExt; i++) indPG2[i] = 1;
-      #pragma omp for
+      #pragma omp for nowait
       for(E_Int i = 0; i < nedgesExt; i++) indPH2[i] = 2;
     }
   
@@ -1126,7 +1117,7 @@ PyObject* K_POST::selectExteriorFacesNGon2D(char* varString, FldArrayF& f,
     {
       E_Float* fp = f.begin(eq);
       E_Float* f2p = f2->begin(eq);
-      #pragma omp for
+      #pragma omp for nowait
       for (E_Int i = 0; i < npts; i++)
       {
         ind = indirVertices[i]-1;

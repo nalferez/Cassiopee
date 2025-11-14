@@ -1,4 +1,4 @@
-/*    
+/*
     Copyright 2013-2025 Onera.
 
     This file is part of Cassiopee.
@@ -41,13 +41,15 @@ PyObject* K_TRANSFORM::perturbate(PyObject* self, PyObject* args)
   FldArrayF* f; FldArrayI* cn;
   char* varString; char* eltType;
   E_Int res;
-  res = K_ARRAY::getFromArray3(array, varString, f, im, jm, km, cn, eltType); 
+  res = K_ARRAY::getFromArray3(array, varString, f, im, jm, km, cn, eltType);
 
   E_Int posx, posy, posz;
   E_Float rx, ry, rz;
   E_Float rxi, ryi, rzi, rxj, ryj, rzj, rxk, ryk,rzk;
   E_Int ind, indi, indj, indk;
-  E_Float l; 
+  E_Float l;
+
+  E_Int api = f->getApi();
 
   if (res == 1)
   {
@@ -62,7 +64,7 @@ PyObject* K_TRANSFORM::perturbate(PyObject* self, PyObject* args)
       return NULL;
     }
     posx++; posy++; posz++;
-    
+
     E_Float* fx = f->begin(posx);
     E_Float* fy = f->begin(posy);
     E_Float* fz = f->begin(posz);
@@ -103,8 +105,8 @@ PyObject* K_TRANSFORM::perturbate(PyObject* self, PyObject* args)
             rx = K_NOISE::stdRand(&idum)-0.5;
             ry = 0.; rz = 0.;
             if (dim > 1) ry = K_NOISE::stdRand(&idum)-0.5;
-            if (dim > 2) rz = K_NOISE::stdRand(&idum)-0.5;  
-            
+            if (dim > 2) rz = K_NOISE::stdRand(&idum)-0.5;
+
             ind = i + j*im + k*im*jm;
             indi = i+1 + j*im + k*im*jm;
             indj = i + (j+1)*im + k*im*jm;
@@ -112,24 +114,24 @@ PyObject* K_TRANSFORM::perturbate(PyObject* self, PyObject* args)
             rxi = fx[indi]-fx[ind];
             ryi = fy[indi]-fy[ind];
             rzi = fz[indi]-fz[ind];
-            
+
             rxj = fx[indj]-fx[ind];
             ryj = fy[indj]-fy[ind];
             rzj = fz[indj]-fz[ind];
-           
+
             rxk = fx[indk]-fx[ind];
             ryk = fy[indk]-fy[ind];
             rzk = fz[indk]-fz[ind];
-            
+
             fx[ind] += radius*(rx*rxi+ry*rxj+rz*rxk);
             fy[ind] += radius*(rx*ryi+ry*ryj+rz*ryk);
             fz[ind] += radius*(rx*rzi+ry*rzj+rz*rzk);
           }
     }
-      
+
     // Build array
-    PyObject* tpl = K_ARRAY::buildArray3(*f, varString, im, jm, km);
-    RELEASESHAREDS(array, f);  
+    PyObject* tpl = K_ARRAY::buildArray3(*f, varString, im, jm, km, api);
+    RELEASESHAREDS(array, f);
     return tpl;
   }
   else if (res == 2)
@@ -145,16 +147,15 @@ PyObject* K_TRANSFORM::perturbate(PyObject* self, PyObject* args)
       return NULL;
     }
     posx++; posy++; posz++;
-    
+
     E_Float* fx = f->begin(posx);
     E_Float* fy = f->begin(posy);
     E_Float* fz = f->begin(posz);
-    
+
     // Random perturbation
     E_LONG idum = -1;
 
     E_Int npts = f->getSize();
-    E_Int api = f->getApi();
     vector< vector<E_Int> > cVN(npts);
     if (strcmp(eltType, "NGON") == 0) K_CONNECT::connectNG2VNbrs(*cn, cVN);
     else K_CONNECT::connectEV2VNbrs(*cn, cVN);
@@ -181,9 +182,9 @@ PyObject* K_TRANSFORM::perturbate(PyObject* self, PyObject* args)
       fy[i] += radius*ry*l;
       fz[i] += radius*rz*l;
     }
-    
+
     // Build array
-    PyObject* tpl = K_ARRAY::buildArray3(*f, varString, *cn, eltType);
+    PyObject* tpl = K_ARRAY::buildArray3(*f, varString, *cn, eltType, api);
     RELEASESHAREDU(array, f, cn);
     return tpl;
   }

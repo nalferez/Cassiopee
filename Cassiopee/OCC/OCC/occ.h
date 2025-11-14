@@ -49,6 +49,7 @@ namespace K_OCC
   PyObject* addCircle(PyObject* self, PyObject* args);
   PyObject* addSpline(PyObject* self, PyObject* args);
   PyObject* addArc(PyObject* self, PyObject* args);
+  PyObject* addGordonSurface(PyObject* self, PyObject* args);
   
   PyObject* getNbFaces(PyObject* self, PyObject* args);
   PyObject* getNbEdges(PyObject* self, PyObject* args);
@@ -95,6 +96,8 @@ namespace K_OCC
   PyObject* translate(PyObject* self, PyObject* args);
   PyObject* scale(PyObject* self, PyObject* args);
   PyObject* rotate(PyObject* self, PyObject* args);
+
+  PyObject* intersectEdgeFace(PyObject* self, PyObject* args);
 
   PyObject* getOppData(PyObject* self, PyObject* args);
   PyObject* identifyTags(PyObject* self, PyObject* args);

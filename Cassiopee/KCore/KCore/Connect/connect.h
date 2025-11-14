@@ -159,6 +159,12 @@ namespace K_CONNECT
   /*----------------------------------*/
   /* - Connectivite element basique - */
   /*----------------------------------*/
+  // Get the number of facets per element type of a Multiple Element
+  // connectivity. If expandToLowerDim is set to True, 'faces' of 1D and 2D
+  // elements are vertices and edges, respectively.
+  E_Int getNFPE(std::vector<E_Int>& nfpe, const char* eltType,
+                E_Bool expandToLowerDim=true);
+
   /* Get all facets of a basic element*/
   E_Int getEVFacets(std::vector<std::vector<E_Int> >& facets,
                     const char* eltType, E_Bool allow_degenerated=true);
@@ -167,14 +173,6 @@ namespace K_CONNECT
      cVE doit deja etre alloue au nombre de noeuds. */
   void connectEV2VE(K_FLD::FldArrayI& cEV,
                     std::vector< std::vector<E_Int> >& cVE);
-  /* Change a Elts-Vertex connectivity to a Vertex-Elts connectivity.
-     Le format de stockage est de type CSR : le premier vecteur donne à
-     l'indice i la position dans le deuxième tableau de l'indice du 
-     premier element contenant le sommet i.
-     nv est le nombre de sommets definissant le maillage.
-   */
-  std::pair<std::vector<E_Int>,std::vector<E_Int> > 
-  connectEV2VE(K_FLD::FldArrayI& cEV);
 
   /* Change a Elts-Vertex connectivity to a Vertex-Vertex neighbours 
      connectivity.

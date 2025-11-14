@@ -1,4 +1,4 @@
-/*    
+/*
     Copyright 2013-2025 Onera.
 
     This file is part of Cassiopee.
@@ -25,16 +25,6 @@ using namespace std;
 using namespace K_FUNC;
 using namespace K_FLD;
 
-extern "C"
-{ 
-  void k6homothety_(const E_Int& npts,
-                    const E_Float* x, const E_Float* y, const E_Float* z,
-                    const E_Float& xc, const E_Float& yc, const E_Float& zc,
-                    const E_Float& alpha,
-                    E_Float* xo, E_Float* yo, E_Float* zo);
-  
-}
-
 // ============================================================================
 /* Contract python array describing a mesh */
 // ============================================================================
@@ -52,13 +42,13 @@ PyObject* K_TRANSFORM::contract(PyObject* self, PyObject* args)
   {
       return NULL;
   }
-  
+
   // Check array
   E_Int nil, njl, nkl;
   FldArrayF* f; FldArrayI* cn;
   char* varString; char* eltType;
-  E_Int res = 
-    K_ARRAY::getFromArray3(array, varString, f, nil, njl, nkl, cn, eltType); 
+  E_Int res =
+    K_ARRAY::getFromArray3(array, varString, f, nil, njl, nkl, cn, eltType);
 
   if (res != 1 && res != 2)
   {
@@ -66,7 +56,7 @@ PyObject* K_TRANSFORM::contract(PyObject* self, PyObject* args)
                     "contract: not a valid array.");
     return NULL;
   }
-  
+
   E_Int posx = K_ARRAY::isCoordinateXPresent(varString);
   E_Int posy = K_ARRAY::isCoordinateYPresent(varString);
   E_Int posz = K_ARRAY::isCoordinateZPresent(varString);
@@ -84,13 +74,13 @@ PyObject* K_TRANSFORM::contract(PyObject* self, PyObject* args)
   // Normalisation des vecteurs du plan
   E_Float norm;
   norm = sqrt(dir1x*dir1x + dir1y*dir1y + dir1z*dir1z);
-  dir1x = dir1x / norm; 
-  dir1y = dir1y / norm; 
-  dir1z = dir1z / norm; 
+  dir1x = dir1x / norm;
+  dir1y = dir1y / norm;
+  dir1z = dir1z / norm;
   norm = sqrt(dir2x*dir2x + dir2y*dir2y + dir2z*dir2z);
   dir2x = dir2x / norm;
-  dir2y = dir2y / norm; 
-  dir2z = dir2z / norm; 
+  dir2y = dir2y / norm;
+  dir2z = dir2z / norm;
 
   // 3 points du plan
   E_Float p1[3]; E_Float p2[3]; E_Float p3[3];
@@ -103,7 +93,7 @@ PyObject* K_TRANSFORM::contract(PyObject* self, PyObject* args)
   E_Bool in;
 
   // Contraction
-#pragma omp parallel default(shared)
+  #pragma omp parallel
   {
     E_Float sigma1, sigma0, dist2;
     E_Float xint, yint, zint;
@@ -115,10 +105,10 @@ PyObject* K_TRANSFORM::contract(PyObject* self, PyObject* args)
       K_COMPGEOM::distanceToTriangle(p1, p2, p3, p, 0,
                                      dist2, in, xint, yint, zint,
                                      sigma0, sigma1);
-    
-      xp[i] = xint + alpha*(xp[i]-xint); 
-      yp[i] = yint + alpha*(yp[i]-yint); 
-      zp[i] = zint + alpha*(zp[i]-zint);
+
+      xp[i] = xint + alpha*(xp[i] - xint);
+      yp[i] = yint + alpha*(yp[i] - yint);
+      zp[i] = zint + alpha*(zp[i] - zint);
     }
   }
 
@@ -129,8 +119,8 @@ PyObject* K_TRANSFORM::contract(PyObject* self, PyObject* args)
 
 
 // ============================================================================
-/* 
-   Deform mesh by moving point (xi,yi,zi) of a vector (dx,dy,dz) 
+/*
+   Deform mesh by moving point (xi,yi,zi) of a vector (dx,dy,dz)
  */
 // ============================================================================
 PyObject* K_TRANSFORM::deformPoint(PyObject* self, PyObject* args)
@@ -150,7 +140,7 @@ PyObject* K_TRANSFORM::deformPoint(PyObject* self, PyObject* args)
   E_Int im, jm, km;
   FldArrayF* f; FldArrayI* cn;
   char* varString; char* eltType;
-  E_Int res = K_ARRAY::getFromArray3(array, varString, 
+  E_Int res = K_ARRAY::getFromArray3(array, varString,
                                      f, im, jm, km, cn, eltType);
   if (res != 1 && res != 2)
   {
@@ -158,7 +148,7 @@ PyObject* K_TRANSFORM::deformPoint(PyObject* self, PyObject* args)
                     "deformPoint: invalid array.");
     return NULL;
   }
- 
+
   E_Int posx, posy, posz;
   posx = K_ARRAY::isCoordinateXPresent(varString);
   posy = K_ARRAY::isCoordinateYPresent(varString);
@@ -177,53 +167,45 @@ PyObject* K_TRANSFORM::deformPoint(PyObject* self, PyObject* args)
   dist = dx*dx + dy*dy + dz*dz;
   dist = 1./sqrt(dist);
   dx = dx *dist; dy = dy*dist; dz = dz*dist;
-  E_Float sigma = 2./(width*width); 
-  
+  E_Float sigma = 2./(width*width);
+
   // Construit l'array resultat
   PyObject* tpl;
+  E_Int api = f->getApi();
   E_Int npts = f->getSize();
-  E_Int nfld = f->getNfld();
-  if (res == 1) //structured
+  if (res == 1)  // structured
   {
-    tpl = K_ARRAY::buildArray(nfld, varString, im, jm, km);
-  } 
-  else //unstructured 
-  {
-    E_Int csize = cn->getSize()*cn->getNfld(); 
-    tpl = K_ARRAY::buildArray(nfld, varString,
-                              npts, cn->getSize(),
-                              -1, eltType, false, csize);
+    tpl = K_ARRAY::buildArray3(*f, varString, im, jm, km, api);
   }
-  E_Float* fnp = K_ARRAY::getFieldPtr(tpl);
-  FldArrayF fn(npts, nfld, fnp, true);
-  fn.setAllValuesAt(*f);
-  if (res == 2)
+  else  // unstructured
   {
-    E_Int* cnnp = K_ARRAY::getConnectPtr(tpl);
-    K_KCORE::memcpy__(cnnp, cn->begin(), cn->getSize()*cn->getNfld());
+    tpl = K_ARRAY::buildArray3(*f, varString, *cn, eltType, api);
   }
 
   // Pointers
-  E_Float* xo = fn.begin(posx);
-  E_Float* yo = fn.begin(posy);
-  E_Float* zo = fn.begin(posz);
+  FldArrayF* f2;
+  K_ARRAY::getFromArray3(tpl, f2);
+  E_Float* x2 = f2->begin(posx);
+  E_Float* y2 = f2->begin(posy);
+  E_Float* z2 = f2->begin(posz);
 
   // Regularisation
-#pragma omp parallel default(shared)
+  #pragma omp parallel
   {
-  E_Float d1, d2, d3, dd, f;
-#pragma omp for  
-  for (E_Int i = 0; i < npts; i++)
-  {
-    d1 = xo[i]-xi; d2 = yo[i]-yi; d3 = zo[i]-zi;
-    dd = d1*d1+d2*d2+d3*d3;
-    f = depth * exp(-dd*sigma);
-    xo[i] += dx*f;
-    yo[i] += dy*f;
-    zo[i] += dz*f;
+    E_Float d1, d2, d3, dd, fac;
+    #pragma omp for
+    for (E_Int i = 0; i < npts; i++)
+    {
+      d1 = x2[i] - xi; d2 = y2[i] - yi; d3 = z2[i] - zi;
+      dd = d1*d1 + d2*d2 + d3*d3;
+      fac = depth * exp(-dd*sigma);
+      x2[i] += dx*fac;
+      y2[i] += dy*fac;
+      z2[i] += dz*fac;
+    }
   }
-  }
-  
+
+  RELEASESHAREDS(tpl, f2);
   RELEASESHAREDB(res, array, f, cn);
   return tpl;
 }

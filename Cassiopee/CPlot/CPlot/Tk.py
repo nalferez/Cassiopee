@@ -5,17 +5,13 @@ import Converter.PyTree as C
 import Converter
 import Converter.Internal as Internal
 from . import CPlot as CP
-import Transform
-import Post
+import Transform.PyTree as T
+import Post.PyTree as P
 from . import PyTree as CPlot
 from . import Panels
 from . import iconics
 import os, os.path
-from sys import version_info
 import re, fnmatch
-
-# Set this to suppress CPlot firewalls (fixNGon, breakConnect) and enables direct v4
-FIREWALL = False
 
 #==============================================================================
 # Variables globales partagees entre toutes les apps tk
@@ -63,8 +59,8 @@ __FIELD__ = '__all__'
 # Status de l'arbre (MAIN=1 ou <=0 - voir ci-dessous)
 __MAINTREE__ = 1
 # Les differents status pour l'arbre
-MAIN=1; DEFINEDBC=-1; TIME=-2; SLICE=-2; CELLN=-3; MESHQUAL=-4;
-UNDEFINEDBC=-5; IJK=-6; MONITOR=-7;UNDEFINEDIBC=-8;
+MAIN=1; DEFINEDBC=-1; TIME=-2; SLICE=-2; CELLN=-3; MESHQUAL=-4
+UNDEFINEDBC=-5; IJK=-6; MONITOR=-7; UNDEFINEDIBC=-8
 
 # Sauvegarde des zones actives de main (avant de basculer sur un arbre
 # temporaire)
@@ -278,36 +274,40 @@ def buildCPlotArrays(a, topTree=[]):
                 a = C.center2Node(a, __FIELD__)
     else: a = C.node2Center(a)
 
-    if FIREWALL: api = 1
-    else: api = 3
+    ap = Internal.copyRef(a)
+
+    # Oneovern for structured grids
+    if __ONEOVERN__ > 1:
+        for z in Internal.getZones(ap):
+            if Internal.getZoneType(z) == 1:
+                T._oneovern(z, (__ONEOVERN__,__ONEOVERN__,__ONEOVERN__))
+
+    # Transmet les maillages contenant les borders elts pour les zones volumiques
+    if __ONEOVERN__ > 0:
+        for z in Internal.getZones(ap):
+            dimz = Internal.getZoneDim(z)
+            if dimz[0] == 'Unstructured' and dimz[4] == 3:
+                if dimz[3] == "NGON":
+                    P._exteriorFaces(z)
+                else:
+                    # dont call in ME for now because exteriorElts not working on ME
+                    if ',' not in dimz[3]: P._exteriorElts(z)
+                    # code when exteriorElts is ok
+                    # P._exteriorElts(z)
 
     if __FIELD__ == '__all__':
-        arrays = C.getAllFields(a, 'nodes', api=api)
+        arrays = C.getAllFields(ap, 'nodes', api=3)
     elif __FIELD__ == '__none__':
-        arrays = C.getFields(Internal.__GridCoordinates__, a, api=api)
+        arrays = C.getFields(Internal.__GridCoordinates__, ap, api=3)
     else:
-        arrays = C.getFields(Internal.__GridCoordinates__, a, api=api)
+        arrays = C.getFields(Internal.__GridCoordinates__, ap, api=3)
         v = __FIELD__.split(':')
         if len(v) == 2: v = v[1]
         else: v = __FIELD__
-        arrays2 = C.getField(v, a, api=api)
-        for i, b in enumerate(arrays):
-            if b != []: Converter._addVars([arrays[i], b])
+        arrays2 = C.getField(v, ap, api=3)
+        for i, b in enumerate(arrays2):
+            if b != []: arrays = Converter.addVars([arrays[i], b])
 
-    if __ONEOVERN__ > 1:
-        for i, b in enumerate(arrays):
-            if len(b) == 5:
-                arrays[i] = Transform.oneovern(b, (__ONEOVERN__,__ONEOVERN__,__ONEOVERN__))
-
-    # Transmet les maillages contenant les borders elts pour HEXA, TETRA,
-    # PYRA, PENTA, NGON
-    if __ONEOVERN__ > 0:
-        for i, b in enumerate(arrays):
-            if FIREWALL:
-                if b[3] == 'TETRA' or b[3] == 'HEXA' or b[3] == 'PYRA' or b[3] == 'PENTA':
-                    arrays[i] = Post.exteriorElts(b)
-                if b[3] == 'NGON' and b[2][0,2] > 2:
-                    arrays[i] = Post.exteriorElts(b)
     return arrays
 
 #==============================================================================
@@ -497,8 +497,6 @@ def showSelectionInTkTree(event=None):
 def upgradeTree(t):
     Internal.autoSetContainers(t)
     Internal._correctPyTree(t, level=0) # version node
-    #t = Internal.correctPyTree(t, level=9) # connectivity
-    if FIREWALL: Internal._fixNGon(t) # suppressed in v4
     try:
         if C.isNamePresent(t, 'CoordinateX') <= 0: C._addVars(t, 'CoordinateX')
         if C.isNamePresent(t, 'CoordinateY') <= 0: C._addVars(t, 'CoordinateY')
@@ -520,28 +518,7 @@ def fixFileString__(files, initFile=None):
         system = platform.uname()[0]
     except: system = 'unix'
 
-    if version_info[0] == 2 and isinstance(files, unicode): # windows old bug (single unicode) in python2
-        import sys
-        encoding = sys.getfilesystemencoding()
-        # try to find { and }
-        out = []
-        while len(files) > 0:
-            c = 0
-            pos1 = files.find(u'{', c)
-            if pos1 == -1: break
-            c = pos1+1
-            pos2 = files.find(u'}', c)
-            if pos2 == -1: break
-            c = pos2+1
-            if pos2 > pos1: out.append(files[pos1+1:pos2])
-            files = files[:pos1] + files[pos2+1:]
-
-        # split les autres
-        sp = files.split(u' ')
-        for s in sp:
-            s = s.encode(encoding)
-            if s != ' ' and s != '': out.append(s)
-    elif system == 'Windows': # doesnt return initfile
+    if system == 'Windows': # doesnt return initfile
         if initFile != '' and initFile is not None:
             if len(files) == 0: out = [initFile]
             else: out = files
@@ -552,8 +529,6 @@ def fixFileString__(files, initFile=None):
             if len(files) == 0: out = [initFile]
             else: out = files[1:]
         else: out = files
-    if version_info[0] == 2:
-        out = [o.encode('utf-8') for o in out] # Force utf-8
     return out
 
 #==============================================================================
@@ -567,8 +542,7 @@ def fixFileString2__(file):
     #    s = file.encode(encoding)
     #    return s
     #else: return file
-    if version_info[0] == 2: return file.encode('utf-8')
-    else: return file
+    return file
 
 #==============================================================================
 # Load a file par un dialog
@@ -1916,7 +1890,7 @@ def getOnlineDoc():
     try:
         import webbrowser
         TXT.insert('START', 'Opening online documentation.\n')
-        webbrowser.open('https://cassiopee.onera.fr/Userguide.html')
+        webbrowser.open('https://onera.github.io/Cassiopee/current')
     except:
         TXT.insert('START', 'Can not open online documentation.\n')
         TXT.insert('START', 'Error: ', 'Error')
@@ -1926,8 +1900,8 @@ def getOnlineDoc():
 def getOnlineForum():
     try:
         import webbrowser
-        TXT.insert('START', 'Opening online documentation.\n')
-        webbrowser.open('https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!forum/cassiopee-community')
+        TXT.insert('START', 'Opening online issues.\n')
+        webbrowser.open('https://github.com/onera/Cassiopee/discussions')
     except:
         TXT.insert('START', 'Can not open online forum.\n')
         TXT.insert('START', 'Error: ', 'Error')
@@ -1938,7 +1912,7 @@ def getOnlineTutorials():
     try:
         import webbrowser
         TXT.insert('START', 'Opening online tutorials.\n')
-        webbrowser.open('https://cassiopee.onera.fr/Tutorials/Tutorials.html')
+        webbrowser.open('https://github.com/onera/Cassiopee/blob/dev/docs/Tutorials/Tutorials.md')
     except:
         TXT.insert('START', 'Can not open online tutorials.\n')
         TXT.insert('START', 'Error: ', 'Error')
@@ -2094,18 +2068,22 @@ def tkLoadFile(files, mode='full'):
 
     if mode == 'partial': # partial load
         fileName = files[0]
-        try: format = Converter.checkFileType(fileName)
-        except:
-            print('Error: convertFile2PyTree: fail to read file %s.'%fileName)
-            return
-        if format != 'bin_adf' and format != 'bin_hdf': mode = 'full'
+        format = Converter.convertExt2Format__(fileName)
+        if format == 'bin_cgns' or format == "unknown":
+            try: format = Converter.checkFileType(fileName)
+            except:
+                print('Error: convertFile2PyTree: fail to read file %s.'%fileName)
+                return
 
-        import Converter.Filter as Filter
-        HANDLE = Filter.Handle(files[0])
-        t = HANDLE.loadSkeleton()
-        HANDLE._loadTreeExtras(t)
-        Filter._convert2PartialTree(t)
-        HANDLE.getVariables()
+        if format == 'bin_adf' or format == 'bin_hdf':
+            # Load skeleton
+            import Converter.Filter as Filter
+            HANDLE = Filter.Handle(files[0])
+            t = HANDLE.loadSkeleton()
+            HANDLE._loadTreeExtras(t)
+            Filter._convert2PartialTree(t)
+            HANDLE.getVariables()
+        else: mode = 'full'
 
     if mode == 'full': # full load of multiple files
         t = []

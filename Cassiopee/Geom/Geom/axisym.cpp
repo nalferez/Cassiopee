@@ -1,4 +1,4 @@
-/*    
+/*
     Copyright 2013-2025 Onera.
 
     This file is part of Cassiopee.
@@ -98,20 +98,19 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
   E_Float xc, yc, zc, nx, ny, nz, teta;
   E_Int nteta;
   PyObject* arrayR;
-
   if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ R_ I_ O_,
                     &array, &xc, &yc, &zc, &nx, &ny, &nz, &teta, &nteta, &arrayR))
   {
     return NULL;
   }
   // check axis vector
-  if (K_FUNC::fEqualZero(nx) == true && 
+  if (K_FUNC::fEqualZero(nx) == true &&
       K_FUNC::fEqualZero(ny) == true &&
       K_FUNC::fEqualZero(nz) == true)
   {
     PyErr_SetString(PyExc_ValueError,
                     "axisym: vector has null norm.");
-    return NULL; 
+    return NULL;
   }
   // check teta
   if (K_FUNC::fEqualZero(teta) == true)
@@ -124,7 +123,7 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
   {
     PyErr_SetString(PyExc_ValueError,
                     "axisym: number of points in the azimuthal direction must be greater than 1.");
-    return NULL;  
+    return NULL;
   }
   // check arrayR : si existant remplace teta et nteta
   // Cet array servira a definir un coefficient pour r en fonction de teta
@@ -138,8 +137,8 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
   if (arrayR != Py_None)
   {
     E_Int niR, njR, nkR;
-    char* varStringR; char* eltTypeR;    
-    useR = K_ARRAY::getFromArray3(arrayR, varStringR, fR, 
+    char* varStringR; char* eltTypeR;
+    useR = K_ARRAY::getFromArray3(arrayR, varStringR, fR,
                                   niR, njR, nkR, cnR, eltTypeR);
 
     if (useR != 1) { useR = 0; goto next; }
@@ -158,7 +157,7 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
       yr = fR->begin(posyr+1);
       zr = fR->begin(poszr+1);
       // On ne prend pas le dernier (structure bouclant)
-      for (E_Int i = 0; i < niR*njR*nkR-1; i++) 
+      for (E_Int i = 0; i < niR*njR*nkR-1; i++)
       {
         xrC += xr[i]; yrC += yr[i]; zrC += zr[i];
       }
@@ -192,8 +191,8 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
   E_Int ni0, nj0, nk0;
   FldArrayF* f0; FldArrayI* cn0;
   char* varString0; char* eltType0;
-  E_Int res = K_ARRAY::getFromArray3(array, varString0, f0, 
-                                     ni0, nj0, nk0, cn0, eltType0); 
+  E_Int res = K_ARRAY::getFromArray3(array, varString0, f0,
+                                     ni0, nj0, nk0, cn0, eltType0);
   switch (res)
   {
     case 1:
@@ -203,12 +202,12 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
         RELEASESHAREDS(array, f0);
         PyErr_SetString(PyExc_TypeError,
                         "axisym: structured array must be an i-array or a i,j-array.");
-        return NULL; 
+        return NULL;
       }
       break;
 
     case 2:
-      if (strcmp(eltType0, "TRI") != 0 
+      if (strcmp(eltType0, "TRI") != 0
           && strcmp(eltType0, "QUAD") != 0
           && strcmp(eltType0, "BAR") != 0)
       {
@@ -218,11 +217,11 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
         return NULL;
       }
       break;
-      
+
     default:
       PyErr_SetString(PyExc_TypeError,
                       "axisym: invalid array.");
-      return NULL;       
+      return NULL;
   }
 
   // coordonnees
@@ -238,7 +237,7 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
     return NULL;
   }
   posx++; posy++; posz++;
-  
+
   // Transformation de teta en radians
   E_Float pi = 4*atan(1.);
   teta = teta*pi/180.;
@@ -250,7 +249,7 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
   E_Float* xt0 = f0->begin(posx);
   E_Float* yt0 = f0->begin(posy);
   E_Float* zt0 = f0->begin(posz);
-  
+
   E_Int npts = npts0*nteta;
   FldArrayF* f = new FldArrayF(npts, nfld0);
   E_Float* xt = f->begin(posx);
@@ -268,7 +267,7 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
     E_Float* fp = f->begin(eq);
     E_Float* fp0 = f0->begin(eq);
     for (E_Int ind = 0; ind < npts0; ind++)
-    { 
+    {
       fp[ind] = fp0[ind];
     }
   }
@@ -286,8 +285,8 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
     omz = zr[0]-zrC;
     rm = sqrt(omx*omx+omy*omy+omz*omz);
     for (E_Int ind = 0; ind < npts0; ind++)
-    { 
-      xt[ind] = xt0[ind]; yt[ind] = yt0[ind]; zt[ind] = zt0[ind]; 
+    {
+      xt[ind] = xt0[ind]; yt[ind] = yt0[ind]; zt[ind] = zt0[ind];
     }
   }
   */
@@ -298,7 +297,7 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
   //printf("axis1 %f %f %f\n", om1x,om1y,om1z);
   E_Float omx, omy, omz, X, Y;
   for (E_Int k = 0; k < nteta; k++)
-  { 
+  {
     if (useR == true)
     {
       omx = xr[k]-xrC; omy = yr[k]-yrC; omz = zr[k]-zrC;
@@ -313,36 +312,36 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
     else tetai = k*dteta;
     k6axisym(npts0, xt0, yt0, zt0, xc, yc, zc, nx, ny, nz, tetai, rm,
              xo, yo, zo);
-    
+
     for (E_Int eq = 1; eq <= nfld0; eq++)
     {
       E_Float* fp = f->begin(eq);
       E_Float* fp0 = f0->begin(eq);
 
       for (E_Int ind = 0; ind < npts0; ind++)
-      { 
+      {
         E_Int indn = ind + k*npts0;
         fp[indn] = fp0[ind];
       }
     }
     for (E_Int ind = 0; ind < npts0; ind++)
-    { 
+    {
       E_Int indn = ind + k*npts0;
-      xt[indn] = xo[ind]; yt[indn] = yo[ind]; zt[indn] = zo[ind]; 
+      xt[indn] = xo[ind]; yt[indn] = yo[ind]; zt[indn] = zo[ind];
     }
   }
   if (res == 1)
   {
     RELEASESHAREDS(array, f0);
     if (useR != 0) RELEASESHAREDB(useR, arrayR, fR, cnR);
-    PyObject* tpl = K_ARRAY::buildArray3(*f, varString0, ni0, nj0, nteta);
+    PyObject* tpl = K_ARRAY::buildArray3(*f, varString0, ni0, nj0, nteta, api);
     delete f;
     return tpl;
   }
   else
   {
     char eltType[20]; E_Int nvert = 0;
-    if (strcmp(eltType0, "TRI") == 0) 
+    if (strcmp(eltType0, "TRI") == 0)
     { strcpy(eltType, "PENTA"); nvert = 6; }
     else if (strcmp(eltType0, "QUAD") == 0)
     { strcpy(eltType, "HEXA"); nvert = 8; }
@@ -350,41 +349,32 @@ PyObject* K_GEOM::axisym(PyObject* self, PyObject* args)
     { strcpy(eltType, "QUAD"); nvert = 4; }
 
     E_Int nelts0 = cn0->getSize(); E_Int nvert0 = cn0->getNfld();
-    E_Int nelts = nelts0*(nteta-1); 
-    
+    E_Int nelts = nelts0*(nteta-1);
+
     FldArrayI* cn = new FldArrayI(nelts, nvert);
     cn->setAllValuesAt(-1);
 
     /* calcul de la connectivite */
     for (E_Int v = 1; v <= nvert0; v++)
     {
-      E_Int* cnv = cn->begin(v); 
-      E_Int* cnv0 = cn0->begin(v);
-      
-      for (E_Int k = 0; k < nteta; k++)
+      for (E_Int k = 0; k < nteta-1; k++)
         for (E_Int et = 0; et < nelts0; et++)
         {
           E_Int eti = et + k*nelts0;
-          cnv[eti] = cnv0[et] + k *npts0;    
+          (*cn)(eti,v) = (*cn0)(et,v) + k*npts0;
         }
     }
 
     if (nvert == 4)
     {
-      E_Int* cnv = cn->begin(3); 
-      E_Int* cnvp = cn->begin(2);
-      for (E_Int et = 0; et < nelts; et++) cnv[et] = cnvp[et]+npts0;
-      cnv = cn->begin(4); 
-      cnvp = cn->begin(1);
-      for (E_Int et = 0; et < nelts; et++) cnv[et] = cnvp[et]+npts0;
+      for (E_Int et = 0; et < nelts; et++) (*cn)(et,3) = (*cn)(et,2)+npts0;
+      for (E_Int et = 0; et < nelts; et++) (*cn)(et,4) = (*cn)(et,1)+npts0;
     }
     else
     {
       for (E_Int v = nvert0+1; v <= nvert; v++)
       {
-        E_Int* cnv = cn->begin(v); 
-        E_Int* cnvp = cn->begin(v-nvert0);
-        for (E_Int et = 0; et < nelts; et++) cnv[et] = cnvp[et]+npts0;
+        for (E_Int et = 0; et < nelts; et++) (*cn)(et,v) = (*cn)(et,v-nvert0)+npts0;
       }
     }
 

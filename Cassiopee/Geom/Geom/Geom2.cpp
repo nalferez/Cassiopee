@@ -1,4 +1,4 @@
-/*    
+/*
     Copyright 2013-2025 Onera.
 
     This file is part of Cassiopee.
@@ -40,17 +40,17 @@ PyObject* K_GEOM::getLength(PyObject* self, PyObject* args)
   char* varString; char* eltType;
   E_Int res =
     K_ARRAY::getFromArray3(array, varString, f, im, jm, km, cn, eltType);
-  
+
   E_Int posx, posy, posz;
   E_Float length;
   E_Float dx, dy, dz;
 
   length = 0.;
   if (res == 1)
-  {      
+  {
     if (jm != 1 || km != 1)
       printf("Warning: getLength: only line j=1, k=1 is taken into account.\n");
-    
+
     posx = K_ARRAY::isCoordinateXPresent(varString);
     posy = K_ARRAY::isCoordinateYPresent(varString);
     posz = K_ARRAY::isCoordinateZPresent(varString);
@@ -59,13 +59,13 @@ PyObject* K_GEOM::getLength(PyObject* self, PyObject* args)
       RELEASESHAREDS(array, f);
       PyErr_SetString(PyExc_TypeError,
                       "getLength: can't find coordinates in array.");
-      return NULL;    
+      return NULL;
     }
     posx++; posy++; posz++;
     E_Float* xt = f->begin(posx);
     E_Float* yt = f->begin(posy);
     E_Float* zt = f->begin(posz);
-    
+
     for (E_Int i = 1; i < im; i++)
     {
       E_Int i1 = i-1;
@@ -78,7 +78,7 @@ PyObject* K_GEOM::getLength(PyObject* self, PyObject* args)
   }
   else if (res == 2)
   {
-    if (strcmp(eltType, "BAR") == 0) 
+    if (strcmp(eltType, "BAR") == 0)
     {
       posx = K_ARRAY::isCoordinateXPresent(varString);
       posy = K_ARRAY::isCoordinateYPresent(varString);
@@ -91,17 +91,15 @@ PyObject* K_GEOM::getLength(PyObject* self, PyObject* args)
         return NULL;
       }
       posx++; posy++; posz++;
- 
-      E_Int* cn1 = cn->begin(1);
-      E_Int* cn2 = cn->begin(2);
+
       E_Float* xt = f->begin(posx);
       E_Float* yt = f->begin(posy);
       E_Float* zt = f->begin(posz);
 
       for (E_Int i = 0; i < cn->getSize(); i++)
       {
-        E_Int ind1 = cn1[i]-1;
-        E_Int ind2 = cn2[i]-1;
+        E_Int ind1 = (*cn)(i,1)-1;
+        E_Int ind2 = (*cn)(i,2)-1;
         dx = xt[ind2] - xt[ind1];
         dy = yt[ind2] - yt[ind1];
         dz = zt[ind2] - zt[ind1];
@@ -109,7 +107,7 @@ PyObject* K_GEOM::getLength(PyObject* self, PyObject* args)
       }
       RELEASESHAREDU(array, f, cn);
     }
-    else 
+    else
     {
       RELEASESHAREDU(array, f, cn);
       PyErr_SetString(PyExc_TypeError,
@@ -143,15 +141,14 @@ PyObject* K_GEOM::getDistantIndex(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_ I_ R_,
                     &array, &ind, &l))
   {
-      return NULL;
+    return NULL;
   }
 
   // Check array
   E_Int im, jm, km;
   FldArrayF* f; FldArrayI* cn;
   char* varString; char* eltType;
-  E_Int res = 
-    K_ARRAY::getFromArray3(array, varString, f, im, jm, km, cn, eltType);
+  E_Int res = K_ARRAY::getFromArray3(array, varString, f, im, jm, km, cn, eltType);
 
   E_Int imjm, kind, jind;
   E_Float t, dx, dy, dz;
@@ -166,11 +163,11 @@ PyObject* K_GEOM::getDistantIndex(PyObject* self, PyObject* args)
     if (ind > im*jm*km || ind < 1)
     {
       RELEASESHAREDS(array, f);
-      PyErr_SetString(PyExc_TypeError, 
+      PyErr_SetString(PyExc_TypeError,
                       "getDistantIndex: index is out of mesh bounds.");
       return NULL;
     }
-      
+
     E_Int posx = K_ARRAY::isCoordinateXPresent( varString );
     E_Int posy = K_ARRAY::isCoordinateYPresent( varString );
     E_Int posz = K_ARRAY::isCoordinateZPresent( varString );
@@ -187,10 +184,10 @@ PyObject* K_GEOM::getDistantIndex(PyObject* self, PyObject* args)
     imjm = im*jm;
     kind = is / imjm;
     jind = (is - kind*imjm)/im;
-      
+
     bsup = im-1 + jind*im + kind*imjm;
     binf = jind*im + kind*imjm;
-    
+
     E_Float* xt = f->begin(posx);
     E_Float* yt = f->begin(posy);
     E_Float* zt = f->begin(posz);
@@ -251,7 +248,7 @@ PyObject* K_GEOM::getDistantIndex(PyObject* self, PyObject* args)
                     "getDistantIndex: invalid array.");
     return NULL;
   }
-}      
+}
 
 // ============================================================================
 /* Return the curvilinear abscissa of a 1D array defining a mesh */
@@ -267,17 +264,19 @@ PyObject* K_GEOM::getCurvilinearAbscissa(PyObject* self, PyObject* args)
   char* varString; char* eltType;
   E_Int res =
     K_ARRAY::getFromArray3(array, varString, f, im, jm, km, cn, eltType);
-  
-  E_Int posx, posy, posz;
-  E_Float length;
-  E_Float l;
 
-  length = 0.;
+  E_Int api = f->getApi();
+  E_Int posx, posy, posz;
+  E_Float length = 0.;
+  E_Float l, dx, dy, dz;
+  PyObject* tpl = NULL;
+  FldArrayF* ab;
+
   if (res == 1)
-  {      
+  {
     if (jm != 1 || km != 1)
       printf("Warning: getCurvilinearAbscissa: only line j=1, k=1 is taken into account.\n");
-    
+
     posx = K_ARRAY::isCoordinateXPresent(varString);
     posy = K_ARRAY::isCoordinateYPresent(varString);
     posz = K_ARRAY::isCoordinateZPresent(varString);
@@ -286,41 +285,41 @@ PyObject* K_GEOM::getCurvilinearAbscissa(PyObject* self, PyObject* args)
       RELEASESHAREDS(array, f);
       PyErr_SetString(PyExc_TypeError,
                       "getCurvilinearAbscissa: can't find coordinates in array.");
-      return NULL;    
+      return NULL;
     }
     posx++; posy++; posz++;
 
-    
-    PyObject* tpl;
-    tpl = K_ARRAY::buildArray(1, "s", im, jm, km);
-    E_Float* ab = K_ARRAY::getFieldPtr(tpl);
 
-    ab[0] = 0.;
+    tpl = K_ARRAY::buildArray3(1, "s", im, jm, km, api);
+    K_ARRAY::getFromArray3(tpl, ab);
+    E_Float* abp = ab->begin();
+
+    abp[0] = 0.;
     E_Float* xt = f->begin(posx);
     E_Float* yt = f->begin(posy);
     E_Float* zt = f->begin(posz);
-    
-    E_Float dx, dy, dz;
+
     for (E_Int i = 1; i < im; i++)
     {
       dx = xt[i] - xt[i-1];
       dy = yt[i] - yt[i-1];
       dz = zt[i] - zt[i-1];
- 
+
       l = sqrt(dx*dx + dy*dy + dz*dz);
       length += l;
-      ab[i] = ab[i-1] + l;
+      abp[i] = abp[i-1] + l;
     }
 
-    E_Float inv = 1/length;
-    for (E_Int i = 1; i < im; i++) ab[i] = ab[i] * inv;
-    
+    E_Float inv = 1./length;
+    for (E_Int i = 1; i < im; i++) abp[i] *= inv;
+
+    RELEASESHAREDS(tpl, ab);
     RELEASESHAREDS(array, f);
     return tpl;
   }
   else if (res == 2)
   {
-    if (strcmp(eltType, "BAR") != 0) 
+    if (strcmp(eltType, "BAR") != 0)
     {
       RELEASESHAREDU(array, f, cn);
       PyErr_SetString(PyExc_TypeError,
@@ -335,52 +334,49 @@ PyObject* K_GEOM::getCurvilinearAbscissa(PyObject* self, PyObject* args)
       RELEASESHAREDU(array, f, cn);
       PyErr_SetString(PyExc_TypeError,
                       "getCurvilinearAbscissa: can't find coordinates in array.");
-      return NULL;    
+      return NULL;
     }
     posx++; posy++; posz++;
-    E_Int npts = f->getSize();
-    PyObject* tpl = K_ARRAY::buildArray(1, "s", npts, cn->getSize(), 
-                                        -1, eltType);
-    E_Int* cnnp = K_ARRAY::getConnectPtr(tpl);
-    K_KCORE::memcpy__(cnnp, cn->begin(), cn->getSize()*cn->getNfld());
 
-    E_Float* ab = K_ARRAY::getFieldPtr(tpl);
-    
-    ab[0] = 0.;
+    E_Int npts = f->getSize();
+    tpl = K_ARRAY::buildArray3(1, "s", npts, *cn, eltType, false, api, true);
+    K_ARRAY::getFromArray3(tpl, ab);
+    E_Float* abp = ab->begin();
+
+    abp[0] = 0.;
     E_Float* xt = f->begin(posx);
     E_Float* yt = f->begin(posy);
     E_Float* zt = f->begin(posz);
-    E_Int* cn1 = cn->begin(1);
-    E_Int* cn2 = cn->begin(2);
     
     // pt de depart : 0
     E_Int nelts = cn->getSize();
-    E_Int ind2; E_Float dx, dy, dz;
+    E_Int ind2;
     FldArrayIS dejaVu(nelts); dejaVu.setAllValuesAtNull();
     short* dejaVup = dejaVu.begin();
     for (E_Int ind1 = 0; ind1 < npts-1; ind1++)
     {
       for (E_Int et = 0; et < nelts; et++)
       {
-        if (dejaVup[et] == 0 && cn1[et]-1 == ind1)
+        if (dejaVup[et] == 0 && (*cn)(et,1)-1 == ind1)
         {
-          ind2 = cn2[et]-1;
+          ind2 = (*cn)(et,2)-1;
           dx = xt[ind2] - xt[ind1];
           dy = yt[ind2] - yt[ind1];
           dz = zt[ind2] - zt[ind1];
-          
+
           l = sqrt(dx*dx + dy*dy + dz*dz);
           length += l;
-          ab[ind2] = ab[ind1] + l;
+          abp[ind2] = abp[ind1] + l;
           dejaVup[et] = 1;
           break;
         }
       }
     }
-    
+
     E_Float inv = 1./length;
-    for (E_Int i = 1; i < npts; i++) ab[i] = ab[i] * inv;
- 
+    for (E_Int i = 1; i < npts; i++) abp[i] *= inv;
+
+    RELEASESHAREDS(tpl, ab);
     RELEASESHAREDU(array, f, cn);
     return tpl;
   }

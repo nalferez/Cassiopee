@@ -287,6 +287,7 @@ public:
   void codeFromRenderTag(Zone& z, char* tag, 
              float& colorR, float& colorG, float& colorB,
              E_Int& material, double& blending, E_Int& meshOverlay,
+             float& meshColorR, float& meshColorG, float& meshColorB, float& meshWidth,
              float& shaderParam1, float& shaderParam2);
   void getAllVars(std::vector<char*>& structVarString,
                   std::vector<char*>& unstrVarString,
@@ -551,6 +552,7 @@ public:
                  double alpha, double beta);
   void sharpenImage(E_Int w, E_Int h, char* im1, char* im2, double amount,
                     E_Int radius, E_Int threshold);
+  void localBlur(E_Int w, E_Int h, char* im1, char* im2);
   void specPostProcess(char* in, E_Int ni, E_Int nj, float* depth, char* out);
   FILE* fopenw(const char* path, const char* mode);                                                              
   void exportFile();

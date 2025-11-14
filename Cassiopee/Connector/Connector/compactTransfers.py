@@ -1,9 +1,7 @@
 # - gestion du compactage et des transferts compacts -
 from . import connector
 import numpy
-
 import Converter.Internal as Internal
-
 from . import OversetData as XOD
 
 try: range = xrange
