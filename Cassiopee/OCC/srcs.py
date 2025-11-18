@@ -69,9 +69,9 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
         'OCC/Atomic/getFaceArea.cpp',
         'OCC/Atomic/areEdgeIdentical.cpp',
 
-        'OCC/Atomic/splitter.cpp',
+        'OCC/Atomic/splitFaces.cpp',
+        'OCC/Atomic/splitEdge.cpp',
         'OCC/Atomic/fix.cpp',
-        'OCC/Atomic/trim.cpp',
         'OCC/Atomic/sewing.cpp',
         'OCC/Atomic/removeFaces.cpp',
         'OCC/Atomic/fillHole.cpp',
@@ -85,6 +85,8 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
         'OCC/Atomic/rotate.cpp',
 
         'OCC/Atomic/intersectEdgeFace.cpp',
+        'OCC/Atomic/trim.cpp',
+        'OCC/Atomic/boolean.cpp',
 
         'OCC/Atomic/getOppData.cpp',
         'OCC/Atomic/identifyTags.cpp']

@@ -5181,7 +5181,8 @@ def getBC2__(zbc, z, T, res, extrapFlow=True):
             gcl = Internal.getNodeFromType(zbc, 'GridLocation_t')
             PL = Internal.getNodeFromName(zbc, 'PointList')
             if PL is not None:
-                if Internal.getValue(gcl) == 'FaceCenter':
+                val = Internal.getValue(gcl)
+                if val == 'FaceCenter' or val == 'CellCenter' or val == 'EdgeCenter':
                     PL = PL[1]
                     PL = PL.ravel("k")
                     zp = Internal.copyRef(z)
@@ -5256,7 +5257,6 @@ def getBC2__(zbc, z, T, res, extrapFlow=True):
 # IN: extrapFlow: if True, get the BCDataSet field
 # IN: shift: if not 0, shift BC of index for structured grids only
 def getBC__(i, z, T, res, reorder=True, extrapFlow=True, shift=0):
-    #connects = Internal.getElementNodes(z)
     connects = Internal.getNodesFromType1(z, "Elements_t")
     zdim = Internal.getZoneDim(z)
     if zdim[0] == 'Unstructured': ztype = zdim[3]

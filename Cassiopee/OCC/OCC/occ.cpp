@@ -84,8 +84,8 @@ static PyMethodDef Pyocc [] =
   {"areEdgeIdentical", K_OCC::areEdgeIdentical, METH_VARARGS},
 
   {"splitFaces", K_OCC::splitFaces, METH_VARARGS},
+  {"splitEdge", K_OCC::splitEdge, METH_VARARGS},
   {"fixShape", K_OCC::fixShape, METH_VARARGS},
-  {"trimFaces", K_OCC::trimFaces, METH_VARARGS},
   {"sewing", K_OCC::sewing, METH_VARARGS},
   {"removeFaces", K_OCC::removeFaces, METH_VARARGS},
   {"fillHole", K_OCC::fillHole, METH_VARARGS},
@@ -99,7 +99,9 @@ static PyMethodDef Pyocc [] =
   {"rotate", K_OCC::rotate, METH_VARARGS},
 
   {"intersectEdgeFace", K_OCC::intersectEdgeFace, METH_VARARGS},
-
+  {"trimFaces", K_OCC::trimFaces, METH_VARARGS},
+  {"boolean", K_OCC::boolean, METH_VARARGS},
+  
   {"getOppData", K_OCC::getOppData, METH_VARARGS},
   {"identifyTags", K_OCC::identifyTags, METH_VARARGS},
 
