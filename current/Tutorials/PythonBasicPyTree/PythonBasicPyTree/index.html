@@ -167,6 +167,10 @@
               <ul class="nav flex-column">
               </ul>
             </li>
+            <li class="nav-item" data-bs-level="2"><a href="#visualizing-pytrees" class="nav-link">Visualizing pyTrees</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
               </ul>
             </li>
         </ul>
@@ -357,9 +361,9 @@ Internal.printTree(a)
 <h2 id="fields">Fields</h2>
 <p>In pytrees, fields can be added to any zone and stored either at the cell vertices (known as nodes) or at the cell centers (known as centers). 
 <code>C.initVars</code> supports formula writing using other variables:</p>
-<pre><code class="language-python"># Init a node field
+<pre><code class="language-python"># init a node field
 C._initVars(a, '{nodes:Density}=1.')
-# Init a center field
+# init a center field
 C._initVars(a, '{centers:Pressure}=3*{centers:CoordinateX}')
 C.convertPyTree2File(a, 'out.cgns')
 </code></pre>
@@ -372,7 +376,17 @@ meaning the operation modifies the existing object without creating a duplicate.
 state = Adim.dim1(UInf=2.8, TInf=298., PInf=101325, LInf=12., alphaZ=1.)
 C._initVars(a, 'centers:Density', state[0])
 C._initVars(a, 'centers:MomentumX', state[1])
-</code></pre></div>
+</code></pre>
+<h2 id="visualizing-pytrees">Visualizing pyTrees</h2>
+<p>Finally, CGNS pyTrees can be written to disk for visualization.
+To inspect the tree and its metadata without loading the array data, you can use:</p>
+<pre><code class="language-sh">kcgnsview case.cgns
+</code></pre>
+<p>To visualize the tree, mesh and solution fields, please run:</p>
+<pre><code class="language-sh">cassiopee case.cgns
+</code></pre>
+<p>To open applets and use the graphical user interface, please refer to the 
+<a href="https://onera.github.io/Cassiopee/current/doc/tkCassiopee.html#general-guidelines">tkCassiopee documentation</a>.</p></div>
             </div>
         </div>
 
