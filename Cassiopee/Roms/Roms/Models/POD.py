@@ -10,4 +10,3 @@ class POD( Model.Model ):
         self.K = 0
         # snapshot coords
         self.coords = None
-        

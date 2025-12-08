@@ -328,7 +328,7 @@ class DataBase:
         if exportJax: import jax.numpy as jnp
         nparam = len(q[0])-5
         nrows = len(q)
-        if exportJax: 
+        if exportJax:
             param = jnp.zeros((nrows,nparam), dtype=numpy.float64)
             for c, r in enumerate(q): param.at[c,:] = r[5:]
         else:

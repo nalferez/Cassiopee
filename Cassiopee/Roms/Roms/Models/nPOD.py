@@ -50,7 +50,7 @@ class nPOD( POD.POD ):
             raise ValueError("build: A matrix is not present.")
         if self.Phi is None:
             raise ValueError("build: Phi modeds are not built.")
-        
+
         ncols = self.A.shape[1]
         self.coords = numpy.empty( (ncols, self.K), dtype=numpy.float64 )
         coords = numpy.empty( (self.K), dtype=numpy.float64 )
@@ -78,16 +78,16 @@ class nPOD( POD.POD ):
 
     def buildTree(self, coords):
         """Rebuild tree from field vector."""
-        if self.db is None: 
+        if self.db is None:
             raise ValueError("instantiate: db is missing.")
-        if self.Phi is None: 
+        if self.Phi is None:
             raise ValueError("instantiate: Phi modes are missing.")
         m = self.Phi @ coords
         cgnsName = self.db.dirName+'/%s'%self.ref+'.cgns'
         tref = C.convertFile2PyTree(cgnsName)
         for v in self.variables:
             v = v.split(':')
-            if len(v) == 2: 
+            if len(v) == 2:
                 loc = v[0]; v = v[1]
             else: loc = 'nodes'; v = v[0]
             for z in Internal.getZones(tref):
@@ -117,11 +117,11 @@ class nPOD( POD.POD ):
 
         from scipy.interpolate import RBFInterpolator
         #scipy.RBFinterpolation()
-        
+
         #rng = numpy.random.default_rng()
         #xobs = 2 * rng.random((100, 2)) - 1 # 100 points in 2D space
         #yobs = np.sum(xobs, axis=1) * np.exp(-6 * np.sum(xobs**2, axis=1))
-        
+
         q = self.db.query()
         xo = self.db.getPointVector(q)
         yo = self.coords
@@ -133,4 +133,3 @@ class nPOD( POD.POD ):
         coords = rbfInterpolator(inputPoint)
         t = self.buildTree(coords)
         return t
-        

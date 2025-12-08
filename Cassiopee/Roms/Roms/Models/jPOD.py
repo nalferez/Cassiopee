@@ -29,7 +29,7 @@ class jPOD( POD.POD ):
 
     def readCoeffs(self, j):
         return None
-    
+
     def instantiate(self, coords):
         """Return snapshot from coords."""
         m = self.Phi @ coords
@@ -37,4 +37,4 @@ class jPOD( POD.POD ):
 
     def fetchTree(self, point, db, ref, variables):
         """Rebuild pyTree."""
-        return None        
+        return None
