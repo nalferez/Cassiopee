@@ -2,10 +2,10 @@
 import Roms.Driver as D
 
 # Create parameters
-hauteur = D.Scalar('hauteur', 1.)
+hauteur = D.Scalar('hauteur')
 hauteur.range = [0,1]
 
-largeur = D.Scalar('largeur', 1.)
+largeur = D.Scalar('largeur')
 largeur.range = [0,2]
 
 # equation
@@ -49,7 +49,6 @@ solution, freevars = D.DRIVER.solve2()
 D.DRIVER.instantiate({'P3.x': 3, 'hauteur': 1.})
 
 sketch1.writeCAD('out.step')
-
 
 import CPlot, time
 for i in range(50):

@@ -12,6 +12,14 @@ class Model:
         self.type = type
         # model file
         self.fileName = name+'.mod'
+        # pytree link
+        self.db = None # link to db
+        self.ref = None # link to ref name in db
+        self.variables = None # variable list
+        self.filter = None # sub indices in global matrix
+        # matrix
+        self.A = None # distributed
+        self.W = None # distributed
 
     def load(self):
         return None
