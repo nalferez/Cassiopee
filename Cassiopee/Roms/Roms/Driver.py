@@ -61,7 +61,7 @@ def exportEdges(edges):
                                     Internal.__FlowSolutionCenters__)
         b[2].append(z)
     return t
-    
+
 #============================================================
 class Scalar( sympy.core.symbol.Symbol ):
     """Define a parametric scalar"""
@@ -69,13 +69,13 @@ class Scalar( sympy.core.symbol.Symbol ):
         if name is None: name = getName("scalar")
         obj = sympy.core.symbol.Symbol.__new__(cls, name, **assumptions)
         return obj
-    
+
     def __init__(self, name=None, value=0.):
         # scalar name is symbol name
         self.name = super().name
-        
+
         # symbol sympy: self by derivation
-        
+
         # instantiated value
         self.v = value
         # range
@@ -756,7 +756,7 @@ class Driver:
     def registerScalar(self, s):
         """Register parametric scalar."""
         self.scalars[s.name] = s # name -> scalar
-        
+
     def registerPoint(self, p):
         """Register parametric point."""
         self.points[p.name] = p
@@ -1163,7 +1163,7 @@ class Driver:
             m = Generator.refine(mesh, power, dir=1)
         else: m = mesh
         return m
-    
+
     # DOE in file (to be replaced by DB)
     def createDOE(self, fileName):
         self.doeFileName = fileName
