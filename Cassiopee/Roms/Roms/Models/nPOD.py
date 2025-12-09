@@ -114,22 +114,18 @@ class nPOD( POD.POD ):
 
     def fetchTree(self, point):
         """Rebuild pyTree for given point."""
-
         from scipy.interpolate import RBFInterpolator
-        #scipy.RBFinterpolation()
-
-        #rng = numpy.random.default_rng()
-        #xobs = 2 * rng.random((100, 2)) - 1 # 100 points in 2D space
-        #yobs = np.sum(xobs, axis=1) * np.exp(-6 * np.sum(xobs**2, axis=1))
-
         q = self.db.query()
-        xo = self.db.getPointVector(q)
+        xo = self.db.fetchPointVector(q)
         yo = self.coords
         # Create the RBF interpolator
-        rbfInterpolator = RBFInterpolator(xo, yo, kernel='gaussian')
+        rbfInterpolator = RBFInterpolator(xo, yo, kernel='linear')
         # Define the input point
-        inputPoint = self.db.fetchPoint
+        inputPoint = numpy.empty( (1,xo.shape[1]), dtype=numpy.float64 )
+        for c, i in enumerate(self.db.parameters):
+            inputPoint[0,c] = point[i]
         # Evaluate the interpolator at the input point
         coords = rbfInterpolator(inputPoint)
+        coords = coords.ravel('k')
         t = self.buildTree(coords)
         return t

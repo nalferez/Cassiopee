@@ -422,7 +422,7 @@ class DataBase:
         G._getVolumeMap(tref)
         zones = Internal.getZones(tref)
         sizetot = 0
-        for n, z in enumerate(zones):
+        for z in zones:
             p = Internal.getNodeFromName2(z, "vol")
             sizetot += p[1].size
         if exportJax:
@@ -435,6 +435,7 @@ class DataBase:
             size = p[1].size
             if exportJax: v.at[pt0:pt0+size, 0] = p[1].ravel('k')
             else: v[pt0:pt0+size, 0] = p[1].ravel('k')
+            pt0 += size
         return v
 
     # delete rows corresponding to q
