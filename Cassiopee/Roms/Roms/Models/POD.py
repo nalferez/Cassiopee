@@ -8,5 +8,5 @@ class POD( Model.Model ):
         self.Phi = None
         # number of modes
         self.K = 0
-        # snapshot coords
+        # snapshot coords on Phi
         self.coords = None

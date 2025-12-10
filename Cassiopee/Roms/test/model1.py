@@ -6,20 +6,23 @@ import Converter.PyTree as C
 db = DataBase.DataBase('NACA1.db', mode='r')
 q = db.query()
 A = db.fetchMatrix(q, variables=['centers:Density'])
+W = db.fetchW("ref1")
+P = db.fetchPointVector(q)
 
 mod = nPOD.nPOD('density', type='npod')
-mod.set(A, db=db, ref="ref1", variables=['centers:Density'])
+mod.set(A, W, P, db=db, ref="ref1", parameters=db.parameters, variables=['centers:Density'])
 
 # Build phi
 mod.buildPhi()
 mod.savePhi()
-mod.buildAndSaveCoords()
+mod.buildCoords()
+mod.saveCoords()
+mod.savePoints()
 
 # instantiate an existing snapshot
-coords = mod.readCoords(0)
-t = mod.buildTree(coords)
-#C.convertPyTree2File(t, 'out.cgns')
+t = mod.buildTree(mod.coords[0,:])
+C.convertPyTree2File(t, 'out.cgns')
 
-# interpolate snapshot
+# interpolate in snapshot
 t = mod.fetchTree({'Mach':0.75, 'AoA': -1.38})
 C.convertPyTree2File(t, 'out.cgns')
