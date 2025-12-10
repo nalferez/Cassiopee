@@ -113,7 +113,6 @@ PyObject* K_GENERATOR::extendCartGrids(PyObject* self, PyObject* args)
   // Determination des extensions pour chq zone a partir de l'octree
   E_Int extg = ext; E_Int extf = ext; E_Int extff = ext;
   if (optimized == 1) {extg = ext-1; extff = extg;}
-  if (optimized ==-1) {extg = ext+1;}
 
   FldArrayI extension(nzones, 6); extension.setAllValuesAtNull();
   vector<E_Int> indicesBB;
@@ -1064,8 +1063,8 @@ PyObject* K_GENERATOR::extendCartGrids(PyObject* self, PyObject* args)
   {
     for (E_Int v = 0; v < nzones; v++)
     { 
-      ext1[v]=2; ext2[v]=2; ext3[v]=2; ext4[v]=2;
-      if (dim != 2) { ext5[v]=2; ext6[v]=2; }
+      ext1[v]=ext; ext2[v]=ext; ext3[v]=ext; ext4[v]=ext;
+      if(dim != 2) { ext5[v]=ext; ext6[v]=ext;}
     }
   }
 
