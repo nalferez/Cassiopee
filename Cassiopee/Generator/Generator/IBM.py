@@ -809,9 +809,9 @@ def generateIBMMesh(tb, dimPb=3, vmin=15, snears=0.01, dfars=10., dfarDir=0,
 
     # fill vmin + merge in parallel
     if optimized == -1:
-       res = octree2StructLoc__(p, vmin=vmin, ext=-1, optimized=optimized, parento=parento, sizeMax=1000000, tbOneOver=tbOneOverF1)
+        res = octree2StructLoc__(p, vmin=vmin, ext=-1, optimized=optimized, parento=parento, sizeMax=1000000, tbOneOver=tbOneOverF1)
     else:
-       res = octree2StructLoc__(p, vmin=vmin, ext=-1, optimized=0, parento=parento, sizeMax=1000000, tbOneOver=tbOneOverF1)
+        res = octree2StructLoc__(p, vmin=vmin, ext=-1, optimized=0, parento=parento, sizeMax=1000000, tbOneOver=tbOneOverF1)
 
     del p
     if parento is not None:
