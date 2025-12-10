@@ -13,7 +13,7 @@ mod = nPOD.nPOD('density', type='npod')
 mod.set(A, W, P, db=db, ref="ref1", parameters=db.parameters, variables=['centers:Density'])
 
 # Build phi
-mod.buildPhi()
+mod.buildPhi(K=10)
 mod.savePhi()
 mod.buildCoords()
 mod.saveCoords()

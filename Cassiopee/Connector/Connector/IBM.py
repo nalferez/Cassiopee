@@ -168,7 +168,7 @@ def prepareIBMData(t_case, t_out, tc_out, t_in=None, to=None, tbox=None, tinit=N
 
     if optimized == 1 and order != 2:
         raise ValueError('prepareIBMData: order > 2 for Chimera transfers only applies for conservative IBMs (optimized = -1).')
-    if optimized ==-1 :
+    if optimized == -1:
         raise ValueError('prepareIBMData: Conservative Chimera transfers (optimized=-1) required FastC module')
 
     ## Note: cartesian = True is left as an input argument to avoid regressing  during the non-regression test.
@@ -356,7 +356,7 @@ def prepareIBMDataExtrude(t_case, t_out, tc_out, t,
 
     if optimized == 1 and order != 2:
         raise ValueError('prepareIBMDataExtrude: order > 2 for Chimera transfers only applies for conservative IBMs (optimized = -1).')
-    if optimized ==-1 :
+    if optimized == -1:
         raise ValueError('prepareIBMData: Conservative Chimera transfers (optimized=-1) required FastC module')
 
     Reynolds = Internal.getNodeFromName(tb, 'Reynolds')

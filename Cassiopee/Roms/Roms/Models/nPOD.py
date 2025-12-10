@@ -23,6 +23,7 @@ class nPOD( POD.POD ):
         if K > 0: self.K = K
         else: self.K = Phi.shape[1]
         self.Phi = Phi[:, 0:self.K]
+        self.Phi = numpy.ascontiguousarray(self.Phi)
         return Phi, S, Vt
 
     def savePhi(self):

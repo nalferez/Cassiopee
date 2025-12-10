@@ -9,7 +9,7 @@ mod.loadCoords()
 mod.loadPoints()
 
 # instantiate an existing snapshot
-t = mod.buildTree(mod.coords[:,0])
+t = mod.buildTree(mod.coords[0,:])
 C.convertPyTree2File(t, 'out.cgns')
 
 # interpolate in snapshots

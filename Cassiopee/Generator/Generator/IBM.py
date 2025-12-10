@@ -626,12 +626,12 @@ def octree2StructLoc__(o, parento=None, vmin=15, ext=0, optimized=0, sizeMax=4e6
     print('After merging: nb Cartesian zones=%d (ext. =%d).'%(len(zones),ext))
     # Cas ext=-1, ne fait pas les extensions ni les BCs ou raccords
 
-    if optimized==-1:
+    if optimized == -1:
         if dimPb == 3: ratios = [[2,2,2],[4,4,4],[8,8,8],[16,16,16]]
         else: ratios = [[2,2,1],[4,4,1],[8,8,1],[16,16,1]]
         zones = X.connectMatch(zones, dim=dimPb)
         for ratio0 in ratios:
-            zones = X.connectNearMatch(zones,ratio=ratio0,dim=dimPb)
+            zones = X.connectNearMatch(zones, ratio=ratio0, dim=dimPb)
 
     if ext == -1: return zones
 
@@ -808,10 +808,10 @@ def generateIBMMesh(tb, dimPb=3, vmin=15, snears=0.01, dfars=10., dfarDir=0,
     del o
 
     # fill vmin + merge in parallel
-    if optimized==-1:
-        res = octree2StructLoc__(p, vmin=vmin, ext=-1, optimized=optimized, parento=parento, sizeMax=1000000, tbOneOver=tbOneOverF1)
+    if optimized == -1:
+       res = octree2StructLoc__(p, vmin=vmin, ext=-1, optimized=optimized, parento=parento, sizeMax=1000000, tbOneOver=tbOneOverF1)
     else:
-        res = octree2StructLoc__(p, vmin=vmin, ext=-1, optimized=0        , parento=parento, sizeMax=1000000, tbOneOver=tbOneOverF1)
+       res = octree2StructLoc__(p, vmin=vmin, ext=-1, optimized=0, parento=parento, sizeMax=1000000, tbOneOver=tbOneOverF1)
 
     del p
     if parento is not None:
@@ -827,13 +827,6 @@ def generateIBMMesh(tb, dimPb=3, vmin=15, snears=0.01, dfars=10., dfarDir=0,
 
     zones = Internal.getZones(t)
     for z in zones: z[0] = z[0]+'X%d'%Cmpi.rank
-    '''
-    c=0
-    for z in zones:
-      z[0] = 'Cart.'+str(c)+'X%d'%Cmpi.rank
-      c+=1
-    '''
-
     Cmpi._setProc(t, Cmpi.rank)
 
     C._addState(t, 'EquationDimension', dimPb)
@@ -1340,16 +1333,16 @@ def extrudeCartesianZDir(t, tb, check=False, extrusion="cart", dz=0.01, NPas=10,
             Nk[z[0]] += 2*ific-1+c  # -1, for the mesh (already added in the mesh generation) || need to remove this as it is not the case for the geometry (tb)
 
         for z in Internal.getZones(tree):
-            yy_2d   = Internal.getNodeFromName(z, "CoordinateY")[1]
-            zz_2d   = Internal.getNodeFromName(z, "CoordinateZ")[1]
-            sh_2d   = numpy.shape(yy_2d)
+            yy_2d = Internal.getNodeFromName(z, "CoordinateY")[1]
+            zz_2d = Internal.getNodeFromName(z, "CoordinateZ")[1]
+            sh_2d = numpy.shape(yy_2d)
 
             T._addkplane(z   ,N=Nk[z[0]])
 
-            zz   = Internal.getNodeFromName(z, "CoordinateZ")[1]
-            yy   = Internal.getNodeFromName(z, "CoordinateY")[1]
-            sh   = numpy.shape(yy)
-            r    = numpy.sqrt( zz**2+yy**2)
+            zz = Internal.getNodeFromName(z, "CoordinateZ")[1]
+            yy = Internal.getNodeFromName(z, "CoordinateY")[1]
+            sh = numpy.shape(yy)
+            r  = numpy.sqrt( zz**2+yy**2)
 
             perio_loc = perio
             if c==1: period_loc= perio*1.5 #is periodic_loc a typo or a new variable that is not used anywhere else?
@@ -1516,9 +1509,6 @@ def checkCartesian(t, nghost=0):
     else:                cartesian=False
     return cartesian
 
-
-
-
 ##Files saved here - are not current supported for modified dist2walls but can plug-in if necessary
 def _dist2wallNearBody__(t, tb, type='ortho', signed=0, dim=3, loc='centers', model='NSLaminar'):
     import Dist2Walls.PyTree as DTW
@@ -1599,18 +1589,17 @@ def _add2listAdditionalZones__(list_additional_zones, tbBB_scale, tBB, mean_tb, 
     return None
 
 ###
-## Split les zones generere par generate Cartmesh pour empecher qu'une face possede 3 type de raccord: fin/fin, fin/grossier et grossier/fin
+## Split les zones generere par generate Cartmesh pour empecher qu'une face possede 3 types de raccord: fin/fin, fin/grossier et grossier/fin
 ## Sinon souci pour flux conservatif
 def splitZoneForConservative(t, dimPb=3):
-
     zone_out=[]
     candidat={}
     for z in Internal.getZones(t):
-        matches     = Internal.getNodesByType2(z,"GridConnectivity1to1_t")
-        nearmatches = Internal.getNodesByType2(z,"GridConnectivity_t")
-        totalRac=  len(matches)+len(nearmatches)
+        matches = Internal.getNodesByType2(z, "GridConnectivity1to1_t")
+        nearmatches = Internal.getNodesByType2(z, "GridConnectivity_t")
+        totalRac = len(matches)+len(nearmatches)
         #recherche des zones candidate au split
-        if totalRac > dimPb*2 and len(nearmatches)!=0:
+        if totalRac > dimPb*2 and len(nearmatches) != 0:
             #print("nb raccord", totalRac)
             #recherche des faces problematique
             imin=[];jmin=[];kmin=[];imax=[];jmax=[];kmax=[];
@@ -1647,8 +1636,7 @@ def splitZoneForConservative(t, dimPb=3):
                         if rg[2][1]==1: kmin.append( [rac, ratio[0]])
                         else:  kmax.append( [rac, ratio[0]])
 
-
-            ladd =True
+            ladd = True
             for dir in [[imin,'imin'], [imax,'imax'], [jmin,'jmin'],[jmax,'jmax'], [kmin,'kmin'],[kmax,'kmax']]:
                 ratio=[]
                 for sf in dir[0]:
@@ -1676,7 +1664,7 @@ def splitZoneForConservative(t, dimPb=3):
     for key in candidat:
         zone = Internal.getNodeFromName(t,key)
         print("zone candidate au split", zone[0])
-        llist =  candidat[key]
+        llist = candidat[key]
         for tmp in llist:
             rg2=tmp[1]
             #print("verif init", tmp[0], rg2[0,0], rg2[0,1], rg2[1,0], rg2[1,1], rg2[2,0], rg2[2,1] )
@@ -1904,6 +1892,6 @@ def splitZoneForConservative(t, dimPb=3):
             zone_out.append(z[0])
 
     t = C.newPyTree(['CARTESIAN', zone_out])
-    Internal._rmNodesByName(t,'ZoneGridConnectivity')
+    Internal._rmNodesByName(t, 'ZoneGridConnectivity')
 
     return t
