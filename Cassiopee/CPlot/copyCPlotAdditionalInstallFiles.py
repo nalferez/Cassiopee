@@ -3,7 +3,8 @@ import os
 import pathlib
 
 ##NOTE:: Should only be used for SATOR
-directory_cbenoit = '/stck/benoit/Cassiopee/Dist/bin'
+#directory_cbenoit = '/stck/benoit/Cassiopee/Dist/bin'
+directory_cbenoit = '/stck/cassiope/git/Cassiopee/Dist/bin'
 directory_local   = os.environ['CASSIOPEE']
 elsaprod          = os.environ['ELSAPROD']
 directory_cbenoit += '/'+elsaprod
