@@ -15,7 +15,7 @@ eq1 = D.Eq(a, b)
 eq2 = D.Eq(d, a+b)
 ineq1 = D.Lt(b, c)
 
-D.DRIVER.solve2()
+D.DRIVER.solve()
 
 D.DRIVER.instantiate({'a':1., 'c':1.})
 

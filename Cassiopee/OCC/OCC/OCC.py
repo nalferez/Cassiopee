@@ -27,7 +27,8 @@ __all__ = ['convertCAD2Arrays',
            '_splitEdge',
            '_addArc', '_addCircle', '_addEllipse',
            '_addSuperEllipse', '_addLine', '_addSquare', '_addSpline',
-           '_addBox', '_addSphere', '_addCylinder', '_addGordonSurface',
+           '_addBox', '_addSphere', '_addCylinder', 
+           '_addSplineSurface', '_addGordonSurface',
            '_revolve', '_sweep', '_loft', '_boolean']
 
 # algo=0: mailleur open cascade (chordal_error)
@@ -944,6 +945,11 @@ def _addSphere(hook, C, R):
 def _addCylinder(hook, C, axis, R, H):
     """Add a cylinder to hook."""
     occ.addCylinder(hook, C, axis, R, H)
+    return None
+
+def _addSplineSurface(hook, points, degree):
+    """Add a spline surface to hook."""
+    occ.addSplineSurface(hook, points, 2, degree)
     return None
 
 def _addGordonSurface(hook, ucurves, vcurves):

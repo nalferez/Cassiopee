@@ -44,7 +44,7 @@ sketch1 = D.Sketch('sketch1', [line1, line2, line3, line4])
 #sketch1.print()
 
 # solve
-solution, freevars = D.DRIVER.solve2()
+solution, freevars = D.DRIVER.solve()
 
 D.DRIVER.instantiate({'P3.x': 3, 'hauteur': 1.})
 

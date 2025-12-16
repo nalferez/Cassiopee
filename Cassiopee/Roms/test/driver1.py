@@ -6,6 +6,7 @@ import Roms.DB.DataBase as DataBase
 height = D.Scalar("height")
 height.range = [0.1, 2., 0.1]
 
+# Create parametric geometry
 P1 = D.Point("P1", (0.,0.,0.))
 P2 = D.Point("P2", (1.,0.,0.))
 P3 = D.Point("P3", (1.,1.,0.))
@@ -21,7 +22,7 @@ line4 = D.Line("line4", P4, P1)
 sketch1 = D.Sketch('sketch1', [line1, line2, line3, line4])
 
 # solve
-D.DRIVER.solve2()
+D.DRIVER.solve()
 
 # create DB
 db = DataBase.DataBase("BASE1", parameters=['height'])

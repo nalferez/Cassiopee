@@ -24,7 +24,7 @@ sketch1 = D.Sketch('sketch1', [spline1])
 surface1 = D.Revolve('surface1', sketch1, center=(0,0,0), axis=(0,0,1), angle=90.)
 
 # test
-D.DRIVER.solve2()
+D.DRIVER.solve()
 
 D.DRIVER.instantiate({'epaisseur': 1.5})
 

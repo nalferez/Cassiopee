@@ -814,7 +814,7 @@ class Driver:
         for k in self.sketches: self.sketches[k].update()
         for k in self.surfaces: self.surfaces[k].update()
 
-    def solve2(self):
+    def solve(self):
         """Solve equations to get free parameters."""
         # get params
         params = []

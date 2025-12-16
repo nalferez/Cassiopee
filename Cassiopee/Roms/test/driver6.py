@@ -31,7 +31,7 @@ sketch2.update()
 surface1 = D.Loft('surface1', [sketch1, sketch2])
 
 # test
-D.DRIVER.solve2()
+D.DRIVER.solve()
 
 D.DRIVER.instantiate({'epaisseur': 0.8})
 

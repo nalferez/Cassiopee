@@ -186,7 +186,9 @@ class DataBase:
             for z in zones:
                 dcoords = None
                 FC = Internal.getNodeFromType1(z, 'GridCoordinates_t')
-                if FC is not None: # if coordinates in zone
+                if FC is not None: px = Internal.getNodeFromName1(FC, 'CoordinateX')
+                else: px = None
+                if px is not None: # if coordinates in zone
                     # check reference if possible
                     refCgnsName = self.dirName+'/%s'%ref+'.cgns'
                     refFC = None

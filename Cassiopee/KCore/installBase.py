@@ -74,7 +74,7 @@ installDict = {
         [], # f77AdditionalOptions
         True, # useOMP
         False, # static
-        ['c:/Users/benoit/msys64/mingw64/include'], # additionalIncludePaths
+        ['c:/Users/benoit/msys64/mingw64/include', 'c:/Users/benoit/msys64/mingw64/include/openblas'], # additionalIncludePaths
         ['gomp', 'gfortran'], # additionalLibs
         ['c:/Users/benoit/msys64/mingw64/lib'], # additionalLibPaths
         False, # useCuda

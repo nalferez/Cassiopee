@@ -13,7 +13,7 @@ circle1 = D.Circle('circle1', (0,0,0), radius)
 sketch1 = D.Sketch('sketch1', [circle1])
 
 # solve for free parameters
-D.DRIVER.solve2()
+D.DRIVER.solve()
 
 # instantiate a CAD
 D.DRIVER.instantiate({'radius': 1.5})

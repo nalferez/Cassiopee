@@ -3,7 +3,7 @@ import Roms.Driver as D
 
 # Create parameter
 hauteur = D.Scalar('hauteur')
-hauteur.range = [0, 1, 0.1]
+hauteur.range = [0., 1., 0.1]
 
 # Create points
 P1 = D.Point('P1', (0,0,0))
@@ -35,7 +35,8 @@ line3 = D.Line('line3', P8, P1)
 sketch1 = D.Sketch('sketch1', [spline1, line1, line2, line3])
 
 # solve
-D.DRIVER.solve2()
+D.DRIVER.solve()
+
 D.DRIVER.instantiate({'hauteur': 0.5})
 sketch1.writeCAD('out.step')
 

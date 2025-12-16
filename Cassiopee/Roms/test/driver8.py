@@ -23,7 +23,7 @@ spline1 = D.Spline3('spline1', grid1, mesh=naca)
 sketch1 = D.Sketch('sketch1', [spline1])
 
 # solve for free parameters
-D.DRIVER.solve2()
+D.DRIVER.solve()
 
 # Build DOE
 D.DRIVER.createDOE('doe.hdf')
