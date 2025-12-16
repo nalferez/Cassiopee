@@ -4,9 +4,13 @@ import Converter.PyTree as C
 import sys
 
 def usage():
-    print("kdb: list: kdb -l <name.db>")
-    print("kdb: query: kdb -q <name.db> <query>")
-    print("kdb: fetch: kdb -f <name.db> <query>")
+    print("kdb: list: kdb -l <name.db> (e.g. kdb -l Local.db)")
+    print("kdb: query: kdb -q <name.db> <query> ")
+    print("kdb: fetch: kdb -f <name.db> <query> ")
+    print("<query> needs to be enclosed by \"\"")
+    print("Examples of <query>:")
+    print("‣ kdb -q Local.db \"id<10\" ; where id is the number of the case in the database")
+    print("‣ kdb -q Local.db \"AoA<10 AND Mach=0.3\" ; where AoA & Mach are parameters in the dabatase")
     sys.exit(1)
 
 if __name__ == "__main__":
