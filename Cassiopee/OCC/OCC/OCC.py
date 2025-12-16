@@ -27,7 +27,7 @@ __all__ = ['convertCAD2Arrays',
            '_splitEdge',
            '_addArc', '_addCircle', '_addEllipse',
            '_addSuperEllipse', '_addLine', '_addSquare', '_addSpline',
-           '_addBox', '_addSphere', '_addCylinder', 
+           '_addBox', '_addSphere', '_addCylinder',
            '_addSplineSurface', '_addGordonSurface',
            '_revolve', '_sweep', '_loft', '_boolean']
 
