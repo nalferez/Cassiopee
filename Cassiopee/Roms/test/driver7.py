@@ -3,16 +3,16 @@ import Roms.Driver as D
 import Converter
 
 # Create parameter
-epaisseur = D.Scalar('epaisseur', 1.)
-epaisseur.range = [0.5,2.]
+epaisseur = D.Scalar('epaisseur')
+epaisseur.range = [0.5, 2., 0.1]
 
 # create Points
 P1 = D.Point('P1', (0.1,0,0))
 P2 = D.Point('P2', (1.,0.,1))
-P2.x.range = [0.5,2.]
+P2.x.range = [0.5, 2., 0.1]
 P3 = D.Point('P3', (0.1,0.,2))
 
-D.Eq(epaisseur.s, P2.x.s)
+D.Eq(epaisseur, P2.x)
 
 # Create profile
 spline1 = D.Spline1('spline1', [P1,P2,P3])
@@ -24,7 +24,7 @@ sketch1 = D.Sketch('sketch1', [spline1])
 surface1 = D.Revolve('surface1', sketch1, center=(0,0,0), axis=(0,0,1), angle=90.)
 
 # test
-D.DRIVER.solve2()
+D.DRIVER.solve()
 
 D.DRIVER.instantiate({'epaisseur': 1.5})
 

@@ -27,7 +27,8 @@ __all__ = ['convertCAD2Arrays',
            '_splitEdge',
            '_addArc', '_addCircle', '_addEllipse',
            '_addSuperEllipse', '_addLine', '_addSquare', '_addSpline',
-           '_addBox', '_addSphere', '_addCylinder', '_addGordonSurface',
+           '_addBox', '_addSphere', '_addCylinder',
+           '_addSplineSurface', '_addGordonSurface',
            '_revolve', '_sweep', '_loft', '_boolean']
 
 # algo=0: mailleur open cascade (chordal_error)
@@ -946,6 +947,11 @@ def _addCylinder(hook, C, axis, R, H):
     occ.addCylinder(hook, C, axis, R, H)
     return None
 
+def _addSplineSurface(hook, points, degree):
+    """Add a spline surface to hook."""
+    occ.addSplineSurface(hook, points, 2, degree)
+    return None
+
 def _addGordonSurface(hook, ucurves, vcurves):
     """Add a Gordon surface to hook."""
     occ.addGordonSurface(hook, ucurves, vcurves)
@@ -953,7 +959,7 @@ def _addGordonSurface(hook, ucurves, vcurves):
 
 def _revolve(hook, edges, C, axis, angle):
     """Revolve edges to create surface."""
-    occ.revolve(hook, C, axis, angle)
+    occ.revolve(hook, edges, C, axis, angle)
 
 def _sweep(hook, profiles, paths):
     """Sweep profiles along paths."""

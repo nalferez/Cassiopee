@@ -38,7 +38,7 @@ surface2.position.z.v = 2.
 surface = D.Union('surface', listSurfaces1=[surface1], listSurfaces2=[surface2])
 
 # test
-D.DRIVER.solve2()
+D.DRIVER.solve()
 D.DRIVER.instantiate({'length': 10})
 
 surface.writeCAD('out.step')

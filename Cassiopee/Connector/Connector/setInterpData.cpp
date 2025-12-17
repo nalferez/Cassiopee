@@ -596,7 +596,7 @@ PyObject* K_CONNECTOR::setInterpData(PyObject* self, PyObject* args)
                     &receiverArray, &donorArrays, &Order, &Nature, &PenalizeBorders, &enableExtrap,
                     &InterpDataType, &allHooks))
   {
-      return NULL;
+    return NULL;
   }
   
   // Extraction du type d'InterpData (0: CART, 1: ADT)
