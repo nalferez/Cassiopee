@@ -6,7 +6,8 @@ import sys
 def usage():
     print("kdb: list: kdb -l <name.db> (e.g. kdb -l Local.db)")
     print("kdb: query: kdb -q <name.db> <query> ")
-    print("kdb: fetch: kdb -f <name.db> <query> ")
+    print("kdb: query verbose: kdb -qv <name.db> <query> ")
+    print("kdb: fetch: kdb -f <name.db> <query> \n ")
     print("<query> needs to be enclosed by \"\"")
     print("Examples of <query>:")
     print("‣ kdb -q Local.db \"id<10\" ; where id is the number of the case in the database")
@@ -20,7 +21,7 @@ if __name__ == "__main__":
 
     # argument 1 must be the command (-q or -f or -l)
     com = sys.argv[1]
-    if com not in ['-q', '-f', '-l', '-h']:
+    if com not in ['-q', '-qv', '-f', '-l', '-h']:
         print("kdb: invalid command.")
         exit(1)
     
@@ -31,8 +32,9 @@ if __name__ == "__main__":
     # argument 3 must be the sql query
     if len(sys.argv) >= 4: query = sys.argv[3]
     else: query = None
-
-    if com == '-f' or com == '-q':
+    
+    flagsLocal = ['-f', '-q', '-qv']
+    if com in flagsLocal:
         if baseName is None:
             print("kdb: baseName is missing.")
             exit(1)
@@ -53,6 +55,9 @@ if __name__ == "__main__":
     elif com == '-q':
         q = db.query(query)
         db.print(q, mode=1)
+    elif com == '-qv':
+        q = db.query(query)
+        db.print(q, mode=1, fullListVar=True)
     elif com == '-f':
         q = db.query(query)
         t = db.fetchTree(q)

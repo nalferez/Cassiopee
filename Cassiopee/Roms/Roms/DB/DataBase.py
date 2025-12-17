@@ -474,35 +474,48 @@ class DataBase:
     # print query to screen
     # mode=0: horizontal
     # mode=1: vertical
-    def print(self, q, mode=0):
+    def print(self, q, mode=0, fullListVar=False):
         """Print query to screen."""
         if mode == 0: # horizontal
             print(len(q),'entries.')
-            size = 15
+            size  = 20
+            size2 = 15
             print('='*size*len(self.columns))
 
             txt = ''; txt2 = ''
             for c, i in enumerate(self.columns):
                 if c != 3 and c != 4:
-                    txt += str(i)[0:size-1].ljust(size)
-                else: txt2 += str(i)[0:size-1].ljust(size)
+                    txt += str(i)[0:size2-1].ljust(size)
+                else: txt2 += str(i)[0:size2-1].ljust(size)
             print(txt+txt2)
 
             print('='*size*len(self.columns))
             for r in q:
                 txt = ''; txt2 = ''
                 for c, i in enumerate(r):
-                    if c != 3 and c != 4:
-                        txt += str(i)[0:size-1].ljust(size)
-                    else: txt2 += str(i)[0:size-1].ljust(size)
+                    txtAdd = str(i)[0:size2-1]
+                    if len(str(i))>size2: txtAdd += '... '
+                    if c != 3 and c != 4: txt += txtAdd.ljust(size)
+                    else: txt2 += txtAdd.ljust(size)
                 print(txt+txt2)
         else: # vertical
             print(len(q),'entries.')
-            if len(q) == 1: size = 80
-            elif len(q) == 2: size = 40
-            else: size = 15
+            maxLength = 165
+            size = max(maxLength//len(q),20)
+            size2 = size-5
+            print('='*((size+1)*len(q)+13))
             for c, i in enumerate(self.columns):
                 txt = str(i)[0:12-1].ljust(12)+ '|'
                 for r in q:
-                    txt += str(r[c])[0:size-1].ljust(size) + '|'
+                    txtAdd = str(r[c])[0:size2-1]
+                    if len(str(r[c]))>size2: txtAdd += '... '
+                    txt += txtAdd.ljust(size) + '|'
                 print(txt)
+            print('='*((size+1)*len(q)+13))
+            if fullListVar:
+                print('\n \n')
+                for i, r in enumerate(q):
+                    print('=============================')
+                    print('Full list of variables: id %d'%r[0])
+                    print(r[4])
+                    print('============================= \n')
