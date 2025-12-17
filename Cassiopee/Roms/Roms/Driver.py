@@ -3,6 +3,7 @@ import sympy, numpy, re, itertools
 import Converter.Mpi as Cmpi
 import Converter.PyTree as C
 import Converter.Internal as Internal
+import Converter
 import OCC
 
 #============================================================
@@ -287,7 +288,7 @@ class Entity:
             # self.P[0] is a Grid, mesh is an array
 
             # rebuild control points
-            import Generator, Transform, Converter
+            import Generator, Transform
             grid = self.P[0]
             ni, nj, nk = grid.ni, grid.nj, grid.nk
             cp = Generator.cart((0,0,0), (1,1,1), (ni,nj,nk))
@@ -439,20 +440,84 @@ class Sketch():
     def writeCAD(self, fileName, format="fmt_step"):
         OCC.writeCAD(self.hook, fileName, format)
 
-    # mesh sketch
+    # mesh sketch, return arrays
     def mesh(self, hmin, hmax, hausd):
+        """Mesh edges."""
         edges = OCC.meshAllEdges(self.hook, hmin, hmax, hausd, -1)
         return edges
 
-    # Compute a rmesh for reference mesh that is topologically equivalent (same names)
-    # copy distributions
-    def rmesh(self, refMesh, hmin, hmax, hausd):
+    # mesh sketch, return zones
+    def Mesh(self, hmin, hmax, hausd):
+        """Mesh edges."""
+        edges = self.mesh(hmin, hmax, hausd)
+        out = []
+        for c, e in enumerate(edges):
+            z = Internal.createZoneNode('%s%03d'%(self.name, c+1), e, [],
+                                        Internal.__GridCoordinates__,
+                                        Internal.__FlowSolutionNodes__,
+                                        Internal.__FlowSolutionCenters__)
+            out.append(z)
+        return out
+
+    # Compute a rmesh identically to a reference mesh that is topologically 
+    # equivalent (same names). copy distributions. remesh on mesh.
+    def rmesh2(self, refEdges, hmin, hmax, hausd):
         import Geom, Generator
         mesh = self.mesh(hmin, hmax, hausd)
-        for c, i in enumerate(refMesh):
+        for c, i in enumerate(refEdges):
             d = Geom.getDistribution(i)
             mesh[c] = Generator.map(mesh[c], d)
         return mesh
+
+    def Rmesh2(self, refEdges, hmin, hmax, hausd):
+        arrays = C.getAllFields(refEdges, 'nodes', api=1)
+        edges = self.rmesh2(arrays, hmin, hmax, hausd)
+        out = []
+        for c, e in enumerate(edges):
+            z = Internal.createZoneNode('%s%03d'%(self.name, c+1), e, [],
+                                        Internal.__GridCoordinates__,
+                                        Internal.__FlowSolutionNodes__,
+                                        Internal.__FlowSolutionCenters__)
+            out.append(z)
+        return out
+
+    # Compute a rmesh identically to a reference mesh that is topologically 
+    # equivalent (same names). copy distributions, return arrays, remesh on CAD.
+    def rmesh(self, refEdges):
+        import Geom
+        s = Geom.getCurvilinearAbscissa(refEdges)
+        for c, e in enumerate(refEdges):
+            e = Converter.rmVars(e, ['u'])
+            refEdges[c] = Converter.addVars([e, s[c]])
+        out = []
+        for c, e in enumerate(refEdges):
+            e = OCC.occ.meshOneEdge(self.hook, c+1, -1, -1, -1, -1, e)
+            out.append(e)
+        return out
+
+    # Compute a rmesh identically to reference mesh that is topologically 
+    # equivalent (same names). copy distributions, return arrays
+    def Rmesh(self, refEdges):
+        arrays = C.getAllFields(refEdges, 'nodes', api=3)
+        edges = self.rmesh(arrays)
+        out = []
+        for c, e in enumerate(edges):
+            z = Internal.createZoneNode('%s%03d'%(self.name, c+1), e, [],
+                                        Internal.__GridCoordinates__,
+                                        Internal.__FlowSolutionNodes__,
+                                        Internal.__FlowSolutionCenters__)
+            out.append(z)
+        return out
+
+    # project refEdges on CAD to get new mesh. Not working.
+    def pmesh(self, refEdges):
+        out = []
+        for c, e in enumerate(refEdges):
+            e2 = Converter.copy(e)
+            #OCC._projectOnEdges(self.hook, e2, c+1)
+            out.append(e2)
+        OCC._projectOnEdges(self.hook, out)
+        return out
 
 #============================================================
 class Surface():
@@ -628,6 +693,19 @@ class Surface():
         faces = OCC.meshAllFacesTri(self.hook, edges, True, faceList, hList)
         return faces
 
+    # mesh surface, return zones
+    def Mesh(self, hmin, hmax, hausd):
+        """Mesh surface."""
+        faces = self.mesh(hmin, hmax, hausd)
+        out = []
+        for c, e in enumerate(faces):
+            z = Internal.createZoneNode('%s%03d'%(self.name, c+1), e, [],
+                                        Internal.__GridCoordinates__,
+                                        Internal.__FlowSolutionNodes__,
+                                        Internal.__FlowSolutionCenters__)
+            out.append(z)
+        return out
+
 def Loft(name="loft", listSketches=[], listGuides=[], close=True):
     """Create a loft surface from sketches."""
     return Surface(name=name, listSketches=listSketches, listSketches2=listGuides,
@@ -676,6 +754,97 @@ def Inter(name="inter", listSurfaces1=[], listSurfaces2=[]):
     return Surface(name=name, listSurfaces=listSurfaces1,
                    listSurfaces2=listSurfaces2,
                    type="inter")
+
+#============================================================
+class Volume2D():
+    """Define a parametric 2D volume."""
+    def __init__(self, name=None, listSketches=[], orders=[]):
+        # name
+        if name is not None: self.name = name
+        else: self.name = getName("vol")
+        # sketches that define the bounded volume
+        self.sketches = listSketches
+        # optional ordering 
+        self.orders = orders
+        # reference mesh for Dmesh
+        self.refMesh = None
+        self.refBorders = None
+        self.defTree = None
+
+    def mesh(self, hmin, hmax, hausd):
+        """Call the volume mesher."""
+        import Generator, Transform
+        # call sketch mesher
+        borders = []
+        for s in self.sketches:
+            borders += s.mesh(hmin, hmax, hausd)
+        borders = Converter.convertArray2Tetra(borders)
+        borders = Transform.join(borders)
+        # call volume mesher
+        m = Generator.T3mesher2D(borders, triangulateOnly=0, grading=1.1, metricInterpType=0)
+        m = Transform.reorder(m, (1,))
+        return m
+
+    def Mesh(self, hmin, hmax, hausd):
+        m = self.mesh(hmin, hmax, hausd)
+        z = Internal.createZoneNode(self.name, m, [],
+                                    Internal.__GridCoordinates__,
+                                    Internal.__FlowSolutionNodes__,
+                                    Internal.__FlowSolutionCenters__)
+        return z
+
+    def SetReferenceMesh(self, hmin, hmax, hausd):
+        borders = []
+        for s in self.sketches:
+            borders += s.mesh(hmin, hmax, hausd)
+        self.refBorders = borders
+        refMesh = self.Mesh(hmin, hmax, hausd)
+        import Transform.PyTree as T
+        import Post.PyTree as P
+        import Ael.Quantum as KDG
+        a = C.convertArray2NGon(refMesh, recoverBC=True)
+        a = T.addkplane(a)
+        a = T.contract(a, (0,0,0), (1,0,0), (0,1,0), 0.1)
+        p = P.exteriorFaces(a)
+        C._addBC2Zone(a, 'wall', 'BCWall', subzone=p)
+        self.refMesh = a
+        DeformationArgs={
+                 "Approach"          :  "Quaternions",
+                 "Epsilon"           :  0.15,
+                 "Leafsize"          :  8,
+                 "OmpAllInOne"       :  True,
+                 "Ndivision"         :  100,
+                 "NullDisplacements" :  "Weighted",
+                 "Smoothing"         :  False }
+        self.defTree = KDG.KeDefGrid(a, **DeformationArgs)
+        self.defTree.set_Amplitude(1.)
+        return refMesh
+
+    def Dmesh(self):
+        # call sketch mesher
+        borders = []
+        for c, s in enumerate(self.sketches):
+            borders.append(s.rmesh2(self.refBorders[c]))
+            
+        import RigidMotion.PyTree as R
+        R._copyGrid2GridInit(self.refTree, mode=1)
+        bc = C.extractBCOfName(self.refTree, "wall", reorder=False)[0]
+        dx1 = Internal.getNodeFromName2(bc, "CoordinateX")[1]
+        dy1 = Internal.getNodeFromName2(bc, "CoordinateY")[1]
+        dz1 = Internal.getNodeFromName2(bc, "CoordinateZ")[1]
+        dx1[:] = 0.; dy1[:] = 0.; dz1[:] = 0.
+        
+        for b in borders:
+            p = b[1]
+        # set displacement on surfaces (zoneName#bcName)
+        #defTree.setBndSurfTo("%s#wall"%self.name, "imposed", [dx1,dy1,dz1]) # [dx,dy,dz]
+        # deform
+        #defTree.makeSources()
+        #defTree.computeMeshDisplacement()
+        # copie Displacement#0/DisplacementX dans Coordinates
+        #R._evalDeformationPosition(t)
+            
+        return None
 
 #============================================================
 class Eq:
@@ -930,7 +1099,7 @@ class Driver:
     # if freevars is None, derivate for all free parameters else derivate for given parameters
     def _diff(self, entity, mesh, freeParams=None, deps=1.e-6):
         """Compute all derivatives dX/dmu on entity."""
-        import Converter, KCore
+        import KCore
 
         if len(self.freeParams) == 0:
             print("Warning: no free vars.")
@@ -1003,7 +1172,9 @@ class Driver:
         for f in self.freeParams: # give order
             p = self.scalars[f.name]
             if len(p.range) == 3: # disc given in range
-                self.doeRange.append(numpy.arange(p.range[0], p.range[1]+1.e-12, p.range[2]))
+                mean = 0.5*(p.range[1] - p.range[0])
+                tol = 1.e-11 + 1.e-14*mean
+                self.doeRange.append(numpy.arange(p.range[0], p.range[1]+tol, p.range[2]))
                 self.doeSize.append(p.range[2])
             else: # set to 2 points
                 self.doeRange.append(numpy.linspace(p.range[0], p.range[1], 2))
@@ -1014,7 +1185,9 @@ class Driver:
             for c, f in enumerate(self.freeParams):
                 if self.scalars[f.name].name == k:
                     p = self.scalars[f.name]
-                    self.doeRange[c] = numpy.arange(p.range[0], p.range[1]+1.e-12, deltas[k])
+                    mean = 0.5*(p.range[1] - p.range[0])
+                    tol = 1.e-11 + 1.e-14*mean
+                    self.doeRange[c] = numpy.arange(p.range[0], p.range[1]+tol, deltas[k])
                     self.doeSize[c] = deltas[k]
         return None
 
@@ -1155,6 +1328,7 @@ class Driver:
         return mesh2
 
     # remesh input mesh to match nv points using refine
+    # used nly in snapshots read (obsolete)
     def remesh(self, mesh, nv):
         import Generator
         nm = mesh[1].shape[1]
@@ -1168,18 +1342,17 @@ class Driver:
     def createDOE(self, fileName):
         self.doeFileName = fileName
         if Cmpi.rank > 0: return None
-        import Converter.PyTree
-        t = Converter.PyTree.newPyTree(['Parameters', 'Snapshots'])
+        t = C.newPyTree(['Parameters', 'Snapshots'])
         for c, k in enumerate(self.doeRange):
             node = ["p%05d"%c, k, [], 'parameter_t']
             t[2][1][2].append(node)
-        Converter.PyTree.convertPyTree2File(t, self.doeFileName)
+        C.convertPyTree2File(t, self.doeFileName)
         return None
 
     # add snapshot to file (to be replaced by DB)
     def addSnapshot(self, hashcode, msh):
         import Converter.Distributed as Distributed
-        import Transform, Converter
+        import Transform
         msh = Converter.extractVars(msh, ['x','y','z'])
         msh = Transform.join(msh) # merge mesh
         node = ["%05d"%hashcode, msh[1], [], 'snapshot_t']
@@ -1223,11 +1396,10 @@ class Driver:
     def writeROM(self, fileName):
         self.romFileName = fileName
         if Cmpi.rank > 0: return None
-        import Converter.PyTree
-        t = Converter.PyTree.newPyTree(['POD'])
+        t = C.newPyTree(['POD'])
         node = ["phi", self.Phi, [], 'phi_t']
         t[2][1][2].append(node)
-        Converter.PyTree.convertPyTree2File(t, self.romFileName)
+        C.convertPyTree2File(t, self.romFileName)
         return None
 
     # build POD from full matrix F, keep K modes
