@@ -459,7 +459,7 @@ class Sketch():
             out.append(z)
         return out
 
-    # Compute a rmesh identically to a reference mesh that is topologically 
+    # Compute a rmesh identically to a reference mesh that is topologically
     # equivalent (same names). copy distributions. remesh on mesh.
     def rmesh2(self, refEdges, hmin, hmax, hausd):
         import Geom, Generator
@@ -481,7 +481,7 @@ class Sketch():
             out.append(z)
         return out
 
-    # Compute a rmesh identically to a reference mesh that is topologically 
+    # Compute a rmesh identically to a reference mesh that is topologically
     # equivalent (same names). copy distributions, return arrays, remesh on CAD.
     def rmesh(self, refEdges):
         import Geom
@@ -495,7 +495,7 @@ class Sketch():
             out.append(e)
         return out
 
-    # Compute a rmesh identically to reference mesh that is topologically 
+    # Compute a rmesh identically to reference mesh that is topologically
     # equivalent (same names). copy distributions, return arrays
     def Rmesh(self, refEdges):
         arrays = C.getAllFields(refEdges, 'nodes', api=3)
@@ -764,7 +764,7 @@ class Volume2D():
         else: self.name = getName("vol")
         # sketches that define the bounded volume
         self.sketches = listSketches
-        # optional ordering 
+        # optional ordering
         self.orders = orders
         # reference mesh for Dmesh
         self.refMesh = None
@@ -809,13 +809,13 @@ class Volume2D():
         C._addBC2Zone(a, 'wall', 'BCWall', subzone=p)
         self.refMesh = a
         DeformationArgs={
-                 "Approach"          :  "Quaternions",
-                 "Epsilon"           :  0.15,
-                 "Leafsize"          :  8,
-                 "OmpAllInOne"       :  True,
-                 "Ndivision"         :  100,
-                 "NullDisplacements" :  "Weighted",
-                 "Smoothing"         :  False }
+            "Approach"          :  "Quaternions",
+            "Epsilon"           :  0.15,
+            "Leafsize"          :  8,
+            "OmpAllInOne"       :  True,
+            "Ndivision"         :  100,
+            "NullDisplacements" :  "Weighted",
+            "Smoothing"         :  False }
         self.defTree = KDG.KeDefGrid(a, **DeformationArgs)
         self.defTree.set_Amplitude(1.)
         return refMesh
@@ -825,7 +825,7 @@ class Volume2D():
         borders = []
         for c, s in enumerate(self.sketches):
             borders.append(s.rmesh2(self.refBorders[c]))
-            
+
         import RigidMotion.PyTree as R
         R._copyGrid2GridInit(self.refTree, mode=1)
         bc = C.extractBCOfName(self.refTree, "wall", reorder=False)[0]
@@ -833,7 +833,7 @@ class Volume2D():
         dy1 = Internal.getNodeFromName2(bc, "CoordinateY")[1]
         dz1 = Internal.getNodeFromName2(bc, "CoordinateZ")[1]
         dx1[:] = 0.; dy1[:] = 0.; dz1[:] = 0.
-        
+
         for b in borders:
             p = b[1]
         # set displacement on surfaces (zoneName#bcName)
@@ -843,7 +843,7 @@ class Volume2D():
         #defTree.computeMeshDisplacement()
         # copie Displacement#0/DisplacementX dans Coordinates
         #R._evalDeformationPosition(t)
-            
+
         return None
 
 #============================================================
