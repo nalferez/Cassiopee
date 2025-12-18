@@ -856,10 +856,10 @@ def _transfer2(t, tc, variables, graph, intersectionDict, dictOfADT,
 # memes arguments que setInterpData
 #=========================================================================
 def setInterpData(aR, aD, order=2, penalty=1, nature=0, extrap=1,
-                   method='lagrangian', loc='nodes', storage='direct',
-                   interpDataType=1, hook=None, cartesian=False, sameBase=0,
-                   topTreeRcv=None, topTreeDnr=None, sameName=1, verbose=2,
-                   dim=3, itype='abutting'):
+                  method='lagrangian', loc='nodes', storage='direct',
+                  interpDataType=1, hook=None, cartesian=False, sameBase=0,
+                  topTreeRcv=None, topTreeDnr=None, sameName=1, verbose=2,
+                  dim=3, itype='abutting'):
     """Compute interpolation data for abutting or chimera intergrid connectivity."""
     tR = Internal.copyRef(aR)
     tD = Internal.copyRef(aD)
@@ -1056,7 +1056,7 @@ def _setInterpData2(aR, aD, order=2, loc='centers', cartesian=False, extrap=1, n
 
     if cartesian: interpDataType = 0 # 0 if tc is cartesian
     else: interpDataType = 1
-    
+
     # Compute BBoxTrees
     tsBB = Cmpi.createBBoxTree(aR)
     procDicts = Cmpi.getProcDict(tsBB)
@@ -1085,9 +1085,9 @@ def _setInterpData2(aR, aD, order=2, loc='centers', cartesian=False, extrap=1, n
         if dnrZones != []:
             X._setInterpData(zs, dnrZones, nature=nature, penalty=penalty, order=order, loc=loc, storage='inverse',
                              extrap=extrap, sameName=0, interpDataType=interpDataType, itype='chimera', verbose=verbose)
-        
+
         if cellNPresent == -1: C._rmVars(zs, [varcelln])
-        
+
         for zd in dnrZones:
             zdname = zd[0]
             destProc = procDictD[zdname]

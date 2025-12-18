@@ -1105,7 +1105,7 @@ def _setInterpData2(aR, aD, order=2, loc='centers', cartesian=False, extrap=1, n
     _setInterpData(aR, aD, order=order, penalty=penalty, nature=nature, extrap=extrap,
                    method='lagrangian', loc=loc, storage='inverse', verbose=verbose,
                    interpDataType=interpDataType, sameName=0, itype="chimera")
-    
+
     if cellNPresent == -1: C._rmVars(aR, [varcelln])
 
     return None
@@ -1174,8 +1174,8 @@ def _setInterpData(aR, aD, order=2, penalty=1, nature=0, extrap=1,
 
     if itype != 'abutting': # chimera
         _setInterpDataChimera__(aR, aD, order=order, penalty=penalty, nature=nature, extrap=extrap, verbose=verbose,
-                              method=method, loc=loc, storage=storage, interpDataType=interpDataType, hook=hook,
-                              topTreeRcv=topTreeRcv, topTreeDnr=topTreeDnr, sameName=sameName, dim=dim, itype=itype, dictOfModels=dictOfModels)
+                                method=method, loc=loc, storage=storage, interpDataType=interpDataType, hook=hook,
+                                topTreeRcv=topTreeRcv, topTreeDnr=topTreeDnr, sameName=sameName, dim=dim, itype=itype, dictOfModels=dictOfModels)
 
     # SP: pour l'instant adaptForRANSLES est appele 2 fois: pour les ghost cells et pour le chimere
     # peut on ne le mettre qu ici ?
@@ -1183,9 +1183,9 @@ def _setInterpData(aR, aD, order=2, penalty=1, nature=0, extrap=1,
     return None
 
 def _setInterpDataChimera__(aR, aD, order=2, penalty=1, nature=0, extrap=1,
-                          method='lagrangian', loc='nodes', storage='direct',
-                          interpDataType=1, hook=None, verbose=2,
-                          topTreeRcv=None, topTreeDnr=None, sameName=1, dim=3, itype='both', dictOfModels=None):
+                            method='lagrangian', loc='nodes', storage='direct',
+                            interpDataType=1, hook=None, verbose=2,
+                            topTreeRcv=None, topTreeDnr=None, sameName=1, dim=3, itype='both', dictOfModels=None):
     locR = loc
 
     # Si pas de cellN receveur, on retourne
