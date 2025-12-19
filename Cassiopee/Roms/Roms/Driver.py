@@ -317,6 +317,10 @@ class Entity:
             OCC._addArc(self.hook, self.P[0].v(), self.P[1].v(), self.P[2].v())
         elif self.type == "superellipse":
             OCC._addSuperEllipse(self.hook, self.P[0].v(), self.P[1].v(), self.P[2].v(), self.P[3].v, self.P[4].v)
+        elif self.type == "naca4":
+            import Geom
+            naca = Geom.naca("%01d%01d%02d"%(int(self.P[0].v),int(self.P[1].v),int(self.P[2].v)), N=51)
+            OCC._addSpline(self.hook, naca[1], 1, 3)
         else:
             raise(ValueError, "Unknown entity type %s."%self.type)
 
@@ -328,11 +332,6 @@ class Entity:
     # export CAD to file
     def writeCAD(self, fileName, format="fmt_step"):
         OCC.writeCAD(self.hook, fileName, format)
-
-    # mesh entity, return arrays
-    def mesh(self, hmin, hmax, hausd):
-        edges = OCC.meshAllEdges(self.hook, hmin, hmax, hausd, -1)
-        return edges
 
     # check parameters validity
     def check(self):
@@ -374,10 +373,14 @@ def SuperEllipse(name=None, C=(0.,0.,0.), R1=1., R2=1., N=4, samples=36):
 def Arc(name=None, P1=(0.,0.,0.), P2=(0.,0.,0.), P3=(0.,0.,0.)):
     return Entity(name, [P1, P2, P3], type="arc")
 
+# naca 4 digits
+def Naca(name=None, M=0., P=0., e=12.):
+    return Entity(name, [M, P, e], type="naca4")
+
 #============================================================
 class Sketch():
     """Define a parametric sketch from a list of entities."""
-    def __init__(self, name=None, listEntities=[]):
+    def __init__(self, name=None, listEntities=[], h=None):
         # name
         if name is not None: self.name = name
         else: self.name = getName("sketch")
@@ -405,6 +408,10 @@ class Sketch():
         self.update()
         # register
         DRIVER.registerSketch(self)
+        # meshing: (hmin,hmax,hausd)
+        if h is not None: self.h = h
+        # meshing: list of distribs for each entity
+        self.distrib = None
 
     def add(self, entity):
         self.entities.append(entity)
@@ -441,15 +448,23 @@ class Sketch():
         OCC.writeCAD(self.hook, fileName, format)
 
     # mesh sketch, return arrays
-    def mesh(self, hmin, hmax, hausd):
+    def mesh(self):
         """Mesh edges."""
-        edges = OCC.meshAllEdges(self.hook, hmin, hmax, hausd, -1)
+        if self.distrib is not None:
+            edges = []
+            for c, e in enumerate(self.distrib):
+                e = OCC.occ.meshOneEdge(self.hook, c+1, -1, -1, -1, -1, e)
+            edges.append(e)
+        elif self.h is not None:
+            edges = OCC.meshAllEdges(self.hook, self.h[0], self.h[1], self.h[2], -1)
+        else:
+            raise ValueError("mesh: no meshing settings in sketch.")
         return edges
 
     # mesh sketch, return zones
-    def Mesh(self, hmin, hmax, hausd):
+    def Mesh(self):
         """Mesh edges."""
-        edges = self.mesh(hmin, hmax, hausd)
+        edges = self.mesh()
         out = []
         for c, e in enumerate(edges):
             z = Internal.createZoneNode('%s%03d'%(self.name, c+1), e, [],
@@ -522,7 +537,7 @@ class Sketch():
 #============================================================
 class Surface():
     """Define a parametric surface."""
-    def __init__(self, name=None, listSketches=[], listSketches2=[], listSurfaces=[], listSurfaces2=[], data={}, type="loft"):
+    def __init__(self, name=None, listSketches=[], listSketches2=[], listSurfaces=[], listSurfaces2=[], data={}, h=None, type="loft"):
         # name
         if name is not None: self.name = name
         else: self.name = getName("surface")
@@ -558,6 +573,8 @@ class Surface():
         self.update()
         # register
         DRIVER.registerSurface(self)
+        # meshing: (hmin,hmax,hausd). supersedes sketch settings.
+        if h is not None: self.h = h
 
     def add(self, sketch):
         """Add a sketch to the surface definition."""
@@ -683,8 +700,10 @@ class Surface():
         OCC.writeCAD(self.hook, fileName, format)
 
     # mesh surface, return arrays
-    def mesh(self, hmin, hmax, hausd):
+    def mesh(self):
         """Mesh surface."""
+        if self.h is None: raise ValueError("mesh: h settings are undefined.")
+        (hmin,hmax,hausd) = self.h
         edges = OCC.meshAllEdges(self.hook, hmin, hmax, hausd, -1)
         nbFaces = OCC.getNbFaces(self.hook)
         faceList = range(1, nbFaces+1)
@@ -694,9 +713,9 @@ class Surface():
         return faces
 
     # mesh surface, return zones
-    def Mesh(self, hmin, hmax, hausd):
+    def Mesh(self):
         """Mesh surface."""
-        faces = self.mesh(hmin, hmax, hausd)
+        faces = self.mesh()
         out = []
         for c, e in enumerate(faces):
             z = Internal.createZoneNode('%s%03d'%(self.name, c+1), e, [],
@@ -706,54 +725,54 @@ class Surface():
             out.append(z)
         return out
 
-def Loft(name="loft", listSketches=[], listGuides=[], close=True):
+def Loft(name="loft", listSketches=[], listGuides=[], close=True, h=None):
     """Create a loft surface from sketches."""
     return Surface(name=name, listSketches=listSketches, listSketches2=listGuides,
-                   type="loft", data={'close':close})
+                   type="loft", data={'close':close}, h=h)
 
-def LoftSet(name="loftset", listSketches=[], listGuides=[], close=True):
+def LoftSet(name="loftset", listSketches=[], listGuides=[], close=True, h=None):
     """Create a set of loft surfaces from sketches."""
     return Surface(name=name, listSketches=listSketches, listSketches2=listGuides,
-                   type="loft", data={'close':close})
+                   type="loft", data={'close':close}, h=h)
 
-def Revolve(name='revolve', sketch=None, center=(0,0,0), axis=(0,0,1), angle=360.):
+def Revolve(name='revolve', sketch=None, center=(0,0,0), axis=(0,0,1), angle=360., h=None):
     """Create a revolution surface from a sketch."""
     return Surface(name=name, listSketches=[sketch],
                    data={'center':center, 'axis':axis, 'angle':angle},
-                   type="revolve")
+                   type="revolve", h=h)
 
-def Merge(name="compound", listSurfaces=[]):
+def Merge(name="compound", listSurfaces=[], h=None):
     """Create a compound surface from a list of surfaces."""
     return Surface(name=name, listSurfaces=listSurfaces,
-                   type="merge")
+                   type="merge", h=h)
 
-def MergeEdges(name="mergeEdges", listSketches=[]):
+def MergeEdges(name="mergeEdges", listSketches=[], h=None):
     """Merge edges. Not a surface."""
-    return Surface(name=name, listSketches=listSketches, type="mergeEdges")
+    return Surface(name=name, listSketches=listSketches, type="mergeEdges", h=h)
 
-def Fill(name="fill", sketch=None, continuity=0):
+def Fill(name="fill", sketch=None, continuity=0, h=None):
     """Create a surface that fill a sketch."""
     return Surface(name=name, listSketches=[sketch],
                    data={'continuity':continuity},
-                   type="fill")
+                   type="fill", h=h)
 
-def Union(name="union", listSurfaces1=[], listSurfaces2=[]):
+def Union(name="union", listSurfaces1=[], listSurfaces2=[], h=None):
     """Boolean union."""
     return Surface(name=name, listSurfaces=listSurfaces1,
                    listSurfaces2=listSurfaces2,
-                   type="union")
+                   type="union", h=h)
 
-def Sub(name="sub", listSurfaces1=[], listSurfaces2=[]):
+def Sub(name="sub", listSurfaces1=[], listSurfaces2=[], h=None):
     """Boolean difference."""
     return Surface(name=name, listSurfaces=listSurfaces1,
                    listSurfaces2=listSurfaces2,
-                   type="sub")
+                   type="sub", h=h)
 
-def Inter(name="inter", listSurfaces1=[], listSurfaces2=[]):
+def Inter(name="inter", listSurfaces1=[], listSurfaces2=[], h=None):
     """Boolean intersection."""
     return Surface(name=name, listSurfaces=listSurfaces1,
                    listSurfaces2=listSurfaces2,
-                   type="inter")
+                   type="inter", h=h)
 
 #============================================================
 class Volume2D():
@@ -771,13 +790,15 @@ class Volume2D():
         self.refBorders = None
         self.defTree = None
 
-    def mesh(self, hmin, hmax, hausd):
+    def mesh(self):
         """Call the volume mesher."""
         import Generator, Transform
         # call sketch mesher
         borders = []
-        for s in self.sketches:
-            borders += s.mesh(hmin, hmax, hausd)
+        for c, s in enumerate(self.sketches):
+            m = s.mesh()
+            if c < len(self.orders) and self.orders[c] == -1: m = Transform.reorder(m, (-1,2,3)) 
+            borders += m
         borders = Converter.convertArray2Tetra(borders)
         borders = Transform.join(borders)
         # call volume mesher
@@ -1259,7 +1280,7 @@ class Driver:
         return pt
 
     # walk DOE, instantiate, mesh, append snapshots to file, parallel
-    def walkDOE3(self, entity, hmin, hmax, hausd):
+    def walkDOE3(self, entity):
         self.setDOE()
         ranges = []; size = 0
         for k in self.doeRange:
@@ -1279,7 +1300,7 @@ class Driver:
             if Cmpi.rank == hash%Cmpi.size and hash < raf:
                 # instantiate and mesh
                 self.instantiate(values)
-                mesh = entity.mesh(hmin, hmax, hausd)
+                mesh = entity.mesh()
                 if Cmpi.rank == 0:
                     self.addSnapshot(hash, mesh)
                     if Cmpi.size > 1: Cmpi.send(1, dest=1)
@@ -1291,7 +1312,7 @@ class Driver:
             elif Cmpi.rank == 0 and hash >= raf:
                 # instantiate and mesh
                 self.instantiate(values)
-                mesh = entity.mesh(hmin, hmax, hausd)
+                mesh = entity.mesh()
                 self.addSnapshot(hash, mesh)
 
     # IN: list of indexes (i,j,k,...) one for each param

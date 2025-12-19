@@ -10,7 +10,7 @@ radius.range = [0.1, 10, 0.3]
 circle1 = D.Circle('circle1', (0,0,0), radius)
 
 # Create parametric sketch
-sketch1 = D.Sketch('sketch1', [circle1])
+sketch1 = D.Sketch('sketch1', [circle1], h=[0.01,0.01,0.01])
 
 # solve for free parameters
 D.DRIVER.solve()
@@ -18,13 +18,13 @@ D.DRIVER.solve()
 # instantiate a CAD
 D.DRIVER.instantiate({'radius': 1.5})
 sketch1.writeCAD('out.step')
-mesh = sketch1.mesh(0.01, 0.01, 0.01)
+mesh = sketch1.mesh()
 D.DRIVER._diff(sketch1, mesh)
 Converter.convertArrays2File(mesh, 'out.plt')
 
 # Build DOE
 D.DRIVER.createDOE('doe.hdf')
-D.DRIVER.walkDOE3(sketch1, 0.01, 0.01, 0.01)
+D.DRIVER.walkDOE3(sketch1)
 
 # reread one snaphsot from DOE file
 m = D.DRIVER.readSnaphot(0)
@@ -46,6 +46,6 @@ Converter.convertArrays2File(m, 'reread2.plt')
 import CPlot, time
 for i in range(50):
     D.DRIVER.instantiate({'radius': 10-i/10.})
-    mesh = sketch1.mesh(0.01, 0.01, 0.01)
+    mesh = sketch1.mesh()
     CPlot.display(mesh)
     time.sleep(0.5)

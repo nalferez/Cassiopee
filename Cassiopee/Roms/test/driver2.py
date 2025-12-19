@@ -27,15 +27,12 @@ D.Eq(P3.y, P1.y + hauteur)
 
 # Create lines
 line1 = D.Line('line1', P1, P2)
-#line1.eq = 'length(line1) = 1.'
-#D.Eq('length(line1) = 1.')
-
 line2 = D.Line('line2', P2, P3)
 line3 = D.Line('line3', P3, P4)
 line4 = D.Line('line4', P4, P1)
 
 # Create sketch
-sketch1 = D.Sketch('sketch1', [line1, line2, line3, line4])
+sketch1 = D.Sketch('sketch1', [line1, line2, line3, line4], h=[0.01,0.01,0.01])
 #sketch1.eq = 'area(sketch) = 1.'
 #sketch1.eq = 'length(line3) = 2.'
 #sketch1.eq = 'angle(line1, line2) = 45.'
@@ -53,6 +50,6 @@ sketch1.writeCAD('out.step')
 import CPlot, time
 for i in range(50):
     D.DRIVER.instantiate({'P3.x': 3+i/50., 'hauteur': 1.})
-    mesh = sketch1.mesh(0.01, 0.01, 0.01)
+    mesh = sketch1.mesh()
     CPlot.display(mesh)
     time.sleep(0.5)

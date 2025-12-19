@@ -21,7 +21,7 @@ spline1 = D.Spline1('spline1', [P1,P2,P3])
 sketch1 = D.Sketch('sketch1', [spline1])
 
 # surface
-surface1 = D.Revolve('surface1', sketch1, center=(0,0,0), axis=(0,0,1), angle=90.)
+surface1 = D.Revolve('surface1', sketch1, center=(0,0,0), axis=(0,0,1), angle=90., h=[0.05,0.05,0.1])
 
 # test
 D.DRIVER.solve()
@@ -30,13 +30,13 @@ D.DRIVER.instantiate({'epaisseur': 1.5})
 
 surface1.writeCAD('out.step')
 
-mesh = surface1.mesh(0.05, 0.05, 0.1)
+mesh = surface1.mesh()
 D.DRIVER._diff(surface1, mesh)
 Converter.convertArrays2File(mesh, 'out.plt')
 
 #import CPlot, time
 #for i in range(50):
 #    D.DRIVER.instantiate({'P2.x': 0.5+i/50.})
-#    mesh = surface1.mesh(0.01, 0.01, 0.01)
+#    mesh = surface1.mesh()
 #    CPlot.display(mesh)
 #    time.sleep(0.5)

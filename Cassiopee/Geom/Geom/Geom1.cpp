@@ -27,7 +27,7 @@ using namespace K_CONST;
 // ============================================================================
 /* Create a line of N points passing by P1 and P2 */
 // ============================================================================
-PyObject* K_GEOM::lineMesh(PyObject* self, PyObject* args)
+PyObject* K_GEOM::line(PyObject* self, PyObject* args)
 {
   E_Int N;
   E_Float x1, y1, z1;
@@ -36,7 +36,7 @@ PyObject* K_GEOM::lineMesh(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, TRRR_ TRRR_ I_,
                     &x1, &y1, &z1, &x2, &y2, &z2, &N))
   {
-      return NULL;
+    return NULL;
   }
 
   // Data check
@@ -75,7 +75,7 @@ PyObject* K_GEOM::lineMesh(PyObject* self, PyObject* args)
 /* Create a circle of center C and radius R,
    between tetas and tetae angles */
 // ============================================================================
-PyObject* K_GEOM::circleMesh(PyObject* self, PyObject* args)
+PyObject* K_GEOM::circle(PyObject* self, PyObject* args)
 {
   E_Int N;
   E_Float xc, yc, zc;
@@ -84,7 +84,7 @@ PyObject* K_GEOM::circleMesh(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, TRRR_ RRR_ I_,
                     &xc, &yc, &zc, &R, &tetas, &tetae, &N))
   {
-      return NULL;
+    return NULL;
   }
   E_Float pi = 4*atan(1.);
   E_Float t1 = tetas*pi/180.;
@@ -124,7 +124,7 @@ PyObject* K_GEOM::circleMesh(PyObject* self, PyObject* args)
 // ============================================================================
 /* Create a sphere of center C and radius R */
 // ============================================================================
-PyObject* K_GEOM::sphereMesh(PyObject* self, PyObject* args)
+PyObject* K_GEOM::sphere(PyObject* self, PyObject* args)
 {
   E_Int N;
   E_Float xc, yc, zc;
@@ -132,7 +132,7 @@ PyObject* K_GEOM::sphereMesh(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, TRRR_ R_ I_,
                     &xc, &yc, &zc, &R, &N))
   {
-      return NULL;
+    return NULL;
   }
 
   E_Float pi = 4*atan(1.);
@@ -185,7 +185,7 @@ PyObject* K_GEOM::sphereMesh(PyObject* self, PyObject* args)
 /* Create a cone of center C, basis radius Rb, vertex radius Rv,
    and height H */
 // ============================================================================
-PyObject* K_GEOM::coneMesh(PyObject* self, PyObject* args)
+PyObject* K_GEOM::cone(PyObject* self, PyObject* args)
 {
   E_Int N;
   E_Float xc, yc, zc;
@@ -193,7 +193,7 @@ PyObject* K_GEOM::coneMesh(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, TRRR_ RRR_ I_,
                     &xc, &yc, &zc, &Rb, &Rv, &H, &N))
   {
-      return NULL;
+    return NULL;
   }
   E_Float pi = 4*atan(1.);
 
@@ -250,7 +250,7 @@ PyObject* K_GEOM::coneMesh(PyObject* self, PyObject* args)
 // ============================================================================
 /* Create a triangle */
 // ============================================================================
-PyObject* K_GEOM::triangleMesh(PyObject* self, PyObject* args)
+PyObject* K_GEOM::triangle(PyObject* self, PyObject* args)
 {
   E_Float x1, y1, z1;
   E_Float x2, y2, z2;
@@ -258,7 +258,7 @@ PyObject* K_GEOM::triangleMesh(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, TRRR_ TRRR_ TRRR_,
                     &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3))
   {
-      return NULL;
+    return NULL;
   }
 
   E_Int api = 1; // TODO
@@ -283,7 +283,7 @@ PyObject* K_GEOM::triangleMesh(PyObject* self, PyObject* args)
 // ============================================================================
 /* Create a quadrangle */
 // ============================================================================
-PyObject* K_GEOM::quadrangleMesh(PyObject* self, PyObject* args)
+PyObject* K_GEOM::quadrangle(PyObject* self, PyObject* args)
 {
   E_Float x1, y1, z1;
   E_Float x2, y2, z2;
@@ -292,7 +292,7 @@ PyObject* K_GEOM::quadrangleMesh(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, TRRR_ TRRR_ TRRR_ TRRR_,
                     &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3, &x4, &y4, &z4))
   {
-      return NULL;
+    return NULL;
   }
 
   E_Int api = 1; // TODO

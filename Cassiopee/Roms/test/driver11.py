@@ -33,7 +33,7 @@ line2 = D.Line('line2', P7, P8)
 line3 = D.Line('line3', P8, P1)
 
 # Create sketch
-sketch1 = D.Sketch('sketch1', [spline1, line1, line2, line3])
+sketch1 = D.Sketch('sketch1', [spline1, line1, line2, line3], h=[0.1,0.1,0.1])
 
 # Create volume mesh
 vol1 = D.Volume2D('vol1', [sketch1])
@@ -43,15 +43,14 @@ D.DRIVER.solve()
 
 D.DRIVER.instantiate({'hauteur': 0.5})
 sketch1.writeCAD('out.step')
-refMesh = sketch1.mesh(0.1,0.1,0.1)
+refMesh = sketch1.mesh()
 
 D.DRIVER.instantiate({'hauteur': 0.8})
-#m = sketch1.rmesh2(refMesh,0.1,0.1,0.1)
-m = sketch1.rmesh(refMesh)
-m = sketch1.pmesh(refMesh)
-import Converter
-Converter.convertArrays2File(m, 'out.plt')
-exit(0)
+#m = sketch1.rmesh2(refMesh)
+#m = sketch1.rmesh(refMesh)
+#m = sketch1.pmesh(refMesh)
+#import Converter
+#Converter.convertArrays2File(m, 'out.plt')
 
 #refMesh = sketch1.Mesh(0.1,0.1,0.1)
 #D.DRIVER.instantiate({'hauteur': 0.8})
@@ -80,9 +79,8 @@ import Converter
 import time
 pt = D.DRIVER.walkDOE()
 while pt is not None:
-    m = vol1.mesh(0.1,0.1,0.1)
-    Converter.convertArrays2File(m, 'out.plt')
-    #m = sketch1.mesh(0.1,0.1,0.1)
+    m = vol1.mesh()
+    #m = sketch1.mesh()
     CPlot.display(m)
     pt = D.DRIVER.walkDOE()
     time.sleep(0.5)

@@ -28,7 +28,7 @@ sketch2.position.z.v = 1.
 sketch2.update()
 
 # surface
-surface1 = D.Loft('surface1', [sketch1, sketch2])
+surface1 = D.Loft('surface1', [sketch1, sketch2], h=[0.01,0.01,0.01])
 
 # test
 D.DRIVER.solve()
@@ -37,15 +37,15 @@ D.DRIVER.instantiate({'epaisseur': 0.8})
 
 surface1.writeCAD('out.step')
 
-#mesh = sketch1.mesh(0.01, 0.01, 0.01)
-#mesh += sketch2.mesh(0.01, 0.01, 0.01)
-mesh = surface1.mesh(0.01, 0.01, 0.01)
+#mesh = sketch1.mesh()
+#mesh += sketch2.mesh()
+mesh = surface1.mesh()
 D.DRIVER._diff(surface1, mesh)
 Converter.convertArrays2File(mesh, 'out.plt')
 
 import CPlot, time
 for i in range(50):
     D.DRIVER.instantiate({'epaisseur': 0.3+i/50.})
-    mesh = surface1.mesh(0.01, 0.01, 0.01)
+    mesh = surface1.mesh()
     CPlot.display(mesh)
     time.sleep(0.5)

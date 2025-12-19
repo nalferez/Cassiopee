@@ -499,7 +499,7 @@ void k6nacas4m(E_Int im, E_Int ip, E_Int ith,
 // ============================================================================
 /* Create a naca profile line of N points */
 // ============================================================================
-PyObject* K_GEOM::nacaMesh(PyObject* self, PyObject* args)
+PyObject* K_GEOM::naca(PyObject* self, PyObject* args)
 {
   E_Int N; E_Float e;
   E_Int im, ip, it, ith, iq, sharpte;

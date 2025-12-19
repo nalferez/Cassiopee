@@ -28,7 +28,7 @@ using namespace K_FLD;
 /* Generate a 2D surface mesh defined by an array from 1D line mesh defined by
    array and a line generator arrayLine */
 // ============================================================================
-PyObject* K_GEOM::lineGenerateMesh(PyObject* self, PyObject* args)
+PyObject* K_GEOM::lineGenerate(PyObject* self, PyObject* args)
 {
   PyObject* array; PyObject* arrayLine;
   if (!PYPARSETUPLE_(args, OO_, &array, &arrayLine)) return NULL;
