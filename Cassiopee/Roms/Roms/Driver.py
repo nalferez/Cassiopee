@@ -797,7 +797,7 @@ class Volume2D():
         borders = []
         for c, s in enumerate(self.sketches):
             m = s.mesh()
-            if c < len(self.orders) and self.orders[c] == -1: m = Transform.reorder(m, (-1,2,3)) 
+            if c < len(self.orders) and self.orders[c] == -1: m = Transform.reorder(m, (-1,2,3))
             borders += m
         borders = Converter.convertArray2Tetra(borders)
         borders = Transform.join(borders)
