@@ -320,7 +320,7 @@ class Entity:
             OCC._addSuperEllipse(self.hook, self.P[0].v(), self.P[1].v(), self.P[2].v(), self.P[3].v, self.P[4].v)
         elif self.type == "naca4":
             import Geom
-            naca = Geom.naca("%01d%01d%02d"%(int(self.P[0].v),int(self.P[1].v),int(self.P[2].v)), N=51)
+            naca = Geom.naca("%01d%01d%02d"%(int(self.P[0].v),int(self.P[1].v),int(self.P[2].v)), N=51, sharpte=True)
             OCC._addSpline(self.hook, naca[1], 1, 3)
         else:
             raise(ValueError, "Unknown entity type %s."%self.type)

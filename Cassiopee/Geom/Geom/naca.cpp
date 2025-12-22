@@ -580,8 +580,25 @@ PyObject* K_GEOM::naca(PyObject* self, PyObject* args)
       k6nacas4g_(im, ip, it, sharpte,
                  npt, x, y , z, xl.begin());
     }
-    coord.reAllocMat(N, 3);
-    tpl = K_ARRAY::buildArray3(coord, "x,y,z", N, 1, 1, api);
+    // change numerotation
+    FldArrayF coord2(2*npt, 3);
+    E_Float* x2 = coord2.begin(1);
+    E_Float* y2 = coord2.begin(2);
+    E_Float* z2 = coord2.begin(3);
+    for (E_Int i = 0; i < npt; i++)
+    {
+      x2[i] = x[npt-1-i];
+      y2[i] = y[npt-1-i];
+      z2[i] = z[npt-1-i];
+    }
+    for (E_Int i = 0; i < npt; i++)
+    {
+      x2[i+npt] = x[2*npt-3-i];
+      y2[i+npt] = y[2*npt-3-i];
+      z2[i+npt] = z[2*npt-3-i];
+    }
+    coord2.reAllocMat(N, 3);
+    tpl = K_ARRAY::buildArray3(coord2, "x,y,z", N, 1, 1, api);
   }
 
   return tpl;

@@ -41,7 +41,7 @@ sketch1 = D.Sketch('sketch1', [naca1], h=[0.01,0.01,0.01])
 sketch2 = D.Sketch('sketch2', [line1,line2,line3,line4], h=[1.,1.,1.])
 
 # Create volume
-vol1 = D.Volume2D('vol1', [sketch1, sketch2], orders=[-1,-1])
+vol1 = D.Volume2D('vol1', [sketch1, sketch2], orders=[+1,-1])
 
 # solve
 D.DRIVER.solve()
