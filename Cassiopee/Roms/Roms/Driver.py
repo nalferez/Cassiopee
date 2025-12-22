@@ -416,7 +416,7 @@ class Sketch():
         # reference mesh for Dmesh
         self.refMesh = None # arrays
         self.RefMesh = None # zone list (pytree)
-        
+
     def add(self, entity):
         self.entities.append(entity)
 
@@ -524,7 +524,7 @@ class Sketch():
 
     def dmesh(self):
         return self.rmesh(self.refMesh)
-    
+
 
     # Compute a rmesh identically to reference mesh that is topologically
     # equivalent (same names). copy distributions, return arrays
@@ -842,7 +842,7 @@ class Volume2D():
         # keep borders
         self.refBorders = []
         for s in self.sketches: self.refBorders.append(s.mesh())
-        
+
         # build refMesh
         self.RefMesh = self.Mesh()
         import Transform.PyTree as T
@@ -855,7 +855,7 @@ class Volume2D():
         a = T.contract(a, (0,0,0), (1,0,0), (0,1,0), 0.1)
         self.RefMesh2 = a
         R._copyGrid2GridInit(self.RefMesh, mode=1)
-        
+
         # identify borders in bc
         bc = C.extractBCOfName(self.RefMesh2, "wall", reorder=False)[0]
         xc = Internal.getNodeFromName2(bc, "CoordinateX")
@@ -880,7 +880,7 @@ class Volume2D():
                 out.append(nodes)
             self.inds2.append(out)
         Converter.freeHook(hook)
-        
+
         # build defTree
         import Ael.Quantum as KDG
         DeformationArgs={
@@ -941,7 +941,7 @@ class Volume2D():
         XB1[:] = XA1[:] + DA1[:len(DA1)//2]
         XB2[:] = XA2[:] + DA2[:len(DA2)//2]
         XB3[:] = XA3[:] + DA3[:len(DA3)//2]
-        
+
         return self.RefMesh
 
 #============================================================
