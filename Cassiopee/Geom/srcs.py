@@ -32,8 +32,4 @@ cpp_srcs = ["Geom/naca.cpp",
 #==============================================================================
 # Fichiers fortran
 #==============================================================================
-for_srcs = ['Geom/Fortran/NacaF.for',
-            'Geom/Fortran/nacaS4GeneF.for',
-            'Geom/Fortran/nacaS5GeneF.for',
-            'Geom/Fortran/nacaS4ModGeneF.for',
-            'Geom/Fortran/AxisymF.for']
+for_srcs = []
