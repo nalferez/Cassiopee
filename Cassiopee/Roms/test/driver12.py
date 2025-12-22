@@ -40,55 +40,22 @@ sketch1 = D.Sketch('sketch1', [naca1], h=[0.01,0.01,0.01])
 
 sketch2 = D.Sketch('sketch2', [line1,line2,line3,line4], h=[1.,1.,1.])
 
-# Create volume mesh
+# Create volume
 vol1 = D.Volume2D('vol1', [sketch1, sketch2], orders=[-1,-1])
 
 # solve
 D.DRIVER.solve()
 
-#D.DRIVER.instantiate({'M':0., 'P': 0., 'xx': 12.})
-#sketch1.writeCAD('out.step')
-#exit(0)
+D.DRIVER.instantiate({'M':0., 'P': 0., 'xx': 12.})
+m = vol1.MeshAsReference()
 
-#refMesh = sketch1.mesh(0.1,0.1,0.1)
-
-#D.DRIVER.instantiate({'hauteur': 0.8})
-#m = sketch1.rmesh2(refMesh,0.1,0.1,0.1)
-#m = sketch1.rmesh(refMesh)
-#m = sketch1.pmesh(refMesh)
-#import Converter
-#Converter.convertArrays2File(m, 'out.plt')
-
-#refMesh = sketch1.Mesh(0.1,0.1,0.1)
-#D.DRIVER.instantiate({'hauteur': 0.8})
-#m = sketch1.Rmesh(refMesh,0.1,0.1,0.1)
-#m = sketch1.Rmesh2(refMesh) # FAIL
-#import Converter.PyTree as C
-#C.convertPyTree2File(m, 'out.cgns')
-#exit(0)
-
-#m = sketch1.rmesh2(m)
-
-#import Converter.PyTree as C
-#C.convertPyTree2File(m, 'out.cgns')
-
-# direct mesh
-#refMesh = vol1.SetReferenceMesh(0.1,0.1,0.1)
-#C.convertPyTree2File(refMesh, "out.cgns")
-
-# indirect mesh
-#D.DRIVER.instantiate({'hauteur': 0.7})
-#dmesh = vol1.Dmesh()
-
-#import CPlot.PyTree as CPlot
-import CPlot
-import Converter
+import CPlot.PyTree as CPlot
 import time
 pt = D.DRIVER.walkDOE()
 while pt is not None:
-    m = vol1.mesh()
-    #Converter.convertArrays2File(m, 'out.plt')
-    #m = sketch1.mesh(0.01,0.01,0.01)
+    #m = vol1.Mesh()
+    #m = sketch1.Mesh()
+    m = vol1.Dmesh()
     CPlot.display(m)
     pt = D.DRIVER.walkDOE()
     time.sleep(0.5)

@@ -3,6 +3,7 @@ import sympy, numpy, re, itertools
 import Converter.Mpi as Cmpi
 import Converter.PyTree as C
 import Converter.Internal as Internal
+import RigidMotion.PyTree as R
 import Converter
 import OCC
 
@@ -411,8 +412,11 @@ class Sketch():
         # meshing: (hmin,hmax,hausd)
         if h is not None: self.h = h
         # meshing: list of distribs for each entity
-        self.distrib = None
-
+        self.distribs = None
+        # reference mesh for Dmesh
+        self.refMesh = None # arrays
+        self.RefMesh = None # zone list (pytree)
+        
     def add(self, entity):
         self.entities.append(entity)
 
@@ -450,7 +454,7 @@ class Sketch():
     # mesh sketch, return arrays
     def mesh(self):
         """Mesh edges."""
-        if self.distrib is not None:
+        if self.distribs is not None:
             edges = []
             for c, e in enumerate(self.distrib):
                 e = OCC.occ.meshOneEdge(self.hook, c+1, -1, -1, -1, -1, e)
@@ -473,6 +477,14 @@ class Sketch():
                                         Internal.__FlowSolutionCenters__)
             out.append(z)
         return out
+
+    def meshAsReference(self):
+        self.refMesh = self.mesh()
+        return self.refMesh
+
+    def MeshAsReference(self):
+        self.RefMesh = self.Mesh()
+        return self.RefMesh
 
     # Compute a rmesh identically to a reference mesh that is topologically
     # equivalent (same names). copy distributions. remesh on mesh.
@@ -510,10 +522,14 @@ class Sketch():
             out.append(e)
         return out
 
+    def dmesh(self):
+        return self.rmesh(self.refMesh)
+    
+
     # Compute a rmesh identically to reference mesh that is topologically
     # equivalent (same names). copy distributions, return arrays
-    def Rmesh(self, refEdges):
-        arrays = C.getAllFields(refEdges, 'nodes', api=3)
+    def Rmesh(self, RefEdges):
+        arrays = C.getAllFields(RefEdges, 'nodes', api=3)
         edges = self.rmesh(arrays)
         out = []
         for c, e in enumerate(edges):
@@ -523,6 +539,9 @@ class Sketch():
                                         Internal.__FlowSolutionCenters__)
             out.append(z)
         return out
+
+    def Dmesh(self):
+        return self.Rmesh(self.RefMesh)
 
     # project refEdges on CAD to get new mesh. Not working.
     def pmesh(self, refEdges):
@@ -575,6 +594,8 @@ class Surface():
         DRIVER.registerSurface(self)
         # meshing: (hmin,hmax,hausd). supersedes sketch settings.
         if h is not None: self.h = h
+        # reference mesh for Dmesh
+        self.RefMesh = None # zone list (pytree)
 
     def add(self, sketch):
         """Add a sketch to the surface definition."""
@@ -786,9 +807,12 @@ class Volume2D():
         # optional ordering
         self.orders = orders
         # reference mesh for Dmesh
-        self.refMesh = None
-        self.refBorders = None
-        self.defTree = None
+        self.RefMesh = None # mesh (pytree)
+        self.RefMesh2 = None # mesh with kplane (pytree)
+        self.refBorders = None # borders of ref mesh (arrays)
+        self.inds = None # indices of borders in refMesh BC
+        self.inds2 = None # indices of borders in refMesh BC with kplane
+        self.DefTree = None # def tree (pytree)
 
     def mesh(self):
         """Call the volume mesher."""
@@ -801,34 +825,64 @@ class Volume2D():
             borders += m
         borders = Converter.convertArray2Tetra(borders)
         borders = Transform.join(borders)
-        # call volume mesher
         m = Generator.T3mesher2D(borders, triangulateOnly=0, grading=1.1, metricInterpType=0)
         m = Transform.reorder(m, (1,))
         return m
 
-    def Mesh(self, hmin, hmax, hausd):
-        m = self.mesh(hmin, hmax, hausd)
+    def Mesh(self):
+        m = self.mesh()
         z = Internal.createZoneNode(self.name, m, [],
                                     Internal.__GridCoordinates__,
                                     Internal.__FlowSolutionNodes__,
                                     Internal.__FlowSolutionCenters__)
         return z
 
-    def SetReferenceMesh(self, hmin, hmax, hausd):
-        borders = []
-        for s in self.sketches:
-            borders += s.mesh(hmin, hmax, hausd)
-        self.refBorders = borders
-        refMesh = self.Mesh(hmin, hmax, hausd)
+    def MeshAsReference(self):
+        """Mesh and store the mesh for future Dmesh."""
+        # keep borders
+        self.refBorders = []
+        for s in self.sketches: self.refBorders.append(s.mesh())
+        
+        # build refMesh
+        self.RefMesh = self.Mesh()
         import Transform.PyTree as T
+        import Transform
         import Post.PyTree as P
-        import Ael.Quantum as KDG
-        a = C.convertArray2NGon(refMesh, recoverBC=True)
-        a = T.addkplane(a)
-        a = T.contract(a, (0,0,0), (1,0,0), (0,1,0), 0.1)
+        a = C.convertArray2NGon(self.RefMesh, recoverBC=False)
         p = P.exteriorFaces(a)
         C._addBC2Zone(a, 'wall', 'BCWall', subzone=p)
-        self.refMesh = a
+        a = T.addkplane(a)
+        a = T.contract(a, (0,0,0), (1,0,0), (0,1,0), 0.1)
+        self.RefMesh2 = a
+        R._copyGrid2GridInit(self.RefMesh, mode=1)
+        
+        # identify borders in bc
+        bc = C.extractBCOfName(self.RefMesh2, "wall", reorder=False)[0]
+        xc = Internal.getNodeFromName2(bc, "CoordinateX")
+        self.dx1 = numpy.empty( (xc[1].size), dtype=numpy.float64)
+        self.dy1 = numpy.empty( (xc[1].size), dtype=numpy.float64)
+        self.dz1 = numpy.empty( (xc[1].size), dtype=numpy.float64)
+        a = C.getAllFields(bc, 'nodes', api=3)[0]
+        hook = Converter.createHook(a, function='nodes')
+        self.inds = []
+        for borders in self.refBorders:
+            out = []
+            for b in borders:
+                nodes = Converter.identifyNodes(hook, b)
+                out.append(nodes)
+            self.inds.append(out)
+        self.inds2 = []
+        for borders in self.refBorders:
+            out = []
+            for b in borders:
+                b = Transform.translate(b, (0,0,0.1))
+                nodes = Converter.identifyNodes(hook, b)
+                out.append(nodes)
+            self.inds2.append(out)
+        Converter.freeHook(hook)
+        
+        # build defTree
+        import Ael.Quantum as KDG
         DeformationArgs={
             "Approach"          :  "Quaternions",
             "Epsilon"           :  0.15,
@@ -837,35 +891,58 @@ class Volume2D():
             "Ndivision"         :  100,
             "NullDisplacements" :  "Weighted",
             "Smoothing"         :  False }
-        self.defTree = KDG.KeDefGrid(a, **DeformationArgs)
-        self.defTree.set_Amplitude(1.)
-        return refMesh
+        self.DefTree = KDG.KeDefGrid(self.RefMesh2, **DeformationArgs)
+        self.DefTree.set_Amplitude(1.)
+        return self.RefMesh
 
     def Dmesh(self):
-        # call sketch mesher
-        borders = []
+        """Mesh by deformation."""
+        self.dx1[:] = 0.; self.dy1[:] = 0.; self.dz1[:] = 0.
+
+        # call sketch mesher on borders
         for c, s in enumerate(self.sketches):
-            borders.append(s.rmesh2(self.refBorders[c]))
-
-        import RigidMotion.PyTree as R
-        R._copyGrid2GridInit(self.refTree, mode=1)
-        bc = C.extractBCOfName(self.refTree, "wall", reorder=False)[0]
-        dx1 = Internal.getNodeFromName2(bc, "CoordinateX")[1]
-        dy1 = Internal.getNodeFromName2(bc, "CoordinateY")[1]
-        dz1 = Internal.getNodeFromName2(bc, "CoordinateZ")[1]
-        dx1[:] = 0.; dy1[:] = 0.; dz1[:] = 0.
-
-        for b in borders:
-            p = b[1]
+            out = s.rmesh(self.refBorders[c])
+            for d, b in enumerate(out):
+                b = out[d][1]
+                bo = self.refBorders[c][d][1]
+                inds = self.inds[c][d]
+                inds2 = self.inds2[c][d]
+                self.dx1[inds[:]-1] = b[0,:] - bo[0,:]
+                self.dy1[inds[:]-1] = b[1,:] - bo[1,:]
+                self.dz1[inds[:]-1] = b[2,:] - bo[2,:]
+                self.dx1[inds2[:]-1] = b[0,:] - bo[0,:]
+                self.dy1[inds2[:]-1] = b[1,:] - bo[1,:]
+                self.dz1[inds2[:]-1] = b[2,:] - bo[2,:]
         # set displacement on surfaces (zoneName#bcName)
-        #defTree.setBndSurfTo("%s#wall"%self.name, "imposed", [dx1,dy1,dz1]) # [dx,dy,dz]
+        self.DefTree.setBndSurfTo("%s#wall"%self.name, "imposed", [self.dx1,self.dy1,self.dz1]) # [dx,dy,dz]
         # deform
-        #defTree.makeSources()
-        #defTree.computeMeshDisplacement()
-        # copie Displacement#0/DisplacementX dans Coordinates
-        #R._evalDeformationPosition(t)
+        self.DefTree.makeSources()
+        self.DefTree.computeMeshDisplacement()
 
-        return None
+        # copie Displacement#0/DisplacementX dans Coordinates
+        zones = Internal.getZones(self.RefMesh)
+        z1 = zones[0]
+        cont = Internal.getNodeFromName1(z1, "GridCoordinates#Init")
+        XA1 = Internal.getNodeFromName1(cont, "CoordinateX")[1]
+        XA2 = Internal.getNodeFromName1(cont, "CoordinateY")[1]
+        XA3 = Internal.getNodeFromName1(cont, "CoordinateZ")[1]
+        cont = Internal.getNodeFromName1(z1, "GridCoordinates")
+        XB1 = Internal.getNodeFromName1(cont, "CoordinateX")[1]
+        XB2 = Internal.getNodeFromName1(cont, "CoordinateY")[1]
+        XB3 = Internal.getNodeFromName1(cont, "CoordinateZ")[1]
+
+        zones = Internal.getZones(self.RefMesh2)
+        z2 = zones[0]
+        defcont = Internal.getNodeFromName1(z2, "Displacement#0")
+        DA1 = Internal.getNodeFromName1(defcont, "DisplacementX")[1]
+        DA2 = Internal.getNodeFromName1(defcont, "DisplacementY")[1]
+        DA3 = Internal.getNodeFromName1(defcont, "DisplacementZ")[1]
+
+        XB1[:] = XA1[:] + DA1[:len(DA1)//2]
+        XB2[:] = XA2[:] + DA2[:len(DA2)//2]
+        XB3[:] = XA3[:] + DA3[:len(DA3)//2]
+        
+        return self.RefMesh
 
 #============================================================
 class Eq:

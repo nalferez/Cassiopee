@@ -321,7 +321,6 @@ def trace(text=">>> IN XXX: ", cpu=None, mem=None, reset=False, fileName=None, m
         minutes = int((dt % 3600) // 60)
         seconds = (dt % 60)
         msg += ' [%g hr %g min %g sec]'%(hours, minutes, seconds)
-        #msg += ' [%g secs]'%dt
     if TRACESTATE['mem']:
         if peak == -1: # peak is not known
             if tot > 1.e6: msg += '[%f GB]'%(tot/1.e6)

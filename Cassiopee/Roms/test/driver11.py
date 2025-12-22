@@ -35,52 +35,24 @@ line3 = D.Line('line3', P8, P1)
 # Create sketch
 sketch1 = D.Sketch('sketch1', [spline1, line1, line2, line3], h=[0.1,0.1,0.1])
 
-# Create volume mesh
+# Create volume
 vol1 = D.Volume2D('vol1', [sketch1])
 
 # solve
 D.DRIVER.solve()
 
 D.DRIVER.instantiate({'hauteur': 0.5})
-sketch1.writeCAD('out.step')
-refMesh = sketch1.mesh()
-
-D.DRIVER.instantiate({'hauteur': 0.8})
-#m = sketch1.rmesh2(refMesh)
-#m = sketch1.rmesh(refMesh)
-#m = sketch1.pmesh(refMesh)
-#import Converter
-#Converter.convertArrays2File(m, 'out.plt')
-
-#refMesh = sketch1.Mesh(0.1,0.1,0.1)
+m = vol1.MeshAsReference()
 #D.DRIVER.instantiate({'hauteur': 0.8})
-#m = sketch1.Rmesh(refMesh,0.1,0.1,0.1)
-#m = sketch1.Rmesh2(refMesh) # FAIL
-#import Converter.PyTree as C
-#C.convertPyTree2File(m, 'out.cgns')
-#exit(0)
+#m = vol1.Dmesh()
 
-#m = sketch1.rmesh2(m)
-
-#import Converter.PyTree as C
-#C.convertPyTree2File(m, 'out.cgns')
-
-# direct mesh
-#refMesh = vol1.SetReferenceMesh(0.1,0.1,0.1)
-#C.convertPyTree2File(refMesh, "out.cgns")
-
-# indirect mesh
-#D.DRIVER.instantiate({'hauteur': 0.7})
-#dmesh = vol1.Dmesh()
-
-#import CPlot.PyTree as CPlot
-import CPlot
-import Converter
+import CPlot.PyTree as CPlot
 import time
 pt = D.DRIVER.walkDOE()
 while pt is not None:
-    m = vol1.mesh()
-    #m = sketch1.mesh()
+    #m = vol1.Mesh()
+    #m = sketch1.Mesh()
+    m = vol1.Dmesh()
     CPlot.display(m)
     pt = D.DRIVER.walkDOE()
     time.sleep(0.5)
