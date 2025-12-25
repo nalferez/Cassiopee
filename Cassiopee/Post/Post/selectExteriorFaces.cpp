@@ -1768,7 +1768,24 @@ PyObject* K_POST::selectExteriorFacesME(char* varString, FldArrayF& f,
       ntotUniqueFaces += tmp_nfpc2[ic];
     }
   }
-  if (ntotUniqueFaces == 0) return NULL;  // can only happen for a closed 1D contour
+
+  if (ntotUniqueFaces == 0)  // can only happen for a closed 1D contour
+  {
+		// Free memory
+	  for (E_Int i = 0; i < nthreads; i++)
+	  {
+	    delete [] tnextfpc[i];
+	    delete [] toffset[i];
+	  }
+	  delete [] toffset[nthreads];
+	  delete [] tnextfpc; delete [] toffset;
+	
+	  RELEASESHAREDU(tpl, f2, cn2);
+	  delete [] eltType2;
+	  for (size_t ic = 0; ic < eltTypes.size(); ic++) delete [] eltTypes[ic];
+		return NULL;
+  }
+
   if (boolIndir)
   {
     indicesFaces = K_NUMPY::buildNumpyArray(ntotUniqueFaces, 1, 1, 0);
