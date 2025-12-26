@@ -559,6 +559,7 @@ def meshFaceWithMetric(hook, i, edges, hmin, hmax, hausd, mesh, FAILED):
         a = Generator.close(a, 1.e-10) # needed for periodic faces
         if occ.getFaceOrientation(hook, i) == 0:
             a = Transform.reorder(a, (-1,))
+        _unscaleUV([a], T, vu='u', vv='v')
         mesh.append(a)
         SUCCESS = True
     except Exception as e:

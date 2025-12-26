@@ -54,7 +54,7 @@ private:
     
 #ifdef DEBUG_MESHER
 public:
-    bool dbg_flag;
+  bool dbg_flag;
 #endif
 };
 
@@ -70,14 +70,12 @@ SurfaceMesher<SurfaceType>::run(SurfaceMeshData<SurfaceType>& data)
   
   metric_aniso.set_pos2D(*data.pos);// hack to avoid to create an argument for init_metric (that is not required for other metric than GeomMetric
 
-  //std::cout << "run 0" << std::endl;
   metric_aniso.init_metric(data.metrics, data.pos3D, *data.connectB, data.hardNodes);
   
   parent_t::clear(); // clear container attributes
   parent_t::set(metric_aniso);
 
   parent_t::mode = mode;
-  //std::cout << "run 1" << std::endl;
   
 #ifdef DEBUG_MESHER
   parent_t::dbg_flag = dbg_flag;
@@ -120,7 +118,7 @@ SurfaceMesher<SurfaceType>::__mapToSurface
 
   //pos3D.clear();
 
-  E_Int nfld = 3;
+  E_Int nfld = 5;
   pos3D.resize(nfld, COLS);
 
   for (size_type c = col0; c < COLS; c++)
@@ -129,11 +127,13 @@ SurfaceMesher<SurfaceType>::__mapToSurface
     pos3D(0,c) = pt[0];
     pos3D(1,c) = pt[1];
     pos3D(2,c) = pt[2];
-    //pos3D(3,c) = pos2D(0,c);
-    //pos3D(4,c) = pos2D(1,c);
+  }
+  for (size_type c = 0; c < COLS; c++)
+  {
+    pos3D(3,c) = pos2D(0,c); // uv
+    pos3D(4,c) = pos2D(1,c);
   }
 }
-
 }
 
 #endif

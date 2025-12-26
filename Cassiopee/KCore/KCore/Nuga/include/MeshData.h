@@ -29,7 +29,7 @@ namespace DELAUNAY
   class MeshData
   {
   public:
-    typedef E_Int                        size_type;
+    typedef E_Int size_type;
     typedef NUGA::int_vector_type  int_vector_type;
     typedef NUGA::bool_vector_type bool_vector_type;
     
@@ -110,8 +110,8 @@ namespace DELAUNAY
     {
     }
 
-    const SurfaceType&  surface;
-    K_FLD::FloatArray   pos3D;
+    const SurfaceType& surface;
+    K_FLD::FloatArray pos3D;
   };
 }
 

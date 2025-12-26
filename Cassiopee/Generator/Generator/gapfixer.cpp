@@ -148,10 +148,10 @@ PyObject* K_GENERATOR::gapfixer(PyObject* self, PyObject* args)
     delete cndum;  // always delete because DynArray
   }
   
-  K_FLD::FloatArray &posB0 = *fB0;
-  K_FLD::FloatArray &posC = *fC;
+  K_FLD::FloatArray& posB0 = *fB0;
+  K_FLD::FloatArray& posC = *fC;
   K_FLD::FloatArray posG;
-  K_FLD::IntArray   &connectB0 = *cn1, connectG;
+  K_FLD::IntArray& connectB0 = *cn1, connectG;
 
   E_Int err = GapFixer::run(posC, ni, posB0, connectB0, posG, connectG, refine, fHP);
 
@@ -164,7 +164,14 @@ PyObject* K_GENERATOR::gapfixer(PyObject* self, PyObject* args)
     return NULL;
   }
 
-  PyObject* tpl = K_ARRAY::buildArray(posG, varString, connectG, -1, "TRI",
+  // when using surface, posG contains also u,v
+  // for export in gapfixer, I suppress uv
+  FloatArray posN(3, posG.cols());
+  for (E_Int j = 0; j < posG.cols(); j++)
+    for (E_Int i = 0; i < 3; i++)
+      posN(i,j) = posG(i,j);
+
+  PyObject* tpl = K_ARRAY::buildArray(posN, varString, connectG, -1, "TRI",
                                       false);
   delete fB0; delete fC; delete fHP;
   //if (res1 == 2) delete cn1;  // only for FldArray

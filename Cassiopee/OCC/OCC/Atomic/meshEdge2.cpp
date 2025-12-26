@@ -1507,7 +1507,6 @@ PyObject* K_OCC::meshEdgesOfFace(PyObject* self, PyObject* args)
     size_t nedges = discreteWire.size();
     if (wclosed == BRepCheck_NoError)
     {
-      //printf("closing the discrete wire\n");
       // ferme le wire discret
       // Les edges sont normalement correctement orientes (tail to head)
       for (size_t i = 0; i < nedges; i++)
