@@ -31,7 +31,7 @@ D.DRIVER.instantiate({'epaisseur': 1.5})
 surface1.writeCAD('out.step')
 
 mesh = surface1.mesh()
-D.DRIVER._diff(surface1, mesh)
+D.DRIVER._dXdmu(surface1, mesh)
 Converter.convertArrays2File(mesh, 'out.plt')
 
 #import CPlot, time

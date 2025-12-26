@@ -31,7 +31,7 @@ D.DRIVER.solve()
 D.DRIVER.instantiate({'epaisseur': 0.8})
 sketch1.writeCAD('out.step')
 mesh = sketch1.mesh()
-D.DRIVER._diff(sketch1, mesh)
+D.DRIVER._dXdmu(sketch1, mesh)
 Converter.convertArrays2File(mesh, 'dout.plt')
 
 # Build DOE
@@ -62,8 +62,3 @@ for i in range(20):
     mesh = sketch1.mesh()
     CPlot.display(mesh)
     time.sleep(0.5)
-
-# build dmesh
-mesh1 = D.DRIVER.dmesh(sketch1, mesh, ['epaisseur'], 0.1)
-mesh2 = D.DRIVER.dmesh(sketch1, mesh1, ['epaisseur'], 0.1)
-Converter.convertArrays2File(mesh+mesh1+mesh2, 'out.plt')

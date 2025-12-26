@@ -57,5 +57,6 @@ while pt is not None:
     #m = sketch1.Mesh()
     m = vol1.Dmesh()
     CPlot.display(m)
+    CPlot.setState(message="M=%d P=%d xx=%d"%(M.v,P.v,xx.v))
     pt = D.DRIVER.walkDOE()
     time.sleep(0.5)

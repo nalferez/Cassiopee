@@ -374,7 +374,7 @@ def SuperEllipse(name=None, C=(0.,0.,0.), R1=1., R2=1., N=4, samples=36):
 def Arc(name=None, P1=(0.,0.,0.), P2=(0.,0.,0.), P3=(0.,0.,0.)):
     return Entity(name, [P1, P2, P3], type="arc")
 
-# naca 4 digits
+# naca from parametric 4 digits
 def Naca(name=None, M=0., P=0., e=12.):
     return Entity(name, [M, P, e], type="naca4")
 
@@ -418,10 +418,13 @@ class Sketch():
         self.RefMesh = None # zone list (pytree)
 
     def add(self, entity):
+        """Add an entity to sketch"""
         self.entities.append(entity)
+        self.update()
 
-    # update the CAD from parameters
+    # update the CAD hook from parameters
     def update(self):
+        """Update CAD hook."""
         if self.hook is not None: OCC.occ.freeHook(self.hook)
         self.hook = OCC.createEmptyCAD('sketch.step')
         hooks = []
@@ -433,6 +436,7 @@ class Sketch():
 
     # check if parameters are valid
     def check(self):
+        """Check parameters validity."""
         for e in self.entities:
             ret = e.check()
             if ret == 1: return 1
@@ -440,6 +444,7 @@ class Sketch():
 
     # print information
     def print(self, shift=0):
+        """Print informations."""
         for e in self.entities:
             print(" "*shift, e.name)
             e.print(shift+4)
@@ -449,6 +454,7 @@ class Sketch():
 
     # export CAD to file
     def writeCAD(self, fileName, format="fmt_step"):
+        """Write CAD to file."""
         OCC.writeCAD(self.hook, fileName, format)
 
     # mesh sketch, return arrays
@@ -478,35 +484,17 @@ class Sketch():
             out.append(z)
         return out
 
+    # mesh sketch (arrays)
     def meshAsReference(self):
+        """Mesh and store mesh as reference."""
         self.refMesh = self.mesh()
         return self.refMesh
 
+    # mesh sketch (zones)
     def MeshAsReference(self):
+        """Mesh and store mesh as reference."""
         self.RefMesh = self.Mesh()
         return self.RefMesh
-
-    # Compute a rmesh identically to a reference mesh that is topologically
-    # equivalent (same names). copy distributions. remesh on mesh.
-    def rmesh2(self, refEdges, hmin, hmax, hausd):
-        import Geom, Generator
-        mesh = self.mesh(hmin, hmax, hausd)
-        for c, i in enumerate(refEdges):
-            d = Geom.getDistribution(i)
-            mesh[c] = Generator.map(mesh[c], d)
-        return mesh
-
-    def Rmesh2(self, refEdges, hmin, hmax, hausd):
-        arrays = C.getAllFields(refEdges, 'nodes', api=1)
-        edges = self.rmesh2(arrays, hmin, hmax, hausd)
-        out = []
-        for c, e in enumerate(edges):
-            z = Internal.createZoneNode('%s%03d'%(self.name, c+1), e, [],
-                                        Internal.__GridCoordinates__,
-                                        Internal.__FlowSolutionNodes__,
-                                        Internal.__FlowSolutionCenters__)
-            out.append(z)
-        return out
 
     # Compute a rmesh identically to a reference mesh that is topologically
     # equivalent (same names). copy distributions, return arrays, remesh on CAD.
@@ -522,10 +510,6 @@ class Sketch():
             out.append(e)
         return out
 
-    def dmesh(self):
-        return self.rmesh(self.refMesh)
-
-
     # Compute a rmesh identically to reference mesh that is topologically
     # equivalent (same names). copy distributions, return arrays
     def Rmesh(self, RefEdges):
@@ -540,18 +524,13 @@ class Sketch():
             out.append(z)
         return out
 
-    def Dmesh(self):
-        return self.Rmesh(self.RefMesh)
+    def dmesh(self):
+        """Remesh using reference mesh distributions."""
+        return self.rmesh(self.refMesh)
 
-    # project refEdges on CAD to get new mesh. Not working.
-    def pmesh(self, refEdges):
-        out = []
-        for c, e in enumerate(refEdges):
-            e2 = Converter.copy(e)
-            #OCC._projectOnEdges(self.hook, e2, c+1)
-            out.append(e2)
-        OCC._projectOnEdges(self.hook, out)
-        return out
+    def Dmesh(self):
+        """Remesh using reference mesh distributions."""
+        return self.Rmesh(self.RefMesh)
 
 #============================================================
 class Surface():
@@ -804,7 +783,7 @@ class Volume2D():
         else: self.name = getName("vol")
         # sketches that define the bounded volume
         self.sketches = listSketches
-        # optional ordering
+        # optional ordering of sketches
         self.orders = orders
         # reference mesh for Dmesh
         self.RefMesh = None # mesh (pytree)
@@ -1142,9 +1121,7 @@ class Driver:
     # OUT: return True if valid, False if invalid
     def instantiate(self, paramValues):
         """Instantiate all from given paramValues."""
-
         valid = True # return
-
         # set free params from input
         error = False
         for f in self.freeParams:
@@ -1193,10 +1170,10 @@ class Driver:
         # return True if valid in range and inequation constraints
         return valid
 
-    # diff (finite difference) of free parameters on discrete mesh
+    # FD of free parameters on discrete mesh
     # if freevars is None, derivate for all free parameters else derivate for given parameters
-    def _diff(self, entity, mesh, freeParams=None, deps=1.e-6):
-        """Compute all derivatives dX/dmu on entity."""
+    def _dXdmu(self, entity, mesh, freeParams=None, deps=1.e-10):
+        """Compute derivatives dX/dmu on entity."""
         import KCore
 
         if len(self.freeParams) == 0:
@@ -1214,10 +1191,10 @@ class Driver:
             for f in self.freeParams:
                 if self.scalars[f.name].name in freeParams: listVars.append(f)
         else:
-            raise TypeError("diff: incorrect freevars.")
+            raise TypeError("Warning: dXdmu: incorrect freevars.")
 
         mesho = Converter.copy(mesh)
-
+            
         for c, f in enumerate(listVars):
             # free vars value dict
             d = {}
@@ -1229,18 +1206,13 @@ class Driver:
 
             # update CAD at param+eps
             self.instantiate(d)
-            # project mesh on modified CAD
-            if entity.type == "surface":
-                OCC._projectOnFaces(entity.hook, mesho)
-            else:
-                OCC._projectOnEdges(entity.hook, mesho)
-            #Converter.convertArrays2File(mesh+mesho, 'diff.plt')
+            mesho = entity.rmesh(mesh)
             # get derivatives
-            Converter._addVars(mesh, ['dx%d'%c, 'dy%d'%c, 'dz%d'%c])
+            Converter._addVars(mesh, ['dXd%d'%c, 'dYd%d'%c, 'dZd%d'%c])
             for p, m in enumerate(mesh):
-                pos1 = KCore.isNamePresent(m, 'dx%d'%c)
-                pos2 = KCore.isNamePresent(m, 'dy%d'%c)
-                pos3 = KCore.isNamePresent(m, 'dz%d'%c)
+                pos1 = KCore.isNamePresent(m, 'dXd%d'%c)
+                pos2 = KCore.isNamePresent(m, 'dYd%d'%c)
+                pos3 = KCore.isNamePresent(m, 'dZd%d'%c)
                 p1x = m[1]
                 p2x = mesho[p][1]
                 p1x[pos1,:] = (p2x[0,:]-p1x[0,:])/deps
@@ -1414,16 +1386,6 @@ class Driver:
             out.append(h)
             hashcode = hashcode - h*prod
         return out
-
-    # Compute a dmesh from a mesh and a deps on a parameter freevar
-    def dmesh(self, entity, mesh, freevar, deps=0.1):
-        import Converter, Transform
-        self._diff(entity, mesh, freevar, deps)
-        Converter._initVars(mesh, '{dx0} = {dx0}*%g'%deps)
-        Converter._initVars(mesh, '{dy0} = {dy0}*%g'%deps)
-        Converter._initVars(mesh, '{dz0} = {dy0}*%g'%deps)
-        mesh2 = Transform.deform(mesh, ['dx0','dy0','dz0'])
-        return mesh2
 
     # remesh input mesh to match nv points using refine
     # used nly in snapshots read (obsolete)

@@ -1780,7 +1780,7 @@ PyObject* K_POST::selectExteriorFacesME(char* varString, FldArrayF& f,
 	  delete [] toffset[nthreads];
 	  delete [] tnextfpc; delete [] toffset;
 	
-	  RELEASESHAREDU(tpl, f2, cn2);
+	  //RELEASESHAREDU(tpl, f2, cn2);
 	  delete [] eltType2;
 	  for (size_t ic = 0; ic < eltTypes.size(); ic++) delete [] eltTypes[ic];
 		return NULL;
