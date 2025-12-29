@@ -50,7 +50,7 @@ public:
   SurfaceMesherMode mode;
 
 private:
-  void __mapToSurface(const SurfaceType& surface, const K_FLD::FloatArray& pos2D, K_FLD::FloatArray& pos3D);
+  void __mapToSurface(const SurfaceType& surface, const K_FLD::FloatArray& pos2D, K_FLD::FloatArray& pos3D, E_Bool exportUV);
     
 #ifdef DEBUG_MESHER
 public:
@@ -62,8 +62,8 @@ template <typename SurfaceType>
 E_Int
 SurfaceMesher<SurfaceType>::run(SurfaceMeshData<SurfaceType>& data)
 {
-  typedef GeomMetric<Aniso2D, SurfaceType>  MetricType;
-  //typedef Mesher<Aniso2D, MetricType>       MesherType;
+  typedef GeomMetric<Aniso2D, SurfaceType> MetricType;
+  //typedef Mesher<Aniso2D, MetricType> MesherType;
 
   MetricType metric_aniso(*data.pos, data.surface, (typename MetricType::GMmode)mode.metric_mode,
                           mode.chordal_error, mode.hmin, mode.hmax, mode.growth_ratio);
@@ -85,7 +85,7 @@ SurfaceMesher<SurfaceType>::run(SurfaceMeshData<SurfaceType>& data)
 
   if (!err && (data.connectM.cols() != 0))//fixme : pos3D might have data upon entry so need to preserve them
   {
-    __mapToSurface(data.surface, *data.pos, data.pos3D);
+    __mapToSurface(data.surface, *data.pos, data.pos3D, data.exportUV);
     
     // Replace the real contour coordinates.
     /*std::vector<E_Int> Bnodes;
@@ -111,15 +111,21 @@ SurfaceMesher<SurfaceType>::run(SurfaceMeshData<SurfaceType>& data)
 template <typename SurfaceType>
 void
 SurfaceMesher<SurfaceType>::__mapToSurface
-(const SurfaceType& surface, const K_FLD::FloatArray& pos2D, K_FLD::FloatArray& pos3D)
+(const SurfaceType& surface, const K_FLD::FloatArray& pos2D, K_FLD::FloatArray& pos3D, E_Bool exportUV)
 {
   E_Float pt[3];
   size_type COLS = pos2D.cols(), col0 = pos3D.cols();
 
   //pos3D.clear();
 
-  E_Int nfld = 5;
-  pos3D.resize(nfld, COLS);
+  if (exportUV == true)
+  {
+    pos3D.resize(5, COLS);
+  }
+  else
+  {
+    pos3D.resize(3, COLS);
+  }
 
   for (size_type c = col0; c < COLS; c++)
   {
@@ -128,12 +134,14 @@ SurfaceMesher<SurfaceType>::__mapToSurface
     pos3D(1,c) = pt[1];
     pos3D(2,c) = pt[2];
   }
-  for (size_type c = 0; c < COLS; c++)
+  if (exportUV == true)
   {
-    pos3D(3,c) = pos2D(0,c); // uv
-    pos3D(4,c) = pos2D(1,c);
+    for (size_type c = 0; c < COLS; c++)
+    {
+      pos3D(3,c) = pos2D(0,c); // uv
+      pos3D(4,c) = pos2D(1,c);
+    }
   }
 }
 }
-
 #endif

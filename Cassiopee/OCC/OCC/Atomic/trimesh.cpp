@@ -167,6 +167,7 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
 
   E_Int err = 0;
   mesher.clear(); // landier
+  data.exportUV = true;
   err = mesher.run(data);
   if (err || (data.connectM.cols() == 0))
   {

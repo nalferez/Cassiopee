@@ -164,14 +164,7 @@ PyObject* K_GENERATOR::gapfixer(PyObject* self, PyObject* args)
     return NULL;
   }
 
-  // when using surface, posG contains also u,v
-  // for export in gapfixer, I suppress uv
-  FloatArray posN(3, posG.cols());
-  for (E_Int j = 0; j < posG.cols(); j++)
-    for (E_Int i = 0; i < 3; i++)
-      posN(i,j) = posG(i,j);
-
-  PyObject* tpl = K_ARRAY::buildArray(posN, varString, connectG, -1, "TRI",
+  PyObject* tpl = K_ARRAY::buildArray(posG, varString, connectG, -1, "TRI",
                                       false);
   delete fB0; delete fC; delete fHP;
   //if (res1 == 2) delete cn1;  // only for FldArray

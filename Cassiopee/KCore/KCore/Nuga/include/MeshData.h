@@ -86,32 +86,33 @@ namespace DELAUNAY
       hardEdges = nHE;
     }
 
-    K_FLD::FloatArray*         pos;
-    const K_FLD::IntArray*     connectB;
-    int_vector_type            hardNodes;
-    bool                       unsync_nodes;
-    int_vector_type            hnids;
-    bool                       mono_connex;
+    K_FLD::FloatArray* pos;
+    const K_FLD::IntArray* connectB;
+    int_vector_type hardNodes;
+    bool unsync_nodes;
+    int_vector_type hnids;
+    bool mono_connex;
   
     NUGA::non_oriented_edge_set_type hardEdges;
-    K_FLD::IntArray            connectM;
-    K_FLD::IntArray            neighbors;
-    int_vector_type            ancestors;
-    int_vector_type            colors;
-    K_FLD::FloatArray          metrics;
-    bool_vector_type           mask;
+    K_FLD::IntArray connectM;
+    K_FLD::IntArray neighbors;
+    int_vector_type ancestors;
+    int_vector_type colors;
+    K_FLD::FloatArray metrics;
+    bool_vector_type mask;
   };
 
   template <typename SurfaceType>
   struct SurfaceMeshData : public MeshData
   {
     SurfaceMeshData(K_FLD::FloatArray& p2D, const K_FLD::FloatArray& p3D, const K_FLD::IntArray& cB, const SurfaceType& s)
-      : MeshData(p2D, cB), surface(s), pos3D(p3D)
+      : MeshData(p2D, cB), surface(s), pos3D(p3D), exportUV(false)
     {
     }
 
     const SurfaceType& surface;
     K_FLD::FloatArray pos3D;
+    E_Bool exportUV;
   };
 }
 
