@@ -96,7 +96,7 @@ PyObject* K_OCC::convertCAD2Arrays2(PyObject* self, PyObject* args)
   E_Int n = ufield.size();    
   for (E_Int i = 0; i < n; i++)
   {
-    tpl = K_ARRAY::buildArray(*ufield[i], "x,y,z,u,v",
+    tpl = K_ARRAY::buildArray(*ufield[i], "x,y,z",
                               *c[i], et[i]);
     delete ufield[i]; delete c[i];
     PyList_Append(l, tpl);
