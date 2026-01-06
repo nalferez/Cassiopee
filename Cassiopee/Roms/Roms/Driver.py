@@ -745,10 +745,10 @@ class Surface():
 
         # build refMesh in x,y (not closed)
         self.RefMesh = self.Mesh(close=False)
-        
+
         # save refMesh in UV
         self.RefMeshUV = Internal.copyRef(self.RefMesh)
-        
+
         self.inds = []
         self.inds2 = []
         self.inds = {}
@@ -759,7 +759,7 @@ class Surface():
         self.dz1 = {}
         zones = Internal.getZones(self.RefMeshUV)
         for i, z in enumerate(zones): # pour chaque face
-            
+
             # init inds
             self.inds[i+1] = []
             self.inds2[i+1] = []
@@ -778,7 +778,7 @@ class Surface():
             # switch z to uv
             pu = Internal.getNodeFromName2(z, 'u')
             pv = Internal.getNodeFromName2(z, 'v')
-            
+
             px = Internal.copyNode(pu)
             py = Internal.copyNode(pv)
             pz = Internal.copyNode(pv)
@@ -787,14 +787,14 @@ class Surface():
             Internal.getNodeFromName2(z, 'CoordinateX')[1] = px[1]
             Internal.getNodeFromName2(z, 'CoordinateY')[1] = py[1]
             Internal.getNodeFromName2(z, 'CoordinateZ')[1] = pz[1]
-            
-            C._convertArray2NGon(z, recoverBC=False)     
+
+            C._convertArray2NGon(z, recoverBC=False)
             p = P.exteriorFaces(z)
             C._addBC2Zone(z, 'wall', 'BCWall', subzone=p)
             Internal.getNodeFromType(z, 'BC_t')[0] = 'wall'
             T._addkplane(z)
             T._contract(z, (0,0,0), (1,0,0), (0,1,0), 0.1)
-            
+
             # identify edges in bc
             bc = C.extractBCOfType(z, "BCWall", reorder=False)[0]
             xc = Internal.getNodeFromName2(bc, "CoordinateX")
@@ -836,7 +836,7 @@ class Surface():
             pz[0] = 'CoordinateZ'
             pz[1].ravel('k')[:] = 0.
             gridInit[2] = [px,py,pz]
-                
+
         # build defTree
         import Ael.Quantum as KDG
         DeformationArgs={
@@ -871,7 +871,7 @@ class Surface():
             self.dx1[i+1][:] = 0.
             self.dy1[i+1][:] = 0.
             self.dz1[i+1][:] = 0.
-            
+
             wires = OCC.occ.meshEdgesOfFace(self.hook, i+1, nedges)
             for c, loops in enumerate(wires):
                 for d, w in enumerate(loops):
@@ -890,7 +890,7 @@ class Surface():
                     self.dx1[i+1][inds2[:]-1] = b[0,:] - bo[0,:]
                     self.dy1[i+1][inds2[:]-1] = b[1,:] - bo[1,:]
                     self.dz1[i+1][inds2[:]-1] = b[2,:] - bo[2,:]
-                    
+
             # set displacement on surfaces (zoneName#bcName)
             self.DefTree[i+1].setBndSurfTo("%s#wall"%z[0], "imposed", [self.dx1[i+1],self.dy1[i+1],self.dz1[i+1]]) # [dx,dy,dz]
 
@@ -918,7 +918,7 @@ class Surface():
             DA1 = Internal.getNodeFromName1(defcont, "DisplacementX")[1]
             DA2 = Internal.getNodeFromName1(defcont, "DisplacementY")[1]
             DA3 = Internal.getNodeFromName1(defcont, "DisplacementZ")[1]
-                
+
             XB1[:] = XA1[:] + DA1[:len(DA1)//2]
             XB2[:] = XA2[:] + DA2[:len(DA2)//2]
             XB3[:] = XA3[:] + DA3[:len(DA3)//2]
