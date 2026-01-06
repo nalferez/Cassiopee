@@ -52,7 +52,7 @@ def getUniqueName(proposedName, server):
 #============================================================
 # Helpers
 #============================================================
-# from arrays, export tree
+# from arrays, export zone
 def exportEdges(edges):
     t = C.newPyTree(['EDGES'])
     b = Internal.getNodeFromName1(t, 'EDGES')
@@ -574,7 +574,13 @@ class Surface():
         # meshing: (hmin,hmax,hausd). supersedes sketch settings.
         if h is not None: self.h = h
         # reference mesh for Dmesh
-        self.RefMesh = None # zone list (pytree)
+        self.RefMesh = None # mesh (pytree)
+        self.RefMeshUV = None # mesh in uv space (pytree)
+        self.RefMeshUV2 = None # mesh in uv for deformation
+        self.refEdges = None # edges of ref mesh (arrays)
+        self.inds = None # indices of borders in refMesh BC
+        self.inds2 = None # indices of borders in refMesh BC with kplane
+        self.DefTree = None # def tree (pytree)
 
     def add(self, sketch):
         """Add a sketch to the surface definition."""
@@ -700,7 +706,7 @@ class Surface():
         OCC.writeCAD(self.hook, fileName, format)
 
     # mesh surface, return arrays
-    def mesh(self):
+    def mesh(self, close=True):
         """Mesh surface."""
         if self.h is None: raise ValueError("mesh: h settings are undefined.")
         (hmin,hmax,hausd) = self.h
@@ -709,13 +715,13 @@ class Surface():
         faceList = range(1, nbFaces+1)
         if hausd < 0: hList = [(hmax,hmax,hausd)]*len(faceList)
         else: hList = [(hmin,hmax,hausd)]*len(faceList)
-        faces = OCC.meshAllFacesTri(self.hook, edges, True, faceList, hList)
+        faces = OCC.meshAllFacesTri(self.hook, edges, True, faceList, hList, close)
         return faces
 
     # mesh surface, return zones
-    def Mesh(self):
+    def Mesh(self, close=True):
         """Mesh surface."""
-        faces = self.mesh()
+        faces = self.mesh(close)
         out = []
         for c, e in enumerate(faces):
             z = Internal.createZoneNode('%s%03d'%(self.name, c+1), e, [],
@@ -724,6 +730,206 @@ class Surface():
                                         Internal.__FlowSolutionCenters__)
             out.append(z)
         return out
+
+    def MeshAsReference(self):
+        """Mesh surface and store the mesh for future Dmesh."""
+        import Transform.PyTree as T
+        import Transform
+        import Post.PyTree as P
+
+        # keep ref edges in x,y
+        if self.h is None: raise ValueError("mesh: h settings are undefined.")
+        (hmin,hmax,hausd) = self.h
+        dedges = OCC.meshAllEdges(self.hook, hmin, hmax, hausd, -1)
+        self.refEdges = dedges
+
+        # build refMesh in x,y (not closed)
+        self.RefMesh = self.Mesh(close=False)
+        
+        # save refMesh in UV
+        self.RefMeshUV = Internal.copyRef(self.RefMesh)
+        
+        self.inds = []
+        self.inds2 = []
+        self.inds = {}
+        self.inds2 = {}
+        self.wires = {}
+        self.dx1 = {}
+        self.dy1 = {}
+        self.dz1 = {}
+        zones = Internal.getZones(self.RefMeshUV)
+        for i, z in enumerate(zones): # pour chaque face
+            
+            # init inds
+            self.inds[i+1] = []
+            self.inds2[i+1] = []
+            self.wires[i+1] = []
+
+            # mesh each edges
+            wires = OCC.occ.meshEdgesOfFace(self.hook, i+1, dedges)
+            # switch edge to u,v
+            for loops in wires:
+                for w in loops:
+                    w[1][0,:] = w[1][3,:]
+                    w[1][1,:] = w[1][4,:]
+                    w[1][2,:] = 0.
+            self.wires[i+1] = wires
+
+            # switch z to uv
+            pu = Internal.getNodeFromName2(z, 'u')
+            pv = Internal.getNodeFromName2(z, 'v')
+            
+            px = Internal.copyNode(pu)
+            py = Internal.copyNode(pv)
+            pz = Internal.copyNode(pv)
+            pz[1][:] = 0.
+
+            Internal.getNodeFromName2(z, 'CoordinateX')[1] = px[1]
+            Internal.getNodeFromName2(z, 'CoordinateY')[1] = py[1]
+            Internal.getNodeFromName2(z, 'CoordinateZ')[1] = pz[1]
+            
+            C._convertArray2NGon(z, recoverBC=False)     
+            p = P.exteriorFaces(z)
+            C._addBC2Zone(z, 'wall', 'BCWall', subzone=p)
+            Internal.getNodeFromType(z, 'BC_t')[0] = 'wall'
+            T._addkplane(z)
+            T._contract(z, (0,0,0), (1,0,0), (0,1,0), 0.1)
+            
+            # identify edges in bc
+            bc = C.extractBCOfType(z, "BCWall", reorder=False)[0]
+            xc = Internal.getNodeFromName2(bc, "CoordinateX")
+            self.dx1[i+1] = numpy.empty((xc[1].size), dtype=numpy.float64)
+            self.dy1[i+1] = numpy.empty((xc[1].size), dtype=numpy.float64)
+            self.dz1[i+1] = numpy.empty((xc[1].size), dtype=numpy.float64)
+            a = C.getAllFields(bc, 'nodes', api=3)[0]
+            hook = Converter.createHook(a, function='nodes')
+            for loops in wires:
+                out = []
+                for w in loops:
+                    nodes = Converter.identifyNodes(hook, w)
+                    out.append(nodes)
+                self.inds[i+1].append(out)
+            for loops in wires:
+                out = []
+                for w in loops:
+                    w = Transform.translate(w, (0,0,0.1))
+                    nodes = Converter.identifyNodes(hook, w)
+                    out.append(nodes)
+                self.inds2[i+1].append(out)
+            Converter.freeHook(hook)
+        self.RefMeshUV2 = zones
+
+        # complete refmesh with gridinit containing initial UV
+        zones = Internal.getZones(self.RefMesh)
+        for z in zones:
+            gridInit = Internal.getNodeFromName1(z, 'GridCoordinates#Init')
+            if not gridInit:
+                gridInit = Internal.createNode('GridCoordinates#Init', 'GridCoordinates_t', parent=z)
+            cont = Internal.getNodeFromName1(z, Internal.__FlowSolutionNodes__)
+            pu = Internal.getNodeFromName1(cont, 'u')
+            pv = Internal.getNodeFromName1(cont, 'v')
+            px = Internal.copyNode(pu)
+            px[0] = 'CoordinateX'
+            py = Internal.copyNode(pv)
+            py[0] = 'CoordinateY'
+            pz = Internal.copyNode(pv)
+            pz[0] = 'CoordinateZ'
+            pz[1].ravel('k')[:] = 0.
+            gridInit[2] = [px,py,pz]
+                
+        # build defTree
+        import Ael.Quantum as KDG
+        DeformationArgs={
+            "Approach"          :  "Quaternions",
+            "Epsilon"           :  0.15,
+            "Leafsize"          :  8,
+            "OmpAllInOne"       :  True,
+            "Ndivision"         :  100,
+            "NullDisplacements" :  "Weighted",
+            "Smoothing"         :  False }
+        self.DefTree = {}
+        for i, z in enumerate(self.RefMeshUV2):
+            self.DefTree[i+1] = KDG.KeDefGrid(z, **DeformationArgs)
+            self.DefTree[i+1].set_Amplitude(1.)
+
+        return self.RefMesh
+
+    def Dmesh(self):
+        """Mesh by deformation."""
+        # build new edges in x,y
+        nedges = []
+        import Geom
+        for c, e in enumerate(self.refEdges):
+            s = Geom.getCurvilinearAbscissa(e)
+            e = Converter.rmVars(e, ['u'])
+            e = Converter.addVars([e, s])
+            b = OCC.occ.meshOneEdge(self.hook, c+1, -1, -1, -1, -1, e)
+            nedges.append(b)
+
+        zones = Internal.getZones(self.RefMeshUV)
+        for i, z in enumerate(zones): # pour chaque face
+            self.dx1[i+1][:] = 0.
+            self.dy1[i+1][:] = 0.
+            self.dz1[i+1][:] = 0.
+            
+            wires = OCC.occ.meshEdgesOfFace(self.hook, i+1, nedges)
+            for c, loops in enumerate(wires):
+                for d, w in enumerate(loops):
+                    # switch edge to u,v
+                    b = w[1]
+                    b[0,:] = b[3,:]
+                    b[1,:] = b[4,:]
+                    b[2,:] = 0.
+                    bo = self.wires[i+1][c][d][1] # already in uv
+                    inds = self.inds[i+1][c][d]
+                    inds2 = self.inds2[i+1][c][d]
+
+                    self.dx1[i+1][inds[:]-1] = b[0,:] - bo[0,:]
+                    self.dy1[i+1][inds[:]-1] = b[1,:] - bo[1,:]
+                    self.dz1[i+1][inds[:]-1] = b[2,:] - bo[2,:]
+                    self.dx1[i+1][inds2[:]-1] = b[0,:] - bo[0,:]
+                    self.dy1[i+1][inds2[:]-1] = b[1,:] - bo[1,:]
+                    self.dz1[i+1][inds2[:]-1] = b[2,:] - bo[2,:]
+                    
+            # set displacement on surfaces (zoneName#bcName)
+            self.DefTree[i+1].setBndSurfTo("%s#wall"%z[0], "imposed", [self.dx1[i+1],self.dy1[i+1],self.dz1[i+1]]) # [dx,dy,dz]
+
+        # deform
+        for i, z in enumerate(self.RefMeshUV2):
+            self.DefTree[i+1].makeSources()
+            self.DefTree[i+1].computeMeshDisplacement()
+
+        # copie Displacement#0/DisplacementX dans UV
+        zones1 = Internal.getZones(self.RefMeshUV)
+        zones2 = Internal.getZones(self.RefMeshUV2)
+        zones3 = Internal.getZones(self.RefMesh)
+        for i, z1 in enumerate(zones3):
+            cont = Internal.getNodeFromName1(z1, "GridCoordinates#Init")
+            XA1 = Internal.getNodeFromName1(cont, "CoordinateX")[1]
+            XA2 = Internal.getNodeFromName1(cont, "CoordinateY")[1]
+            XA3 = Internal.getNodeFromName1(cont, "CoordinateZ")[1]
+            cont = Internal.getNodeFromName1(z1, "GridCoordinates")
+            XB1 = Internal.getNodeFromName1(cont, "CoordinateX")[1]
+            XB2 = Internal.getNodeFromName1(cont, "CoordinateY")[1]
+            XB3 = Internal.getNodeFromName1(cont, "CoordinateZ")[1]
+
+            z2 = zones2[i]
+            defcont = Internal.getNodeFromName1(z2, "Displacement#0")
+            DA1 = Internal.getNodeFromName1(defcont, "DisplacementX")[1]
+            DA2 = Internal.getNodeFromName1(defcont, "DisplacementY")[1]
+            DA3 = Internal.getNodeFromName1(defcont, "DisplacementZ")[1]
+                
+            XB1[:] = XA1[:] + DA1[:len(DA1)//2]
+            XB2[:] = XA2[:] + DA2[:len(DA2)//2]
+            XB3[:] = XA3[:] + DA3[:len(DA3)//2]
+
+            a = C.getFields(Internal.__GridCoordinates__, z1, api=3)[0]
+            o = OCC.occ.evalFace(self.hook, a, i+1)
+            zones3[i] = C.setFields([o], zones3[i], 'nodes')
+
+            C.convertPyTree2File(self.RefMeshUV2, 'out2.cgns')
+
+        return self.RefMesh
 
 def Loft(name="loft", listSketches=[], listGuides=[], close=True, h=None):
     """Create a loft surface from sketches."""
@@ -838,9 +1044,9 @@ class Volume2D():
         # identify borders in bc
         bc = C.extractBCOfName(self.RefMesh2, "wall", reorder=False)[0]
         xc = Internal.getNodeFromName2(bc, "CoordinateX")
-        self.dx1 = numpy.empty( (xc[1].size), dtype=numpy.float64)
-        self.dy1 = numpy.empty( (xc[1].size), dtype=numpy.float64)
-        self.dz1 = numpy.empty( (xc[1].size), dtype=numpy.float64)
+        self.dx1 = numpy.empty((xc[1].size), dtype=numpy.float64)
+        self.dy1 = numpy.empty((xc[1].size), dtype=numpy.float64)
+        self.dz1 = numpy.empty((xc[1].size), dtype=numpy.float64)
         a = C.getAllFields(bc, 'nodes', api=3)[0]
         hook = Converter.createHook(a, function='nodes')
         self.inds = []

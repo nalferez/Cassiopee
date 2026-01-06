@@ -40,7 +40,7 @@ surface1.writeCAD('out.step')
 #mesh = sketch1.mesh()
 #mesh += sketch2.mesh()
 mesh = surface1.mesh()
-D.DRIVER._dXdmu(surface1, mesh)
+#D.DRIVER._dXdmu(surface1, mesh)
 Converter.convertArrays2File(mesh, 'out.plt')
 
 import CPlot, time

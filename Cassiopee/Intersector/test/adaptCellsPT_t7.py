@@ -11,7 +11,7 @@ import KCore.test as test
 a = D.triangle((0,0,0), (0,1,0), (1, 0, 0))
 a = C.convertArray2Hexa(a)
 a = G.quad2Pyra(a)
-a = C.convertArray2NGon(a)
+a = C.convertArray2NGon(a); a = G.close(a)
 
 #C.convertPyTree2File(a,'z_nonreg7.plt')
 
