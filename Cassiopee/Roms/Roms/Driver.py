@@ -846,7 +846,8 @@ class Surface():
             "OmpAllInOne"       :  True,
             "Ndivision"         :  100,
             "NullDisplacements" :  "Weighted",
-            "Smoothing"         :  False }
+            "Smoothing"         :  False,
+            "printLevel"        :  0 }
         self.DefTree = {}
         for i, z in enumerate(self.RefMeshUV2):
             self.DefTree[i+1] = KDG.KeDefGrid(z, **DeformationArgs)
@@ -1075,7 +1076,8 @@ class Volume2D():
             "OmpAllInOne"       :  True,
             "Ndivision"         :  100,
             "NullDisplacements" :  "Weighted",
-            "Smoothing"         :  False }
+            "Smoothing"         :  False,
+            "printLevel"        :  0 }
         self.DefTree = KDG.KeDefGrid(self.RefMesh2, **DeformationArgs)
         self.DefTree.set_Amplitude(1.)
         return self.RefMesh
