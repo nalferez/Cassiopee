@@ -148,14 +148,19 @@ class DataBase:
         # and return id
         com = ''
         for p in point:
-            com += "%s = %g AND "%(p, point[p])
+            com += "%s <= %g+1.e-10 AND %s >= %g-1.e-10 AND "%(p, point[p], p, point[p])
         if len(com) >= 4: com = com[:-4]
         com1 = 'SELECT * FROM %s WHERE '%self.name
         com1 = com1+com
         self.cursor.execute(com1)
         q = self.cursor.fetchall()
         if q != []: id = q[0][0]
-        else: id = self.cursor.lastrowid+1
+        else:
+            com = "SELECT id FROM %s ORDER BY id DESC LIMIT 1"%self.name
+            self.cursor.execute(com)
+            row = self.cursor.fetchone()
+            if row is not None: id = row[0]+1
+            else: id = 1 # this is an error
 
         # get current date
         now = datetime.datetime.now()
