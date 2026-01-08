@@ -847,7 +847,7 @@ NUGA::MeshTool::flipT3(K_FLD::IntArray& connectT3)
 
 void
 NUGA::MeshTool::metricAnisoE22D
-(const K_FLD::FloatArray& pos, const K_FLD::IntArray& connectE2, double kn, K_FLD::FloatArray& M)
+(const K_FLD::FloatArray& pos, const K_FLD::IntArray& connectE2, E_Float kn, K_FLD::FloatArray& M)
 {
   M.clear();
   M.resize(3, pos.cols());
@@ -1546,17 +1546,17 @@ E_Float NUGA::MeshTool::get_max_deviation
 
 ///
 void NUGA::MeshTool::extrude_line
-(K_FLD::FloatArray& crd, const K_FLD::IntArray& cntE, const double* dir, double H, K_FLD::IntArray& cntQ4)
+(K_FLD::FloatArray& crd, const K_FLD::IntArray& cntE, const E_Float* dir, E_Float H, K_FLD::IntArray& cntQ4)
 {
   int nbe = cntE.cols();
   int nbp = crd.cols();
 
   // 1. EDGE NORMALS
   K_FLD::FloatArray normE(3, nbe);
-  double Lmean(0.);
+  E_Float Lmean(0.);
   for (int i = 0; i < nbe; ++i)
   {
-    double Ei[3], ni[3];
+    E_Float Ei[3], ni[3];
     NUGA::diff<3>(crd.col(cntE(1, i)), crd.col(cntE(0, i)), Ei);
     NUGA::crossProduct<3>(Ei, dir, ni);//ni is normal to plane(Ei, dir)
     NUGA::crossProduct<3>(ni, Ei, normE.col(i));
@@ -1564,21 +1564,9 @@ void NUGA::MeshTool::extrude_line
     NUGA::normalize<3>(normE.col(i));
 
     // min edge length
-    double L = NUGA::sqrNorm<3>(Ei);
+    E_Float L = NUGA::sqrNorm<3>(Ei);
     Lmean += ::sqrt(L);
   }
-
-  /*{
-    K_FLD::FloatArray crdt = crd;
-    for (int i = 0; i < nbe; ++i) {
-      double P[3];
-      NUGA::sum<3>(crd.col(cntE(0, i)), normE.col(i), P);
-      crdt.pushBack(P, P + 3);
-    }
-
-    K_FLD::IntArray tmp(2, 1, 0);
-    tp::write("D:\\slandier\\DATA\\tmp\\normE.tp", crdt, tmp, "BAR");
-  }*/
 
   Lmean /= nbe;
 
@@ -1599,19 +1587,16 @@ void NUGA::MeshTool::extrude_line
                                 // add space to crd
   crd.resize(3, nbp*nbr);
 
-  double k = H / nbr;
+  E_Float k = H / nbr;
   for (int r = 0; r < nbr - 1; ++r)
   {
     for (int i = 0; i < nbp; ++i)
     {
-      double* Pi = crd.col(i + r * nbp);
-      double* newPi = crd.col(i + (r + 1)*nbp);
+      E_Float* Pi = crd.col(i + r * nbp);
+      E_Float* newPi = crd.col(i + (r + 1)*nbp);
       NUGA::sum<3>(k, normN.col(i), Pi, newPi);
     }
   }
-
-  //K_FLD::IntArray tmp(2, 1, 0);
-  //tp::write("D:\\slandier\\DATA\\tmp\\toto.tp", crd, tmp, "BAR");
 
   // 4. output QUAD connectivity
   cntQ4.clear();

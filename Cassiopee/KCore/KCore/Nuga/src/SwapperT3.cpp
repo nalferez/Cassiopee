@@ -46,7 +46,7 @@ SwapperT3::eDegenType SwapperT3::degen_type2(const K_FLD::FloatArray& crd, E_Int
   //
   bool normal_failure = !(::fabs(l2 - 1.) < EPSILON);
   
-  double q = K_MESH::Triangle::qualityG<3>(crd.col(N0), crd.col(N1), crd.col(N2));
+  E_Float q = K_MESH::Triangle::qualityG<3>(crd.col(N0), crd.col(N1), crd.col(N2));
   bool good_qual = (q > MINQUAL);
 
   std::pair<E_Float, E_Int> palma[3];

@@ -157,11 +157,11 @@ namespace K_MESH
     static void normal(const K_FLD::ArrayAccessor<K_FLD::FldArrayF>& coord, const E_Int* pN, E_Float* normal);
     static void isoG(const K_FLD::ArrayAccessor<K_FLD::FldArrayF>& coord, const E_Int* pN, E_Float* G);
 
-    static double trihedral_angle(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2);
-    static double oriented_trihedral_angle(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2);
+    static E_Float trihedral_angle(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2);
+    static E_Float oriented_trihedral_angle(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2);
 
     template <short DIM>
-    inline static bool fast_is_in_pred(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2, double RTOL=EPSILON);
+    inline static bool fast_is_in_pred(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2, E_Float RTOL=EPSILON);
 
     /// Returns the rank of N in the storage pointed by pK.
     inline static size_type getLocalNodeId(const size_type* pK, size_type N);
@@ -178,7 +178,7 @@ namespace K_MESH
     template <typename MetricType> inline
       void
       circumDiskCenter 
-      (const K_FLD::FloatArray& pos, const K_FLD::IntArray::const_iterator& pN, double& R2, E_Float* C, const MetricType& m) const;
+      (const K_FLD::FloatArray& pos, const K_FLD::IntArray::const_iterator& pN, E_Float& R2, E_Float* C, const MetricType& m) const;
 
     /// Computes the parameters of the projected point of P in the base (P0P1, P0P2).
     template <short DIM>
@@ -411,7 +411,7 @@ namespace K_MESH
   template <typename MetricValueType> inline
     void
     Triangle::circumDiskCenter 
-    (const K_FLD::FloatArray& pos, const K_FLD::IntArray::const_iterator& pS, double& R2,
+    (const K_FLD::FloatArray& pos, const K_FLD::IntArray::const_iterator& pS, E_Float& R2,
     E_Float* C, const MetricValueType& m) const 
   {
     const E_Float* const  p1   = pos.col(*pS);
@@ -445,7 +445,7 @@ namespace K_MESH
   template <> inline
     void
     Triangle::circumDiskCenter 
-    (const K_FLD::FloatArray& pos, const K_FLD::IntArray::const_iterator& pS, double& R2,
+    (const K_FLD::FloatArray& pos, const K_FLD::IntArray::const_iterator& pS, E_Float& R2,
     E_Float* C, const E_Float& dummy) const 
   {
     const E_Float* const  p1   = pos.col(*pS);
@@ -2095,18 +2095,18 @@ namespace K_MESH
   inline double 
   K_MESH::Triangle::trihedral_angle(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2)
   {
-    double omega = 0.;
+    E_Float omega = 0.;
 
-    const double* Ps[] = { P0, P1, P2 };
-    double ni[3], nj[3], nk[3];
+    const E_Float* Ps[] = { P0, P1, P2 };
+    E_Float ni[3], nj[3], nk[3];
     K_MESH::Triangle::normal(P, P0, P1, ni);
     K_MESH::Triangle::normal(P, P1, P2, nj);
     K_MESH::Triangle::normal(P, P2, P0, nk);
-    double * ns[] = { ni, nj, nk };
+    E_Float* ns[] = { ni, nj, nk };
 
     for (size_t i = 0; i < 3; ++i)
     {
-      double alpha = NUGA::angle_measure(ns[i], ns[(i + 1) % 3], P, Ps[(i + 1) % 3]);
+      E_Float alpha = NUGA::angle_measure(ns[i], ns[(i + 1) % 3], P, Ps[(i + 1) % 3]);
       alpha = (alpha < NUGA::PI) ? alpha : alpha - NUGA::PI; // dihedral angles in a trihedra are in [0;PI]
       omega += alpha;
     }
@@ -2116,54 +2116,49 @@ namespace K_MESH
     return omega;
   }
 
-  inline double
+  inline E_Float
     K_MESH::Triangle::oriented_trihedral_angle(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2)
   {
-    double omega = trihedral_angle(P, P0, P1, P2);
+    E_Float omega = trihedral_angle(P, P0, P1, P2);
 
-    double n[3], PP0[3];
+    E_Float n[3], PP0[3];
     K_MESH::Triangle::normal(P0, P1, P2, n);
     NUGA::diff<3>(P0, P, PP0);
     omega *= SIGN(NUGA::dot<3>(PP0, n));
     return omega;
   }
 
-  
   //
   template <>
   inline bool
-    K_MESH::Triangle::fast_is_in_pred<3>(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2, double ABSTOL)
+  K_MESH::Triangle::fast_is_in_pred<3>(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2, E_Float ABSTOL)
   {
-    double V1[3], V2[3], V3[3];
+    E_Float V1[3], V2[3], V3[3];
     NUGA::diff<3>(P0, P, V1);
     NUGA::diff<3>(P1, P, V2);
     NUGA::diff<3>(P2, P, V3);
 
-    double n[3];
+    E_Float n[3];
     K_MESH::Triangle::normal(P0, P1, P2, n);
 
-    /*std::cout << "pt 0 : " << P[0] << std::endl;
-    std::cout << "pt 1 : " << P[1] << std::endl;
-    std::cout << "pt 2 : " << P[2] << std::endl;*/
+    E_Float w[3];
 
-    double w[3];
-
-    double srefm1 = 1. / surface<3>(P0, P1, P2);
+    E_Float srefm1 = 1. / surface<3>(P0, P1, P2);
 
     NUGA::crossProduct<3>(V1, V2, w);
-    double s12 = NUGA::dot<3>(n, w) * srefm1;
+    E_Float s12 = NUGA::dot<3>(n, w) * srefm1;
     s12 = (IS_ZERO(s12, ABSTOL)) ? 0. : s12;
 
     NUGA::crossProduct<3>(V2, V3, w);
-    double s23 = NUGA::dot<3>(n, w) * srefm1;
+    E_Float s23 = NUGA::dot<3>(n, w) * srefm1;
     s23 = (IS_ZERO(s23, ABSTOL)) ? 0. : s23;
 
     NUGA::crossProduct<3>(V3, V1, w);
-    double s31 = NUGA::dot<3>(n, w) * srefm1;
+    E_Float s31 = NUGA::dot<3>(n, w) * srefm1;
     s31 = (IS_ZERO(s31, ABSTOL)) ? 0. : s31;
 
-    double smin = std::min(s12, std::min(s23, s31));
-    double smax = std::max(s12, std::max(s23, s31));
+    E_Float smin = std::min(s12, std::min(s23, s31));
+    E_Float smax = std::max(s12, std::max(s23, s31));
 
     bool is_out = (smin*smax < 0.);
     return !is_out;
@@ -2171,23 +2166,22 @@ namespace K_MESH
 
   template <>
   inline bool
-    K_MESH::Triangle::fast_is_in_pred<2>(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2, double ABSTOL)
+    K_MESH::Triangle::fast_is_in_pred<2>(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2, E_Float ABSTOL)
   {
-    double d1 = NUGA::signed_distance2D(P, P0, P1);
+    E_Float d1 = NUGA::signed_distance2D(P, P0, P1);
     d1 = (IS_ZERO(d1, ABSTOL)) ? 0. : d1;
         
-    double d2 = NUGA::signed_distance2D(P, P1, P2);
+    E_Float d2 = NUGA::signed_distance2D(P, P1, P2);
     d2 = (IS_ZERO(d2, ABSTOL)) ? 0. : d2;
     
-    double d3 = NUGA::signed_distance2D(P, P2, P0);
+    E_Float d3 = NUGA::signed_distance2D(P, P2, P0);
     d3 = (IS_ZERO(d3, ABSTOL)) ? 0. : d3;
     
-    double dmin  = std::min(d1, std::min(d2, d3));
-    double dmax = std::max(d1, std::max(d2, d3));
+    E_Float dmin  = std::min(d1, std::min(d2, d3));
+    E_Float dmax = std::max(d1, std::max(d2, d3));
 
     bool is_out = (dmin*dmax < 0.);
     return !is_out;
-
   }
 
 } // End Namespace K_MESH

@@ -89,11 +89,11 @@ public: /* Set and Get methods */
     box = box_t(crd, _nodes, NB_NODES);
   }
 
-  double Lref2(const K_FLD::FloatArray& crd) const
+  E_Float Lref2(const K_FLD::FloatArray& crd) const
   {
     return NUGA::sqrDistance(crd.col(_nodes[0]), crd.col(_nodes[1]), 3);
   }
-  double Lref2(const std::vector<E_Float>& nodal_tol2) const
+  E_Float Lref2(const std::vector<E_Float>& nodal_tol2) const
   {
     return std::min(nodal_tol2[_nodes[0]], nodal_tol2[_nodes[1]]);
   }
@@ -102,7 +102,7 @@ public: /* Set and Get methods */
   inline void getBoundary(size_type n, boundary_type& b){b = _nodes[n];}
   static inline void getBoundary(const E_Int* pN, size_type n, boundary_type& b){b = *(pN+n);}
 
-public : /* Static functions related to edges */
+public: /* Static functions related to edges */
 
   ///
   static void getBoundary(const self_type& E1, const self_type& E2, boundary_type& b);
@@ -202,7 +202,7 @@ struct aEdge : public Edge
     m_Lref2 = Lref2();
   }
 
-  double Lref2() const { return (m_Lref2 > 0.) ? m_Lref2 : NUGA::sqrDistance(v1, v2, 3);}
+  E_Float Lref2() const { return (m_Lref2 > 0.) ? m_Lref2 : NUGA::sqrDistance(v1, v2, 3);}
  
   E_Float v1[3], v2[3];
 };
@@ -485,7 +485,7 @@ K_MESH::Edge::lineLineMinDistance
   if (DIM == 2) // more testing for robsutness
   {
   	E_Float normal_Q0Q1[] = { -E1[1], E1[0] };
-    double pow2D_P0_Q0Q1 = NUGA::dot<2>(V01, normal_Q0Q1);
+    E_Float pow2D_P0_Q0Q1 = NUGA::dot<2>(V01, normal_Q0Q1);
   
     E_Float V02[DIM];
     NUGA::diff<DIM>(P1, Q0, V02);
@@ -524,11 +524,11 @@ K_MESH::Edge::lineLineMinDistance
     {
       E_Float normal_Q0Q1[] = { -E1[1], E1[0] };
       NUGA::normalize<2>(normal_Q0Q1);
-      double a = -NUGA::dot<2>(E0, normal_Q0Q1);
-      double pow2D_P0_Q0Q1 = NUGA::dot<2>(V01, normal_Q0Q1);
-      double K = pow2D_P0_Q0Q1 / a;
+      E_Float a = -NUGA::dot<2>(E0, normal_Q0Q1);
+      E_Float pow2D_P0_Q0Q1 = NUGA::dot<2>(V01, normal_Q0Q1);
+      E_Float K = pow2D_P0_Q0Q1 / a;
 
-      double X[2];
+      E_Float X[2];
       for (E_Int i = 0; i < 2; ++i)
         X[i] = P0[i] + K * E0[i];
 
@@ -561,7 +561,7 @@ E_Float
 K_MESH::Edge::linePointMinDistance2
 (const E_Float* P0, const E_Float* P1, const E_Float* P, E_Float& lambda)
 {
-  E_Float       V0[DIM], V1[DIM], L;
+  E_Float V0[DIM], V1[DIM], L;
  
   NUGA::diff<DIM> (P1, P0, V0);
   NUGA::diff<DIM> (P, P0, V1);

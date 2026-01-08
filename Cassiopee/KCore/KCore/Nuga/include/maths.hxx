@@ -245,12 +245,12 @@ E_Float sqrCross<3>(const E_Float* x, const E_Float* y)
 }
 
 ///
-inline double project(double const * plane_pt, double const * plane_dir, double const * pt, double const * dir, double* proj_pt)
+inline E_Float project(E_Float const* plane_pt, E_Float const* plane_dir, E_Float const* pt, E_Float const* dir, E_Float* proj_pt)
 {
-  double PPt[3];
+  E_Float PPt[3];
   NUGA::diff<3>(pt, plane_pt, PPt);
-  double k = -NUGA::dot<3>(PPt, plane_dir);
-  double c = NUGA::dot<3>(plane_dir, dir);
+  E_Float k = -NUGA::dot<3>(PPt, plane_dir);
+  E_Float c = NUGA::dot<3>(plane_dir, dir);
   //assert(SIGN(c, EPSILON) != 0); //fixme
   k /= c;
   NUGA::sum<3>(1., pt, k, dir, proj_pt); //project
@@ -258,7 +258,7 @@ inline double project(double const * plane_pt, double const * plane_dir, double 
 }
 
 ///
-inline double angle_measure
+inline E_Float angle_measure
 (const E_Float* ni, const E_Float* nj, const E_Float* E0, const E_Float* E1)
 {
   //
@@ -302,7 +302,7 @@ inline double angle_measure
 }
 
 ///
-inline double normals_angle (const E_Float* ni, const E_Float* nj)
+inline E_Float normals_angle (const E_Float* ni, const E_Float* nj)
 {
   // Angle between 2 normals (conical tolerance)
 
@@ -333,9 +333,9 @@ inline double normals_angle (const E_Float* ni, const E_Float* nj)
 }
 
 ///
-inline bool angular_weighted_normal(const double* Pim1, const double* Pi, const double* Pip1, double* n)
+inline bool angular_weighted_normal(const E_Float* Pim1, const E_Float* Pi, const E_Float* Pip1, E_Float* n)
 {
-  double ray1[3], ray2[3];
+  E_Float ray1[3], ray2[3];
   NUGA::diff<3>(Pip1, Pi, ray1);
   NUGA::normalize<3>(ray1);
   NUGA::diff<3>(Pim1, Pi, ray2);
@@ -345,7 +345,7 @@ inline bool angular_weighted_normal(const double* Pim1, const double* Pi, const 
   NUGA::normalize<3>(n);
 
   // E1 is such PiE1 is normal to Pim1PiPip1
-  double ni[3], nj[3], E1[3];
+  E_Float ni[3], nj[3], E1[3];
   NUGA::sum<3>(Pi, n, E1);
 
   // ni = E0E1 ^ PiPip1
@@ -354,7 +354,7 @@ inline bool angular_weighted_normal(const double* Pim1, const double* Pi, const 
   // nj = PiPim1 ^ E0E1
   NUGA::crossProduct<3>(ray2, n, nj);
 
-  double alpha = angle_measure(ni, nj, Pi/*E0*/, E1);
+  E_Float alpha = angle_measure(ni, nj, Pi/*E0*/, E1);
   if (K_FUNC::fEqualZero(alpha - 2.*NUGA::PI)) return true;
 
   n[0] *= alpha;
@@ -450,7 +450,7 @@ void computeNodeRadiusAndAngles
   }
 }
 
-inline void axial_rotate(K_FLD::FloatArray& crd, const double* axis_pt, const double* axis_dir, double angle)
+inline void axial_rotate(K_FLD::FloatArray& crd, const E_Float* axis_pt, const E_Float* axis_dir, E_Float angle)
 {
   crd.pushBack(axis_pt, axis_pt + 3); // to embark it in the transfo
 
@@ -460,13 +460,13 @@ inline void axial_rotate(K_FLD::FloatArray& crd, const double* axis_pt, const do
   K_FLD::FloatArray::inverse3(iP);
   transform(crd, iP);// Now we are in the reference cylindrical coordinate system.
 
-  double * axi_pt = crd.col(crd.cols() - 1);
+  E_Float* axi_pt = crd.col(crd.cols() - 1);
 
   for (E_Int i = 0; i < crd.cols(); ++i)
   {
-    double* pt = crd.col(i);
-    double X = pt[0] - axi_pt[0];
-    double Y = pt[1] - axi_pt[1];
+    E_Float* pt = crd.col(i);
+    E_Float X = pt[0] - axi_pt[0];
+    E_Float Y = pt[1] - axi_pt[1];
     pt[0] = ::cos(angle) * X - ::sin(angle) * Y + axi_pt[0];
     pt[1] = ::sin(angle) * X + ::cos(angle) * Y + axi_pt[1];
   }

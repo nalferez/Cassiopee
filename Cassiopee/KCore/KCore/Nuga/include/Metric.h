@@ -129,10 +129,10 @@ namespace DELAUNAY {
   void draw_ellipse_field(const char* fname, const K_FLD::FloatArray& crd, const std::vector<size_type>& indices);
   void draw_ellipse(const char* fname, const K_FLD::FloatArray& crd, size_type i);
 
-  static void append_unity_ellipse(const double* pNc, const T& m, K_FLD::FloatArray& crd, K_FLD::IntArray& cnt, int SAMPLE = 100);
-  static void append_ellipse_axis(const double * P0, double a00, double a01, double a02, double a11, double a12, double a22, int axis, K_FLD::FloatArray& crdo, K_FLD::IntArray& cnto, int SAMPLE=100);
-  static void append_ellipse(const double * P0, double a00, double a01, double a02, double a11, double a12, double a22, K_FLD::FloatArray& crdo, K_FLD::IntArray& cnto, int Nsample = 1000);
-  static void build_ellipses_field(const K_FLD::FloatArray & crd, std::vector<T> & field, K_FLD::FloatArray& crdo, K_FLD::IntArray& cnto, int Nsample = 100, std::vector<int>* indices = nullptr);
+  static void append_unity_ellipse(const E_Float* pNc, const T& m, K_FLD::FloatArray& crd, K_FLD::IntArray& cnt, int SAMPLE = 100);
+  static void append_ellipse_axis(const E_Float* P0, E_Float a00, E_Float a01, E_Float a02, E_Float a11, E_Float a12, E_Float a22, int axis, K_FLD::FloatArray& crdo, K_FLD::IntArray& cnto, int SAMPLE=100);
+  static void append_ellipse(const E_Float* P0, E_Float a00, E_Float a01, E_Float a02, E_Float a11, E_Float a12, E_Float a22, K_FLD::FloatArray& crdo, K_FLD::IntArray& cnto, int Nsample=1000);
+  static void build_ellipses_field(const K_FLD::FloatArray& crd, std::vector<T> & field, K_FLD::FloatArray& crdo, K_FLD::IntArray& cnto, int Nsample=100, std::vector<int>* indices=nullptr);
 #endif
 
 
@@ -431,7 +431,7 @@ namespace DELAUNAY {
 
   template<typename T> inline
   void
-  VarMetric<T>::append_unity_ellipse(const double* pNc, const T& m, K_FLD::FloatArray& crd, K_FLD::IntArray& cnt, int SAMPLE)
+  VarMetric<T>::append_unity_ellipse(const E_Float* pNc, const T& m, K_FLD::FloatArray& crd, K_FLD::IntArray& cnt, int SAMPLE)
   {
     if (m[0] == 0. || m[2] == 0.) return;
 
@@ -506,8 +506,8 @@ namespace DELAUNAY {
     void
     VarMetric<T>::append_ellipse_axis
   (
-    const double * P0,
-    double a00, double a01, double a02, double a11, double a12, double a22,
+    const E_Float* P0,
+    E_Float a00, E_Float a01, E_Float a02, E_Float a11, E_Float a12, E_Float a22,
     int axis,
     K_FLD::FloatArray& crdo,
     K_FLD::IntArray& cnto,
@@ -516,10 +516,10 @@ namespace DELAUNAY {
   {
     bool aggressive = false;
     int32_t sortType = 0; //no sorting
-    std::array<double, 3> eval;
-    std::array<std::array<double, 3>, 3> evec;
+    std::array<E_Float, 3> eval;
+    std::array<std::array<E_Float, 3>, 3> evec;
 
-    gte::SymmetricEigensolver3x3<double>()(a00, a01, a02, a11, a12, a22, aggressive, sortType, eval, evec);
+    gte::SymmetricEigensolver3x3<E_Float>()(a00, a01, a02, a11, a12, a22, aggressive, sortType, eval, evec);
 
     K_FLD::FloatArray evectors(3, 3);
 
@@ -559,8 +559,7 @@ namespace DELAUNAY {
     K_FLD::FloatArray cc;
     cc.pushBack(P0, P0 + 3);
     NUGA::transform(cc, iP);
-    double * pNc = cc.col(0); // centroid in local ref frame
-
+    E_Float* pNc = cc.col(0); // centroid in local ref frame
                               // axis : normal to the 2D-ellipse to consider
 
     m[1] = 0.;
@@ -596,8 +595,8 @@ namespace DELAUNAY {
     void
     VarMetric<T>::append_ellipse
   (
-    const double * P0,
-    double a00, double a01, double a02, double a11, double a12, double a22,
+    const E_Float* P0,
+    E_Float a00, E_Float a01, E_Float a02, E_Float a11, E_Float a12, E_Float a22,
     K_FLD::FloatArray& crdo,
     K_FLD::IntArray& cnto,
     int Nsample
@@ -622,7 +621,7 @@ namespace DELAUNAY {
         int Ni = (*indices)[i];
         auto& fld = field[Ni];
 
-        const double* Pi = crd.col(Ni);
+        const E_Float* Pi = crd.col(Ni);
         append_ellipse(Pi, fld[0], fld[1], fld[2], fld[3], fld[4], fld[5], crdo, cnto, Nsample);
       }
     }
@@ -632,7 +631,7 @@ namespace DELAUNAY {
       {
         auto& fld = field[Ni];
 
-        const double* Pi = crd.col(Ni);
+        const E_Float* Pi = crd.col(Ni);
         append_ellipse(Pi, fld[0], fld[1], fld[2], fld[3], fld[4], fld[5], crdo, cnto, Nsample);
       }
     }

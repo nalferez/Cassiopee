@@ -5071,7 +5071,7 @@ bool NGON_BOOLEAN_CLASS::__fix_degen_for_turning_left
   std::vector<bool> freeze(connectT3.cols(), false);
 
   // reorder pair per quality, putting also worst quality triangle first in each pair
-  std::vector<std::pair<double, std::pair<E_Int, E_Int>>> q_to_pairs;
+  std::vector<std::pair<E_Float, std::pair<E_Int, E_Int>>> q_to_pairs;
   for (auto& p : faultyT3_pairs)
   {
     E_Int K1 = p.first;
@@ -5117,7 +5117,7 @@ bool NGON_BOOLEAN_CLASS::__fix_degen_for_turning_left
   //
   for (auto& q2p : q_to_pairs)
   {
-    //double q     = q2p.first;
+    //E_Float q = q2p.first;
     E_Int worstK = q2p.second.first;
     E_Int K2     = q2p.second.second;
 

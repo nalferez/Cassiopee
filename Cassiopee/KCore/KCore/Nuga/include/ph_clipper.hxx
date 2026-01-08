@@ -90,7 +90,7 @@ namespace NUGA
           E_Float n2[3];
           PG2.template normal<acrd_t, 3>(acrd2, nodes2, nb_nodes2, 1, n2); //watchme : base
 
-          double ps = NUGA::dot<3>(n1,n2);
+          E_Float ps = NUGA::dot<3>(n1,n2);
           if (::fabs(ps) < ps_min) continue;
 
           //std::cout << "ps : " << ps << std::endl;
