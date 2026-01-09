@@ -479,7 +479,7 @@ class DataBase:
         for p in self.parameters:
             if p not in db2.parameters:
                 raise ValueError('join: parameter %s is not in both dbs.'%p)
-            
+
         # get the last id of self
         com = "SELECT id FROM %s ORDER BY id DESC LIMIT 1"%self.name
         self.cursor.execute(com)
@@ -500,7 +500,7 @@ class DataBase:
         for q in rows:
             ref = q[3]
             refNames2[ref] = 1
-        
+
         # get all recordings in db2, add them and copy .cgns
         db2.cursor.execute('SELECT * FROM %s'%db2.name)
         rows = db2.cursor.fetchall()
