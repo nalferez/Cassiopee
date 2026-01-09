@@ -386,8 +386,6 @@ namespace NUGA
         {
           for (std::map<K_MESH::NO_Edge, E_Float>::const_iterator it = reflex_edges.begin(); it != reflex_edges.end(); ++it) 
             reflex_a = std::min(reflex_a, it->second);
-
-          //std::cout << "worst angle : " << reflex_a << std::endl;
         }
 
         reflex_a /= NUGA::PI;
@@ -395,9 +393,9 @@ namespace NUGA
         if (enforce_reflex_criteria == 1)
         {
           // prioritize contributions
-          reflex_ratio *= 2;// ::sqrt(reflex_ratio); // increase impact
+          reflex_ratio *= 2;// sqrt(reflex_ratio); // increase impact
           N++;
-          reflex_a *= 2;// ::sqrt(worst_reflex_a);   // increase impact
+          reflex_a *= 2;// sqrt(worst_reflex_a);   // increase impact
           N++;
           //volume_ratio *= volume_ratio;            // decrease impact
           //N++
@@ -639,8 +637,8 @@ namespace NUGA
         if (enforce_reflex_criteria == 1)
         {
           // prioritize contributions
-          reflex_ratio = ::sqrt(reflex_ratio);       // increase impact
-          worst_reflex_a = ::sqrt(worst_reflex_a);   // increase impact
+          reflex_ratio = sqrt(reflex_ratio);       // increase impact
+          worst_reflex_a = sqrt(worst_reflex_a);   // increase impact
           //volume_ratio *= volume_ratio;            // decrease impact
 
           q = face_ratio * surface_ratio * worst_reflex_a * reflex_ratio; // *volume_ratio;
@@ -940,9 +938,9 @@ namespace NUGA
         if (enforce_reflex_criteria_and_or_badagglo_allowance == 1 || enforce_reflex_criteria_and_or_badagglo_allowance == 3)
         {
           // prioritize contributions
-          reflex_ratio *= 2;// ::sqrt(reflex_ratio); // increase impact
+          reflex_ratio *= 2;// sqrt(reflex_ratio); // increase impact
           N++;
-          worst_reflex_a *= 2;// ::sqrt(worst_reflex_a);   // increase impact
+          worst_reflex_a *= 2;// sqrt(worst_reflex_a);   // increase impact
           N++;
           //volume_ratio *= volume_ratio;            // decrease impact
           //N++

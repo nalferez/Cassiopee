@@ -78,7 +78,7 @@ namespace NUGA
           NUGA::normalize<3>(nn);
 
   #ifdef DEBUG_IMMERSION
-          E_Float l2 = ::sqrt(nn[0] * nn[0] + nn[1] * nn[1] + nn[2] * nn[2]);
+          E_Float l2 = sqrt(nn[0] * nn[0] + nn[1] * nn[1] + nn[2] * nn[2]);
           assert(::fabs(l2 - 1.) < EPSILON);// DEGEN
   #endif
 
@@ -177,7 +177,7 @@ namespace NUGA
         assert(w < 0.);
         w = 1. / w;
 
-        E_Float dmax = ::sqrt(std::min(vertices[i].val2, PG.Lref2(m2.nodal_metric2)));
+        E_Float dmax = sqrt(std::min(vertices[i].val2, PG.Lref2(m2.nodal_metric2)));
 
         E_Float TOLi = ARTOL;
         if (ARTOL < 0.) // relative
@@ -209,9 +209,9 @@ namespace NUGA
     {
       if (pt_to_faces[i].empty()) continue; // regular point
 
-      if (::sqrt(dirs[i].val2) > EPSILON) ++nb_disp;
+      if (sqrt(dirs[i].val2) > EPSILON) ++nb_disp;
 
-      NUGA::sum<3>(::sqrt(dirs[i].val2), dirs[i].vec, 1., m1.crd.col(i), m1.crd.col(i));
+      NUGA::sum<3>(sqrt(dirs[i].val2), dirs[i].vec, 1., m1.crd.col(i), m1.crd.col(i));
     }
 
     std::cout << "NB OF DISPLACED POINTS : " << nb_disp << std::endl;
@@ -308,7 +308,7 @@ namespace NUGA
           NUGA::normalize<3>(nn);
 
 #ifdef DEBUG_IMMERSION
-          E_Float l2 = ::sqrt(nn[0] * nn[0] + nn[1] * nn[1] + nn[2] * nn[2]);
+          E_Float l2 = sqrt(nn[0] * nn[0] + nn[1] * nn[1] + nn[2] * nn[2]);
           assert(::fabs(l2 - 1.) < EPSILON);// DEGEN
 #endif
           dirs[i].vec[0] += nn[0];
@@ -396,7 +396,7 @@ namespace NUGA
         if (ARTOL < 0.) // relative
         {
           E_Float PGLref2 = PG.Lref2(m2.nodal_metric2);
-          TOLi *= -::sqrt(std::min(vertices[i].val2, PGLref2));
+          TOLi *= -sqrt(std::min(vertices[i].val2, PGLref2));
         }
         E_Float hmove = (1. + EPSILON) * TOLi;
 
@@ -487,7 +487,7 @@ namespace NUGA
       assert(targeted[N] == false);
 
       targeted[N] = true;
-      NUGA::sum<3>(::sqrt(dirs[N].val2), dirs[N].vec, 1., m.crd.col(i), m.crd.col(i));
+      NUGA::sum<3>(sqrt(dirs[N].val2), dirs[N].vec, 1., m.crd.col(i), m.crd.col(i));
       found = true;
     }
     return found;
@@ -651,7 +651,7 @@ namespace NUGA
           ++nb_missing;
         else
         {
-          v.val2 += ::sqrt(all_nodes_disp[Ni].val2);
+          v.val2 += sqrt(all_nodes_disp[Ni].val2);
           v.vec[0] += all_nodes_disp[Ni].vec[0];
           v.vec[1] += all_nodes_disp[Ni].vec[1];
           v.vec[2] += all_nodes_disp[Ni].vec[2];
@@ -699,7 +699,7 @@ namespace NUGA
           if (all_nodes_disp[i].val2 == FLOAT_MAX) continue;
 
           E_Float * Pi = crd.col(i);
-          NUGA::sum<3>(1., Pi, ::sqrt(all_nodes_disp[i].val2), all_nodes_disp[i].vec, Pi);
+          NUGA::sum<3>(1., Pi, sqrt(all_nodes_disp[i].val2), all_nodes_disp[i].vec, Pi);
         }
 
         std::vector<bool> validpt(crd.cols(), true);
@@ -734,7 +734,7 @@ namespace NUGA
       if (all_nodes_disp[i].val2 == FLOAT_MAX) continue;
 
       E_Float * Pi = bit->crd.col(i);
-      NUGA::sum<3>(1., Pi, ::sqrt(all_nodes_disp[i].val2), all_nodes_disp[i].vec, Pi);
+      NUGA::sum<3>(1., Pi, sqrt(all_nodes_disp[i].val2), all_nodes_disp[i].vec, Pi);
     }
 
 #ifdef DISPLACEMENT_DBG

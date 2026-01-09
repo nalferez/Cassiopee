@@ -523,7 +523,7 @@ __merge
       continue;
     }
     
-    E_Float TOLi = ::sqrt(nodal_metric2[Fi]) * RTOL;
+    E_Float TOLi = sqrt(nodal_metric2[Fi]) * RTOL;
 
     moving_tree.getInSphere(Fi, TOLi, onodes, dist2);
     osz = onodes.size();
@@ -638,7 +638,7 @@ __merge_omp
         continue;
       }
     
-      TOLi = ::sqrt(nodal_metric2[Fi]) * RTOL;
+      TOLi = sqrt(nodal_metric2[Fi]) * RTOL;
 
       moving_tree.getInSphere(Fi, TOLi, onodes_thrd[id], dist2_thrd[id]);
     

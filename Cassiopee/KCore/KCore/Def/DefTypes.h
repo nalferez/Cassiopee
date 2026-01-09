@@ -21,8 +21,7 @@
 #include <limits.h>
 #include <stdint.h>
 
-//#define E_ADOLC
-
+// E_ADOLC set by compilation option
 #ifdef E_ADOLC
 #include <adolc/adolc.h>
 #endif

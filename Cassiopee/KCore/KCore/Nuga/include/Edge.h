@@ -232,8 +232,8 @@ K_MESH::Edge::intersect
   NUGA::diff<DIM>(Q1, Q0, E1);
   E_Float L1 = NUGA::sqrNorm<DIM>(E1);
   L1 = 1. / L1;
-  E_Float l0 = ::sqrt(L0);
-  E_Float l1 = ::sqrt(L1);
+  E_Float l0 = sqrt(L0);
+  E_Float l1 = sqrt(L1);
 
   if (tol_is_absolute)
   {
@@ -339,8 +339,8 @@ K_MESH::Edge::intersect
   NUGA::diff<DIM>(Q1, Q0, E1);
   E_Float L1 = NUGA::sqrNorm<DIM>(E1);
   L1 = 1. / L1;
-  E_Float l0 = ::sqrt(L0);
-  E_Float l1 = ::sqrt(L1);
+  E_Float l0 = sqrt(L0);
+  E_Float l1 = sqrt(L1);
 
   if (tol_is_absolute)
   {
@@ -547,7 +547,7 @@ K_MESH::Edge::lineLineMinDistance
     E_Float IJ[DIM];
     for (E_Int i = 0; i < DIM; ++i)
       IJ[i] = V01[i] + u * E0[i] - v * E1[i];
-    min_distance = ::sqrt(NUGA::sqrNorm<DIM>(IJ));
+    min_distance = sqrt(NUGA::sqrNorm<DIM>(IJ));
   }
   else
     min_distance = 0.;
@@ -578,7 +578,7 @@ E_Float
 K_MESH::Edge::linePointMinDistance
 (const E_Float* P0, const E_Float* P1, const E_Float* P, E_Float& lambda) 
 {
-  return ::sqrt(linePointMinDistance2<DIM>(P0,P1,P,lambda));
+  return sqrt(linePointMinDistance2<DIM>(P0,P1,P,lambda));
 }
 
 //=============================================================================
@@ -587,7 +587,7 @@ E_Float
 K_MESH::Edge::edgePointMinDistance
 (const E_Float* P0, const E_Float* P1, const E_Float* P, E_Float& lambda) 
 {
-  return ::sqrt(edgePointMinDistance2<DIM>(P0,P1,P,lambda));
+  return sqrt(edgePointMinDistance2<DIM>(P0,P1,P,lambda));
 }
 
 //=============================================================================
@@ -596,7 +596,7 @@ E_Float
 K_MESH::Edge::edgePointMinDistance2
 (const E_Float* P0, const E_Float* P1, const E_Float* P, E_Float& lambda) 
 {
-  E_Float       V0[DIM], V1[DIM], L, d2;
+  E_Float V0[DIM], V1[DIM], L, d2;
  
   NUGA::diff<DIM> (P1, P0, V0);
   NUGA::diff<DIM> (P, P0, V1);

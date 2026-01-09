@@ -460,7 +460,7 @@ NUGA::MeshTool::computeNodeNormals
     const E_Int* nodes = pgs.get_facets_ptr(i);
     E_Int nb_nodes = pgs.stride(i);
     K_MESH::Polygon::normal<acrd_t, 3>(acrd, nodes, nb_nodes, 1, normal);
-    E_Float l2 = ::sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
+    E_Float l2 = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
     
     is_degen[i] = (::fabs(l2 - 1.) >= EPSILON); // DEGEN
     
@@ -547,7 +547,7 @@ E_Int NUGA::MeshTool::computeNodeRadiusAndAngles
       E_Int Ni = nodes[n] - 1;
       const E_Float* pt = coord.col(Ni);
 
-      radius[Ni] = ::sqrt( ((pt[0] - x0)*(pt[0] - x0)) + ((pt[1] - y0)*(pt[1] - y0)) );
+      radius[Ni] = sqrt( ((pt[0] - x0)*(pt[0] - x0)) + ((pt[1] - y0)*(pt[1] - y0)) );
 
       E_Float c = pt[0]/radius[Ni];
       E_Float s = pt[1]/radius[Ni];
@@ -592,7 +592,7 @@ E_Int NUGA::MeshTool::smoothNodeNormals(const ngon_unit& pgs, K_FLD::FloatArray&
       
       NUGA::normalize<3>(incr);
       
-      E_Float l2 = ::sqrt(incr[0] * incr[0] + incr[1] * incr[1] + incr[2] * incr[2]);
+      E_Float l2 = sqrt(incr[0] * incr[0] + incr[1] * incr[1] + incr[2] * incr[2]);
       if(::fabs(l2 - 1.) >= EPSILON) // DEGEN
         continue;
       
@@ -633,7 +633,7 @@ void NUGA::MeshTool::compute_or_transfer_normals
     
     K_MESH::Triangle::normal(p0, p1, p2, normal); 
     
-    E_Float l2 = ::sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
+    E_Float l2 = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
     
     if (::fabs(l2 - 1.) < EPSILON) // NOT degen
       T3normals.pushBack(normal, normal+3);
@@ -1565,7 +1565,7 @@ void NUGA::MeshTool::extrude_line
 
     // min edge length
     E_Float L = NUGA::sqrNorm<3>(Ei);
-    Lmean += ::sqrt(L);
+    Lmean += sqrt(L);
   }
 
   Lmean /= nbe;

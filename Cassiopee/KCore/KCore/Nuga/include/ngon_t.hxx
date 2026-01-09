@@ -1636,7 +1636,7 @@ struct ngon_t
 
         E_Float NiNj[3];
         NUGA::diff<3>(crd.col(Ni), crd.col(Nip1), NiNj);
-        E_Float Lref = ::sqrt(NUGA::sqrNorm<3>(NiNj));
+        E_Float Lref = sqrt(NUGA::sqrNorm<3>(NiNj));
 
         const E_Float& emin2 = L(0, Ni);
         const E_Float& emax2 = L(1, Ni);
@@ -1646,7 +1646,7 @@ struct ngon_t
         const E_Float& emax21 = L(1, Nip1);
         if (emin21 < edge_ratio2*emax21) ++n_bad_nodes;
 
-        E_Float emin = ::sqrt(std::min(emin2, emin21));
+        E_Float emin = sqrt(std::min(emin2, emin21));
         if (Lmax > 0. && emin > Lmax) continue; // consider only edges under Lmax (if valid value)
 
         bool small_edge = ::fabs(emin - Lref) < 1.e-6 * emin ; // NiNj is (or very near) the smallest incident edge
@@ -2073,7 +2073,7 @@ struct ngon_t
       
       // test normal computation
       K_MESH::Polygon::normal<acrd_t, 3>(acrd, nodes, nb_nodes, 1, W);
-      E_Float l2 = ::sqrt(W[0]*W[0]+W[1]*W[1]+W[2]*W[2]);
+      E_Float l2 = sqrt(W[0]*W[0]+W[1]*W[1]+W[2]*W[2]);
       
       if (::fabs(l2 - 1.) >= EPSILON) // NORMAL CALCULATION FAILED
       {
@@ -2088,8 +2088,8 @@ struct ngon_t
           Lmax = std::max(Lmax, d2);
         }
         
-        Lmin = ::sqrt(Lmin);
-        Lmax = ::sqrt(Lmax);*/
+        Lmin = sqrt(Lmin);
+        Lmax = sqrt(Lmax);*/
 
         if (nb_nodes == 3)
         {
@@ -3410,8 +3410,8 @@ E_Int remove_unreferenced_pgs(Vector_t<E_Int>& pgnids, Vector_t<E_Int>& phnids)
       }
     }
 
-    Lmin = ::sqrt(Lmin);
-    Lmax = ::sqrt(Lmax);
+    Lmin = sqrt(Lmin);
+    Lmax = sqrt(Lmax);
   }
 
   struct link_t{
@@ -5007,10 +5007,10 @@ static E_Int extrude_faces
       if (L(0,i) == NUGA::FLOAT_MAX) continue;
       if (L(1,i) == -NUGA::FLOAT_MAX) continue;
       ++count;
-      if (strategy == CST_REL_MEAN) Lcomp += 0.5 *(::sqrt(L(0,i)) + ::sqrt(L(1,i)));           // GLOBAL MEAN
-      else if (strategy == CST_REL_MIN) Lcomp += ::sqrt(L(0,i));                               // GLOBAL MEAN OF MINS
-      else if (strategy == VAR_REL_MEAN) heightv[i] *= 0.5 *(::sqrt(L(0,i)) + ::sqrt(L(1,i))); // LOCAL MEAN
-      else if (strategy == VAR_REL_MIN) heightv[i] *= ::sqrt(L(0,i));                          // LOCAL MIN
+      if (strategy == CST_REL_MEAN) Lcomp += 0.5 *(sqrt(L(0,i)) + sqrt(L(1,i)));           // GLOBAL MEAN
+      else if (strategy == CST_REL_MIN) Lcomp += sqrt(L(0,i));                               // GLOBAL MEAN OF MINS
+      else if (strategy == VAR_REL_MEAN) heightv[i] *= 0.5 *(sqrt(L(0,i)) + sqrt(L(1,i))); // LOCAL MEAN
+      else if (strategy == VAR_REL_MIN) heightv[i] *= sqrt(L(0,i));                          // LOCAL MIN
     }
     if (count) Lcomp /= count;
 
@@ -5054,8 +5054,8 @@ static E_Int extrude_faces
     const E_Float* norm = normals.col(i);
     if (norm[0] == NUGA::FLOAT_MAX) continue;
     const E_Float* p = coord.col(i);
-    //E_Float Lmax = ::sqrt(L(1, i));
-    //E_Float Lmin = ::sqrt(L(0, i));
+    //E_Float Lmax = sqrt(L(1, i));
+    //E_Float Lmin = sqrt(L(0, i));
     //E_Float Lref = FACTOR*Lmean;//std::min(FACTOR*Lmin, Lmax);
     NUGA::sum<3>(1., p, heightv[i], norm, coord.col(nid)); // creating image point
     img[i] = nid++;
@@ -5652,7 +5652,7 @@ static int validate_moves_by_fluxes
     E_Float fluxvec[3];
     PH0.flux(crd, orient.get_facets_ptr(PHi), fluxvec);
 
-    E_Float f = ::sqrt(NUGA::sqrNorm<3>(fluxvec));
+    E_Float f = sqrt(NUGA::sqrNorm<3>(fluxvec));
     E_Float s = PH0.surface(crd);
     f /= s;
 
@@ -5746,7 +5746,7 @@ static int validate_moves_by_fluxes
       E_Float fluxvec[3];
       PH0.flux(crd, orientshell.get_facets_ptr(u), fluxvec);
 
-      E_Float f = ::sqrt(NUGA::sqrNorm<3>(fluxvec));
+      E_Float f = sqrt(NUGA::sqrNorm<3>(fluxvec));
       E_Float s = PH0.surface(crd);
       f /= s;
 

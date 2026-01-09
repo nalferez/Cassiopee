@@ -36,7 +36,7 @@
 
 #include "Nuga/include/DynArray.h"
 #include "Nuga/include/MeshTool.h"
-
+#include "kcore.h"
 
 class medith
 {
@@ -559,7 +559,7 @@ static E_Int read(const char* filename, T1*& pcrd, T2& dim, T2& npts, bool& call
       Lmin = (L2 < Lmin) ? L2 : Lmin;
     }
 
-    Lmin = 0.5*::sqrt(Lmin);
+    Lmin = 0.5*sqrt(Lmin);
 
     K_MESH::Polygon::iso_barycenter<acrd_t, 3 >(acrd, pNi, nb_nodes, 1, P0);
 

@@ -204,7 +204,7 @@ template <E_Int dim, typename InputIterator>
 inline
 E_Float normalize (InputIterator it)
 {
-  E_Float L0 = ::sqrt(sqrNorm<dim>(it));
+  E_Float L0 = sqrt(sqrNorm<dim>(it));
   if (L0 != 0.)
   {
     E_Float L1 = 1./L0;
@@ -283,7 +283,7 @@ inline E_Float angle_measure
     assert(signK2 != 0);
 #endif
 
-    E_Float alpha = ::atan2(::sqrt(s2), c);
+    E_Float alpha = ::atan2(sqrt(s2), c);
     alpha = NUGA::PI - signK2 * alpha;
 
     return alpha;
@@ -316,7 +316,7 @@ inline E_Float normals_angle (const E_Float* ni, const E_Float* nj)
   {
     E_Float s2 = NUGA::sqrNorm<3>(nk);
 
-    E_Float alpha = ::atan2(::sqrt(s2), c);
+    E_Float alpha = ::atan2(sqrt(s2), c);
     return alpha;
   }
   else // (s == 0) : ni and nj are nearly colinear : 0, Pi or 2Pi
@@ -441,7 +441,7 @@ void computeNodeRadiusAndAngles
   {
     const E_Float* pt = coord.col(i);
 
-    radius[i] = ::sqrt(((pt[0] - x0)*(pt[0] - x0)) + ((pt[1] - y0)*(pt[1] - y0)));
+    radius[i] = sqrt(((pt[0] - x0)*(pt[0] - x0)) + ((pt[1] - y0)*(pt[1] - y0)));
 
     E_Float c = (pt[0] - x0) / radius[i];
     E_Float s = (pt[1] - y0) / radius[i];
@@ -491,7 +491,7 @@ inline long szudzik_pairing(int x, int y)
 
 inline void szudzik_unpairing(E_Int szudzic_val, E_Int& x, E_Int& y)
 {
-  E_Int a = (E_Int)(::sqrt(szudzic_val));
+  E_Int a = (E_Int)(sqrt(szudzic_val));
   E_Int a2 = a * a;
 
   if ((szudzic_val - a2) < a)

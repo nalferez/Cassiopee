@@ -241,7 +241,7 @@ public:
     edge_length_extrema(crd, Lmin2, Lmax2);
     if (MTYPE == NUGA::ISO_MIN) return Lmin2;
     if (MTYPE == NUGA::ISO_MAX) return Lmax2;
-    E_Float d = 0.5*(::sqrt(Lmin2) + ::sqrt(Lmax2));
+    E_Float d = 0.5*(sqrt(Lmin2) + sqrt(Lmax2));
     return d * d;//ISO_MEAN
   }
 
@@ -819,7 +819,7 @@ void Polygon::centroid(const K_FLD::FloatArray& crd, const E_Int* nodes, E_Int n
     E_Int Nip1 = nodes[(i + 1) % nb_nodes] - index_start;
     
     K_MESH::Triangle::ndS<3>(G, crd.col(Ni), crd.col(Nip1), vsi);
-    si = ::sqrt(NUGA::sqrNorm<DIM>(vsi));
+    si = sqrt(NUGA::sqrNorm<DIM>(vsi));
     K_MESH::Triangle::isoG(G, crd.col(Ni), crd.col(Nip1), gi);
     
     w = SIGN(NUGA::dot<DIM>(vsi, n)) * si;
@@ -855,7 +855,7 @@ E_Float Polygon::surface<K_FLD::FloatArray,3>(const K_FLD::FloatArray& crd, cons
 {
   E_Float ndS[3];
   K_MESH::Polygon::ndS<K_FLD::FloatArray, 3>(crd, nodes, nb_nodes, index_start, ndS);
-  return ::sqrt(NUGA::sqrNorm<3>(ndS));
+  return sqrt(NUGA::sqrNorm<3>(ndS));
 }
 
 template <> inline 
@@ -1180,7 +1180,7 @@ bool Polygon::is_hatty
   {
     K_MESH::Edge e(nodes[is] - idx_start, nodes[ie] - idx_start);
     if (ARTOL < 0.) // relative
-      ARTOL *= - ::sqrt(e.Lref2(crd)); // turn to absolute
+      ARTOL *= - sqrt(e.Lref2(crd)); // turn to absolute
 
     E_Float dmax{ -1. };
     for (E_Int n = 0; n < nb_nodes; ++n)

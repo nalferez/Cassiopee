@@ -2092,9 +2092,9 @@ TRI_Conformizer<DIM>::drawElements
   if (localid)
     NUGA::MeshTool::compact_to_mesh(coord1, cOut, newIDs);
   
-  //E_Float d01 = ::sqrt(dist2(coord1.col(0), coord1.col(1)));
-  //E_Float d03 = ::sqrt(dist2(coord1.col(0), coord1.col(3)));
-  //E_Float d13 = ::sqrt(dist2(coord1.col(1), coord1.col(3)));
+  //E_Float d01 = sqrt(dist2(coord1.col(0), coord1.col(1)));
+  //E_Float d03 = sqrt(dist2(coord1.col(0), coord1.col(3)));
+  //E_Float d13 = sqrt(dist2(coord1.col(1), coord1.col(3)));
   //std::cout << "distances : " << d01 << " " << d03 << " " << d13 << std::endl;
       
   medith::write(fname, coord1, cOut, "TRI", 0, colors);

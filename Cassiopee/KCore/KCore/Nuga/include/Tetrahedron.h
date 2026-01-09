@@ -29,14 +29,14 @@
 #define Vector_t std::vector
 
 
-static const E_Float aa = 0.25*(1. - 1./::sqrt(5.));
-static const E_Float bb = 1. -3.*aa;//(5. + 3.*::sqrt(5.)) / 20.;
+static const E_Float aa = 0.25*(1. - 1./sqrt(5.));
+static const E_Float bb = 1. -3.*aa;//(5. + 3.*sqrt(5.)) / 20.;
 
 namespace K_MESH
 {
 
-class Tetrahedron {
-  
+class Tetrahedron 
+{  
   public:
     static constexpr E_Int NB_NODES = 4;
     static constexpr E_Int NB_TRIS = 4;

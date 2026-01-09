@@ -346,7 +346,7 @@ namespace NUGA
           Lref2 = std::min(d2, Lref2);
         }
 
-        ABSTOL2D = -::sqrt(Lref2) * ARTOL;
+        ABSTOL2D = -sqrt(Lref2) * ARTOL;
         ABSTOL2D = std::max(ABSTOL2D, ZERO_M);
       }
 
@@ -428,7 +428,7 @@ namespace NUGA
 
         E_Float L2 = NUGA::sqrDistance(P0, P1, 2);
         E_Float lam2 = NUGA::sqrDistance(P0, Px, 2);
-        E_Float l = ::sqrt(lam2 / L2);
+        E_Float l = sqrt(lam2 / L2);
         zs[i] = (1. - l) * zs[N0] + l * zs[N1];
       }
 
@@ -600,7 +600,7 @@ namespace NUGA
           E_Float d2 = NUGA::sqrDistance(crd.col(cnt(0, k)), crd.col(cnt(1, k)), 3);
           Lref2 = std::min(d2, Lref2);
         }
-        ABSTOL2D = -::sqrt(Lref2) * ARTOL;
+        ABSTOL2D = -sqrt(Lref2) * ARTOL;
         ABSTOL2D = std::max(ABSTOL2D, ZERO_M);
       }
 
@@ -843,7 +843,7 @@ namespace NUGA
 
         E_Float L2 = NUGA::sqrDistance(P0, P1, 2);
         E_Float lam2 = NUGA::sqrDistance(P0, Px, 2);
-        E_Float l = ::sqrt(lam2 / L2);
+        E_Float l = sqrt(lam2 / L2);
         zs[i] = (1. - l) * zs[N0] + l * zs[N1];
       }
 

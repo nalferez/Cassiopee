@@ -1696,20 +1696,22 @@ if (PHi == faultyPH)
   K_MESH::Polyhedron<0> PH0(twoPH, 0);
   E_Float fluxvec[3];
   PH0.flux(crd, orient.get_facets_ptr(0), fluxvec);
-  E_Float f = ::sqrt(NUGA::sqrNorm<3>(fluxvec));
+  E_Float f = sqrt(NUGA::sqrNorm<3>(fluxvec));
   E_Float s = PH0.surface(crd);
   f /= s;
-  if (f > Fluxmax) {
+  if (f > Fluxmax) 
+  {
     std::cout << "rejected by flux" << std::endl;
     return false;
   }
 
   K_MESH::Polyhedron<0> PH1(twoPH, 1);
   PH1.flux(crd, orient.get_facets_ptr(1), fluxvec);
-  f = ::sqrt(NUGA::sqrNorm<3>(fluxvec));
+  f = sqrt(NUGA::sqrNorm<3>(fluxvec));
   s = PH0.surface(crd);
   f /= s;
-  if (f > Fluxmax) {
+  if (f > Fluxmax) 
+  {
     std::cout << "rejected by flux" << std::endl;
     return false;
   }

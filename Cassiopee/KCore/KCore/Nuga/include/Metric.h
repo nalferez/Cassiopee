@@ -29,7 +29,6 @@
 #include "Nuga/include/macros.h"
 #include "Nuga/include/MeshUtils1D.h"
 #include "Nuga/include/ngon_unit.h"
-
 #include "Nuga/include/diag.h"
 
 #ifdef DEBUG_METRIC
@@ -304,7 +303,7 @@ namespace DELAUNAY {
     E_Float l = m11*dir[0]*dir[0] + m22*dir[1]*dir[1] + m33*dir[2]*dir[2] +
     2.*m12*dir[0]*dir[1] + 2.*m13*dir[0]*dir[2] + 2.*m23*dir[1]*dir[2];
 
-    return ::sqrt(l);
+    return sqrt(l);
   }
   
   template<> inline
@@ -411,7 +410,7 @@ namespace DELAUNAY {
       const E_Float& m12 = m[1];
       const E_Float& m22 = m[2];
       
-      E_Float k = 1. /::sqrt( u*(m11*u + m12*v) + v*(m12*u + m22*v) );
+      E_Float k = 1. /sqrt( u*(m11*u + m12*v) + v*(m12*u + m22*v) );
       
       E_Float Pt[] = {k*u , k*v};
       
@@ -451,7 +450,7 @@ namespace DELAUNAY {
       const E_Float& m12 = m[1];
       const E_Float& m22 = m[2];
 
-      E_Float k = 1. / ::sqrt(u*(m11*u + m12 * v) + v * (m12*u + m22 * v));
+      E_Float k = 1. / sqrt(u*(m11*u + m12 * v) + v * (m12*u + m22 * v));
 
       E_Float Pt[] = { k*u , k*v };
 
@@ -758,7 +757,7 @@ namespace DELAUNAY {
       r2 += vj[i]*v[i];
     }
     
-    E_Float res = 0.5 * (::sqrt(r1) + ::sqrt(r2)); //integral approx.
+    E_Float res = 0.5 * (sqrt(r1) + sqrt(r2)); //integral approx.
 
 #ifdef DEBUG_METRIC
     assert (res > EPSILON);
@@ -775,7 +774,7 @@ namespace DELAUNAY {
   VarMetric<E_Float>::length(size_type Ni, size_type Nj)
   {
   E_Float h0 = _metric[Ni], h1 = _metric[Nj];
-  E_Float d = ::sqrt(NUGA::sqrDistance(_pos->col(Ni), _pos->col(Nj), _pos->rows()));
+  E_Float d = sqrt(NUGA::sqrDistance(_pos->col(Ni), _pos->col(Nj), _pos->rows()));
   E_Float r1 = h1 / h0;
   if (::abs(r1 - 1.) < 0.01)
   return d / std::max(h0,h1);
@@ -792,7 +791,7 @@ namespace DELAUNAY {
     VarMetric<E_Float>::lengthEval(size_type Ni, const E_Float& mi, size_type Nj, const E_Float& mj)
   {
     // Warning : input mi and mj are in fact hi and hj.
-    return 0.5 * ((1./mi) + (1./mj)) * ::sqrt(NUGA::sqrDistance(_pos->col(Ni), _pos->col(Nj), _pos->rows()));
+    return 0.5 * ((1./mi) + (1./mj)) * sqrt(NUGA::sqrDistance(_pos->col(Ni), _pos->col(Nj), _pos->rows()));
   }
 
   template <> inline
@@ -830,7 +829,7 @@ namespace DELAUNAY {
       r2 += vj[i]*v[i];
     }
 
-    E_Float res = 0.5 * (::sqrt(r1) + ::sqrt(r2)); //integral approx.
+    E_Float res = 0.5 * (sqrt(r1) + sqrt(r2)); //integral approx.
 
 #ifdef DEBUG_METRIC
     assert (res > EPSILON);
@@ -854,7 +853,7 @@ namespace DELAUNAY {
   {
     E_Float lmax, lmin;
     _field[Ni].eigen_values(lmax, lmin);
-    return 1./::sqrt(lmin);
+    return 1./sqrt(lmin);
   }
 
   /// Return curvature radius
@@ -864,7 +863,7 @@ namespace DELAUNAY {
   {
     E_Float lmax, lmin;
     _field[Ni].eigen_values(lmax, lmin);
-    return 1./::sqrt(lmin);
+    return 1./sqrt(lmin);
   }
   
   ///
@@ -876,7 +875,7 @@ namespace DELAUNAY {
     //       where X is the intersection point of the ellipse with the line (Ni, dir)
     
     // (h2, dir) => X => hnew, the one between h1new and h2new that maximize hnew/hold
-    E_Float hdir = ::sqrt(hdir2);
+    E_Float hdir = sqrt(hdir2);
     E_Float NiX[] = {normed_dir[0]*hdir, normed_dir[1]*hdir};
     
     // Diagonalization
@@ -1601,7 +1600,7 @@ namespace DELAUNAY {
     pos.pushBack(newP, newP+dim);
     size_type N = pos.cols()-1;
     
-    E_Float d = ::sqrt(NUGA::sqrDistance(pos.col(Ni), pos.col(Nj), pos.rows()));
+    E_Float d = sqrt(NUGA::sqrDistance(pos.col(Ni), pos.col(Nj), pos.rows()));
     
     // set the metric as a large valid value : half of the initial edge length
     E_Float factor = 0.5;

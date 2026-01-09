@@ -335,7 +335,7 @@ namespace K_MESH
       E_Float fluxvec[3];
       flux(crd, orient, fluxvec);
 
-      E_Float f = ::sqrt(NUGA::sqrNorm<3>(fluxvec));
+      E_Float f = sqrt(NUGA::sqrNorm<3>(fluxvec));
 
       if (normalize)
       {
@@ -964,7 +964,7 @@ namespace K_MESH
         pK = connectT3.col(i);
 
         K_MESH::Triangle::normal(crd, pK, Normi);
-        E_Float l2 = ::sqrt(Normi[0] * Normi[0] + Normi[1] * Normi[1] + Normi[2] * Normi[2]);
+        E_Float l2 = sqrt(Normi[0] * Normi[0] + Normi[1] * Normi[1] + Normi[2] * Normi[2]);
 
         if (::fabs(l2 - 1.) >= EPSILON) continue;  // DEGEN : not a good quality triangulation
 
@@ -1405,7 +1405,7 @@ namespace K_MESH
 
         if (MTYPE == NUGA::ISO_MIN) val = std::min(val, Lmin2);
         else if (MTYPE == NUGA::ISO_MAX) val = std::max(val, Lmax2);
-        else val += (::sqrt(Lmin2) + ::sqrt(Lmax2));
+        else val += (sqrt(Lmin2) + sqrt(Lmax2));
       }
 
       if (MTYPE == NUGA::ISO_MEAN)
@@ -2187,7 +2187,7 @@ namespace K_MESH
             v[j] = crd.col(pN[2] - 1)[j] - crd.col(pN[0] - 1)[j];
           }
 
-          E_Float norm = ::sqrt(NUGA::sqrCross<3>(u, v));
+          E_Float norm = sqrt(NUGA::sqrCross<3>(u, v));
           E_Float h = det / norm;
 
           s = zSIGN(h, tolerance);

@@ -640,7 +640,7 @@ namespace K_MESH
       lambda = -x0/dx;
       if (strict)
       {
-        E_Float tolR = ::sqrt(tol2);
+        E_Float tolR = sqrt(tol2);
         if ( (lambda <= -tolR) || (lambda >= 1. + tolR) )
         {
           return ;
@@ -709,15 +709,15 @@ namespace K_MESH
         v[j] = R2[j] - P2[j];
       }
 
-      E_Float norm = 1./::sqrt(NUGA::sqrCross<3>(u,v));
+      E_Float norm = 1./sqrt(NUGA::sqrCross<3>(u,v));
       d11 *= norm;
       d21 *= norm;
       d31 *= norm;
     }
     // T1 is far from T2's plane ?
-    if ( (d11 < -ABSTOL) && (d21 < -ABSTOL) && (d31 < -ABSTOL)) // P1,Q1,and R1 are strictly on the same side of Pi2 -> no intersection
+    if ((d11 < -ABSTOL) && (d21 < -ABSTOL) && (d31 < -ABSTOL)) // P1,Q1,and R1 are strictly on the same side of Pi2 -> no intersection
       return true;
-    if ( (d11 > ABSTOL) && (d21 > ABSTOL) && (d31 > ABSTOL))    // P1,Q1,and R1 are strictly on the same side of Pi2 -> no intersection
+    if ((d11 > ABSTOL) && (d21 > ABSTOL) && (d31 > ABSTOL))    // P1,Q1,and R1 are strictly on the same side of Pi2 -> no intersection
       return true;
     
     d12 = NUGA::zzdet4(P1,Q1,R1,P2);
@@ -734,7 +734,7 @@ namespace K_MESH
         v[j] = R1[j] - P1[j];
       }
 
-      E_Float norm = 1./::sqrt(NUGA::sqrCross<3>(u,v));
+      E_Float norm = 1./sqrt(NUGA::sqrCross<3>(u,v));
       d12 *= norm;
       d22 *= norm;
       d32 *= norm;
@@ -1094,8 +1094,8 @@ namespace K_MESH
     E_Float lambda, min_d;
     E_Bool parallel, coincident;
     
-    E_Float Lu = ::sqrt(NUGA::sqrDistance(P2, Q2, 3));
-    E_Float Lv = ::sqrt(NUGA::sqrDistance(P2, R2, 3));
+    E_Float Lu = sqrt(NUGA::sqrDistance(P2, Q2, 3));
+    E_Float Lv = sqrt(NUGA::sqrDistance(P2, R2, 3));
     E_Float L = MAX(Lu,Lv);
     
     E_Float RELTOL = ABSTOL/L;
@@ -1132,8 +1132,8 @@ namespace K_MESH
     
     // T1's points on T2's plane
     
-    Lu = ::sqrt(NUGA::sqrDistance(P1, Q1, 3));
-    Lv = ::sqrt(NUGA::sqrDistance(P1, R1, 3));
+    Lu = sqrt(NUGA::sqrDistance(P1, Q1, 3));
+    Lv = sqrt(NUGA::sqrDistance(P1, R1, 3));
     L = MAX(Lu,Lv);
     
     RELTOL = ABSTOL/L;
@@ -1273,8 +1273,8 @@ namespace K_MESH
     E_Float lambda, min_d;
     E_Bool parallel, coincident;
     
-    E_Float Lu = ::sqrt(NUGA::sqrDistance(P2, Q2, 3));
-    E_Float Lv = ::sqrt(NUGA::sqrDistance(P2, R2, 3));
+    E_Float Lu = sqrt(NUGA::sqrDistance(P2, Q2, 3));
+    E_Float Lv = sqrt(NUGA::sqrDistance(P2, R2, 3));
     E_Float L = MAX(Lu,Lv);
     
     E_Float RELTOL = ABSTOL/L;
@@ -1332,8 +1332,8 @@ namespace K_MESH
     
     // T1's points on T2's plane
     
-    Lu = ::sqrt(NUGA::sqrDistance(P1, Q1, 3));
-    Lv = ::sqrt(NUGA::sqrDistance(P1, R1, 3));
+    Lu = sqrt(NUGA::sqrDistance(P1, Q1, 3));
+    Lv = sqrt(NUGA::sqrDistance(P1, R1, 3));
     L = MAX(Lu,Lv);
     
     RELTOL = ABSTOL/L;
@@ -1465,7 +1465,7 @@ namespace K_MESH
 
     planeLineMinDistance<DIM>(P0, P1, P2, Q0, Q1, tol, tol_is_absolute, lambda, UV, parallel, coincident, min_d);
 
-    E_Float L = ::sqrt(NUGA::sqrDistance(Q0, Q1, DIM));
+    E_Float L = sqrt(NUGA::sqrDistance(Q0, Q1, DIM));
     if (tol_is_absolute)
     {
       if (L > EPSILON) tol1 /= L;
@@ -1579,7 +1579,7 @@ namespace K_MESH
 
     if (!coincident) // The line intersect the plane at a unique point (3D case only)
     {
-      E_Float tol1=::sqrt(tol12);
+      E_Float tol1 = sqrt(tol12);
       u0  = lambda;
       return ( (u0 > -tol1) && (u0 < 1. + tol1) &&
         ((1. - UV[0] -  UV[1]) >= -tol1)  && 
@@ -1694,7 +1694,7 @@ namespace K_MESH
 
     if (!coplanar) // The line intersect the plane at a unique point (3D case only)
     {
-      E_Float tolR=::sqrt(tolR2);
+      E_Float tolR = sqrt(tolR2);
 //      fixme : Probablement a reactiver pour faire notamment passer les calculs en mode soft (C3_T3)
 //      E_Float IP[DIM];
 //      for (size_t k=0; k < DIM; ++k)
@@ -1827,7 +1827,7 @@ namespace K_MESH
         }
       }
       
-      E_Float tolR = ::sqrt(tolR2);
+      E_Float tolR = sqrt(tolR2);
 
       if (Xcount < 2 && Xu[0] != 0.) //do not try Q0 again if it's taken into account
       {
@@ -1836,7 +1836,7 @@ namespace K_MESH
 
         // it should be tol1 instead of eps but not necessary to compute tol1 here : edge interferences are caught
         // by calls to Edge::intersect, so at this point if it is inside, it is "really" inside (with no interf.)
-        //tolR=::sqrt(tolR2);
+        //tolR=sqrt(tolR2);
         
         bool Q0_interfers_T = (((1. - UV1[0] -  UV1[1]) > -tolR)  && 
           (UV1[0] > -tolR) && (UV1[1] > -tolR));
@@ -1935,15 +1935,15 @@ namespace K_MESH
 
     S = surface<DIM>(P0, P1, P2);
 
-    d = ::sqrt(NUGA::sqrDistance(P1, P0, DIM));
+    d = sqrt(NUGA::sqrDistance(P1, P0, DIM));
     p += d;
     L = (L < d) ? d : L;
 
-    d = ::sqrt(NUGA::sqrDistance(P2, P0, DIM));
+    d = sqrt(NUGA::sqrDistance(P2, P0, DIM));
     p += d;
     L = (L < d) ? d : L;
 
-    d = ::sqrt(NUGA::sqrDistance(P2, P1, DIM));
+    d = sqrt(NUGA::sqrDistance(P2, P1, DIM));
     p += d;
     L = (L < d) ? d : L;
 
@@ -1965,7 +1965,7 @@ namespace K_MESH
     NUGA::diff<3>(P2, P0, V);
     NUGA::crossProduct<3>(U, V, W);
 
-    return 0.5 * ::sqrt(NUGA::sqrNorm<3>(W));
+    return 0.5 * sqrt(NUGA::sqrNorm<3>(W));
   }
 
   //=============================================================================

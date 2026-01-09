@@ -315,8 +315,7 @@ void compute_overlap(const K_FLD::FloatArray& crd1, const ngon_unit& PGs1,
     for (E_Int n=0; n < nb_nodes;++n)
       Lref = MIN(Lref, L(0,nodes[n]-1));
 
-    E_Float abstol = MAX(ZERO_M, RTOL*::sqrt(Lref));
-    //std::cout << "compute_overlap for VOL : " << abstol << std::endl;
+    E_Float abstol = MAX(ZERO_M, RTOL*sqrt(Lref));
     for (j = 0; (j < cands2.size()); ++j)
     {
       E_Int J = cands2[j];
@@ -422,11 +421,9 @@ void compute_overlap(const K_FLD::FloatArray& crd1, const K_FLD::IntArray& edges
     for (E_Int n=0; n < nb_nodes;++n)
       Lref = MIN(Lref, L(0,nodes[n]-1));
 
-    E_Float abstol = MAX(EPSILON, RTOL*::sqrt(Lref));
+    E_Float abstol = MAX(EPSILON, RTOL*sqrt(Lref));
     E_Float u00, u01, u10, u11;
     E_Bool overlap = false;
-
-    //std::cout << abstol << std::endl;
     
     for (j = 0; (j < cands2.size()); ++j)
     {
@@ -493,7 +490,7 @@ bool get_colliding<NUGA::aPolygon, edge_mesh_t>
 
   E_Float l21 = ae1.Lref2();
   E_Float l22 = lmask.Lref2();//compute it before proj
-  E_Float ATOL(RTOL * ::sqrt(std::min(l21, l22)));
+  E_Float ATOL(RTOL * sqrt(std::min(l21, l22)));
 
   // project candidates on e1's plane => 2D problem
   STACK_ARRAY(E_Float, lmask.crd.cols(), signed_dists);
@@ -632,7 +629,7 @@ bool get_colliding<NUGA::aPolyhedron<UNKNOWN>, pg_smesh_t>
 
   //E_Float l21 = ae1.Lref2();
   //E_Float l22 = lmask.Lref2(cands, idx_start);
-  //E_Float ATOL(RTOL * ::sqrt(std::min(l21, l22)));
+  //E_Float ATOL(RTOL * sqrt(std::min(l21, l22)));
 
   // compute collision between e1 and each candidate until founding one collision
 
@@ -658,7 +655,7 @@ bool get_colliding<NUGA::aPolyhedron<UNKNOWN>, pg_smesh_t>
 
     E_Float Lref22 = e2.Lref2(lmask.crd);
 
-    E_Float abstol = RTOL * ::sqrt(std::min(Lref21, Lref22));
+    E_Float abstol = RTOL * sqrt(std::min(Lref21, Lref22));
 
     //do not pass the tol as we use here a predicate
     E_Int t1, t2;
@@ -705,7 +702,7 @@ bool get_colliding<vertex, pg_smesh_t>
 
   if (ARTOL < 0.)// relative
   {
-    E_Float Lref = ::sqrt(pt.val2);
+    E_Float Lref = sqrt(pt.val2);
     ARTOL *= -Lref;
   }
 
@@ -776,7 +773,7 @@ inline void get_colliding
         if (ARTOL < 0.) // relative
         {
           E_Float PGLref2 = PG.Lref2(surface.crd);// (surface.nodal_metric2);
-          TOLi *= -::sqrt(std::min(pts[i].val2, PGLref2));
+          TOLi *= -sqrt(std::min(pts[i].val2, PGLref2));
         }
 
         if (d >= TOLi) continue;

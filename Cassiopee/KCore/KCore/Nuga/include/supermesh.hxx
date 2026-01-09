@@ -115,8 +115,8 @@ inline void __impact_ae0(aPolygon& ae0, const std::set<std::pair<E_Int, E_Int>>&
     NUGA::diff<3>(P1, P0, P0P1);
     NUGA::diff<3>(PX, P0, P0PX);
 
-    E_Float Lx = ::sqrt(NUGA::sqrNorm<3>(P0PX));
-    E_Float L = ::sqrt(NUGA::sqrNorm<3>(P0P1));
+    E_Float Lx = sqrt(NUGA::sqrNorm<3>(P0PX));
+    E_Float L = sqrt(NUGA::sqrNorm<3>(P0P1));
 
     assert(Lx <= L);
 
@@ -359,7 +359,7 @@ void xmatch(const zmesh_t& m0, const zmesh_t& m1, E_Float ARTOL, std::vector<E_I
         ae1_2D.reverse_orient();
 
       E_Float Lref2 = ae0.Lref2(); //ae0_2D ???
-      E_Float ABSTOL = ::sqrt(Lref2) * 1.e-2;
+      E_Float ABSTOL = sqrt(Lref2) * 1.e-2;
 
       NUGA::eClassify c = NUGA::CLASSIFY::classify2D(ae0_2D, ae1_2D, ABSTOL);
       assert(c != AMBIGUOUS);
