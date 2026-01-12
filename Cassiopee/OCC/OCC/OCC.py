@@ -786,7 +786,7 @@ def readCAD(fileName, format='fmt_step'):
     h = occ.readCAD(fileName, format)
     return h
 
-def createEmptyCAD(fileName="unknown.stp", format='fmt_step'):
+def createEmptyCAD(fileName="None", format='fmt_step'):
     """Create an empty CAD."""
     h = occ.createEmptyCAD(fileName, format)
     return h
@@ -918,7 +918,7 @@ def _addArc(hook, P1, P2, P3):
     return None
 
 def _addCircle(hook, C, axis, R, makeFace=False):
-    """Add a box to hook."""
+    """Add a circle to hook."""
     occ.addCircle(hook, C, axis, R, makeFace)
     return None
 
@@ -933,7 +933,7 @@ def _addSuperEllipse(hook, C, R1, R2, n=4, samples=36, makeFace=False):
     return None
 
 def _addLine(hook, P1, P2):
-    """Add an ellipse to hook."""
+    """Add a line to hook."""
     occ.addLine(hook, P1, P2)
     return None
 

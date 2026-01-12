@@ -67,12 +67,14 @@ PyObject* K_OCC::createEmptyCAD(PyObject* self, PyObject* args)
   strcpy(fileFmtC, fileFmt);
 
   // Document
+  //TDocStd_Document* doc2 = NULL;
+  //doc2 = new TDocStd_Document("MDTV-Standard");
+  //doc2 = new TDocStd_Document("XmlXCAF");
+  static Handle(TDocStd_Document) doc2 = new TDocStd_Document("XmlXCAF"); // static to avoid transcient  
   Handle(XCAFApp_Application) app = XCAFApp_Application::GetApplication(); // init app at first call
-  TDocStd_Document* doc = NULL;
-  //doc = new TDocStd_Document("MDTV-Standard");
-  doc = new TDocStd_Document("XmlXCAF");
-  app->InitDocument(doc);
-
+  app->InitDocument(doc2);
+  TDocStd_Document* doc = doc2.operator->();
+  
   // capsule 
   PyObject* hook;
   E_Int sizePacket = 6;

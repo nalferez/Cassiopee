@@ -9,10 +9,18 @@ try:
     import Converter.Internal as Internal
     import Converter.Mpi as Cmpi
 except ImportError:
-    raise ImportError("OCC.PyTree: requires Converter module.")
+    raise ImportError("OCC.PyTree: requires Converter, Generator module.")
 
 __version__ = OCC.__version__
 import numpy
+
+from OCC import readCAD, writeCAD, createEmptyCAD, \
+    _translate, _rotate, _scale, _sewing, _splitFaces, \
+    _mergeFaces, _trimFaces, _removeFaces, _fillHole, _addFillet, mergeCAD, \
+    printOCAF, getFaceNameInOCAF, getEdgeNameInOCAF, _splitEdge, \
+    _addArc, _addCircle, _addEllipse, _addSuperEllipse, _addLine, _addSquare, \
+    _addSpline,_addBox, _addSphere, _addCylinder, _addSplineSurface, \
+    _addGordonSurface, _revolve, _sweep, _loft, _boolean
 
 #==============================================================================
 # -- convertCAD2PyTree --
@@ -940,7 +948,7 @@ def _meshAllFacesStruct(hook, t, faceList=None):
 
     return None
 
-# project t on faces
+# project t on CAD faces
 def _projectOnFaces(hook, t, faceList=None):
     """Project t on CAD."""
     zones = Internal.getZones(t)
@@ -949,10 +957,62 @@ def _projectOnFaces(hook, t, faceList=None):
         OCC.occ.projectOnFaces(hook, a, faceList)
     return None
 
-# deviation of mesh to CAD, add deviation field to t
-# from center position
-def _meshDeviation(hook, t):
+# project t on CAD edges
+def _projectOnEdges(hook, t, edgeList=None):
+    """Project t on CAD edges."""
+    zones = Internal.getZones(t)
+    for z in zones:
+        a = C.getFields(Internal.__GridCoordinates__, z, api=3)[0]
+        OCC.occ.projectOnEdges(hook, a, edgeList)
+    return None
+
+def _meshDeviation__(z, zc, F, hook, eList, no):
+    xp = Internal.getNodeFromName2(zc, 'CoordinateX')
+    yp = Internal.getNodeFromName2(zc, 'CoordinateY')
+    zp = Internal.getNodeFromName2(zc, 'CoordinateZ')
+    xp0 = xp[1].copy(); yp0 = yp[1].copy(); zp0 = zp[1].copy()
+    F(hook, zc, eList)
+    diff = (xp[1]-xp0)*(xp[1]-xp0)+(yp[1]-yp0)*(yp[1]-yp0)+(zp[1]-zp0)*(zp[1]-zp0)
+    diff = numpy.sqrt(diff)
+    print("INFO: meshDeviation: %d: %g"%(no, numpy.max(diff)))
+    if z[1][0,0] == zc[1][0,0]:
+        C._initVars(z, 'nodes:deviation', 0.)
+        FS = Internal.getNodeFromName1(z, Internal.__FlowSolutionNodes__)
+        Internal.getNodeFromName1(FS, 'deviation')[1] = diff
+    else:
+        C._initVars(z, 'centers:deviation', 0.)
+        FS = Internal.getNodeFromName1(z, Internal.__FlowSolutionCenters__)
+        Internal.getNodeFromName1(FS, 'deviation')[1] = diff
+
+# deviation of a generated mesh to CAD, add deviation field to t
+# if loc="nodes", from vertex position
+# if loc="centers", from center position
+def _meshDeviation(hook, t, loc='nodes'):
     """Measure deviation from mesh to CAD."""
+    EDGES = Internal.getNodeFromName1(t, 'EDGES')
+    FACES = Internal.getNodeFromName1(t, 'FACES')
+    if EDGES is not None and FACES is not None:
+        _meshDeviation1(hook, t, loc)
+    else:    
+        _meshDeviation2(hook, t, loc)
+    return None
+
+def _meshDeviation1(hook, t, loc='nodes'):
+    """Measure deviation from mesh to CAD."""
+    EDGES = Internal.getNodeFromName1(t, 'EDGES')
+    zones = Internal.getZones(EDGES)
+    for z in zones:
+        # no de l'edge
+        try:
+            no = getNo(z)
+            edgeList = [no]
+        except: edgeList = None
+        if loc == "centers":
+            # recupere le maillage en centre
+            zc = C.node2Center(z)
+            _meshDeviation__(z, zc, _projectOnEdges, hook, edgeList, no)
+        else: # nodes
+            _meshDeviation__(z, z, _projectOnEdges, hook, edgeList, no)
     FACES = Internal.getNodeFromName1(t, 'FACES')
     zones = Internal.getZones(FACES)
     for z in zones:
@@ -961,21 +1021,30 @@ def _meshDeviation(hook, t):
             no = getNo(z)
             faceList = [no]
         except: faceList = None
-        # recupere le maillage en centre
-        zc = C.node2Center(z)
-        # Projete le maillage en centre sur la face associee
-        xp = Internal.getNodeFromName2(zc, 'CoordinateX')
-        yp = Internal.getNodeFromName2(zc, 'CoordinateY')
-        zp = Internal.getNodeFromName2(zc, 'CoordinateZ')
-        xp0 = xp[1].copy(); yp0 = yp[1].copy(); zp0 = zp[1].copy()
-        _projectOnFaces(hook, zc, faceList)
-        diff = (xp[1]-xp0)*(xp[1]-xp0)+(yp[1]-yp0)*(yp[1]-yp0)+(zp[1]-zp0)*(zp[1]-zp0)
-        diff = numpy.sqrt(diff)
-        print("INFO: meshDeviation: face %d: %g"%(no, numpy.max(diff)))
-        C._initVars(z, 'centers:dev', 0.)
-        Internal.getNodeFromName2(z, 'dev')[1] = diff
+        if loc == "centers":
+            # recupere le maillage en centre
+            zc = C.node2Center(z)
+            _meshDeviation__(z, zc, _projectOnFaces, hook, faceList, no)
+        else: # nodes
+            _meshDeviation__(z, z, _projectOnFaces, hook, faceList, no)
     return None
 
+# deviation to edges for any mesh
+def _meshDeviation2(hook, t, loc="nodes"):
+    zones = Internal.getZones(t)
+    for no, z in enumerate(zones):
+        dim = Internal.getZoneDim(z)
+        if dim[4] == 1: F = _projectOnEdges
+        else: F = _projectOnFaces
+
+        if loc == "centers":
+            # recupere le maillage en centre
+            zc = C.node2Center(z)
+            _meshDeviation__(z, zc, F, hook, None, no)
+        else: 
+            _meshDeviation__(z, z, F, hook, None, no)            
+    return None
+                    
 # set color red to lonelyEdges
 def _setLonelyEdgesColor(t):
     import CPlot.PyTree as CPlot

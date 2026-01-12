@@ -1087,6 +1087,8 @@ def convertFile2PyTree(fileName, format=None, nptsCurve=20, nptsLine=2,
             if CAD is not None: # reload CAD
                 file = Internal.getNodeFromName1(CAD, 'file')
                 if file is not None: file = Internal.getValue(file)
+                if file is not None:
+                    if file == "None": file = None
                 fmt = Internal.getNodeFromName1(CAD, 'format')
                 if fmt is not None: fmt = Internal.getValue(fmt)
                 if file is not None and fmt is not None:
@@ -1171,7 +1173,7 @@ def convertFile2PyTree(fileName, format=None, nptsCurve=20, nptsLine=2,
             return a # OK
         ret = Internal.isStdNode(a)
         if ret != -2: # standard node
-            t, ntype = Internal.node2PyTree(a)
+            t, _ = Internal.node2PyTree(a)
             registerAllNames(t)
             return t # OK
         # sinon, c'est un arrays (traite dans la suite)
