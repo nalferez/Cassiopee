@@ -1,5 +1,5 @@
 /*
-    Copyright 2013-2025 Onera.
+    Copyright 2013-2026 ONERA.
 
     This file is part of Cassiopee.
 
@@ -294,7 +294,7 @@ namespace K_TRANSFORM
   PyObject* _rotateA3(PyObject* self, PyObject* args);
   PyObject* homothety(PyObject* self, PyObject* args);
   PyObject* contract(PyObject* self, PyObject* args);
-  PyObject* symetrize(PyObject* self, PyObject* args);
+  PyObject* symmetrize(PyObject* self, PyObject* args);
   PyObject* perturbate(PyObject* self, PyObject* args);
   PyObject* smooth(PyObject* self, PyObject* args);
   PyObject* _smoothField(PyObject* self, PyObject* args);

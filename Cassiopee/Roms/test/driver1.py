@@ -19,7 +19,7 @@ line2 = D.Line("line2", P2, P3)
 line3 = D.Line("line3", P3, P4)
 line4 = D.Line("line4", P4, P1)
 
-sketch1 = D.Sketch('sketch1', [line1, line2, line3, line4])
+sketch1 = D.Sketch('sketch1', [line1, line2, line3, line4], h=[0.1,0.1,0.1])
 
 # solve
 D.DRIVER.solve()
@@ -29,13 +29,13 @@ db = DataBase.DataBase("BASE1", parameters=['height'])
 D.DRIVER.connect(db)
 D.DRIVER.instantiate({'height': 5.})
 sketch1.writeCAD('out.step')
-ref1 = sketch1.mesh(0.1, 0.1, 0.1)
+ref1 = sketch1.mesh()
 db.registerReference(D.exportEdges(ref1), "ref1")
 
 import CPlot, time
 pt = D.DRIVER.walkDOE()
 while pt is not None:
-    mesh = sketch1.rmesh(ref1, 0.1, 0.1, 0.1)
+    mesh = sketch1.rmesh(ref1)
     db.register("mesh", pt, "ref1", data=D.exportEdges(mesh))
     #CPlot.display(mesh)
     pt = D.DRIVER.walkDOE()

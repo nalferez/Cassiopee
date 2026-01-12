@@ -1,5 +1,5 @@
 /*    
-    Copyright 2013-2025 Onera.
+    Copyright 2013-2026 ONERA.
 
     This file is part of Cassiopee.
 
@@ -1637,7 +1637,7 @@ PyObject* K_POST::selectExteriorFacesME(char* varString, FldArrayF& f,
   // Free memory
   faceMap.clear(); faceMap.rehash(0);
 
-  // There is a total 4 possible conns: NODE, BAR, TRI and QUAD
+  // There are a total of 4 possible conns: NODE, BAR, TRI and QUAD
   const E_Int nbuckets = 4;
   // Uniform chunks (schedule: static) with at most 'nfc' faces per thread
   const E_Int nthreads = __NUMTHREADS__;
@@ -1768,7 +1768,23 @@ PyObject* K_POST::selectExteriorFacesME(char* varString, FldArrayF& f,
       ntotUniqueFaces += tmp_nfpc2[ic];
     }
   }
-  if (ntotUniqueFaces == 0) return NULL;  // can only happen for a closed 1D contour
+
+  if (ntotUniqueFaces == 0)  // can only happen for a closed 1D contour
+  {
+		// Free memory
+	  for (E_Int i = 0; i < nthreads; i++)
+	  {
+	    delete [] tnextfpc[i];
+	    delete [] toffset[i];
+	  }
+	  delete [] toffset[nthreads];
+	  delete [] tnextfpc; delete [] toffset;
+	
+	  delete [] eltType2;
+	  for (size_t ic = 0; ic < eltTypes.size(); ic++) delete [] eltTypes[ic];
+		return NULL;
+  }
+
   if (boolIndir)
   {
     indicesFaces = K_NUMPY::buildNumpyArray(ntotUniqueFaces, 1, 1, 0);
@@ -1807,7 +1823,7 @@ PyObject* K_POST::selectExteriorFacesME(char* varString, FldArrayF& f,
     std::vector<E_Int> extfCmpt(nbuckets, 0);  // number of ext faces found
     for (E_Int ic = 0; ic < nc; ic++)
     {
-      if (nextfpc[ic] == 0) continue;  // no exterior elements in this input conn., skip
+      if (nextfpc[ic] == 0) continue;  // no exterior faces in this input conn., skip
       K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
       nelts = cm.getSize();
       K_CONNECT::getEVFacets(facets, eltTypes[ic], false);

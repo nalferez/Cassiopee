@@ -32,7 +32,7 @@ line2 = D.Line('line2', P7, P8)
 line3 = D.Line('line3', P8, P1)
 
 # Create sketch
-sketch1 = D.Sketch('sketch1', [spline1, line1, line2, line3])
+sketch1 = D.Sketch('sketch1', [spline1, line1, line2, line3], h=[0.01,0.01,0.01])
 
 # solve
 D.DRIVER.solve()
@@ -43,6 +43,6 @@ sketch1.writeCAD('out.step')
 import CPlot, time
 for i in range(50):
     D.DRIVER.instantiate({'hauteur': 0.3+i/100.})
-    mesh = sketch1.mesh(0.01, 0.01, 0.01)
+    mesh = sketch1.mesh()
     CPlot.display(mesh)
     time.sleep(0.5)

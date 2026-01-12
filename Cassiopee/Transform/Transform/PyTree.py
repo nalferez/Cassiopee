@@ -134,15 +134,18 @@ def _scale(a, factor=1., X=None):
         except: pass
     return C.__TZGC3(a, Transform._scale, factor, X)
 
-def symetrize(a, point, vector1, vector2):
-    """Make a symetry of mesh from plane passing by point and of director vector: vector1 and vector2.
-    Usage: symetrize(a, (xc,yc,zc), (v1x,v1y,v1z), (v2x,v2y,v2z))"""
-    return C.TZGC3(a, 'nodes', False, Transform.symetrize, point, vector1, vector2)
+def symmetrize(a, point, vector1, vector2):
+    """Make a symmetry of mesh from plane passing by point and of director vector: vector1 and vector2.
+    Usage: symmetrize(a, (xc,yc,zc), (v1x,v1y,v1z), (v2x,v2y,v2z))"""
+    return C.TZGC3(a, 'nodes', False, Transform.symmetrize, point, vector1, vector2)
 
-def _symetrize(a, point, vector1, vector2):
-    """Make a symetry of mesh from plane passing by point and of director vector: vector1 and vector2.
-    Usage: symetrize(a, (xc,yc,zc), (v1x,v1y,v1z), (v2x,v2y,v2z))"""
-    return C.__TZGC3(a, Transform._symetrize, point, vector1, vector2)
+def _symmetrize(a, point, vector1, vector2):
+    """Make a symmetry of mesh from plane passing by point and of director vector: vector1 and vector2.
+    Usage: symmetrize(a, (xc,yc,zc), (v1x,v1y,v1z), (v2x,v2y,v2z))"""
+    return C.__TZGC3(a, Transform._symmetrize, point, vector1, vector2)
+
+symetrize = symmetrize
+_symetrize = _symmetrize
 
 def perturbate(a, radius, dim=3):
     """Perturbate a mesh randomly of radius
@@ -625,13 +628,13 @@ def subzoneGCStruct__(z, dim, imin, imax, jmin, jmax, kmin, kmax, \
                           zoneDonor=[ddDnrs[nor]], rangeDonor='doubly_defined')
     return z
 
-def subzone(t, minIndex, maxIndex=None, type=None):
+def subzone(t, minIndex, maxIndex=None, type=None, dimOut=-1):
     """Take a subzone of mesh.
     Usage: subzone(t, (imin,jmin,kmin), (imax,jmax,kmax))"""
-    if maxIndex is None: return subzoneUnstruct__(t, minIndex, type)
+    if maxIndex is None: return subzoneUnstruct__(t, minIndex, type, dimOut)
     else: return subzoneStruct__(t, minIndex, maxIndex)
 
-def subzoneUnstruct__(t, indices, type):
+def subzoneUnstruct__(t, indices, type, dimOut=-1):
     tp = Internal.copyRef(t)
     nodes = Internal.getZones(tp)
     for z in nodes:
@@ -641,7 +644,7 @@ def subzoneUnstruct__(t, indices, type):
         fb = C.getFields(Internal.__FlowSolutionCenters__, z, api=1)[0]
         if fa != []: fc = Converter.addVars([fc, fa])
         if fb == []: # no flow sol at centers
-            nodes = Transform.subzone(fc, indices, type=type)
+            nodes = Transform.subzone(fc, indices, type=type, dimOut=dimOut)
             C.setFields([nodes], z, 'nodes')
         else:
             if dimz[0] == 'Structured': # faceList as global indices of structured interfaces
@@ -1966,9 +1969,9 @@ def _addkplane(t, N=1):
     """Add N k-plane(s) to a mesh."""
     zones = Internal.getZones(t)
     for z in zones:
-        nodes = C.getFields(Internal.__GridCoordinates__, z, api=1)[0]
-        fn = C.getFields(Internal.__FlowSolutionNodes__, z, api=1)[0]
-        fc = C.getFields(Internal.__FlowSolutionCenters__, z, api=1)[0]
+        nodes = C.getFields(Internal.__GridCoordinates__, z, api=3)[0]
+        fn = C.getFields(Internal.__FlowSolutionNodes__, z, api=3)[0]
+        fc = C.getFields(Internal.__FlowSolutionCenters__, z, api=3)[0]
         # Coordinates + fields located at nodes
         if fn != []:
             if nodes == []: nodes = fn

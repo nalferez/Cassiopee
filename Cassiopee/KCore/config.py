@@ -37,6 +37,8 @@ if prod is not None:
             branchName = mac[1]
             prod = prod.replace('_' + branchName, '')
         if mac[0] in configDict: key = mac[0]
+        else:
+            if prod in configDict: key = prod
     else:
         if prod in configDict: key = prod
 

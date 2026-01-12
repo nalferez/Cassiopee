@@ -833,7 +833,7 @@ def newBCProperty(wallFunction='Null', area='Null', parent=None):
 # -- newAxiSymmetry
 def newAxiSymmetry(referencePoint=[0.,0.,0.],
                    axisVector=[0.,0.,0.], parent=None):
-  """Create AxiSymetry node."""
+  """Create AxiSymmetry node."""
   if parent is None:
     node = createNode('AxiSymmetry', 'AxiSymmetry_t')
   else: node = createUniqueChild(parent, 'AxiSymmetry', 'AxiSymmetry_t')

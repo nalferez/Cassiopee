@@ -20,14 +20,14 @@ D.Eq(epaisseur, grid1.P[1][2][0].y)
 spline1 = D.Spline3('spline1', grid1, mesh=naca)
 
 # Create parametric sketch
-sketch1 = D.Sketch('sketch1', [spline1])
+sketch1 = D.Sketch('sketch1', [spline1], h=[0.01,0.01,0.01])
 
 # solve for free parameters
 D.DRIVER.solve()
 
 # Build DOE
 D.DRIVER.createDOE('doe.hdf')
-D.DRIVER.walkDOE3(sketch1, 0.01, 0.01, 0.01)
+D.DRIVER.walkDOE3(sketch1)
 
 # read snapshots as matrix
 #F = D.DRIVER.readAllSnapshots()

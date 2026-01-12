@@ -1,5 +1,5 @@
 /*
-    Copyright 2013-2025 Onera.
+    Copyright 2013-2026 ONERA.
 
     This file is part of Cassiopee.
 
@@ -41,7 +41,7 @@ static PyMethodDef PyTransform[] =
   {"_rotateA3", K_TRANSFORM::_rotateA3, METH_VARARGS},
   {"homothety", K_TRANSFORM::homothety, METH_VARARGS},
   {"contract", K_TRANSFORM::contract, METH_VARARGS},
-  {"symetrize", K_TRANSFORM::symetrize, METH_VARARGS},
+  {"symmetrize", K_TRANSFORM::symmetrize, METH_VARARGS},
   {"perturbate", K_TRANSFORM::perturbate, METH_VARARGS},
   {"smooth", K_TRANSFORM::smooth, METH_VARARGS},
   {"_smoothField", K_TRANSFORM::_smoothField, METH_VARARGS},

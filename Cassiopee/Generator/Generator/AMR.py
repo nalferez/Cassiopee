@@ -342,7 +342,6 @@ def generateSkeletonMesh__(tb, snears, dfars=10., dim=3, levelSkel=7, octreeMode
 
     if dim == 2: T._addkplane(o)
     o = C.convertArray2NGon(o)
-    o = G.close(o)
     _addPhysicalBCs__(o, tb, dim=dim)
     Internal._adaptNGon32NGon4(o)
     if Cmpi.master: print('Generating skeleton mesh...end', flush=True)
@@ -888,6 +887,7 @@ def _createBCStandard__(a_hexa, a):
     return None
 
 def adaptMesh__(fileSkeleton, hmin, tb, bbo, toffset=None, dim=3, loadBalancing=False, opt=False, numTbox=0):
+    from mpi4py import MPI # for MPI_Init
     coarseXray = False
     bbtb = G.bbox(tb)
     lenMax = 0.0
