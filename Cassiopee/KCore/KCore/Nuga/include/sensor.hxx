@@ -116,7 +116,7 @@ inline NUGA::eDIR get_dir(const K_FLD::FloatArray& crd, const E_Int* nodes, E_In
 
   K_MESH::Polygon::normal<K_FLD::FloatArray, 3>(crd, nodes, nnodes, 1, n);
 
-  E_Float ps = ::fabs(NUGA::dot<3>(Z, n));
+  E_Float ps = fabs(NUGA::dot<3>(Z, n));
 
   if (ps > 0.1) return XY; // face is ortho to Z => XY
 
@@ -126,7 +126,7 @@ inline NUGA::eDIR get_dir(const K_FLD::FloatArray& crd, const E_Int* nodes, E_In
   NUGA::diff<3>(crd.col(nodes[1] - 1), crd.col(nodes[0] - 1), E);
   NUGA::normalize<3>(E);
 
-  ps = ::fabs(NUGA::dot<3>(Z, E));
+  ps = fabs(NUGA::dot<3>(Z, E));
 
   if (ps > 0.1) return Y;
 

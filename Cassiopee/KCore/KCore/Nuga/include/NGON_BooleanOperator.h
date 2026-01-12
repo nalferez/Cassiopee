@@ -1282,7 +1282,7 @@ E_Int NGON_BOOLEAN_CLASS::volume_coefficients
     
     //NEWNEWK_MESH::Polyhedron<STAR_SHAPED>::metrics<DELAUNAY::Triangulator>(dt, crd_rec, ng_rec, rec_PHi, v_rec, Gdum); //volume of donnor ancestor to compute the fraction
     K_MESH::Polyhedron<STAR_SHAPED>::metrics2<DELAUNAY::Triangulator>(dt, crd_rec, ng_rec.PGs, ng_rec.PHs.get_facets_ptr(rec_PHi), ng_rec.PHs.stride(rec_PHi), v_rec, Gdum);
-    v_rec = ::fabs(v_rec);
+    v_rec = fabs(v_rec);
     //assert (v_rec > 0.);
     if (v_rec <= 0.)
     {
@@ -1307,7 +1307,7 @@ E_Int NGON_BOOLEAN_CLASS::volume_coefficients
       E_Float v;
       //NENWEK_MESH::Polyhedron<STAR_SHAPED>::metrics<DELAUNAY::Triangulator>(dt, coord, *_ngoper, PHibit, v, Gdum); //volume of the piece of donnor PH
       K_MESH::Polyhedron<STAR_SHAPED>::metrics2<DELAUNAY::Triangulator>(dt, coord, _ngoper->PGs, _ngoper->PHs.get_facets_ptr(PHibit), _ngoper->PHs.stride(PHibit), v, Gdum);
-      vcumul += ::fabs(v);
+      vcumul += fabs(v);
       
       don_coefs.push_back(v*v_rec);
     }
@@ -1315,7 +1315,7 @@ E_Int NGON_BOOLEAN_CLASS::volume_coefficients
 #ifdef DEBUG_BOOLEAN
     E_Float err = vcumul * v_rec;
     err = (err - 1.)/ err; //make it relative
-    if (::fabs(err) > EPSILON)
+    if (fabs(err) > EPSILON)
       std::cout << "erreur relative entre v_rec vs vcumul : " << ::fabs(err) << std::endl;
 #endif
     
@@ -1482,7 +1482,7 @@ E_Int NGON_BOOLEAN_CLASS::volume_and_centroid_coefficients
       E_Float v;
       //NEWNEW K_MESH::Polyhedron<STAR_SHAPED>::metrics<DELAUNAY::Triangulator>(dt, coord, *_ngoper, PHibit, v, Gdum); //volume of the piece of donnor PH
       K_MESH::Polyhedron<STAR_SHAPED>::metrics2<DELAUNAY::Triangulator>(dt, coord, _ngoper->PGs, _ngoper->PHs.get_facets_ptr(PHibit), _ngoper->PHs.stride(PHibit), v, Gdum);
-      v = ::fabs(v);
+      v = fabs(v);
 
 #ifdef DEBUG_BOOLEAN
       vcumul += v;
@@ -1499,7 +1499,7 @@ E_Int NGON_BOOLEAN_CLASS::volume_and_centroid_coefficients
 #ifdef DEBUG_BOOLEAN
     E_Float err = vcumul * v_rec;
     err = (err - 1.)/ err; //make it relative
-    if (::fabs(err) > EPSILON)
+    if (fabs(err) > EPSILON)
       std::cout << "erreur relative entre v_rec vs vcumul : " << ::fabs(err) << std::endl;
     
     acuG[0] /= vcumul;
@@ -6016,7 +6016,7 @@ bool NGON_BOOLEAN_CLASS::__is_convex
   std::map< E_Int, std::pair<E_Int, E_Int> >::const_iterator itN;
   
   E_Float angle_max = NUGA::PI* _convexity_tol; // a fraction betwen 0 and Pi
-  E_Float cos_min = ::cos(angle_max); // cos is decreasing on [0; Pi]
+  E_Float cos_min = cos(angle_max); // cos is decreasing on [0; Pi]
   
   E_Float Z[3];
   for (size_t i = 0; i < boundaries.size(); ++i)

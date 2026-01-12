@@ -295,7 +295,7 @@ namespace NUGA
 
           if (z1*z2 < 0.) continue; // means crossing 
 
-          E_Float mz = std::min(::fabs(z1), ::fabs(z2));
+          E_Float mz = std::min(fabs(z1), fabs(z2));
           keep[i] = (mz < Lref); //at least one inside interf zone
           do_compact |= !keep[i];
         }

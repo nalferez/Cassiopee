@@ -331,7 +331,7 @@ namespace NUGA
       xr.push_back(nb_coefs + xr[xr.size()-1]);
       
 #ifdef DEBUG_CONS_CHIMERA
-//      E_Float delta = ::fabs(coefs_sum-1.);
+//      E_Float delta = fabs(coefs_sum-1.);
 //      E_Int last = xr.size()-1;
 //      E_Int nb_donnor =xr[last] - xr[last-1];
 //      if (delta >= EPSILON)
@@ -342,7 +342,7 @@ namespace NUGA
 //        for (E_Int i=0; i < nb_donnor; ++i) std::cout << dindices[i] << " ";
 //        std::cout << std::endl;
 //      }
-      //assert (::fabs(coefs_sum-1.) < EPSILON) ;
+      //assert (fabs(coefs_sum-1.) < EPSILON) ;
 #endif  
       
     }

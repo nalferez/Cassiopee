@@ -1649,7 +1649,7 @@ struct ngon_t
         E_Float emin = sqrt(std::min(emin2, emin21));
         if (Lmax > 0. && emin > Lmax) continue; // consider only edges under Lmax (if valid value)
 
-        bool small_edge = ::fabs(emin - Lref) < 1.e-6 * emin ; // NiNj is (or very near) the smallest incident edge
+        bool small_edge = fabs(emin - Lref) < 1.e-6 * emin ; // NiNj is (or very near) the smallest incident edge
 
         if (n_bad_nodes == 2 && small_edge)
         {
@@ -1660,7 +1660,7 @@ struct ngon_t
     }
 
     // update the pointers to point to the leaves
-    for (size_t i =0; i < nids.size(); ++i)
+    for (size_t i = 0; i < nids.size(); ++i)
     {
       E_Int Fi = nids[i];
       while (Fi != nids[Fi])Fi=nids[Fi];
@@ -2075,7 +2075,7 @@ struct ngon_t
       K_MESH::Polygon::normal<acrd_t, 3>(acrd, nodes, nb_nodes, 1, W);
       E_Float l2 = sqrt(W[0]*W[0]+W[1]*W[1]+W[2]*W[2]);
       
-      if (::fabs(l2 - 1.) >= EPSILON) // NORMAL CALCULATION FAILED
+      if (fabs(l2 - 1.) >= EPSILON) // NORMAL CALCULATION FAILED
       {
         /*E_Float Lmin=NUGA::FLOAT_MAX;
         E_Float Lmax = -1;
@@ -3356,7 +3356,7 @@ E_Int remove_unreferenced_pgs(Vector_t<E_Int>& pgnids, Vector_t<E_Int>& phnids)
         }
       
         K_MESH::Polyhedron<UNKNOWN>::metrics(crd, cT3, v, G);
-        v = ::fabs(v);
+        v = fabs(v);
         if (v < vm[id])
         {
           vm[id]=v;
@@ -4324,7 +4324,7 @@ static E_Int volumes (const K_FLD::FloatArray& crd, const ngon_t& ng, std::vecto
 #endif
     for (E_Int i = 0; i < nb_phs; ++i){
       err = K_MESH::Polyhedron<UNKNOWN>::metrics2<TriangulatorType>(dt, crd, ng.PGs, ng.PHs.get_facets_ptr(i), ng.PHs.stride(i), v, Gdum, all_pgs_cvx);
-      v = ::fabs(v);
+      v = fabs(v);
       if (!err) vols[i] = v;
       else ++errcount;
     }
@@ -4418,7 +4418,7 @@ static E_Int centroids(const ngon_t& ng, const K_FLD::FloatArray& crd, K_FLD::Fl
 #endif
     for (E_Int i = 0; i < nb_phs; ++i){
       err = K_MESH::Polyhedron<UNKNOWN>::metrics2<TriangulatorType>(dt, crd, ng.PGs, ng.PHs.get_facets_ptr(i), ng.PHs.stride(i), v, centroids.col(i), false);
-      v = ::fabs(v);
+      v = fabs(v);
       if (!err) vols[i] = v;
       else ++errcount;
     }
@@ -5231,8 +5231,8 @@ static E_Int extrude_revol_faces
 
     E_Float* newp = coord.col(nid);
 
-    newp[0] = radius[i] * ::cos(a);
-    newp[1] = radius[i] * ::sin(a);
+    newp[0] = radius[i] * cos(a);
+    newp[1] = radius[i] * sin(a);
     newp[2] = p[2];
 
     img[i] = nid++;

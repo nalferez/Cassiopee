@@ -222,16 +222,16 @@ struct aPolygon : public K_MESH::Polygon
 
     if ((m_normal[0] != NUGA::FLOAT_MAX) && (rhs.m_normal[0] != NUGA::FLOAT_MAX))
     {
-      if (::fabs((m_normal[0] - rhs.m_normal[0])) > EPSILON) return false;
-      if (::fabs((m_normal[1] - rhs.m_normal[1])) > EPSILON) return false;
-      if (::fabs((m_normal[2] - rhs.m_normal[2])) > EPSILON) return false;
+      if (fabs((m_normal[0] - rhs.m_normal[0])) > EPSILON) return false;
+      if (fabs((m_normal[1] - rhs.m_normal[1])) > EPSILON) return false;
+      if (fabs((m_normal[2] - rhs.m_normal[2])) > EPSILON) return false;
     }
 
     if ((m_centroid[0] != NUGA::FLOAT_MAX) && (rhs.m_centroid[0] != NUGA::FLOAT_MAX))
     {
-      if (::fabs((m_centroid[0] - rhs.m_centroid[0])) > EPSILON) return false;
-      if (::fabs((m_centroid[1] - rhs.m_centroid[1])) > EPSILON) return false;
-      if (::fabs((m_centroid[2] - rhs.m_centroid[2])) > EPSILON) return false;
+      if (fabs((m_centroid[0] - rhs.m_centroid[0])) > EPSILON) return false;
+      if (fabs((m_centroid[1] - rhs.m_centroid[1])) > EPSILON) return false;
+      if (fabs((m_centroid[2] - rhs.m_centroid[2])) > EPSILON) return false;
     }
 
     // check for vertices coincidence

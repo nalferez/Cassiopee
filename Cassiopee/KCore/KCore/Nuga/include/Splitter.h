@@ -1683,15 +1683,15 @@ if (PHi == faultyPH)
   E_Int maxAPG11, maxAPG12;
   err = K_MESH::Polyhedron<UNKNOWN>::min_max_angles(crd, twoPH.PGs, pgs0, nb_pgs0, false/*i.e open cell is error*/, orient.get_facets_ptr(0), minA1, maxA1, maxAPG11, maxAPG12);
   if (err) return false; //open cell
-  if ((minA1 < minA) && ::fabs(minA1) < THRESHOLD) return false; // degen (first cond is there to allow splitting cells that have bad minA upon entry
-  if ((maxA1 > maxA) && ::fabs(2.*NUGA::PI - maxA1) < THRESHOLD) return false; // same comment
+  if ((minA1 < minA) && fabs(minA1) < THRESHOLD) return false; // degen (first cond is there to allow splitting cells that have bad minA upon entry
+  if ((maxA1 > maxA) && fabs(2.*NUGA::PI - maxA1) < THRESHOLD) return false; // same comment
   
   E_Float minA2, maxA2;
   E_Int maxAPG21, maxAPG22;
   err = K_MESH::Polyhedron<UNKNOWN>::min_max_angles(crd, twoPH.PGs, pgs1, nb_pgs1, false/*i.e open cell is error*/, orient.get_facets_ptr(1), minA2, maxA2, maxAPG21, maxAPG22);
   if (err) return false; //open cell
-  if ((minA2 < minA) && ::fabs(minA2) < THRESHOLD) return false; // degen (first cond is there to allow splitting cells that have bad minA upon entry
-  if ((maxA2 > maxA) && ::fabs(2.*NUGA::PI - maxA2) < THRESHOLD) return false; // same comment
+  if ((minA2 < minA) && fabs(minA2) < THRESHOLD) return false; // degen (first cond is there to allow splitting cells that have bad minA upon entry
+  if ((maxA2 > maxA) && fabs(2.*NUGA::PI - maxA2) < THRESHOLD) return false; // same comment
 
   K_MESH::Polyhedron<0> PH0(twoPH, 0);
   E_Float fluxvec[3];

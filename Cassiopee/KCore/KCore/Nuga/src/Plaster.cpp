@@ -125,7 +125,7 @@ Plaster::make
 
   //std::cout << "devmin : " << devmin << std::endl;
   //std::cout << "devmax : " << devmax << std::endl;
-  bool is_planar = (std::max(::fabs(devmin), ::fabs(devmax)) < EPSILON);
+  bool is_planar = (std::max(fabs(devmin), fabs(devmax)) < EPSILON);
   //std::cout << "is planar ? " << is_planar << std::endl;
   
   //std::cout << "plaster 8" << std::endl;
@@ -152,15 +152,12 @@ Plaster::make
   
   E_Float nif = 1. + (maxB[0] - minB[0]) / dx;
   E_Float njf = 1. + (maxB[1] - minB[1]) / dx;
-  nif *= ::fabs(bump_factor) + 1.; // 2 times more if factor is 1 or -1.
-  njf *= ::fabs(bump_factor) + 1.;
+  nif *= fabs(bump_factor) + 1.; // 2 times more if factor is 1 or -1.
+  njf *= fabs(bump_factor) + 1.;
   ni = E_Int(nif);
   nj = E_Int(njf);
   ni = std::min(ni, NIJMAX);
   nj = std::min(nj, NIJMAX);
-
-  //std::cout << "ni : " << ni << std::endl;
-  //std::cout << "nj : " << nj << std::endl;
 
   // Generate the plaster (a cartesian mesh) on the top side 
   minB[2] = z0;
@@ -336,15 +333,13 @@ Plaster::__smooth_1
 
       q = 0.25 * ( z[indH] + z[indB] + z[indG] + z[indD] );
       
-      d = ::fabs(z[ind] - q);
+      d = fabs(z[ind] - q);
       dMax = (dMax < d) ? d : dMax;
       z[ind] = q;
     }
 
     carry_on = (++iter < iterMax) && (dMax > threshold);
   }
-
-  //std::cout << "iter : " << iter << std::endl;
 }
 
 
@@ -396,7 +391,7 @@ Plaster::__smooth_2
 
       q = 0.25 * (zh +zb +zg +zd);
 
-      d = ::fabs(z[ind] - q);
+      d = fabs(z[ind] - q);
       dMax = (dMax < d) ? d : dMax;
       z[ind] = q;
     }

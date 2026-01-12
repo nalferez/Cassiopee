@@ -266,7 +266,7 @@ inline E_Float angle_measure
   NUGA::crossProduct<3>(ni, nj, nk);
   E_Float c = NUGA::dot<3>(ni, nj);
 
-  E_Int s = zSIGN(::fabs(c) - 1., ZERO_M);
+  E_Int s = zSIGN(fabs(c) - 1., ZERO_M);
 
   if (s != 0) // non-degn case
   {
@@ -310,7 +310,7 @@ inline E_Float normals_angle (const E_Float* ni, const E_Float* nj)
   NUGA::crossProduct<3>(ni, nj, nk);
   E_Float c = NUGA::dot<3>(ni, nj);
 
-  E_Int s = zSIGN(::fabs(c) - 1., ZERO_M);
+  E_Int s = zSIGN(fabs(c) - 1., ZERO_M);
 
   if (s != 0) // non-degn case
   {
@@ -467,8 +467,8 @@ inline void axial_rotate(K_FLD::FloatArray& crd, const E_Float* axis_pt, const E
     E_Float* pt = crd.col(i);
     E_Float X = pt[0] - axi_pt[0];
     E_Float Y = pt[1] - axi_pt[1];
-    pt[0] = ::cos(angle) * X - ::sin(angle) * Y + axi_pt[0];
-    pt[1] = ::sin(angle) * X + ::cos(angle) * Y + axi_pt[1];
+    pt[0] = cos(angle) * X - sin(angle) * Y + axi_pt[0];
+    pt[1] = sin(angle) * X + cos(angle) * Y + axi_pt[1];
   }
 
   NUGA::transform(crd, P); // back to original ref frame  

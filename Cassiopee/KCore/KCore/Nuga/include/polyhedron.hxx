@@ -321,7 +321,7 @@ E_Float aPolyhedron<TopoShape>::extent() const
 {
   E_Float v(0.);
   volume<DELAUNAY::Triangulator>(v, true/*reorient*/);//fixme : avoid systematic reorient
-  return ::fabs(v);
+  return fabs(v);
 }
 
 template <int TopoShape>

@@ -185,8 +185,8 @@ namespace DELAUNAY
 //    const K_FLD::FloatArray &crd = *_pos2D;
 //    for (E_Int i=0; i < nbe; ++i)
 //    {
-//      E_Float du = ::fabs(crd(0,connectB(0,i)) - crd(0,connectB(1,i)));
-//      E_Float dv = ::fabs(crd(1,connectB(0,i)) - crd(1,connectB(1,i)));
+//      E_Float du = fabs(crd(0,connectB(0,i)) - crd(0,connectB(1,i)));
+//      E_Float dv = fabs(crd(1,connectB(0,i)) - crd(1,connectB(1,i)));
 //      
 //      hu_max = std::max(hu_max, du);
 //      hv_max = std::max(hv_max, dv);
@@ -293,7 +293,7 @@ namespace DELAUNAY
     NUGA::crossProduct<3> (dU1, dV1, n); // Normal to the tangential plane.
     E_Float ln = NUGA::normalize<3>(n);
     
-    bool singular = (::fabs(ln) < EPSILON); //undefined plane : dU1 and dV2 are colinear !
+    bool singular = (fabs(ln) < EPSILON); //undefined plane : dU1 and dV2 are colinear !
 
     if (!singular)
     {
@@ -320,9 +320,9 @@ namespace DELAUNAY
     M = NUGA::dot<3>(n, dUV);
     N = NUGA::dot<3>(n, dV2);
 
-    bool locally_iso = ((::fabs((F*L)-(E*M)) < EPSILON) && 
-                        (::fabs((G*L)-(E*N)) < EPSILON) && 
-                        (::fabs((G*M)-(F*N)) < EPSILON));
+    bool locally_iso = ((fabs((F*L)-(E*M)) < EPSILON) && 
+                        (fabs((G*L)-(E*N)) < EPSILON) && 
+                        (fabs((G*M)-(F*N)) < EPSILON));
 
     if (locally_iso)
     {

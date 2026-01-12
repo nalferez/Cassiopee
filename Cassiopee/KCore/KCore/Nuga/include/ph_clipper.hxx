@@ -91,7 +91,7 @@ namespace NUGA
           PG2.template normal<acrd_t, 3>(acrd2, nodes2, nb_nodes2, 1, n2); //watchme : base
 
           E_Float ps = NUGA::dot<3>(n1,n2);
-          if (::fabs(ps) < ps_min) continue;
+          if (fabs(ps) < ps_min) continue;
 
           //std::cout << "ps : " << ps << std::endl;
 
@@ -213,7 +213,7 @@ namespace NUGA
         //normals
         K_MESH::Triangle::normal(acrd1.array(), &T[0], nT3);
         E_Float l2 = sqrt(nT3[0] * nT3[0] + nT3[1] * nT3[1] + nT3[2] * nT3[2]);
-        if (::fabs(l2 - 1.) >= EPSILON) // DEGEN
+        if (fabs(l2 - 1.) >= EPSILON) // DEGEN
           K_MESH::Polygon::normal<acrd_t, 3>(acrd1, subj.m_pgs.get_facets_ptr(ancPG1[i]), subj.m_pgs.stride(ancPG1[i]), 1, nT3);
         normalsT3(0, i) = nT3[0];
         normalsT3(1, i) = nT3[1];
@@ -235,7 +235,7 @@ namespace NUGA
         assert (T[2] < acrd2.array().cols());
         K_MESH::Triangle::normal(acrd2.array(), T, nT3);
         E_Float l2 = sqrt(nT3[0] * nT3[0] + nT3[1] * nT3[1] + nT3[2] * nT3[2]);
-        if (::fabs(l2 - 1.) >= EPSILON) // DEGEN
+        if (fabs(l2 - 1.) >= EPSILON) // DEGEN
           K_MESH::Polygon::normal<acrd_t, 3>(acrd2, cutter.m_pgs.get_facets_ptr(ancPG2[i]), cutter.m_pgs.stride(ancPG2[i]), 1, nT3);
 
         assert ((i + nb_tris1) < normalsT3.cols());
@@ -314,7 +314,7 @@ namespace NUGA
       {
         K_MESH::Triangle::normal(crd, cT3.col(i), nT3);
          E_Float l2 = sqrt(nT3[0] * nT3[0] + nT3[1] * nT3[1] + nT3[2] * nT3[2]);
-        if (::fabs(l2 - 1.) >= EPSILON) // DEGEN
+        if (fabs(l2 - 1.) >= EPSILON) // DEGEN
         {
           nT3[0] = normalsT3(0, ancT3[i]);
           nT3[1] = normalsT3(1, ancT3[i]);

@@ -52,8 +52,9 @@ public:
   //fixme imad : not great to have a hard coded test value (should be passed as an argument so not appropriate for operator==)
   inline bool operator==(const self_type& other) const
   {
-    for (E_Int k = 0; k < DIMANISO; k++) {
-      if (::fabs(_mij[k] - other[k]) > 1e-6) return false;
+    for (E_Int k = 0; k < DIMANISO; k++) 
+    {
+      if (fabs(_mij[k] - other[k]) > 1e-6) return false;
     }
     return true;
   }

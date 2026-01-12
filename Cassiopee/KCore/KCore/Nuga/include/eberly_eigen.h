@@ -468,8 +468,8 @@ namespace gte
         // 2*pi/3.
         T angle = std::acos(halfDet) / (T)3;
         T const twoThirdsPi = (T)2.09439510239319549;
-        T beta2 = std::cos(angle) * (T)2;
-        T beta0 = std::cos(angle + twoThirdsPi) * (T)2;
+        T beta2 = cos(angle) * (T)2;
+        T beta0 = cos(angle + twoThirdsPi) * (T)2;
         T beta1 = -(beta0 + beta2);
 
         // The eigenvalues of A are ordered as

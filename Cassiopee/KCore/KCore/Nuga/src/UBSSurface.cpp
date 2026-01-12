@@ -131,16 +131,14 @@ void UBSSurface::__eval (E_Float u, const std::vector<pBaseFunc>& FUs,
     pBaseFunc Nku = FUs[k-j];
     E_Float xu = Nku(u);
 
-    if (::fabs(xu) < EPSILON)
-      continue;
+    if (fabs(xu) < EPSILON) continue;
 
     for (E_Int l = i; l < i+4; ++l)
     {
       pBaseFunc Nlv = FVs[l-i];
       E_Float    yv = Nlv(v);
 
-      if (::fabs(yv) < EPSILON)
-        continue;
+      if (fabs(yv) < EPSILON) continue;
 
       E_Int     nkl = _ctrlPts(l,k);
 

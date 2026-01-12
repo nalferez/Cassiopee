@@ -243,7 +243,7 @@ void xmatch(const zmesh_t& m0, const zmesh_t& m1, E_Float ARTOL, std::vector<E_I
       const E_Float* normc = ae1.get_normal();
 
       E_Float ps = NUGA::dot<3>(norm0, normc);
-      if (::fabs(ps) < 0.9) continue; // doivent �tre colineaire
+      if (fabs(ps) < 0.9) continue; // doivent �tre colineaire
 
       bool ae1_reversed = false;
       if (ps < 0.) // CLIP::isolated_clip needs input polygons to have same orientation
@@ -253,7 +253,7 @@ void xmatch(const zmesh_t& m0, const zmesh_t& m1, E_Float ARTOL, std::vector<E_I
         ae1_reversed = true; // on garde l'info pour 1) retrouver les bons indices locaux d'arete 2) pour faire aussi le reverse sur la version 2D de ae1
       }
 
-      bool check_for_equality = (::fabs(surf0 - surfc) < EPSILON) && (ps > 1. - EPSILON); // filtre pour eviter de faire le test complet systematiquement
+      bool check_for_equality = (fabs(surf0 - surfc) < EPSILON) && (ps > 1. - EPSILON); // filtre pour eviter de faire le test complet systematiquement
 
 #ifdef SUPERMESH_DBG
       std::ostringstream o; o << "ae1_" << n;
@@ -292,7 +292,7 @@ void xmatch(const zmesh_t& m0, const zmesh_t& m1, E_Float ARTOL, std::vector<E_I
       {
         const E_Float* normb = bits[b].get_normal();
         E_Float ps = NUGA::dot<3>(norm0, normb);
-        if (::fabs(ps) < 0.9) // must be nearly colinear
+        if (fabs(ps) < 0.9) // must be nearly colinear
         {
           bits.clear(); 
           true_clip = false;

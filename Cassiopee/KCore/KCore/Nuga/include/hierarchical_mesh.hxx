@@ -1128,14 +1128,14 @@ E_Int hierarchical_mesh<ELT_t, STYPE, ngo_t>::project_cell_center_sol_order1
         K_MESH::Polyhedron<0>::volume<DELAUNAY::Triangulator>(crd_don, ng_don.PGs, ng_don.PHs.get_facets_ptr(src), ng_don.PHs.stride(src), v, true);
 
         for (size_t f = 0; f < nbf; ++f)
-          new_fields[f][i] += cfields[f][src] * ::fabs(v); // accumulate mass
+          new_fields[f][i] += cfields[f][src] * fabs(v); // accumulate mass
       }
 
       // now divide by receiver volume
       E_Float v;
       K_MESH::Polyhedron<0>::volume<DELAUNAY::Triangulator>(crd_rec, ng_rec.PGs, ng_rec.PHs.get_facets_ptr(i), _ng.PHs.stride(i), v, true);
 
-      if (::fabs(v) < ZERO_M) continue;
+      if (fabs(v) < ZERO_M) continue;
 
       for (size_t f = 0; f < nbf; ++f)
         new_fields[f][i] /= v;

@@ -108,7 +108,7 @@ class zone_t
       // find available id : the lowest minus 1 avail in each zone
       E_Int jid1 = (z1._joins.empty()) ? 0 : z1._joins.begin()->first;
       E_Int jid2 = (z2._joins.empty()) ? 0 : z2._joins.begin()->first;
-      E_Int jid = - (std::max(::fabs(jid1), ::fabs(jid2)) + 1) ; // negative and 1-based to not overwrite any join when changing colors in init_pgs_color
+      E_Int jid = - (std::max(fabs(1.*jid1), fabs(1.*jid2)) + 1) ; // negative and 1-based to not overwrite any join when changing colors in init_pgs_color
       
       Vector_t<E_Int> tmp;
       tmp.insert(tmp.begin(), r12, r12 + nbj);
@@ -122,8 +122,6 @@ class zone_t
 
       z1._rac_inId2outId[jid] = z2._rac_inId2outId[jid] = ojid;
     }
-    
-
     
     //E_Int nb_joins() { return _zone_to_join.size();}
     

@@ -44,7 +44,7 @@ SwapperT3::eDegenType SwapperT3::degen_type2(const K_FLD::FloatArray& crd, E_Int
   K_MESH::Triangle::normal(crd.col(N0), crd.col(N1), crd.col(N2), normal);
   E_Float l2 = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
   //
-  bool normal_failure = !(::fabs(l2 - 1.) < EPSILON);
+  bool normal_failure = !(fabs(l2 - 1.) < EPSILON);
   
   E_Float q = K_MESH::Triangle::qualityG<3>(crd.col(N0), crd.col(N1), crd.col(N2));
   bool good_qual = (q > MINQUAL);

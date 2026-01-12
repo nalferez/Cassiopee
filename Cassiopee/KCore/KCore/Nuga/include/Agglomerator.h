@@ -375,7 +375,7 @@ namespace NUGA
         E_Float face_ratio = E_Float(nbf) / E_Float (nb_neighs);
         E_Float surface_ratio = s /stot;
         E_Float reflex_ratio = (1. + E_Float(nb_reflex_edges_1 + nb_reflex_edges_2)) / (1. + E_Float(nb_reflex_new));
-        //E_Float volume_ratio = 1. / (1. + ::fabs(vi / vj));
+        //E_Float volume_ratio = 1. / (1. + fabs(vi / vj));
         E_Int delta_reflex = nb_reflex_new - (nb_reflex_edges_1 + nb_reflex_edges_2);
         
         // -3 worst reflex angle SHOULD decrease
@@ -616,7 +616,7 @@ namespace NUGA
         E_Float face_ratio = E_Float(nbf) / E_Float (nb_neighs);
         E_Float surface_ratio = s /stot;
         E_Float reflex_ratio = (1. + E_Float(nb_reflex_edges_1 + nb_reflex_edges_2)) / (1. + E_Float(nb_reflex_new));
-        //E_Float volume_ratio = 1. / (1. + ::fabs(vi / vj));
+        //E_Float volume_ratio = 1. / (1. + fabs(vi / vj));
         
         // -3 worst reflex angle SHOULD decrease
         
@@ -654,7 +654,7 @@ namespace NUGA
 
       
         //maximum surface is best. if equality, count the number of shared faces.
-        //bool is_better = (s > smax) || ((::fabs(s-smax) < EPSILON) && (nbf > nbfmax));
+        //bool is_better = (s > smax) || ((fabs(s-smax) < EPSILON) && (nbf > nbfmax));
         bool is_better = (q > qmax);
       
         if (is_better)
@@ -917,7 +917,7 @@ namespace NUGA
         E_Float face_ratio = E_Float(nbf) / E_Float(nb_neighs);
         E_Float surface_ratio = s / stot;
         E_Float reflex_ratio = (1. + E_Float(nb_reflex_edges_1 + nb_reflex_edges_2)) / (1. + E_Float(nb_reflex_new));
-        //E_Float volume_ratio = 1. / (1. + ::fabs(vi / vj));
+        //E_Float volume_ratio = 1. / (1. + fabs(vi / vj));
         E_Int delta_reflex = nb_reflex_new - (nb_reflex_edges_1 + nb_reflex_edges_2);
         
         // -3 worst reflex angle SHOULD decrease
@@ -1173,7 +1173,7 @@ namespace NUGA
         E_Float q = Q0 + face_ratio * surface_ratio * worst_reflex_a;
       
         //maximum surface is best. if equality, count the number of shared faces.
-        //bool is_better = (s > smax) || ((::fabs(s-smax) < EPSILON) && (nbf > nbfmax));
+        //bool is_better = (s > smax) || ((fabs(s-smax) < EPSILON) && (nbf > nbfmax));
         bool is_better = (q > qmax);
       
         if (is_better)

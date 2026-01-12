@@ -462,7 +462,7 @@ NUGA::MeshTool::computeNodeNormals
     K_MESH::Polygon::normal<acrd_t, 3>(acrd, nodes, nb_nodes, 1, normal);
     E_Float l2 = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
     
-    is_degen[i] = (::fabs(l2 - 1.) >= EPSILON); // DEGEN
+    is_degen[i] = (fabs(l2 - 1.) >= EPSILON); // DEGEN
     
     if (!is_degen[i]) 
     {
@@ -593,7 +593,7 @@ E_Int NUGA::MeshTool::smoothNodeNormals(const ngon_unit& pgs, K_FLD::FloatArray&
       NUGA::normalize<3>(incr);
       
       E_Float l2 = sqrt(incr[0] * incr[0] + incr[1] * incr[1] + incr[2] * incr[2]);
-      if(::fabs(l2 - 1.) >= EPSILON) // DEGEN
+      if (fabs(l2 - 1.) >= EPSILON) // DEGEN
         continue;
       
       NUGA::sum<3>(1. - FACTOR, incr, FACTOR, normals.col(Ni), normals.col(Ni));
@@ -635,7 +635,7 @@ void NUGA::MeshTool::compute_or_transfer_normals
     
     E_Float l2 = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
     
-    if (::fabs(l2 - 1.) < EPSILON) // NOT degen
+    if (fabs(l2 - 1.) < EPSILON) // NOT degen
       T3normals.pushBack(normal, normal+3);
     else
     {
@@ -1351,9 +1351,8 @@ NUGA::MeshTool::get_edges_lying_on_plane(const K_FLD::FloatArray& crd, E_Int ind
     NUGA::diff<3>(crd.col(Nj), crd.col(Ni), Eij);
     NUGA::normalize<3>(Eij);
     
-    bool quasi_aligned = (::fabs(NUGA::dot<3>(Eij, normal)) < 0.25);
-    if (!quasi_aligned)
-      continue;
+    bool quasi_aligned = (fabs(NUGA::dot<3>(Eij, normal)) < 0.25);
+    if (!quasi_aligned) continue;
     //E_Float L2 = NUGA::sqrNorm<3>(Eij);
     //if (L2 < EPSILON) L2 = 1.;
 
@@ -1365,8 +1364,7 @@ NUGA::MeshTool::get_edges_lying_on_plane(const K_FLD::FloatArray& crd, E_Int ind
     //E_Float seuil = L2*tol_rel*tol_rel;
     //if (h2 > L2*tol_rel*tol_rel)
     //continue;
-    if (h2 > abstol2)
-      continue;
+    if (h2 > abstol2) continue;
 
     // is Nj close enoough to the plane ?
     NUGA::diff<3>(crd.col(Nj), crd.col(Np), u);
@@ -1376,8 +1374,7 @@ NUGA::MeshTool::get_edges_lying_on_plane(const K_FLD::FloatArray& crd, E_Int ind
 
     //if ((h2) > L2*tol_rel*tol_rel)
       //continue;
-    if (h2 > abstol2)
-      continue;
+    if (h2 > abstol2) continue;
 
     lyingEs.insert(*itE);
   }

@@ -536,7 +536,7 @@ TRI_Conformizer<DIM>::__iterative_run
     //if (err) std::cout << "atempt " << railing << " return error : " << err << std::endl;
     
     k = std::max((E_Int)3, k-1);
-    E_Float RTOL2 = ::pow(10., -k);
+    E_Float RTOL2 = pow(10., -k);
     
     data.clear(); //reset containers
     mesher.clear();
@@ -1357,9 +1357,8 @@ TRI_Conformizer<DIM>::__get_mesh_data
     E_Float h0(crdT3(2,0)), h;
     for (size_t i=0; i < crd.cols(); ++i) //reject any node not falling on the triangle's plane
     {
-      if (keep[i] != -1)
-        continue;
-      h=::fabs(crd(2,i)-h0);
+      if (keep[i] != -1) continue;
+      h = fabs(crd(2,i)-h0);
       keep[i] = (h < EPSILON) ? -1 : 0; //reject (set to 0) only if not on the plane.)
     }
   
@@ -1369,8 +1368,7 @@ TRI_Conformizer<DIM>::__get_mesh_data
     //
     for (size_t i=0; i < crd.cols(); ++i)
     {
-      if (keep[i] != -1)
-        continue;
+      if (keep[i] != -1) continue;
       keep[i]=1;
       for(size_t n=0; (n<3) && keep[i]; ++n)
       {
@@ -1611,7 +1609,7 @@ TRI_Conformizer<DIM>::is_inside
   {
     s += K_MESH::Triangle::surface<DIM>(pos.col(Ni), pos.col(*(pS+n)), pos.col(*(pS+(n+1)%K_MESH::Triangle::NB_NODES)));
   }
-  return (::fabs(s - s0) < tol);
+  return (fabs(s - s0) < tol);
 }
 
 template <short DIM>

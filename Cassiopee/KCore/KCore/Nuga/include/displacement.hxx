@@ -79,7 +79,7 @@ namespace NUGA
 
   #ifdef DEBUG_IMMERSION
           E_Float l2 = sqrt(nn[0] * nn[0] + nn[1] * nn[1] + nn[2] * nn[2]);
-          assert(::fabs(l2 - 1.) < EPSILON);// DEGEN
+          assert(fabs(l2 - 1.) < EPSILON);// DEGEN
   #endif
 
           // immersion => inward => -=
@@ -185,7 +185,7 @@ namespace NUGA
 
         TOLi = std::min(0.95*dmax, TOLi);
         
-        if (::fabs(h) >= TOLi) 
+        if (fabs(h) >= TOLi) 
         {
           continue;//too far
         }
@@ -309,7 +309,7 @@ namespace NUGA
 
 #ifdef DEBUG_IMMERSION
           E_Float l2 = sqrt(nn[0] * nn[0] + nn[1] * nn[1] + nn[2] * nn[2]);
-          assert(::fabs(l2 - 1.) < EPSILON);// DEGEN
+          assert(fabs(l2 - 1.) < EPSILON);// DEGEN
 #endif
           dirs[i].vec[0] += nn[0];
           dirs[i].vec[1] += nn[1];
@@ -418,12 +418,12 @@ namespace NUGA
           K_MESH::Triangle::normal(P0, P1, P2, W);
 
           E_Float w = NUGA::dot<3>(W, dirs[i].vec);
-          if (::fabs(w) < ZERO_M) continue; // should not happen : dir must not be ortho to nPG
+          if (fabs(w) < ZERO_M) continue; // should not happen : dir must not be ortho to nPG
 
           E_Float I[3]; // intersection of pt in computed dir on PG plane.
           E_Float lambdaI = NUGA::project(P0, W, Pi, dirs[i].vec, I); // == Pi + lambdaI*dir = I
 
-          if (::fabs(lambdaI) < ::fabs(lambdaImin))
+          if (fabs(lambdaI) < fabs(lambdaImin))
           {
             lambdaImin = lambdaI;
             wmin = w;
@@ -445,7 +445,7 @@ namespace NUGA
           lambdaImin = -lambdaImin;
         }
 
-        E_Float lambdaMove = (::fabs(wmin) * hmove) + lambdaImin;
+        E_Float lambdaMove = (fabs(wmin) * hmove) + lambdaImin;
 
         // following assert because dir must be well oriented : inward the surface if above, outward otherwise
         // so attractive if above, repulsive if below (to put it far enough to exit interference zone)
@@ -597,26 +597,9 @@ namespace NUGA
       if (singular)
       {
         NUGA::normalize<3>(average_n.vec);
-        /*if (i == 14183)
-        {
-        K_FLD::FloatArray crdtmp(bit->crd);
-        E_Float nP[3];
-        nP[0] = crdtmp(0, nodes[0] - 1) + average_n.vec[0];
-        nP[1] = crdtmp(1, nodes[0] - 1) + average_n.vec[1];
-        nP[2] = crdtmp(2, nodes[0] - 1) + average_n.vec[2];
-        crdtmp.pushBack(nP, nP + 3);
-        E_Int E[] = { nodes[0] - 1, crdtmp.cols() - 1 };
-        K_FLD::IntArray cntmp;
-        cntmp.pushBack(E, E + 2);
-        std::ostringstream o;
-        o << "norm2";
-        medith::write(o.str().c_str(), crdtmp, cntmp, "BAR");
-        }*/
-
-        //E_Float val = ::fabs(NUGA::dot<3>(nni, average_n.vec));
+        //E_Float val = fabs(NUGA::dot<3>(nni, average_n.vec));
         E_Float angle = NUGA::normals_angle(nni, average_n.vec);
-        if (angle < AMAX)
-          is_dw[i] = true;
+        if (angle < AMAX) is_dw[i] = true;
       }
     }
 

@@ -966,7 +966,7 @@ namespace K_MESH
         K_MESH::Triangle::normal(crd, pK, Normi);
         E_Float l2 = sqrt(Normi[0] * Normi[0] + Normi[1] * Normi[1] + Normi[2] * Normi[2]);
 
-        if (::fabs(l2 - 1.) >= EPSILON) continue;  // DEGEN : not a good quality triangulation
+        if (fabs(l2 - 1.) >= EPSILON) continue;  // DEGEN : not a good quality triangulation
 
         E_Int p0 = *pK; // first T3 point
         NUGA::diff<3>(point, crd.col(p0), P0Pt);
@@ -1275,7 +1275,7 @@ namespace K_MESH
         const E_Float* p3 = crd.col(phnodes[2] - 1);
         const E_Float* p4 = crd.col(phnodes[3] - 1);
 
-        V = ::fabs(::K_MESH::Tetrahedron::volume(p1, p2, p3, p4));
+        V = fabs(::K_MESH::Tetrahedron::volume(p1, p2, p3, p4));
 
         G[0] = 0.25 * (p1[0] + p2[0] + p3[0] + p4[0]);
         G[1] = 0.25 * (p1[1] + p2[1] + p3[1] + p4[1]);
@@ -1321,7 +1321,7 @@ namespace K_MESH
         const E_Float* p2 = crd.col(*(pS + 1));
         const E_Float* p3 = crd.col(*(pS + 2));
 
-        v = ::fabs(Tetrahedron::volume(p1, p2, p3, p4));//must be absolute value when not reorienting as for the star-shaped case
+        v = fabs(Tetrahedron::volume(p1, p2, p3, p4));//must be absolute value when not reorienting as for the star-shaped case
 
         V += v;
 
@@ -1463,7 +1463,7 @@ namespace K_MESH
           const E_Float* p3 = crd.col(phnodes[2]-1);
           const E_Float* p4 = crd.col(phnodes[3]-1);
 
-          V=::fabs(::K_MESH::Tetrahedron::volume(p1, p2, p3, p4));
+          V = fabs(::K_MESH::Tetrahedron::volume(p1, p2, p3, p4));
 
           G[0] = 0.25 * (p1[0]+p2[0]+p3[0]+p4[0]);
           G[1] = 0.25 * (p1[1]+p2[1]+p3[1]+p4[1]);

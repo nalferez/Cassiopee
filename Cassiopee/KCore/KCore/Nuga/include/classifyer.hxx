@@ -261,7 +261,7 @@ namespace NUGA
 
 #ifdef CLASSIFYER_DBG
         E_Float l2 = sqrt(fni[0] * fni[0] + fni[1] * fni[1] + fni[2] * fni[2]);
-        assert(::fabs(l2 - 1.) < EPSILON); // NOT DEGEN
+        assert(fabs(l2 - 1.) < EPSILON); // NOT DEGEN
 #endif
 
         E_Float ray[3];
@@ -327,7 +327,7 @@ namespace NUGA
 
 #ifdef CLASSIFYER_DBG
             E_Float l2 = sqrt(nj[0] * nj[0] + nj[1] * nj[1] + nj[2] * nj[2]);
-            assert(::fabs(l2 - 1.) < EPSILON); // NOT DEGEN
+            assert(fabs(l2 - 1.) < EPSILON); // NOT DEGEN
 #endif
             NUGA::diff<3>(C, ae1G, ray);
             E_Float ps = NUGA::dot<3>(ray, nj);
@@ -363,7 +363,7 @@ namespace NUGA
         omega += K_MESH::Triangle::oriented_trihedral_angle(G1, ae2.m_crd.col(T[0]), ae2.m_crd.col(T[1]), ae2.m_crd.col(T[2]));
       }
 
-      omega = ::fabs(::fabs(omega) - 4. *NUGA::PI);
+      omega = fabs(fabs(omega) - 4. *NUGA::PI);
 
       if (omega < 1.e-13) return IN;
 
@@ -378,7 +378,7 @@ namespace NUGA
         omega += K_MESH::Triangle::oriented_trihedral_angle(G2, ae1.m_crd.col(T[0]), ae1.m_crd.col(T[1]), ae1.m_crd.col(T[2]));
       }
 
-      omega = ::fabs(::fabs(omega) - 4. *NUGA::PI);
+      omega = fabs(fabs(omega) - 4. *NUGA::PI);
 
       if (omega < 1.e-13) return IN_1;
 
@@ -1110,7 +1110,7 @@ namespace NUGA
     for (size_t i=0; i < data.size(); ++i)
     {
       if (data[i] == XVAL) xs.push_back(i);
-      dat[i] = ::fabs(data[i]);//for medit
+      dat[i] = fabs(data[i]);//for medit
     }
     if (xs.empty())
       std::cout << "NO COLLISIONS WITH CURRENT MASK" << std::endl;

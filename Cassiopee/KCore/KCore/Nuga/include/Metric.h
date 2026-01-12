@@ -265,8 +265,8 @@ namespace DELAUNAY {
     const E_Float& a12 = mi[1];
     const E_Float& a22 = mi[2];
     
-    if ( ::fabs(a12) > EPSILON) return false;
-    if ( ::fabs(a11 - a22) > EPSILON) return false;
+    if ( fabs(a12) > EPSILON) return false;
+    if ( fabs(a11 - a22) > EPSILON) return false;
     
     return true;
   }
@@ -402,7 +402,7 @@ namespace DELAUNAY {
     {
       E_Float a = alpha * n;
       
-      E_Float V[] = {::cos(a), ::sin(a)};
+      E_Float V[] = {cos(a), sin(a)};
 
       const E_Float& u=V[0];
       const E_Float& v=V[1];
@@ -442,7 +442,7 @@ namespace DELAUNAY {
     {
       E_Float a = alpha * n;
 
-      E_Float V[] = { ::cos(a), ::sin(a) };
+      E_Float V[] = { cos(a), sin(a) };
 
       const E_Float& u = V[0];
       const E_Float& v = V[1];
@@ -484,7 +484,7 @@ namespace DELAUNAY {
     for (size_t n=0; n < SAMPLE; ++n)
     {
       E_Float a = alpha * n;
-      E_Float V[] = {::cos(a), ::sin(a)};
+      E_Float V[] = {cos(a), sin(a)};
       
       E_Float Pt[] = {h*V[0] , h*V[1]};
       
@@ -780,7 +780,7 @@ namespace DELAUNAY {
   return d / std::max(h0,h1);
   E_Float   r = (d + h1) / (d + h0);
   size_type n = size_type(::log(r1)/::log(r));
-  r1 = ::pow (r1, 1./E_Float(n));
+  r1 = pow (r1, 1./E_Float(n));
   return (h1 - r1 * h0)/(r1 - 1);
   }
   */
@@ -915,9 +915,9 @@ namespace DELAUNAY {
       D(1,1) *= (h2old2 / ybd2);
     else if (ybd2 < EPSILON*EPSILON) // along first axis
       D(0,0) *= (h1old2 / xbd2);
-//    else if (::fabs(lambda0-lambda1) < EPSILON) //isotropic reduce
+//    else if (fabs(lambda0-lambda1) < EPSILON) //isotropic reduce
 //    {
-//      //assert (::fabs(xbd2 - ybd2) < EPSILON*EPSILON);
+//      //assert (fabs(xbd2 - ybd2) < EPSILON*EPSILON);
 //      D(0,0) = 1. / xbd2;
 //      D(1,1) = 1. / ybd2;
 //    }
@@ -929,21 +929,21 @@ namespace DELAUNAY {
 //      E_Float psv2 = NUGA::dot<2>(normed_dir, v1);
 //      psv2 *= psv2;
 //      bool first_axis = (psu2 >= psv2);
-//      E_Float l0new = ::fabs((1. - lambda1*(Xbd[1]*Xbd[1])) / (Xbd[0]*Xbd[0]));
-//      E_Float l1new = ::fabs((1. - lambda0*(Xbd[0]*Xbd[0])) / (Xbd[1]*Xbd[1]));
+//      E_Float l0new = fabs((1. - lambda1*(Xbd[1]*Xbd[1])) / (Xbd[0]*Xbd[0]));
+//      E_Float l1new = fabs((1. - lambda0*(Xbd[0]*Xbd[0])) / (Xbd[1]*Xbd[1]));
 
       // Replace the eigen value to reflect the transfo
       if (first_axis)
-        D(0,0) *= (h1old2 * ::fabs(1. - lambda1 * ybd2) / xbd2);
+        D(0,0) *= (h1old2 * fabs(1. - lambda1 * ybd2) / xbd2);
       else
-        D(1,1) *= (h2old2 * ::fabs(1. - lambda0 * xbd2) / ybd2);
+        D(1,1) *= (h2old2 * fabs(1. - lambda0 * xbd2) / ybd2);
     }
 
     K_FLD::FloatArray new_metric(2,2, 0.);
     new_metric = P * D * tP;
     
 #ifdef DEBUG_METRIC
-    E_Float sym_check = ::fabs(new_metric(0,1) - new_metric(1,0));
+    E_Float sym_check = fabs(new_metric(0,1) - new_metric(1,0));
     if (sym_check >=EPSILON)
     {
       sym_check = sym_check / std::max(new_metric(0,1), new_metric(1,0));
@@ -1081,9 +1081,9 @@ namespace DELAUNAY {
     E_Float mu2 = (Mj[0]*v20 + Mj[1]*v21 + Mj[2]*v22) * v20 + (Mj[1]*v20 + Mj[3]*v21 + Mj[4]*v22) * v21 + (Mj[2]*v20 + Mj[4]*v21 + Mj[5]*v22) * v22;
 
     // geometric interpolation
-    E_Float L0 = la0*::pow(mu0 / la0, r);
-    E_Float L1 = la1*::pow(mu1 / la1, r);
-    E_Float L2 = la2*::pow(mu2 / la2, r);
+    E_Float L0 = la0*pow(mu0 / la0, r);
+    E_Float L1 = la1*pow(mu1 / la1, r);
+    E_Float L2 = la2*pow(mu2 / la2, r);
 
     // M = inv(v) * Diag(L0,L1,L2) * inv(transpose(v))
     E_Float iv[3][3];
@@ -1129,7 +1129,7 @@ namespace DELAUNAY {
 
     // do Mi
     E_Float lP = get_h2_along_dir(Ni, NiNj);
-    E_Float fact = ::pow(1. + gr*lP, -2);
+    E_Float fact = pow(1. + gr*lP, -2);
     auto Mjf = Mj * fact;
    
     std::array<E_Float, 9> NN = Mi.inverse() * Mjf;
@@ -1186,7 +1186,7 @@ namespace DELAUNAY {
 
     // do Mj
     E_Float lQ = get_h2_along_dir(Nj, NiNj);
-    fact = ::pow(1. + gr*lQ, -2);
+    fact = pow(1. + gr*lQ, -2);
     auto Mif = Mi * fact;
 
     NN = Mj.inverse() * Mif;
@@ -1472,7 +1472,7 @@ namespace DELAUNAY {
     E_Float hi0 = _field[Ni];
     E_Float hj0 = _field[Nj];
     
-    if (::fabs(hj0 - hi0) < EPSILON) return false; //same metric so nothing to smooth
+    if (fabs(hj0 - hi0) < EPSILON) return false; //same metric so nothing to smooth
     if (hj0 < hi0)
     {
       std::swap(Ni, Nj);

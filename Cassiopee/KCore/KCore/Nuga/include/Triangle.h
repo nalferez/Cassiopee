@@ -543,7 +543,7 @@ namespace K_MESH
       interfere = true;
       inside = (((1. - u - v) >= tol)  && 
       (u >= tol) && (v >= tol));
-      return ::fabs(d);
+      return fabs(d);
     }
 
     // Find d as the minimum edge distance to P.
@@ -1503,7 +1503,7 @@ namespace K_MESH
           }
           if (K_FUNC::fEqualZero(u0) || K_FUNC::fEqualZero(u0 - 1.))  // Just sharing a node.
             continue;
-          if ((Xcount == 1) && (::fabs(Xu[0] - u0) < eps)) // Already taken into account.
+          if ((Xcount == 1) && (fabs(Xu[0] - u0) < eps)) // Already taken into account.
             continue;
 
           Xu[Xcount++] = u0;
@@ -1607,9 +1607,9 @@ namespace K_MESH
             tx = i<<2;
             break;
           }
-          if ((::fabs(u0) < eps) || (::fabs(u0 - 1.) < eps))    // Just sharing a node.
+          if ((fabs(u0) < eps) || (fabs(u0 - 1.) < eps))    // Just sharing a node.
             continue;
-          if ((Xcount == 1) && (::fabs(Xu[0] - u0) < eps)) // Already taken into account.
+          if ((Xcount == 1) && (fabs(Xu[0] - u0) < eps)) // Already taken into account.
             continue;
 
           Xu[Xcount++] = u0;
@@ -1723,11 +1723,11 @@ namespace K_MESH
 //        tx[0] += 2;
 //      if (h22bis < tolR2*L2)
 //        tx[0] += 4;
-      if (::fabs(UV[0]) <= tolR) // ie. along P0P2, hence 4
+      if (fabs(UV[0]) <= tolR) // ie. along P0P2, hence 4
         tx[0] += 4;
-      if (::fabs(UV[1]) <= tolR) // ie. along P0P1, hence 1
+      if (fabs(UV[1]) <= tolR) // ie. along P0P1, hence 1
         tx[0] += 1;
-      if (::fabs(1. - UV[0] -  UV[1]) <= tolR)// ie. along P1P2, hence 2
+      if (fabs(1. - UV[0] -  UV[1]) <= tolR)// ie. along P1P2, hence 2
         tx[0] += 2;
       
       if (tx[0] == 3 && ((i1==n0)|| (i1==n1))) //false X : they just share anode
@@ -1814,16 +1814,16 @@ namespace K_MESH
             Xcount = 2;
             Xu[0] = u0;
             Xu[1] = u1;
-            tx[0]=tx[1] = (int)::pow(2.,(int)i);
+            tx[0]=tx[1] = (int)pow(2.,(int)i);
             break;
           }
 
-          if ((Xcount == 1) && (::fabs(Xu[0] - u0) < eps)) /*fixmetol*/     // Already taken into account.
+          if ((Xcount == 1) && (fabs(Xu[0] - u0) < eps)) /*fixmetol*/     // Already taken into account.
             continue;
 
           Xu[Xcount] = u0;
           
-          tx[Xcount++] += (int)::pow(2.,(int)i);
+          tx[Xcount++] += (int)pow(2.,(int)i);
         }
       }
       
@@ -1852,17 +1852,17 @@ namespace K_MESH
             assert (tx[Xcount]==0);
             Xu[Xcount++] = 0.;
           }
-          else if ((::fabs(1. - UV1[0] -  UV1[1]) < tolR) && (UV1[0] < 1.) && (UV1[1] < 1.)) //last 2 conditions means "not sharing a node"
+          else if ((fabs(1. - UV1[0] -  UV1[1]) < tolR) && (UV1[0] < 1.) && (UV1[1] < 1.)) //last 2 conditions means "not sharing a node"
           {
             tx[Xcount] +=2;
             Xu[Xcount++] = 0.;
           }
-          else if ((::fabs(UV1[0]) < tolR) && (UV1[1] > 0.) && (UV1[1] < 1.)) //last 2 conditions means "not sharing a node"
+          else if ((fabs(UV1[0]) < tolR) && (UV1[1] > 0.) && (UV1[1] < 1.)) //last 2 conditions means "not sharing a node"
           {
             tx[Xcount] +=4;
             Xu[Xcount++] = 0.;
           }
-          else if ((::fabs(UV1[1]) < tolR) && (UV1[0] > 0.) && (UV1[0] < 1.)) //last 2 conditions means "not sharing a node"
+          else if ((fabs(UV1[1]) < tolR) && (UV1[0] > 0.) && (UV1[0] < 1.)) //last 2 conditions means "not sharing a node"
           {
             tx[Xcount] +=1;
             Xu[Xcount++] = 0.;
@@ -1890,17 +1890,17 @@ namespace K_MESH
             assert (tx[Xcount]==0);
             Xu[Xcount++] = 1.;
           }
-          else if ((::fabs(1. - UV2[0] -  UV2[1]) < tolR) && (UV2[0] < 1.) && (UV2[1] < 1.)) //last 2 conditions means "not sharing a node"
+          else if ((fabs(1. - UV2[0] -  UV2[1]) < tolR) && (UV2[0] < 1.) && (UV2[1] < 1.)) //last 2 conditions means "not sharing a node"
           {
             tx[Xcount] +=2;
             Xu[Xcount++] = 1.;
           }
-          else if ((::fabs(UV2[0]) < tolR) && (UV2[1] > 0.) && (UV2[1] < 1.)) //last 2 conditions means "not sharing a node"
+          else if ((fabs(UV2[0]) < tolR) && (UV2[1] > 0.) && (UV2[1] < 1.)) //last 2 conditions means "not sharing a node"
           {
             tx[Xcount] +=4;
             Xu[Xcount++] = 1.;
           }
-          else if ((::fabs(UV2[1]) < tolR) && (UV2[0] > 0.) && (UV2[0] < 1.)) //last 2 conditions means "not sharing a node"
+          else if ((fabs(UV2[1]) < tolR) && (UV2[0] > 0.) && (UV2[0] < 1.)) //last 2 conditions means "not sharing a node"
           {
             tx[Xcount] +=1;
             Xu[Xcount++] = 1.;

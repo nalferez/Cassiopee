@@ -284,9 +284,9 @@ K_MESH::Edge::intersect
 
    if (u00 == u01)                      //  x----------x------x
    {
-     //u00 = (::fabs(s00) < ::fabs(s01)) ? s00 : s01;
+     //u00 = (fabs(s00) < fabs(s01)) ? s00 : s01;
      u01 = NUGA::FLOAT_MAX;
-     //u10 = (::fabs(s10) < ::fabs(s11)) ? s10 : s11;
+     //u10 = (fabs(s10) < fabs(s11)) ? s10 : s11;
      u11 = NUGA::FLOAT_MAX;
    }
    else                                 //  x-------|--x      or     x-----x     or  x-------x
@@ -413,9 +413,9 @@ K_MESH::Edge::intersect
 
     if (u00 == u01)                      //  x----------x------x
     {
-      //u00 = (::fabs(s00) < ::fabs(s01)) ? s00 : s01;
+      //u00 = (fabs(s00) < fabs(s01)) ? s00 : s01;
       u01 = NUGA::FLOAT_MAX;
-      //u10 = (::fabs(s10) < ::fabs(s11)) ? s10 : s11;
+      //u10 = (fabs(s10) < fabs(s11)) ? s10 : s11;
       u11 = NUGA::FLOAT_MAX;
     }
     else                                 //  x-------|--x      or     x-----x     or  x-------x
@@ -480,7 +480,7 @@ K_MESH::Edge::lineLineMinDistance
   
   det2 = NUGA::sqrCross<DIM>(E0, E1);
   c = NUGA::dot<DIM>(E1, V01); 
-  parallel = (::fabs(det2) < tol2 * L02 * L12);
+  parallel = (fabs(det2) < tol2 * L02 * L12);
   
   if (DIM == 2) // more testing for robsutness
   {

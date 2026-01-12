@@ -121,8 +121,7 @@ K_MESH::Triangle::eDegenType K_MESH::Triangle::degen_type(const K_FLD::FloatArra
   K_MESH::Triangle::normal(crd.col(N0), crd.col(N1), crd.col(N2), normal);
   E_Float l2 = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
   //
-  if (::fabs(l2 - 1.) < EPSILON)
-    return OK;
+  if (fabs(l2 - 1.) < EPSILON) return OK;
 
   // we have a degen !
 
