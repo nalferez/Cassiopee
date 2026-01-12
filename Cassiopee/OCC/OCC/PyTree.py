@@ -993,7 +993,7 @@ def _meshDeviation(hook, t, loc='nodes'):
     FACES = Internal.getNodeFromName1(t, 'FACES')
     if EDGES is not None and FACES is not None:
         _meshDeviation1(hook, t, loc)
-    else:    
+    else:
         _meshDeviation2(hook, t, loc)
     return None
 
@@ -1041,10 +1041,10 @@ def _meshDeviation2(hook, t, loc="nodes"):
             # recupere le maillage en centre
             zc = C.node2Center(z)
             _meshDeviation__(z, zc, F, hook, None, no)
-        else: 
-            _meshDeviation__(z, z, F, hook, None, no)            
+        else:
+            _meshDeviation__(z, z, F, hook, None, no)
     return None
-                    
+
 # set color red to lonelyEdges
 def _setLonelyEdgesColor(t):
     import CPlot.PyTree as CPlot
