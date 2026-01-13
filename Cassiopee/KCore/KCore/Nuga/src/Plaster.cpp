@@ -78,8 +78,8 @@ Plaster::make
     return 0;
   }
 
-  bump_factor = std::max(bump_factor, -1.); // factor must be in [-1., 1.]
-  bump_factor = std::min(bump_factor, 1.);
+  bump_factor = K_FUNC::E_max(bump_factor, -1.); // factor must be in [-1., 1.]
+  bump_factor = K_FUNC::E_min(bump_factor, 1.);
 
   // Work only on connect points.
   NUGA::MeshTool::compact_to_mesh(posE2, connectE2, new_IDs);
@@ -128,10 +128,8 @@ Plaster::make
   bool is_planar = (std::max(fabs(devmin), fabs(devmax)) < EPSILON);
   //std::cout << "is planar ? " << is_planar << std::endl;
   
-  //std::cout << "plaster 8" << std::endl;
-
   // if the contour is planar no need for a fine patch
-  E_Float dx = 0.2 *std::min((maxB[0] - minB[0]), (maxB[1] - minB[1]));
+  E_Float dx = 0.2 *K_FUNC::E_min((maxB[0] - minB[0]), (maxB[1] - minB[1]));
   //std::cout << "refine : " << refine << std::endl;
   //std::cout << "bump_factor : " << bump_factor << std::endl;
   //std::cout << "is_planar : " << is_planar << std::endl;

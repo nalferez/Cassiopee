@@ -88,7 +88,7 @@ namespace NUGA
         }
 #endif
         assert(xcelln[i] < 1.1);
-        xcelln[i] = std::min(1., xcelln[i]);
+        xcelln[i] = K_FUNC::E_min(1., xcelln[i]);
       }
 
       return xcelln;

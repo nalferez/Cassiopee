@@ -2131,15 +2131,15 @@ void metric_sensor<mesh_t>::Q4_adap_compute(E_Int PGi, output_t& adap_incr)
     E_Float h[4];
     E_Int n1, n2;
     auto& metric = parent_t::_data;
-    const E_Int *pN = parent_t::_hmesh._ng.PGs.get_facets_ptr(PGi);
+    const E_Int* pN = parent_t::_hmesh._ng.PGs.get_facets_ptr(PGi);
 
     for (int i = 0; i < 4; i++) {
         n1 = pN[i]; n2 = pN[(i+1)%4];
         h[i] = metric.lengthEval(n1-1, metric[n1-1], n2-1, metric[n2-1]);
     }
 
-    auto f1 = log2(std::min(h[0], h[2]));
-    auto f2 = log2(std::min(h[1], h[3]));
+    auto f1 = log2(K_FUNC::E_min(h[0], h[2]));
+    auto f2 = log2(K_FUNC::E_min(h[1], h[3]));
 
     adap_incr.face_adap_incr[PGi].n[0] = round(f1);
     adap_incr.face_adap_incr[PGi].n[1] = round(f2);

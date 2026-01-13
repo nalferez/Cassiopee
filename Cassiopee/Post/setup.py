@@ -32,6 +32,11 @@ libraryDirs += paths; libraries += libs
 (ok, libs, paths) = Dist.checkCppLibs([], additionalLibPaths)
 libraryDirs += paths; libraries += libs
 
+if Dist.ADOLC:
+    (adolc, adolcIncDir, adolcLibDir, adolcLib) = Dist.checkAdolc(additionalLibPaths, additionalIncludePaths)
+    if adolc:
+        libraryDirs += adolcLibDir; libraries += [adolcLib]
+
 import srcs
 
 # extensions =================================================================

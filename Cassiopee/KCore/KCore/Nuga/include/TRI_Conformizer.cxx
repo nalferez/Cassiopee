@@ -99,8 +99,8 @@ void TRI_Conformizer<DIM>::__set_tolerances(E_Float Lmin, E_Float Lmax, E_Float 
   
   if (user_tolerance > 0.)
   {
-    parent_type::_tolerance = std::min(user_tolerance, tol_max);
-    parent_type::_tolerance = std::max(parent_type::_tolerance, tol_min);
+    parent_type::_tolerance = K_FUNC::E_min(user_tolerance, tol_max);
+    parent_type::_tolerance = K_FUNC::E_max(parent_type::_tolerance, tol_min);
   }
   else // == 0 : defaulted to maximum
     parent_type::_tolerance = tol_max;
@@ -528,13 +528,11 @@ TRI_Conformizer<DIM>::__iterative_run
  
   // Multiple attempts : do not shuffle first, and then do shuffle
   E_Int railing = -1;
-  E_Int nb_attemps = std::min(cB.cols(), (E_Int)6);//to test all RTOL2 values in range [1.e-8, 1.e-3]
+  E_Int nb_attemps = K_FUNC::E_min(cB.cols(), (E_Int)6);//to test all RTOL2 values in range [1.e-8, 1.e-3]
   E_Int k = 9;
 
   while (railing++ < nb_attemps)
   {
-    //if (err) std::cout << "atempt " << railing << " return error : " << err << std::endl;
-    
     k = std::max((E_Int)3, k-1);
     E_Float RTOL2 = pow(10., -k);
     
@@ -571,7 +569,7 @@ TRI_Conformizer<DIM>::__iterative_run
           std::set<E_Int>& nodes = edge_err.nodes;
           
           E_Float L2 = NUGA::sqrDistance(crd.col(Ni), crd.col(Nj), 2);
-//        
+        
           std::vector<std::pair<E_Float, E_Int>> sNodes;
           
           for (auto& N : nodes)
@@ -1131,7 +1129,7 @@ TRI_Conformizer<DIM>::__intersect
   }
     
 
-  bool one_single_x_point = (u0[1] == NUGA::FLOAT_MAX) || (::fabs(u0[1] - u0[0]) < eps);
+  bool one_single_x_point = (u0[1] == NUGA::FLOAT_MAX) || (fabs(u0[1] - u0[0]) < eps);
   bool share_a_node = (*pS == e0 || *(pS+1) == e0 || *(pS+2) == e0) || (*pS == e1 || *(pS+1) == e1 || *(pS+2) == e1);
   bool one_inside = ((u0[0] > eps) && (u0[0] < 1.-eps));
   

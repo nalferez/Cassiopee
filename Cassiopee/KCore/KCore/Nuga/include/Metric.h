@@ -923,7 +923,7 @@ namespace DELAUNAY {
 //    }
     else
     {
-      bool first_axis = (ybd2/xbd2 < ::fabs(lambda0/lambda1));
+      bool first_axis = (ybd2/xbd2 < fabs(lambda0/lambda1));
 //      E_Float psu2 = NUGA::dot<2>(normed_dir, v0);
 //      psu2 *= psu2;
 //      E_Float psv2 = NUGA::dot<2>(normed_dir, v1);
@@ -1359,7 +1359,7 @@ namespace DELAUNAY {
     K_FLD::FloatArray M1(2,2), M2(2,2), ID(2,2);
     Aniso2D m;
 
-    E_Int max = std::min((E_Int)metric1.size(), (E_Int)metric2.cols());
+    E_Int max = K_FUNC::E_min((E_Int)metric1.size(), (E_Int)metric2.cols());
 
     // fixme need to check validity of m2
     for (E_Int i = 0; i < max; ++i)
@@ -1519,7 +1519,7 @@ namespace DELAUNAY {
 
     const Aniso2D* pmi0 = &mi0;
     
-    if (::fabs(hj02 - hi02) < EPSILON*EPSILON) return false; //same metric so nothing to smooth
+    if (fabs(hj02 - hi02) < EPSILON*EPSILON) return false; //same metric so nothing to smooth
     
     if (hj02 < hi02) // by convention, "i" refers to the smallest (hence driving) metric, "j" for the one to modify
     {
@@ -1560,7 +1560,7 @@ namespace DELAUNAY {
 
     const Aniso3D* pmi0 = &mi0;
 
-    if (::fabs(hj02 - hi02) < EPSILON*EPSILON) return false; //same metric so nothing to smooth
+    if (fabs(hj02 - hi02) < EPSILON*EPSILON) return false; //same metric so nothing to smooth
 
     if (hj02 < hi02) // by conventtion, "i" refers to the smallest (hence driving) metric, "j" for the one to modify
     {

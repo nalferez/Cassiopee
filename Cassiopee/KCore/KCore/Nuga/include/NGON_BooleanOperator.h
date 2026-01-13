@@ -1316,7 +1316,7 @@ E_Int NGON_BOOLEAN_CLASS::volume_coefficients
     E_Float err = vcumul * v_rec;
     err = (err - 1.)/ err; //make it relative
     if (fabs(err) > EPSILON)
-      std::cout << "erreur relative entre v_rec vs vcumul : " << ::fabs(err) << std::endl;
+      std::cout << "erreur relative entre v_rec vs vcumul : " << fabs(err) << std::endl;
 #endif
     
   }
@@ -1453,7 +1453,7 @@ E_Int NGON_BOOLEAN_CLASS::volume_and_centroid_coefficients
 
     //NEWNEW K_MESH::Polyhedron<STAR_SHAPED>::metrics<DELAUNAY::Triangulator>(dt, crd_rec, ng_rec, rec_PHi, v_rec, Gdum); //volume of receptor to compute the fraction
     K_MESH::Polyhedron<STAR_SHAPED>::metrics2<DELAUNAY::Triangulator>(dt, crd_rec, ng_rec.PGs, ng_rec.PHs.get_facets_ptr(rec_PHi), ng_rec.PHs.stride(rec_PHi), v_rec, Gdum); //volume of receptor to compute the fraction
-    v_rec = ::fabs(v_rec);
+    v_rec = fabs(v_rec);
 
     if (v_rec <= 0.)
     {
@@ -1500,7 +1500,7 @@ E_Int NGON_BOOLEAN_CLASS::volume_and_centroid_coefficients
     E_Float err = vcumul * v_rec;
     err = (err - 1.)/ err; //make it relative
     if (fabs(err) > EPSILON)
-      std::cout << "erreur relative entre v_rec vs vcumul : " << ::fabs(err) << std::endl;
+      std::cout << "erreur relative entre v_rec vs vcumul : " << fabs(err) << std::endl;
     
     acuG[0] /= vcumul;
     acuG[1] /= vcumul;
@@ -1598,9 +1598,9 @@ E_Int NGON_BOOLEAN_CLASS::conservative_transfer
   std::cout << "V1 : " << V1 << std::endl;
   std::cout << "VI : " << VI << std::endl;
   std::cout << "V2 : " << V2 << std::endl;
-  std::cout << "err(V1,VI) : " << ::fabs(V1-VI)/V1 << std::endl;
-  std::cout << "err(V2,VI) : " << ::fabs(V2-VI)/V2 << std::endl;
-  std::cout << "err(V1,V2) : " << ::fabs(V1-V2)/V1 << std::endl;
+  std::cout << "err(V1,VI) : " << fabs(V1-VI)/V1 << std::endl;
+  std::cout << "err(V2,VI) : " << fabs(V2-VI)/V2 << std::endl;
+  std::cout << "err(V1,V2) : " << fabs(V1-V2)/V1 << std::endl;
 
   K_FLD::FloatArray rec_centroids;
   //gcc error: expected primary-expression before '>' token
@@ -1646,7 +1646,7 @@ E_Int NGON_BOOLEAN_CLASS::conservative_transfer
         E_Float vv, GG[3];
         K_MESH::Polyhedron<STAR_SHAPED>::metrics2<DELAUNAY::Triangulator>(dt, pcrd, ngoper.PGs, ngoper.PHs.get_facets_ptr(pids[k]), ngoper.PHs.stride(pids[k]), vv, GG);
         E_Float vvv= vcoefs[k] * rvols[reci];
-        bool vok = (::fabs(::fabs(vv) - vvv) < EPSILON);
+        bool vok = (fabs(fabs(vv) - vvv) < EPSILON);
         bool xok = (GG[0] == Gcp[0]);
         bool yok = (GG[1] == Gcp[1]);
         bool zok = (GG[2] == Gcp[2]);
@@ -1699,7 +1699,7 @@ E_Int NGON_BOOLEAN_CLASS::conservative_transfer
     E_Float vol_rec = rvols[i];
     E_Float volcumul = accumulated_piece_vols_for_receptor[i];
     
-    bool error_vol  = (::fabs(vol_rec-volcumul)/vol_rec > EPSILON);
+    bool error_vol  = (fabs(vol_rec-volcumul)/vol_rec > EPSILON);
     
     if (error_vol)
     {
@@ -1719,16 +1719,16 @@ E_Int NGON_BOOLEAN_CLASS::conservative_transfer
     E_Float volcumul    = accumulated_piece_vols_for_donnor[i];
         
     
-    bool error_vol  = (::fabs(vol_don-volcumul)/vol_don > EPSILON);
-    bool error_mass = (::fabs(mass_don-masscumul)/mass_don > EPSILON);
+    bool error_vol  = (fabs(vol_don-volcumul)/vol_don > EPSILON);
+    bool error_mass = (fabs(mass_don-masscumul)/mass_don > EPSILON);
     
     if (error_vol || error_mass)
     {
       std::cout << "TRANSFER ERROR for donnor " << i << std::endl;
       std::cout << "volumes (don vs acc) : " << vol_don << "/" << volcumul << std::endl;
-      std::cout << "relative volume error : " << ::fabs(vol_don-volcumul)/vol_don << std::endl;
+      std::cout << "relative volume error : " << fabs(vol_don-volcumul)/vol_don << std::endl;
       std::cout << "masses (don vs acc) : " << mass_don << "/" << masscumul << std::endl;
-      std::cout << "relative mass error : " << ::fabs(mass_don-masscumul)/mass_don << std::endl << std::endl;
+      std::cout << "relative mass error : " << fabs(mass_don-masscumul)/mass_don << std::endl << std::endl;
       return 1;
     }
   }
@@ -3985,8 +3985,8 @@ E_Int NGON_BOOLEAN_CLASS::__discard_prescribed_polygons(const K_FLD::FloatArray&
 
 #if defined(DEBUG_BOOLEAN) || defined(DEBUG_W_PYTHON_LAYER)
     pgs.add(wNG.PGs.stride(PGi), wNG.PGs.get_facets_ptr(PGi));
-    minid = std::min(minid, PGi);
-    maxid = std::max(maxid, PGi);
+    minid = K_FUNC::E_min(minid, PGi);
+    maxid = K_FUNC::E_max(maxid, PGi);
     of << PGi << std::endl;
 #endif
   }
@@ -5085,7 +5085,7 @@ bool NGON_BOOLEAN_CLASS::__fix_degen_for_turning_left
     E_Float q2 = K_MESH::Triangle::qualityG<3>(coord.col(N20), coord.col(N21), coord.col(N22));
 
     //special treatment for duplicates
-    if (::fabs(q1 - q2) < ZERO_M)
+    if (fabs(q1 - q2) < ZERO_M)
     {
       K_MESH::NO_Triangle t1(N10, N11, N12);
       K_MESH::NO_Triangle t2(N20, N21, N22);
@@ -5128,15 +5128,15 @@ bool NGON_BOOLEAN_CLASS::__fix_degen_for_turning_left
 
     if (d1 <= d2 && d1 <= d3)
     {
-      nids[std::max(N0, N1)] = std::min(N0, N1);
+      nids[std::max(N0, N1)] = K_FUNC::E_min(N0, N1);
     }
     else if (d2 <= d1 && d2 <= d3)
     {
-      nids[std::max(N0, N2)] = std::min(N0, N2);
+      nids[std::max(N0, N2)] = K_FUNC::E_min(N0, N2);
     }
     else if (d3 <= d1 && d3 <= d2)
     {
-      nids[std::max(N2, N1)] = std::min(N2, N1);
+      nids[std::max(N2, N1)] = K_FUNC::E_min(N2, N1);
     }
 
     freeze[worstK] = true;

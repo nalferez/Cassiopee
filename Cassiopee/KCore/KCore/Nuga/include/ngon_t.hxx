@@ -275,8 +275,8 @@ struct ngon_t
     for (E_Int i = 0; i < nb_pgs; ++i)
     {
       E_Int s = ng.PGs.stride(i);
-      min_s = std::min(min_s, s);
-      max_s = std::max(max_s, s);
+      min_s = K_FUNC::E_min(min_s, s);
+      max_s = K_FUNC::E_max(max_s, s);
     }
 
     if (min_s <= 0) // stride 0 => error

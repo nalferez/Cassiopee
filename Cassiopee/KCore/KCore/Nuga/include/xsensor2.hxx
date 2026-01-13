@@ -155,7 +155,7 @@ bool xsensor2<mesh_t>::fill_adap_incr(output_t& adap_incr, bool do_agglo)
       {
         auto pg = src_mesh.element(c);
         E_Float lr2 = pg.Lref2(src_mesh.crd, NUGA::ISO_MIN); //evaluated on this element
-        LREF2_AMBIANT = std::min(LREF2_AMBIANT, lr2);
+        LREF2_AMBIANT = K_FUNC::E_min(LREF2_AMBIANT, lr2);
       }
       if (phlr2 > K* LREF2_AMBIANT)
       {

@@ -91,10 +91,10 @@ class zone_t
     
     zone_t& operator=(const zone_t& z)
     {
-      _id           = z._id;
-      _crd          = z._crd;
-      _ng           = z._ng;
-      _F2Es         = z._F2Es;
+      _id = z._id;
+      _crd = z._crd;
+      _ng = z._ng;
+      _F2Es = z._F2Es;
       _F2E_NONE = z._F2E_NONE;
             
       copy_boundaries(z);
@@ -576,7 +576,7 @@ void zone_t<crd_t, ngo_t>::set_pg_colors()
     }
     else // JOIN or INNER in layers
     {
-      E_Int m = std::min(typeL, typeR);
+      E_Int m = K_FUNC::E_min(typeL, typeR);
       if (m == PH_INNER_COL) // JOIN (form inner to 1st layer)
         _ng.PGs._type[i] = PG_JOIN_COL;
       else if (m == 1) // 1st layer

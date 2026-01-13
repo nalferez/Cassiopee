@@ -751,7 +751,7 @@ E_Float concave_threshold, E_Float convex_threshold, E_Float rtol, E_Float GRmin
       edge_angle_t::const_iterator it = reflex_edges.find(E);
       assert(it != reflex_edges.end());
       E_Float a = it->second;
-      chain_angle[c] = std::max(chain_angle[c], ::fabs(NUGA::PI - a));//max deviation in the chain
+      chain_angle[c] = std::max(chain_angle[c], fabs(NUGA::PI - a));//max deviation in the chain
     }
   }
 
@@ -761,8 +761,7 @@ E_Float concave_threshold, E_Float convex_threshold, E_Float rtol, E_Float GRmin
   ivec_t chain;
   for (size_t c = 0; c < nb_chains; ++c)
   {
-    if (chains_type[c] == 1)
-      continue;
+    if (chains_type[c] == 1) continue;
 
     chain.clear();
     chain.insert(chain.end(), chains[c].begin(), chains[c].end()); //using &a[0] whan a is a deque is coorupted
@@ -1513,7 +1512,7 @@ if (PHi == faultyPH)
         int nnodes = PGS.stride(PGi);
 
         K_MESH::Polygon::normal<K_FLD::FloatArray, 3>(crd, pn, nnodes, 1, nPGi);
-        E_Float ps = ::fabs(NUGA::dot<3>(N, nPGi));
+        E_Float ps = fabs(NUGA::dot<3>(N, nPGi));
         if (ps > 0.99) return false;
       }
     }
@@ -1661,9 +1660,9 @@ if (PHi == faultyPH)
   K_MESH::Polyhedron<UNKNOWN>::metrics2(dt, crd, twoPH.PGs, pgs0, nb_pgs0, v1, G, false/*not all cvx*/);
   K_MESH::Polyhedron<UNKNOWN>::metrics2(dt, crd, twoPH.PGs, pgs1, nb_pgs1, v2, G, false/*not all cvx*/);
 
-  if (::fabs(v1) < V * GRmin) //null or two small (doesn't worth a cut)
+  if (fabs(v1) < V * GRmin) //null or two small (doesn't worth a cut)
     return false;
-  if (::fabs(v2) < V* GRmin) //null or too small (doewnt worth a cut)
+  if (fabs(v2) < V* GRmin) //null or too small (doewnt worth a cut)
     return false;
   
   // check also they are not patholical bits

@@ -1023,7 +1023,7 @@ E_Int hierarchical_mesh<ELT_t, STYPE, ngo_t>::project_cell_center_sol_order1
         K_MESH::Polyhedron<0>::volume<DELAUNAY::Triangulator>(_crd, _ng.PGs, _ng.PHs.get_facets_ptr(PHj), _ng.PHs.stride(PHj), v, true);
 
         for (size_t f = 0; f < nbf; ++f)
-          new_fields[f][nfid[pid]] += cfields[f][i] * ::fabs(v); // accumulate mass
+          new_fields[f][nfid[pid]] += cfields[f][i] * fabs(v); // accumulate mass
 
         to_agglo[nfid[pid]] = true;
 
@@ -1041,7 +1041,7 @@ E_Int hierarchical_mesh<ELT_t, STYPE, ngo_t>::project_cell_center_sol_order1
     E_Float v;
     K_MESH::Polyhedron<0>::volume<DELAUNAY::Triangulator>(_crd, _ng.PGs, _ng.PHs.get_facets_ptr(PH), _ng.PHs.stride(PH), v, true);
 
-    if (::fabs(v) < ZERO_M) continue;
+    if (fabs(v) < ZERO_M) continue;
 
     for (size_t f = 0; f < nbf; ++f)
       new_fields[f][i] /= v;

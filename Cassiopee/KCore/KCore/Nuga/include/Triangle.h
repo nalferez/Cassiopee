@@ -2092,7 +2092,7 @@ namespace K_MESH
     return IDX_NONE;
   }
 
-  inline double 
+  inline E_Float 
   K_MESH::Triangle::trihedral_angle(const E_Float* P, const E_Float* P0, const E_Float* P1, const E_Float* P2)
   {
     E_Float omega = 0.;
@@ -2157,8 +2157,8 @@ namespace K_MESH
     E_Float s31 = NUGA::dot<3>(n, w) * srefm1;
     s31 = (IS_ZERO(s31, ABSTOL)) ? 0. : s31;
 
-    E_Float smin = std::min(s12, std::min(s23, s31));
-    E_Float smax = std::max(s12, std::max(s23, s31));
+    E_Float smin = K_FUNC::E_min(s12, K_FUNC::E_min(s23, s31));
+    E_Float smax = K_FUNC::E_max(s12, K_FUNC::E_max(s23, s31));
 
     bool is_out = (smin*smax < 0.);
     return !is_out;
@@ -2177,8 +2177,8 @@ namespace K_MESH
     E_Float d3 = NUGA::signed_distance2D(P, P2, P0);
     d3 = (IS_ZERO(d3, ABSTOL)) ? 0. : d3;
     
-    E_Float dmin  = std::min(d1, std::min(d2, d3));
-    E_Float dmax = std::max(d1, std::max(d2, d3));
+    E_Float dmin  = K_FUNC::E_min(d1, K_FUNC::E_min(d2, d3));
+    E_Float dmax = K_FUNC::E_max(d1, K_FUNC::E_max(d2, d3));
 
     bool is_out = (dmin*dmax < 0.);
     return !is_out;

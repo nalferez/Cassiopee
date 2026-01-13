@@ -551,9 +551,9 @@ void K_CONNECT::cleanConnectivityNGon(E_Int posx, E_Int posy, E_Int posz,
     max_stride = std::max(max_stride, NG.PGs.stride(i));
   
   if (max_stride == 1) // lineic ngon
-    ngon_dim=1;
+    ngon_dim = 1;
   else if (max_stride == 2) //surfacic ngon
-    ngon_dim=2;
+    ngon_dim = 2;
 
   // 1- Referencement unique pour les noeuds confondus par kdtree (les doublons seront supprimes a la fin)
   // si la tolerance est :
@@ -584,7 +584,7 @@ void K_CONNECT::cleanConnectivityNGon(E_Int posx, E_Int posy, E_Int posz,
     std::vector<double> nodal_metric2;
     NUGA::MeshTool::computeNodalDistance2<acrd_t, ngon_unit>(fcA, NG.PGs, nodal_metric2);
     
-    double RTOL = -eps;
+    E_Float RTOL = -eps;
 
     Vector_t<E_Int> nids;
 
