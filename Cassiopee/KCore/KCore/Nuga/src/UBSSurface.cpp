@@ -113,10 +113,10 @@ void UBSSurface::__eval (E_Float u, const std::vector<pBaseFunc>& FUs,
   P[0] = P[1] = P[2] = 0.;
 
   // Ensure u and v are in the correct interval.
-  u = std::min(_Umax, u);
-  u = std::max(_Umin, u);
-  v = std::min(_Vmax, v);
-  v = std::max(_Vmin, v);
+  u = K_FUNC::E_min(_Umax, u);
+  u = K_FUNC::E_max(_Umin, u);
+  v = K_FUNC::E_min(_Vmax, v);
+  v = K_FUNC::E_max(_Vmin, v);
  
   E_Int i = (v == _Vmax)? E_Int(_Vmax - 1.) : E_Int(v);
   E_Int j = (u == _Umax)? E_Int(_Umax - 1.) : E_Int(u);
@@ -136,11 +136,11 @@ void UBSSurface::__eval (E_Float u, const std::vector<pBaseFunc>& FUs,
     for (E_Int l = i; l < i+4; ++l)
     {
       pBaseFunc Nlv = FVs[l-i];
-      E_Float    yv = Nlv(v);
+      E_Float yv = Nlv(v);
 
       if (fabs(yv) < EPSILON) continue;
 
-      E_Int     nkl = _ctrlPts(l,k);
+      E_Int nkl = _ctrlPts(l,k);
 
       for (E_Int i = 0; i < 3; ++i)
         P[i] += xu*yv*_pos(i,nkl);

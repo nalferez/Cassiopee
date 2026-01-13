@@ -173,7 +173,7 @@ if Dist.ADOLC:
         "Post/Stream/StreamLine.cpp",
         #"Post/Stream/StreamRibbon.cpp",
         #"Post/Stream/StreamSurf.cpp",
-        #"Post/vertexInterp.cpp",
+        "Post/vertexInterp.cpp",
         "Post/isoLine.cpp",
         "Post/isoSurf.cpp",
         "Post/isoSurfMC.cpp",

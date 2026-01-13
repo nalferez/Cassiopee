@@ -1646,14 +1646,14 @@ struct ngon_t
         const E_Float& emax21 = L(1, Nip1);
         if (emin21 < edge_ratio2*emax21) ++n_bad_nodes;
 
-        E_Float emin = sqrt(std::min(emin2, emin21));
+        E_Float emin = sqrt(K_FUNC::E_min(emin2, emin21));
         if (Lmax > 0. && emin > Lmax) continue; // consider only edges under Lmax (if valid value)
 
         bool small_edge = fabs(emin - Lref) < 1.e-6 * emin ; // NiNj is (or very near) the smallest incident edge
 
         if (n_bad_nodes == 2 && small_edge)
         {
-          nids[std::min(Ni, Nip1)] = std::max(Ni, Nip1); //X-interface preserving policy : assign max, most chances to be an X point 
+          nids[K_FUNC::E_min(Ni, Nip1)] = std::max(Ni, Nip1); //X-interface preserving policy : assign max, most chances to be an X point 
           has_changed = true;
         }
       }
@@ -2084,8 +2084,8 @@ struct ngon_t
           E_Int ni = *(nodes+n)-1;
           E_Int nj = *(nodes+(n+1)%nb_nodes)-1;
           E_Float d2 = NUGA::sqrDistance(crd.col(ni), crd.col(nj), 3);
-          Lmin = std::min(Lmin, d2);
-          Lmax = std::max(Lmax, d2);
+          Lmin = K_FUNC::E_min(Lmin, d2);
+          Lmax = K_FUNC::E_max(Lmax, d2);
         }
         
         Lmin = sqrt(Lmin);
@@ -2098,7 +2098,7 @@ struct ngon_t
           
           if (type == K_MESH::Triangle::HAT)
           {
-            flagPG[i]=HAT;
+            flagPG[i] = HAT;
             ++normal_err_hat_count;
 
 #ifdef DEBUG_NGON_T
@@ -2736,9 +2736,9 @@ static E_Int stats_bad_volumes
       }
       
       if (vj < vi)
-        ar = std::min(vj / vi, ar);
+        ar = K_FUNC::E_min(vj / vi, ar);
       else
-        ar = std::min(vi / vj, ar);   
+        ar = K_FUNC::E_min(vi / vj, ar);   
     }
     
     aspect_ratio[i] = ar;
@@ -4997,7 +4997,7 @@ static E_Int extrude_faces
   if (strategy != CST_ABS)
   {
     E_Float Lcomp(0.);
-    height_factor =  std::min(1., height_factor); // 100% max
+    height_factor = K_FUNC::E_min(1., height_factor); // 100% max
     K_FLD::FloatArray L;
     NUGA::MeshTool::computeIncidentEdgesSqrLengths(coord, ghost_pgs, L);
 
@@ -5721,7 +5721,7 @@ static int validate_moves_by_fluxes
         PH0.volume<TriangulatorType>(crd, orient.get_facets_ptr(PHn), v, dt);
       }
 
-      minvol = std::min(minvol, v);
+      minvol = K_FUNC::E_min(minvol, v);
     }
 
     // extract shell

@@ -552,7 +552,7 @@ E_Int NUGA::MeshTool::computeNodeRadiusAndAngles
       E_Float c = pt[0]/radius[Ni];
       E_Float s = pt[1]/radius[Ni];
 
-      angles[Ni] = ::atan2(s, c); 
+      angles[Ni] = atan2(s, c); 
 
     }
   }

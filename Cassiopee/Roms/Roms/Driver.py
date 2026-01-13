@@ -1205,6 +1205,30 @@ class Le:
         DRIVER.registerInequation(self)
 
 #============================================================
+class Gt:
+    """Constraint inequation"""
+    def __init__(self, expr1, expr2=None):
+        # references sur l'inequation sympy
+        self.s = sympy.Gt(expr1, expr2)
+        DRIVER.registerInequation(self)
+
+#============================================================
+class Ge:
+    """Constraint inequation"""
+    def __init__(self, expr1, expr2=None):
+        # references sur l'inequation sympy
+        self.s = sympy.Ge(expr1, expr2)
+        DRIVER.registerInequation(self)
+
+#============================================================
+class Ne:
+    """Constraint inequation"""
+    def __init__(self, expr1, expr2=None):
+        # references sur l'inequation sympy
+        self.s = sympy.Ne(expr1, expr2)
+        DRIVER.registerInequation(self)
+
+#============================================================
 class Driver:
     """Driver is Model"""
     def __init__(self):

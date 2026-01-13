@@ -4072,7 +4072,7 @@ E_Int NGON_BOOLEAN_CLASS::__sort_T3_sharing_an_edge
     NUGA::crossProduct<3>(normals.col(K0), normals.col(Ki), nk);
     E_Float s2 = NUGA::sqrNorm<3>(nk);
     E_Float c = NUGA::dot<3>(normals.col(K0), normals.col(Ki));
-    E_Float alpha = ::atan2(sqrt(s2), c); 
+    E_Float alpha = atan2(sqrt(s2), c); 
     //alpha = NUGA::PI + alpha;
     std::cout << "alpha : " << alpha << std::endl;
     std::cout << std::endl;  
@@ -4156,9 +4156,9 @@ E_Int NGON_BOOLEAN_CLASS::__sort_T3_sharing_an_edge
       E_Float d2 = NUGA::sqrDistance(coord.col(N0), coord.col(N2), 3);
       E_Float d3 = NUGA::sqrDistance(coord.col(N1), coord.col(N2), 3);
 
-      dmin = std::min(dmin, d1);
-      dmin = std::min(dmin, d2);
-      dmin = std::min(dmin, d3);
+      dmin = K_FUNC::E_min(dmin, d1);
+      dmin = K_FUNC::E_min(dmin, d2);
+      dmin = K_FUNC::E_min(dmin, d3);
 
       E_Int tid = (T3indices[i] < shift) ? T3indices[i] : T3indices[i] - shift;
       PGs.push_back(_nT3_to_oPG[tid]);

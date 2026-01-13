@@ -191,8 +191,8 @@ namespace K_MESH
 
         for (E_Int i = 0; i < 3; ++i)
         {
-          bb.minB[i] = std::min(bb.minB[i], b.minB[i]);
-          bb.maxB[i] = std::max(bb.maxB[i], b.maxB[i]);
+          bb.minB[i] = K_FUNC::E_min(bb.minB[i], b.minB[i]);
+          bb.maxB[i] = K_FUNC::E_max(bb.maxB[i], b.maxB[i]);
         }
       }
     }
@@ -374,8 +374,8 @@ namespace K_MESH
 
       // angular criterion
       E_Float angle_threshold = NUGA::PI*(1. - threshold);
-      angle_threshold = std::min(NUGA::PI, angle_threshold);
-      angle_threshold = std::max(angle_threshold, EPSILON);
+      angle_threshold = K_FUNC::E_min(NUGA::PI, angle_threshold);
+      angle_threshold = K_FUNC::E_max(angle_threshold, EPSILON);
 
       typedef K_FLD::ArrayAccessor<K_FLD::FloatArray> acrd_t;
       acrd_t acrd(crd);
@@ -389,7 +389,6 @@ namespace K_MESH
       for (E_Int i = 0; i < nb_pgs; ++i)
       {
         E_Int PGi = *(first_pg + i) - 1;
-        //std::cout << PGi << std::endl;
         const E_Int* pNi = PGS.get_facets_ptr(PGi);
         E_Int  nb_nodes = PGS.stride(PGi);
         E_Int* pKn = lneighbors.get_facets_ptr(i);//i because lneighbor is local : sized as nb_pgs
@@ -564,8 +563,8 @@ namespace K_MESH
 
       // angular criterion
       E_Float angle_threshold = NUGA::PI*(1. - concave_threshold);
-      angle_threshold = std::min(NUGA::PI, angle_threshold);
-      angle_threshold = std::max(angle_threshold, EPSILON);
+      angle_threshold = K_FUNC::E_min(NUGA::PI, angle_threshold);
+      angle_threshold = K_FUNC::E_max(angle_threshold, EPSILON);
 
       // aggregate
       std::vector<E_Int> maski(nb_pgsi, 1), maskj(nb_pgsj, 1);
@@ -1428,7 +1427,7 @@ namespace K_MESH
         E_Int nb_nodes = _pgs->stride(PGi);
 
         E_Float L2r = K_MESH::Polygon::Lref2(nodes, nb_nodes, nodal_tol2, -1);
-        val = std::min(val, L2r);
+        val = K_FUNC::E_min(val, L2r);
       }
       return val;
     }

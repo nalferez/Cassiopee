@@ -283,7 +283,7 @@ inline E_Float angle_measure
     assert(signK2 != 0);
 #endif
 
-    E_Float alpha = ::atan2(sqrt(s2), c);
+    E_Float alpha = atan2(sqrt(s2), c);
     alpha = NUGA::PI - signK2 * alpha;
 
     return alpha;
@@ -316,7 +316,7 @@ inline E_Float normals_angle (const E_Float* ni, const E_Float* nj)
   {
     E_Float s2 = NUGA::sqrNorm<3>(nk);
 
-    E_Float alpha = ::atan2(sqrt(s2), c);
+    E_Float alpha = atan2(sqrt(s2), c);
     return alpha;
   }
   else // (s == 0) : ni and nj are nearly colinear : 0, Pi or 2Pi
@@ -446,7 +446,7 @@ void computeNodeRadiusAndAngles
     E_Float c = (pt[0] - x0) / radius[i];
     E_Float s = (pt[1] - y0) / radius[i];
 
-    angles[i] = ::atan2(s, c);
+    angles[i] = atan2(s, c);
   }
 }
 

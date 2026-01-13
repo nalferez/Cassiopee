@@ -183,7 +183,7 @@ namespace NUGA
         if (ARTOL < 0.) // relative
           TOLi *= -dmax;
 
-        TOLi = std::min(0.95*dmax, TOLi);
+        TOLi = K_FUNC::E_min(0.95*dmax, TOLi);
         
         if (fabs(h) >= TOLi) 
         {

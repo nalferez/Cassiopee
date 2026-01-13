@@ -346,7 +346,7 @@ bool aPolyhedron<TopoShape>::join(E_Float TOL, std::vector<E_Int>& lnids)
     E_Float dij2{ TOL };
     int Nj = kdt.getClosest(n, dij2);
     if ((Nj != IDX_NONE) && (dij2 < TOL2)) {
-      lnids[std::max(n, Nj)] = std::min(n, Nj);
+      lnids[std::max(n, Nj)] = K_FUNC::E_min(n, Nj);
       has_join = true;
     }
   }

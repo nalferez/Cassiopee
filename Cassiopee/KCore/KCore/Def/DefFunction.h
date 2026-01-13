@@ -352,7 +352,7 @@ template <E_Int dim, typename InputIterator>
 inline
 E_Float normalize (InputIterator it)
 {
-  E_Float L0 = ::sqrt(sqrNorm<dim>(it));
+  E_Float L0 = sqrt(sqrNorm<dim>(it));
   if (L0 != 0.)
   {
     E_Float L1 = 1./L0;

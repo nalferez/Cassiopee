@@ -79,7 +79,7 @@ E_Int K_METRIC::compVolNGon(
         dx = xt[ind2] - xt[ind1];
         dy = yt[ind2] - yt[ind1];
         dz = zt[ind2] - zt[ind1];
-        volp[i] = std::sqrt(dx*dx + dy*dy + dz*dz);  // "volume" = edge length
+        volp[i] = sqrt(dx*dx + dy*dy + dz*dz);  // "volume" = edge length
       }
     }
     else if (dim == 2)  // NGon 1D
@@ -117,7 +117,7 @@ E_Int K_METRIC::compVolNGon(
           l2z = zt[ind2] - zbe;
           K_MATH::cross(l1x, l1y, l1z, l2x, l2y, l2z, surfnx, surfny, surfnz);
           volp[i] += K_CONST::ONE_HALF
-            *std::sqrt(surfnx*surfnx + surfny*surfny + surfnz*surfnz);
+            * sqrt(surfnx*surfnx + surfny*surfny + surfnz*surfnz);
         }
       }
     }
@@ -285,7 +285,7 @@ E_Int K_METRIC::compNGonVolOfElement(
         surfnx = l1y*l2z-l1z*l2y; 
         surfny = l1z*l2x-l1x*l2z; 
         surfnz = l1x*l2y-l1y*l2x;
-        vol += K_CONST::ONE_HALF * std::sqrt(surfnx*surfnx+surfny*surfny+surfnz*surfnz);
+        vol += K_CONST::ONE_HALF * sqrt(surfnx*surfnx+surfny*surfny+surfnz*surfnz);
       }
     }
     break;

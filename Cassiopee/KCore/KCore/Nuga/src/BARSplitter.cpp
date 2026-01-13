@@ -538,7 +538,7 @@ E_Float BARSplitter::__getAngle(const E_Float* n1, const E_Float* n2)
   NUGA::crossProduct<3>(n1, n2, n);
   s = NUGA::normalize<3>(n);
   c = NUGA::dot<3>(n1, n2);
-  return ::atan2(s, c);
+  return atan2(s, c);
 }
 
 //=============================================================================

@@ -395,7 +395,7 @@ namespace DELAUNAY
     E_Float minX, minY, maxX, maxY, L;
     __compute_bounding_box(_data->hardNodes, minX, minY, maxX, maxY);
 
-    L = std::max(maxY-minY, maxX-minX);
+    L = K_FUNC::E_max(maxY-minY, maxX-minX);
 
     E_Float factor = 0.1;
 

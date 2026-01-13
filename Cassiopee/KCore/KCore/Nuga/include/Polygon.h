@@ -256,7 +256,7 @@ public:
     for (E_Int n = 0; n < nb_nodes; ++n)
     {
       E_Int Ni = *(nodes + n) + shift;
-      val = std::min(val, nodal_tol2[Ni]);
+      val = K_FUNC::E_min(val, nodal_tol2[Ni]);
     }
     return val;
   }

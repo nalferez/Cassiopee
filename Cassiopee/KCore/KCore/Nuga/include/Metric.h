@@ -317,7 +317,7 @@ namespace DELAUNAY {
     E_Float h1old2 = get_h2_along_dir(Ni, v0);
     E_Float h2old2 = get_h2_along_dir(Ni, v1);
     
-    E_Float rr = (std::min(h1old2, h2old2)/std::max(h1old2, h2old2));
+    E_Float rr = (K_FUNC::E_min(h1old2, h2old2)/K_FUNC::E_max(h1old2, h2old2));
     
     return ( rr < r*r );
   }
@@ -669,12 +669,12 @@ namespace DELAUNAY {
      if (_hmax != NUGA::FLOAT_MAX)
      {
        for (size_t i=0; i < m_iso.size(); ++i)
-         m_iso[i] = std::min(m_iso[i], _hmax);
+         m_iso[i] = K_FUNC::E_min(m_iso[i], _hmax);
      }
      if (_hmin != hmin1)
      {
        for (size_t i=0; i < m_iso.size(); ++i)
-         m_iso[i] = std::max(m_iso[i], _hmin);
+         m_iso[i] = K_FUNC::E_max(m_iso[i], _hmin);
      }
 
      // Set _metric by converting m_iso to an aniso type metric.
@@ -777,7 +777,7 @@ namespace DELAUNAY {
   E_Float d = sqrt(NUGA::sqrDistance(_pos->col(Ni), _pos->col(Nj), _pos->rows()));
   E_Float r1 = h1 / h0;
   if (::abs(r1 - 1.) < 0.01)
-  return d / std::max(h0,h1);
+  return d / K_FUNC::E_max(h0,h1);
   E_Float   r = (d + h1) / (d + h0);
   size_type n = size_type(::log(r1)/::log(r));
   r1 = pow (r1, 1./E_Float(n));
@@ -946,7 +946,7 @@ namespace DELAUNAY {
     E_Float sym_check = fabs(new_metric(0,1) - new_metric(1,0));
     if (sym_check >=EPSILON)
     {
-      sym_check = sym_check / std::max(new_metric(0,1), new_metric(1,0));
+      sym_check = sym_check / K_FUNC::E_max(new_metric(0,1), new_metric(1,0));
     }
     //std::cout << sym_check << std::endl;
     assert (sym_check < EPSILON);
@@ -1148,9 +1148,9 @@ namespace DELAUNAY {
     E_Float mu1 = (Mjf[0]*v10 + Mjf[1]*v11 + Mjf[2]*v12) * v10 + (Mjf[1]*v10 + Mjf[3]*v11 + Mjf[4]*v12) * v11 + (Mjf[2]*v10 + Mjf[4]*v11 + Mjf[5]*v12) * v12;
     E_Float mu2 = (Mjf[0]*v20 + Mjf[1]*v21 + Mjf[2]*v22) * v20 + (Mjf[1]*v20 + Mjf[3]*v21 + Mjf[4]*v22) * v21 + (Mjf[2]*v20 + Mjf[4]*v21 + Mjf[5]*v22) * v22;
 
-    E_Float L0 = std::max(la0, mu0);
-    E_Float L1 = std::max(la1, mu1);
-    E_Float L2 = std::max(la2, mu2);
+    E_Float L0 = K_FUNC::E_max(la0, mu0);
+    E_Float L1 = K_FUNC::E_max(la1, mu1);
+    E_Float L2 = K_FUNC::E_max(la2, mu2);
 
     E_Float iv[3][3];
     inverse_matrix(v, iv);
@@ -1204,9 +1204,9 @@ namespace DELAUNAY {
     mu1 = (Mif[0]*v10 + Mif[1]*v11 + Mif[2]*v12) * v10 + (Mif[1]*v10 + Mif[3]*v11 + Mif[4]*v12) * v11 + (Mif[2]*v10 + Mif[4]*v11 + Mif[5]*v12) * v12;
     mu2 = (Mif[0]*v20 + Mif[1]*v21 + Mif[2]*v22) * v20 + (Mif[1]*v20 + Mif[3]*v21 + Mif[4]*v22) * v21 + (Mif[2]*v20 + Mif[4]*v21 + Mif[5]*v22) * v22;
 
-    L0 = std::max(la0, mu0);
-    L1 = std::max(la1, mu1);
-    L2 = std::max(la2, mu2);
+    L0 = K_FUNC::E_max(la0, mu0);
+    L1 = K_FUNC::E_max(la1, mu1);
+    L2 = K_FUNC::E_max(la2, mu2);
 
     inverse_matrix(v, iv);
     iv[0][0] *= L0; iv[0][1] *= L1; iv[0][2] *= L2;
@@ -1400,7 +1400,8 @@ namespace DELAUNAY {
     for (size_t i = 0; i < isoM.size(); ++i)
     {
       im = isoM[i];
-      anisoM[i][0] = anisoM[i][2] = (im > 0.) ? 1./(im*im) : 0.;
+      anisoM[i][0] = (im > 0.) ? 1./(im*im) : 0.;
+      anisoM[i][2] = anisoM[i][0];
       anisoM[i][1] = 0.;
     }
   }
@@ -1415,7 +1416,9 @@ namespace DELAUNAY {
     for (size_t i = 0; i < isoM.size(); ++i)
     {
       im = isoM[i];
-      anisoM[i][0] = anisoM[i][3] = anisoM[i][5] = (im > 0.) ? 1. / (im*im) : 0.;
+      anisoM[i][0] = (im > 0.) ? 1. / (im*im) : 0.;
+      anisoM[i][3] = anisoM[i][0]; 
+      anisoM[i][5] = anisoM[i][0];
       anisoM[i][1] = anisoM[i][2] = anisoM[i][4] = 0.;
     }
   }
@@ -1489,8 +1492,8 @@ namespace DELAUNAY {
 
     E_Float hs = hi0 *(1. + (gr-1.) * dij); // extrapolated h at Nj with respect to growth ratio
 
-    hs = std::max(_hmin, hs);
-    hs = std::min(_hmax, hs);
+    hs = K_FUNC::E_max(_hmin, hs);
+    hs = K_FUNC::E_min(_hmax, hs);
     
     if (hj0 <= hs) return false; //false if metric at Nj is smaller than the replacement one.
     

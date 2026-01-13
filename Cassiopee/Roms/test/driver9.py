@@ -13,7 +13,8 @@ d.range = [0., 5., 1.2]
 
 eq1 = D.Eq(a, b)
 eq2 = D.Eq(d, a+b)
-ineq1 = D.Lt(b, c)
+c1 = D.Lt(b, c)
+c2 = D.Ne(a, 0.)
 
 D.DRIVER.solve()
 
