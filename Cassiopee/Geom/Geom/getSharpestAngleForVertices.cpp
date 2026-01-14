@@ -102,27 +102,28 @@ PyObject* K_GEOM::getSharpestAngleForVertices(PyObject* self, PyObject* args)
   {
     if (strcmp(eltType, "NGON") == 0) // NGON
     {
+      E_Int indf, e1, e2, ind1, ind2, indl, nvert;
+      E_Float dalphamin, alpha;
+      E_Float xbf, ybf, zbf, alpha0;
+      E_Float ptA[3]; E_Float ptB[3]; E_Float ptC[3]; E_Float ptD[3];
+      vector<E_Int> indices; E_Int c;
+
       E_Int npts = f->getSize();
-      E_Int* cnp = cn->begin(); // pointeur sur la connectivite NGon
+      E_Float* xt = f->begin(posx);
+      E_Float* yt = f->begin(posy);
+      E_Float* zt = f->begin(posz);
+
+      E_Int dim = cn->getDim(); // dimension de la zone
+      E_Int* ngon = cn->getNGon(); E_Int* nface = cn->getNFace();
+      E_Int* indPG = cn->getIndPG(); E_Int* indPH = cn->getIndPH();
+
+      vector<vector<E_Int> > cVF(npts); K_CONNECT::connectNG2VF(*cn, cVF);
+      FldArrayI cFE; K_CONNECT::connectNG2FE(*cn, cFE);
+
       PyObject* tpl = K_ARRAY::buildArray3(1, "alpha", npts,
                                            *cn, eltType, false, api, true);
       K_ARRAY::getFromArray3(tpl, alph);
       E_Float* alpt = alph->begin();
-      E_Int nfaces = cn->getNFaces();
-      FldArrayI pos; K_CONNECT::getPosElts(*cn, pos);
-      FldArrayI posFaces(nfaces); K_CONNECT::getPosFaces(*cn, posFaces);
-      //E_Int* posFacesp = posFaces.begin();
-      vector<vector<E_Int> > cVF(npts); K_CONNECT::connectNG2VF(*cn, cVF);
-      FldArrayI cFE; K_CONNECT::connectNG2FE(*cn, cFE);
-      E_Int dim = cn->getDim(); // dimension de la zone
-      E_Int indf, e1, e2, ind1, ind2, indl;
-      E_Int* pt; E_Float dalphamin, alpha;
-      E_Float xbf, ybf, zbf, alpha0;
-      E_Float ptA[3]; E_Float ptB[3]; E_Float ptC[3]; E_Float ptD[3];
-      E_Float* xt = f->begin(posx);
-      E_Float* yt = f->begin(posy);
-      E_Float* zt = f->begin(posz);
-      vector<E_Int> indices; E_Int c;
 
       if (dim == 1)
       {
@@ -137,13 +138,13 @@ PyObject* K_GEOM::getSharpestAngleForVertices(PyObject* self, PyObject* args)
           dalphamin = 360.; c =0; alpha = 0.;
 
           // Get the faces connected to ind
-          vector<E_Int>& f = cVF[ind];
-          E_Int nf = f.size();
+          vector<E_Int>& fc = cVF[ind];
+          E_Int nf = fc.size();
           for (E_Int k = 0; k < nf; k++)
           {
-            indf = f[k]; // indice face
-            pt = cnp+posFaces[indf-1];
-            ind1 = pt[1]-1; ind2 = pt[2]-1;
+            indf = fc[k]; // indice face
+            E_Int* face = cn->getFace(indf-1, nvert, ngon, indPG);
+            ind1 = face[0]-1; ind2 = face[1]-1;
             ptA[0] = xt[ind1]; ptA[1] = yt[ind1]; ptA[2] = zt[ind1];
             ptB[0] = xt[ind2]; ptB[1] = yt[ind2]; ptB[2] = zt[ind2];
 
@@ -151,7 +152,7 @@ PyObject* K_GEOM::getSharpestAngleForVertices(PyObject* self, PyObject* args)
             e2 = cFE(indf-1, 2);
             if (e1 > 0 && e2 > 0)
             {
-              K_CONNECT::getVertexIndices(cn->begin(), posFaces.begin(), pos[e1-1], indices);
+              K_CONNECT::getVertexIndices(*cn, ngon, nface, indPG, indPH, e1-1, indices);
               E_Int nv = indices.size();
               xbf = 0.; ybf = 0.; zbf = 0.;
               for (E_Int m = 0; m < nv; m++)
@@ -161,7 +162,7 @@ PyObject* K_GEOM::getSharpestAngleForVertices(PyObject* self, PyObject* args)
               }
               ptC[0] = xbf/nv; ptC[1] = ybf/nv; ptC[2] = zbf/nv;
 
-              K_CONNECT::getVertexIndices(cn->begin(), posFaces.begin(), pos[e2-1], indices);
+              K_CONNECT::getVertexIndices(*cn, ngon, nface, indPG, indPH, e2-1, indices);
               nv = indices.size();
               xbf = 0.; ybf = 0.; zbf = 0.;
               for (E_Int m = 0; m < nv; m++)
@@ -174,8 +175,10 @@ PyObject* K_GEOM::getSharpestAngleForVertices(PyObject* self, PyObject* args)
               if (alpha0 != -1000.)
               {
                 c++;
-                if (alpha0 < 180. && K_FUNC::E_abs(alpha0-90.) < dalphamin) {dalphamin = K_FUNC::E_abs(alpha0-90.); alpha = alpha0;}
-                else if (alpha0 >= 180. && K_FUNC::E_abs(alpha0-270.) < dalphamin) {dalphamin = K_FUNC::E_abs(alpha0-270.); alpha = alpha0;}
+                if (alpha0 < 180. && K_FUNC::E_abs(alpha0-90.) < dalphamin)
+                {dalphamin = K_FUNC::E_abs(alpha0-90.); alpha = alpha0;}
+                else if (alpha0 >= 180. && K_FUNC::E_abs(alpha0-270.) < dalphamin)
+                {dalphamin = K_FUNC::E_abs(alpha0-270.); alpha = alpha0;}
               }
             }
           }
