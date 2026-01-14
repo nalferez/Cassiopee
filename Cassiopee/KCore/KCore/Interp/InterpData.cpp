@@ -42,11 +42,11 @@ K_INTERP::InterpData::InterpData(E_Int topology, E_Float xmin, E_Float ymin, E_F
   _EPS_DET(1.e-16), _EPS_TETRA(1.e-4), _EPS_GEOM(K_CONST::E_GEOM_CUTOFF)
 {
   _topology = topology;
-  _xmin =  xmin;
-  _ymin =  ymin;
-  _zmin =  zmin;
-  _xmax =  K_CONST::E_MAX_FLOAT;
-  _ymax =  K_CONST::E_MAX_FLOAT;
+  _xmin = xmin;
+  _ymin = ymin;
+  _zmin = zmin;
+  _xmax = K_CONST::E_MAX_FLOAT;
+  _ymax = K_CONST::E_MAX_FLOAT;
   _zmax = K_CONST::E_MAX_FLOAT;
 }
 // ============================================================================

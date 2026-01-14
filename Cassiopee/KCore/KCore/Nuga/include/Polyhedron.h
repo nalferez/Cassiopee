@@ -699,11 +699,11 @@ namespace K_MESH
 
       // angular criterions
       E_Float angle_concave = NUGA::PI*(1. - concave_threshold);
-      angle_concave = std::min(NUGA::PI, angle_concave);
-      angle_concave = std::max(angle_concave, EPSILON);
+      angle_concave = K_FUNC::E_min(NUGA::PI, angle_concave);
+      angle_concave = K_FUNC::E_max(angle_concave, EPSILON);
       E_Float angle_convex = NUGA::PI*(1. + convex_threshold);
-      angle_convex = std::max(NUGA::PI, angle_convex);
-      angle_convex = std::min(angle_convex, 2.*NUGA::PI - EPSILON);
+      angle_convex = K_FUNC::E_max(NUGA::PI, angle_convex);
+      angle_convex = K_FUNC::E_min(angle_convex, 2.*NUGA::PI - EPSILON);
 
       typedef K_FLD::ArrayAccessor<K_FLD::FloatArray> acrd_t;
       acrd_t acrd(crd);
@@ -802,11 +802,11 @@ namespace K_MESH
 
       // angular criterions
       E_Float angle_concave = NUGA::PI*(1. - concave_threshold);
-      angle_concave = std::min(NUGA::PI, angle_concave);
-      angle_concave = std::max(angle_concave, EPSILON);
+      angle_concave = K_FUNC::E_min(NUGA::PI, angle_concave);
+      angle_concave = K_FUNC::E_max(angle_concave, EPSILON);
       E_Float angle_convex = NUGA::PI*(1. + convex_threshold);
-      angle_convex = std::max(NUGA::PI, angle_convex);
-      angle_convex = std::min(angle_convex, 2.*NUGA::PI - EPSILON);
+      angle_convex = K_FUNC::E_max(NUGA::PI, angle_convex);
+      angle_convex = K_FUNC::E_min(angle_convex, 2.*NUGA::PI - EPSILON);
 
       typedef K_FLD::ArrayAccessor<K_FLD::FloatArray> acrd_t;
       acrd_t acrd(crd);
@@ -1402,7 +1402,7 @@ namespace K_MESH
         E_Float Lmin2, Lmax2;
         PG.edge_length_extrema(crd, Lmin2, Lmax2);
 
-        if (MTYPE == NUGA::ISO_MIN) val = std::min(val, Lmin2);
+        if (MTYPE == NUGA::ISO_MIN) val = K_FUNC::E_min(val, Lmin2);
         else if (MTYPE == NUGA::ISO_MAX) val = std::max(val, Lmax2);
         else val += (sqrt(Lmin2) + sqrt(Lmax2));
       }
@@ -2331,8 +2331,8 @@ namespace K_MESH
             for (E_Int n = 0; n < 4; ++n)
             {
               E_Float L = NUGA::sqrDistance(crd.col(nodes[n] - 1), crd.col(nodes[(n + 1) % nnodes] - 1), 3);
-              Lmin = std::min(L, Lmin);
-              Lmax = std::max(L, Lmax);
+              Lmin = K_FUNC::E_min(L, Lmin);
+              Lmax = K_FUNC::E_max(L, Lmax);
             }
             if (Lmin >= aniso_ratio * aniso_ratio*Lmax) return false;
           }
@@ -2355,10 +2355,11 @@ namespace K_MESH
             E_Float L0 = NUGA::sqrDistance(crd.col(nodes[0] - 1), crd.col(nodes[1] - 1), 3);
             E_Float L1 = NUGA::sqrDistance(crd.col(nodes[1] - 1), crd.col(nodes[2] - 1), 3);
 
-            E_Float Lmin = std::min(L0, L1);
-            E_Float Lmax = std::max(L0, L1);
+            E_Float Lmin = K_FUNC::E_min(L0, L1);
+            E_Float Lmax = K_FUNC::E_max(L0, L1);
 
-            if (Lmin < aniso_ratio*aniso_ratio*Lmax) { //aniso
+            if (Lmin < aniso_ratio*aniso_ratio*Lmax) 
+            { //aniso
               is_aniso[i] = true;
               if (Lmax == L0)
               {
@@ -2386,11 +2387,9 @@ namespace K_MESH
                 {
                   E_Int Ni = nodes[n] - 1;
                   E_Int Nip1 = nodes[(n + 1) % nnodes] - 1;
-                  //std::cout << "Ni/Nip1/topi/topip1 : " << Ni << "/" << Nip1 << "/" << two_top_pts[2*j] << "/" << two_top_pts[(2*j)+1] << std::endl;
                   if ((two_top_pts[2 * i] == Ni && two_top_pts[(2 * i) + 1] == Nip1) ||
                     (two_top_pts[2 * i] == Nip1 && two_top_pts[(2 * i) + 1] == Ni))
                   {
-                    //std::cout << "found bot/tp" << std::endl;
                     bot = j;
                     top = HX6opposites[j];
                     return true;
@@ -2408,7 +2407,6 @@ namespace K_MESH
     {
       return ELT_t::is_of_type(PGs, firstPG, nb_pgs);
     }
-
 
     ///
     static bool is_basic(const ngon_unit & PGs, const E_Int* faces, E_Int nb_faces)
@@ -2430,13 +2428,15 @@ namespace K_MESH
       std::vector<E_Int> nodes;
       unique_nodes(*_pgs, _faces, _nb_faces, nodes);
       //std::sort(unodes.begin(), unodes.end());
-      if (poids != nullptr) {
+      if (poids != nullptr) 
+      {
         poids->clear();
         poids->resize(nodes.size());
       }
 
       crd.reserve(3, nodes.size());
-      for (size_t i = 0; i < nodes.size(); ++i) {
+      for (size_t i = 0; i < nodes.size(); ++i) 
+      {
         crd.pushBack(crdi.col(nodes[i] - 1), crdi.col(nodes[i] - 1) + 3);
         if (poids != nullptr)(*poids)[i] = nodes[i];
       }

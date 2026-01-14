@@ -1400,7 +1400,8 @@ namespace DELAUNAY {
     for (size_t i = 0; i < isoM.size(); ++i)
     {
       im = isoM[i];
-      anisoM[i][0] = (im > 0.) ? 1./(im*im) : 0.;
+      if (im > 0.) anisoM[i][0] = 1./(im*im);
+      else anisoM[i][0] = 0.;
       anisoM[i][2] = anisoM[i][0];
       anisoM[i][1] = 0.;
     }
@@ -1416,7 +1417,8 @@ namespace DELAUNAY {
     for (size_t i = 0; i < isoM.size(); ++i)
     {
       im = isoM[i];
-      anisoM[i][0] = (im > 0.) ? 1. / (im*im) : 0.;
+      if (im > 0.) anisoM[i][0] = 1. / (im*im);
+      else anisoM[i][0] = 0.;
       anisoM[i][3] = anisoM[i][0]; 
       anisoM[i][5] = anisoM[i][0];
       anisoM[i][1] = anisoM[i][2] = anisoM[i][4] = 0.;

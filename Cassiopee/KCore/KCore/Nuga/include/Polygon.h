@@ -1089,11 +1089,12 @@ inline void Polygon::imprint(K_FLD::FloatArray& crd1, const E_Int* pnodes1, E_In
 
       if (d2 > EPSILON) continue;
 
+      /*
       if (std::isnan(d2))
       {
         assert(false); // should not happen
         continue;
-      }
+      }*/
 
       if (d2 > EPSILON) continue;
 

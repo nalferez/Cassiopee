@@ -104,7 +104,7 @@ namespace DELAUNAY
     connectB.uniqueVals(BNodes);
     E_Int maxID = *std::max_element(ALL(BNodes));
     if (!hard_nodes.empty())
-      maxID = std::max(maxID, *std::max_element(ALL(hard_nodes)));
+      maxID = K_FUNC::E_max(maxID, *std::max_element(ALL(hard_nodes)));
 
     T m; // invalid by default
     parent_type::_field.resize(parent_type::_pos->cols(), m);
@@ -188,11 +188,11 @@ namespace DELAUNAY
 //      E_Float du = fabs(crd(0,connectB(0,i)) - crd(0,connectB(1,i)));
 //      E_Float dv = fabs(crd(1,connectB(0,i)) - crd(1,connectB(1,i)));
 //      
-//      hu_max = std::max(hu_max, du);
-//      hv_max = std::max(hv_max, dv);
+//      hu_max = K_FUNC::E_max(hu_max, du);
+//      hv_max = K_FUNC::E_max(hv_max, dv);
 //    }
 //    
-////    E_Float huvmax = std::max(hu_max, hv_max);
+////    E_Float huvmax = K_FUNC::E_max(hu_max, hv_max);
 ////
 ////    _boundary_metric_max[1] = 0.;
 //    _humax2 = hu_max*hu_max;
@@ -329,7 +329,7 @@ namespace DELAUNAY
       E_Float R2 = E/L; // pourquoi cette valeur ? 
       R2 *= R2;
       E_Float h2 = K_FUNC::E_min(hmax2, _alpha2*R2); // alpha2 prend en compte hausd
-      h2 = std::max(h2, hmin2); //fixme!!
+      h2 = K_FUNC::E_max(h2, hmin2); //fixme!!
       h2 = 1./h2;
 
       Mout(0,0) = E*h2;
@@ -379,7 +379,7 @@ namespace DELAUNAY
 
     if (_mode == ISO_RHO) // use min curvature in all directions + impose hmin
     {
-      E_Float h2 = std::min(hmax2, _alpha2*rho1_2);
+      E_Float h2 = K_FUNC::E_min(hmax2, _alpha2*rho1_2);
       h2 = K_FUNC::E_max(h2, hmin2);
       h2 = 1./h2;
 
