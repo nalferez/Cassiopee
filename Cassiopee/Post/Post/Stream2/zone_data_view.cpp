@@ -97,7 +97,7 @@ namespace K_POST
         return implementation->compute_rotational_in_cell(ind_cell);
     }
     //_ ___________________ Calcul du volume d'une cellule ___________________________
-    double zone_data_view::compute_volume_of_cell(E_Int ind_cell) const
+    E_Float zone_data_view::compute_volume_of_cell(E_Int ind_cell) const
     {
         assert(implementation != nullptr);
         return implementation->compute_volume_of_cell(ind_cell);        

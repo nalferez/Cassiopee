@@ -54,6 +54,7 @@ void K_COMPGEOM::barycenter(
     xb += xp[3*it]; yb += xp[3*it+1]; zb += xp[3*it+2];
   }
   xb = xb * onen; yb = yb * onen; zb = zb * onen;
+  delete [] xp;
 }
 
 //=============================================================================
@@ -94,6 +95,7 @@ E_Float& xb, E_Float& yb, E_Float& zb)
   wb = K_FUNC::E_max(wb, 1.e-10);
   E_Float onew = 1./wb;
   xb = xb * onew; yb = yb * onew; zb = zb * onew;
+  delete [] xp;
 }
 
 //=============================================================================

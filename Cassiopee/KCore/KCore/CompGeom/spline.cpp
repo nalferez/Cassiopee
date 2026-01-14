@@ -51,9 +51,9 @@ void K_COMPGEOM::spline(E_Int im, E_Int ordern, E_Int N,
     E_Float dy12 = delta * (yt[1]-yt[0]);
     E_Float dz12 = delta * (zt[1]-zt[0]);
     
-#pragma omp parallel if (N > __MIN_SIZE_MEAN__)
+    #pragma omp parallel
     {
-#pragma omp for
+      #pragma omp for
       for (E_Int i = 0; i < N; i++)
       {
         PF1[i] = xt[0] + i*dx12;
@@ -76,13 +76,13 @@ void K_COMPGEOM::spline(E_Int im, E_Int ordern, E_Int N,
 
     E_Float pas = x[m]/(Nbpoints-1);
 
-#pragma omp parallel if (Nbpoints > __MIN_SIZE_MEAN__)
+    #pragma omp parallel
     {
       E_Float tmp1;
       E_Float tmp2;
       E_Float tmp3;
       E_Float t = 0.;
-#pragma omp for
+      #pragma omp for
       for (E_Int i1 = 0; i1 < Nbpoints; i1++)
       {
         t = i1*pas;
@@ -146,7 +146,7 @@ void K_COMPGEOM::spline2D(E_Int im, E_Int jm, E_Int ordern,
   E_Float* PF2 = PF.begin(2);
   E_Float* PF3 = PF.begin(3);
 
-#pragma omp parallel if (N > __MIN_SIZE_MEAN__)
+  #pragma omp parallel
   {
   E_Int ind, i, j;
 
@@ -349,22 +349,32 @@ void K_COMPGEOM::regularSpline(E_Int n, E_Int ordern, E_Int N, E_Float density,
 {
   // approx de la longueur de la spline par la longueur des pts de controle
   E_Float len = 0.;
-#pragma omp parallel if (n > __MIN_SIZE_MEAN__)
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* lp = new E_Float [nthreads];
+
+  #pragma omp parallel
   {
-  E_Int i1;
-  E_Float dx, dy, dz;
-#pragma omp for reduction(+:len)
+    E_Int i1;
+    E_Float dx, dy, dz;
+    E_Int it = __CURRENT_THREAD__;
+    lp[it] = 0.;
+
+    #pragma omp for
     for (E_Int i = 1; i < n; i++)
     {
       i1 = i-1;
       dx = xt[i] - xt[i1];
       dy = yt[i] - yt[i1];
       dz = zt[i] - zt[i1];
-      len = len + sqrt(dx*dx+dy*dy+dz*dz);
+      lp[it] += sqrt(dx*dx+dy*dy+dz*dz);
     }
-  }  
+  }
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    len += lp[it];
+  }
   E_Int npts;
-  if (density > 0) npts = E_Int(len*density)+1;
+  if (density > 0.) npts = E_Int(len*density)+1;
   else npts = N;
   E_Int npts0 = 10*npts;
   FldArrayF coord0(npts0, 3);
@@ -376,21 +386,27 @@ void K_COMPGEOM::regularSpline(E_Int n, E_Int ordern, E_Int N, E_Float density,
 
   // vraie longueur de la spline
   len = 0.;
-#pragma omp parallel if (npts0 > __MIN_SIZE_MEAN__)
+  #pragma omp parallel
   {
     E_Int i1;
     E_Float dx, dy, dz;
-#pragma omp for reduction(+:len)
+    E_Int it = __CURRENT_THREAD__;
+    lp[it] = 0.;
+    #pragma omp for
     for (E_Int i = 1; i < npts0; i++)
     {
       i1 = i-1;
       dx = coordx0[i] - coordx0[i1];
       dy = coordy0[i] - coordy0[i1];
       dz = coordz0[i] - coordz0[i1];
-      len = len + sqrt(dx*dx+dy*dy+dz*dz);
+      lp[it] += sqrt(dx*dx+dy*dy+dz*dz);
     }
   }
-  if (density > 0) npts = E_Int(len*density)+1;
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    len += lp[it];
+  }
+  if (density > 0.) npts = E_Int(len*density)+1;
   else npts = N;
  
   // spline reguliere
@@ -406,7 +422,7 @@ void K_COMPGEOM::regularSpline(E_Int n, E_Int ordern, E_Int N, E_Float density,
   FldArrayF fd(npts);
   E_Float* fdx = fd.begin(1);
   E_Float delta = 1./(npts-1.);
-#pragma omp parallel for if (npts > __MIN_SIZE_MEAN__)
+  #pragma omp parallel for
   for (E_Int i = 0; i < npts; i++) fdx[i] = delta*i;
 
   K_COMPGEOM::onedmap(
@@ -415,6 +431,9 @@ void K_COMPGEOM::regularSpline(E_Int n, E_Int ordern, E_Int N, E_Float density,
     coordx, coordy, coordz,
     sp.begin(), dxp.begin(), dyp.begin(), dzp.begin()
   );
+
+  delete [] lp;
+
 }
 
 //=============================================================================
@@ -439,13 +458,13 @@ void K_COMPGEOM::regularSpline2D(E_Int n, E_Int m, E_Int ordern, E_Int N,
   E_Float leni = 0.;
   E_Float lenj = 0.;
 
-#pragma omp parallel if (m*n > __MIN_SIZE_MEAN__)
+  #pragma omp parallel
   {
     E_Int ind, ind1, j1;
     E_Float len=0.;
     E_Float dx, dy, dz;
     E_Float leni_private=0., lenj_private=0.;
-#pragma omp for nowait
+    #pragma omp for nowait
     for (E_Int j = 0; j < m; j++)
     { 
       len = 0.;
@@ -460,7 +479,7 @@ void K_COMPGEOM::regularSpline2D(E_Int n, E_Int m, E_Int ordern, E_Int N,
       leni_private = K_FUNC::E_max(leni_private, len);
     }
 
-#pragma omp for nowait
+    #pragma omp for nowait
     for (E_Int i = 0; i < n; i++)
     {
       len = 0.;
@@ -475,14 +494,14 @@ void K_COMPGEOM::regularSpline2D(E_Int n, E_Int m, E_Int ordern, E_Int N,
       }
       lenj_private = K_FUNC::E_max(lenj_private, len);
     }
-#pragma omp critical
+    #pragma omp critical
     {
       leni = K_FUNC::E_max(leni, leni_private);
       lenj = K_FUNC::E_max(lenj, lenj_private);
     }
   }
   E_Int nptsi, nptsj;
-  if (density > 0) 
+  if (density > 0.) 
   { nptsi = E_Int(leni*density)+1; nptsj = E_Int(lenj*density)+1; }
   else { nptsi = N; nptsj = M; }
   E_Int nptsi0 = 10*nptsi;
@@ -498,22 +517,32 @@ void K_COMPGEOM::regularSpline2D(E_Int n, E_Int m, E_Int ordern, E_Int N,
   // vraie longueur de la spline suivant i
   E_Float eps = 1e-12;
   E_Float len = 0.;
-#pragma omp parallel if (nptsi0 > __MIN_SIZE_MEAN__)
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* lp = new E_Float [nthreads];
+
+  #pragma omp parallel
   {
     E_Float dx, dy, dz;
-    E_Int ind, ind0;    
-#pragma omp for reduction(+:len)
+    E_Int ind, ind0;
+    E_Int it = __CURRENT_THREAD__;
+    lp[it] = 0.;
+
+    #pragma omp for
     for (E_Int i = 1; i < nptsi0; i++)
     {
       ind = i; ind0 = i-1;
       dx = coordx0[ind] - coordx0[ind0];
       dy = coordy0[ind] - coordy0[ind0];
       dz = coordz0[ind] - coordz0[ind0];
-      len = len + sqrt(dx*dx+dy*dy+dz*dz);
+      lp[it] += sqrt(dx*dx+dy*dy+dz*dz);
     }
   }
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    len += lp[it];
+  }
 
-  if (density > 0) nptsi = E_Int(len*density + eps) + 1;
+  if (density > 0.) nptsi = E_Int(len*density + eps) + 1;
   else nptsi = N;
 
   FldArrayF sp(nptsi0);
@@ -523,7 +552,7 @@ void K_COMPGEOM::regularSpline2D(E_Int n, E_Int m, E_Int ordern, E_Int N,
   FldArrayF fd(nptsi);
   E_Float* fdx = fd.begin(1);
   E_Float delta = 1./(nptsi-1.);
-#pragma omp parallel for if (nptsi > __MIN_SIZE_MEAN__)
+  #pragma omp parallel for
   for (E_Int i = 0; i < nptsi; i++) fdx[i] = delta*i;
   FldArrayF coord1(nptsi*nptsj0, 3); coord1.setAllValuesAtNull();
   E_Float* coordx1 = coord1.begin(1);
@@ -542,22 +571,29 @@ void K_COMPGEOM::regularSpline2D(E_Int n, E_Int m, E_Int ordern, E_Int N,
   // Remaille en j
   // vraie longueur de la spline suivant j
   len = 0.;
-#pragma omp parallel if (nptsj0 > __MIN_SIZE_MEAN__)
+  #pragma omp parallel
   {
     E_Float dx, dy, dz;
     E_Int ind, ind0;
-#pragma omp for reduction(+:len)
+    E_Int it = __CURRENT_THREAD__;
+    lp[it] = 0.;
+
+    #pragma omp for
     for (E_Int j = 1; j < nptsj0; j++)
     {
       ind = j*nptsi0; ind0 = (j-1)*nptsi0;
       dx = coordx0[ind] - coordx0[ind0];
       dy = coordy0[ind] - coordy0[ind0];
       dz = coordz0[ind] - coordz0[ind0];
-      len = len + sqrt(dx*dx+dy*dy+dz*dz);
+      lp[it] += sqrt(dx*dx+dy*dy+dz*dz);
     }
   }
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    len += lp[it];
+  }
 
-  if (density > 0) nptsj = E_Int(len*density)+1;
+  if (density > 0.) nptsj = E_Int(len*density)+1;
   else nptsj = M;
 
   sp.malloc(nptsj0);
@@ -567,7 +603,7 @@ void K_COMPGEOM::regularSpline2D(E_Int n, E_Int m, E_Int ordern, E_Int N,
   fd.malloc(nptsj);
   fdx = fd.begin(1);
   delta = 1./(nptsj-1.);
-#pragma omp parallel for if (nptsj > __MIN_SIZE_MEAN__)
+  #pragma omp parallel for
   for (E_Int j = 0; j < nptsj; j++) fdx[j] = delta*j;
   coord.malloc(nptsi*nptsj, 3); coord.setAllValuesAtNull();
 
@@ -606,4 +642,5 @@ void K_COMPGEOM::regularSpline2D(E_Int n, E_Int m, E_Int ordern, E_Int N,
     }
   }
   niout = nptsi; njout = nptsj;
+  delete [] lp;
 }

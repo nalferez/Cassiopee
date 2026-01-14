@@ -873,6 +873,7 @@ void K_INTERP::OBbox(
   {
     val = pow(n, 1./3.);
   }
+  else val = E_Float(n);
 
   #ifdef E_ADOLC
   if (val == floor(val))   // si le nuage de point est carre on enleve une ligne (cas 2D)
@@ -881,7 +882,6 @@ void K_INTERP::OBbox(
   if (val == floor(val))   // si le nuage de point est carre on enleve une ligne (cas 2D)
     n_ = n-E_Int(val);
 #endif
-
 
   // PCA of the stencil to find the axis
   PCA(dimPb, n_, x, y, z, axis);   // A MODIFIER ?

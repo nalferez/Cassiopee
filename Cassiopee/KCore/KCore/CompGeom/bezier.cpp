@@ -44,16 +44,20 @@ void K_COMPGEOM::bezier(E_Int n, E_Int N,
   E_Float* coordy = coord.begin(2);
   E_Float* coordz = coord.begin(3);
 
-#pragma omp parallel for default(shared)
-  for (E_Int k = 0; k < N; k++)
+  #pragma omp parallel
   {
-    E_Float t = k*pas;
-    for (E_Int i = 0; i <= n ; i++)
+    E_Float t, B;
+    #pragma omp for
+    for (E_Int k = 0; k < N; k++)
     {
-      E_Float B = Bernstein(i, n, t);
-      coordx[k] = coordx[k]+B*xt[i];
-      coordy[k] = coordy[k]+B*yt[i];
-      coordz[k] = coordz[k]+B*zt[i];
+      t = k*pas;
+      for (E_Int i = 0; i <= n ; i++)
+      {
+        B = Bernstein(i, n, t);
+        coordx[k] = coordx[k]+B*xt[i];
+        coordy[k] = coordy[k]+B*yt[i];
+        coordz[k] = coordz[k]+B*zt[i];
+      }
     }
   }
 }
@@ -81,16 +85,16 @@ void K_COMPGEOM::bezier2D(E_Int n, E_Int m, E_Int N, E_Int M,
   E_Float* coordy = coord.begin(2);
   E_Float* coordz = coord.begin(3);
   E_Int np1 = n+1;
-#pragma omp parallel default(shared) if (M*N > __MIN_SIZE_MEAN__)
+  #pragma omp parallel
   {
     E_Float B, B1;
     E_Float u, v;
     E_Int k, l;
     E_Int ind1, ind2;
-#pragma omp for
+    #pragma omp for
     for (E_Int kl = 0; kl < M*N; kl++)
     {
-      k = int(kl/N); l = kl%N;
+      k = E_Int(kl/N); l = kl%N;
       v = k*pasM;
       u = l*pasN;
       ind2 = l + k*N;
@@ -150,22 +154,33 @@ void K_COMPGEOM::regularBezier(E_Int n, E_Int N, E_Float density,
 {
   // approx de la longueur de la bezier par la longueur des pts de controle
   E_Float len = 0.;
-#pragma omp parallel default(shared) if (n > __MIN_SIZE_MEAN__)
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* lp = new E_Float [nthreads];
+  
+  #pragma omp parallel
   {
     E_Float dx, dy, dz;
     E_Int i1;
-#pragma omp for reduction(+:len)
+    E_Int it = __CURRENT_THREAD__;
+    lp[it] = 0.;
+
+    #pragma omp for
     for (E_Int i = 1; i < n; i++)
     {
       i1 = i-1;
       dx = xt[i] - xt[i1];
       dy = yt[i] - yt[i1];
       dz = zt[i] - zt[i1];
-      len = len + sqrt(dx*dx+dy*dy+dz*dz);
-    }  
+      lp[it] += sqrt(dx*dx+dy*dy+dz*dz);
+    }
   }
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    len += lp[it];
+  }
+
   E_Int npts;
-  if (density > 0) npts = E_Int(len*density)+1;
+  if (density > 0.) npts = E_Int(len*density)+1;
   else npts = N;
   E_Int npts0 = 10*npts;
   FldArrayF coord0(npts0, 3);
@@ -177,21 +192,28 @@ void K_COMPGEOM::regularBezier(E_Int n, E_Int N, E_Float density,
 
   // vraie longueur de la bezier
   len = 0.;
-#pragma omp parallel default(shared) if (npts0 > __MIN_SIZE_MEAN__)
+  #pragma omp parallel
   {
     E_Float dx, dy, dz;
     E_Int i1;
-#pragma omp for reduction(+:len)
+    E_Int it = __CURRENT_THREAD__;
+    lp[it] = 0.;
+    #pragma omp for
     for (E_Int i = 1; i < npts0; i++)
     {
       i1 = i-1;
       dx = coordx0[i] - coordx0[i1];
       dy = coordy0[i] - coordy0[i1];
       dz = coordz0[i] - coordz0[i1];
-      len = len + sqrt(dx*dx+dy*dy+dz*dz);
+      lp[it] += sqrt(dx*dx+dy*dy+dz*dz);
     }
   }
-  if (density > 0) npts = E_Int(len*density)+1;
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    len += lp[it];
+  }
+
+  if (density > 0.) npts = E_Int(len*density)+1;
   else npts = N;
  
   // bezier reguliere
@@ -207,13 +229,15 @@ void K_COMPGEOM::regularBezier(E_Int n, E_Int N, E_Float density,
   FldArrayF fd(npts);
   E_Float* fdx = fd.begin(1);
   E_Float delta = 1./(npts-1.);
-#pragma omp parallel for default(shared) if (npts > __MIN_SIZE_MEAN__)
-    for (E_Int i = 0; i < npts; i++) fdx[i] = delta*i;
+  #pragma omp parallel for
+  for (E_Int i = 0; i < npts; i++) fdx[i] = delta*i;
 
   K_COMPGEOM::onedmap(npts0, coordx0, coordy0, coordz0,
 		      npts, fd.begin(1),
 		      coordx, coordy, coordz,
 		      sp.begin(), dxp.begin(), dyp.begin(), dzp.begin());
+
+  delete [] lp;
 }
 
 //=============================================================================
@@ -234,14 +258,14 @@ void K_COMPGEOM::regularBezier2D(E_Int n, E_Int m, E_Int N, E_Int M,
 {
   // approx de la longueur de la bezier par la longueur des pts de controle
   E_Float len = 0.;
-  E_Float leni=0.;
-  E_Float lenj=0.;
+  E_Float leni = 0.;
+  E_Float lenj = 0.;
   E_Float dx, dy, dz;
   E_Int ind, ind1, j1;
-#pragma omp parallel default(shared) if (m*n > __MIN_SIZE_MEAN__)
+  #pragma omp parallel
   {
     E_Float leni_private=0., lenj_private=0.;
-#pragma omp for nowait
+    #pragma omp for nowait
     for (E_Int j = 0; j < m; j++)
     { 
       len = 0.;
@@ -256,7 +280,7 @@ void K_COMPGEOM::regularBezier2D(E_Int n, E_Int m, E_Int N, E_Int M,
       leni_private = K_FUNC::E_max(leni_private, len);
     }
 
-#pragma omp for nowait
+    #pragma omp for nowait
     for (E_Int i = 0; i < n; i++)
     {
       len = 0.;
@@ -271,14 +295,14 @@ void K_COMPGEOM::regularBezier2D(E_Int n, E_Int m, E_Int N, E_Int M,
       }
       lenj_private = K_FUNC::E_max(lenj_private, len);
     }
-#pragma omp critical
+    #pragma omp critical
     {
       leni = K_FUNC::E_max(leni, leni_private);
       lenj = K_FUNC::E_max(lenj, lenj_private);
     }
   }
   E_Int nptsi, nptsj;
-  if (density > 0) 
+  if (density > 0.) 
   { nptsi = E_Int(leni*density)+1; nptsj = E_Int(lenj*density)+1; }
   else { nptsi = N; nptsj = M; }
   E_Int nptsi0 = 10*nptsi;
@@ -293,21 +317,32 @@ void K_COMPGEOM::regularBezier2D(E_Int n, E_Int m, E_Int N, E_Int M,
   // Remaille suivant i
   // vraie longueur de la bezier suivant i
   len = 0.;
-#pragma omp parallel default(shared) if (nptsi0 > __MIN_SIZE_MEAN__)
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* lp = new E_Float [nthreads];
+
+  #pragma omp parallel
   {
     E_Float dx, dy, dz;
     E_Int ind, ind0;
-#pragma omp for reduction(+:len)
+    E_Int it = __CURRENT_THREAD__;
+    lp[it] = 0.;
+
+    #pragma omp for
     for (E_Int i = 1; i < nptsi0; i++)
     {
       ind = i; ind0 = i-1;
       dx = coordx0[ind] - coordx0[ind0];
       dy = coordy0[ind] - coordy0[ind0];
       dz = coordz0[ind] - coordz0[ind0];
-      len = len + sqrt(dx*dx+dy*dy+dz*dz);
+      lp[it] += sqrt(dx*dx+dy*dy+dz*dz);
     }
   }
-  if (density > 0) nptsi = E_Int(len*density)+1;
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    len += lp[it];
+  }
+
+  if (density > 0.) nptsi = E_Int(len*density)+1;
   else nptsi = N;
 
   FldArrayF sp(nptsi0);
@@ -317,7 +352,7 @@ void K_COMPGEOM::regularBezier2D(E_Int n, E_Int m, E_Int N, E_Int M,
   FldArrayF fd(nptsi);
   E_Float* fdx = fd.begin(1);
   E_Float delta = 1./(nptsi-1.);
-#pragma omp parallel for default(shared) if (nptsi > __MIN_SIZE_MEAN__)
+  #pragma omp parallel for
   for (E_Int i = 0; i < nptsi; i++) fdx[i] = delta*i;
   FldArrayF coord1(nptsi*nptsj0, 3); coord1.setAllValuesAtNull();
   E_Float* coordx1 = coord1.begin(1);
@@ -335,22 +370,29 @@ void K_COMPGEOM::regularBezier2D(E_Int n, E_Int m, E_Int N, E_Int M,
   // Remaille en j
   // vraie longueur de la bezier suivant j
   len = 0.;
-#pragma omp parallel default(shared) if (nptsj0 > __MIN_SIZE_MEAN__)
+  #pragma omp parallel
   {
     E_Float dx, dy, dz;
     E_Int ind, ind0;
-#pragma omp for reduction(+:len)
+    E_Int it = __CURRENT_THREAD__;
+    lp[it] = 0.;
+
+    #pragma omp for
     for (E_Int j = 1; j < nptsj0; j++)
     {
       ind = j*nptsi0; ind0 = (j-1)*nptsi0;
       dx = coordx0[ind] - coordx0[ind0];
       dy = coordy0[ind] - coordy0[ind0];
       dz = coordz0[ind] - coordz0[ind0];
-      len = len + sqrt(dx*dx+dy*dy+dz*dz);
+      lp[it] += sqrt(dx*dx+dy*dy+dz*dz);
     }
   }
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    len += lp[it];
+  }
 
-  if (density > 0) nptsj = E_Int(len*density)+1;
+  if (density > 0.) nptsj = E_Int(len*density)+1;
   else nptsj = M;
 
   sp.malloc(nptsj0);
@@ -360,7 +402,7 @@ void K_COMPGEOM::regularBezier2D(E_Int n, E_Int m, E_Int N, E_Int M,
   fd.malloc(nptsj);
   fdx = fd.begin(1);
   delta = 1./(nptsj-1.);
-#pragma omp parallel for default(shared) if (nptsj > __MIN_SIZE_MEAN__)
+  #pragma omp parallel for
   for (E_Int j = 0; j < nptsj; j++) fdx[j] = delta*j;
   coord.malloc(nptsi*nptsj, 3); coord.setAllValuesAtNull();
 
@@ -380,17 +422,22 @@ void K_COMPGEOM::regularBezier2D(E_Int n, E_Int m, E_Int N, E_Int M,
   for (E_Int i = 0; i < nptsi; i++)
   {
     for (E_Int j = 0; j < nptsj0; j++) 
-    { t0x[j] = coordx1[i+j*nptsi];
+    { 
+      t0x[j] = coordx1[i+j*nptsi];
       t0y[j] = coordy1[i+j*nptsi];
-      t0z[j] = coordz1[i+j*nptsi]; }
+      t0z[j] = coordz1[i+j*nptsi]; 
+    }
     K_COMPGEOM::onedmap(nptsj0, t0x, t0y, t0z,
 			nptsj, fd.begin(1),
 			tx, ty, tz,
 			sp.begin(), dxp.begin(), dyp.begin(), dzp.begin());
     for (E_Int j = 0; j < nptsj; j++) 
-    { coordx[i+j*nptsi] = tx[j]; 
+    { 
+      coordx[i+j*nptsi] = tx[j]; 
       coordy[i+j*nptsi] = ty[j]; 
-      coordz[i+j*nptsi] = tz[j]; }
+      coordz[i+j*nptsi] = tz[j]; 
+    }
   }
   niout = nptsi; njout = nptsj;
+  delete [] lp;
 }
