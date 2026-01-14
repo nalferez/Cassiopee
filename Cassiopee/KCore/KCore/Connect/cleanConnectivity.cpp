@@ -575,13 +575,13 @@ void K_CONNECT::cleanConnectivityNGon(E_Int posx, E_Int posy, E_Int posz,
   {
     /*std::cout << "RELATIVE TOL !!!!!!!!!!!!!!!!!!!!!!" << std::endl;
     NG.flag_external_pgs(INITIAL_SKIN);
-    std::vector<double> nodal_metric2;
+    std::vector<E_Float> nodal_metric2;
     NUGA::MeshTool::computeNodalDistance2<acrd_t, ngon_unit>(fcA, NG.PGs, nodal_metric2);
     
-    double RTOL = -eps;
+    E_Float RTOL = -eps;
     NG.join_phs2(f, posx, posy, posz, nodal_metric2, RTOL);*/
 
-    std::vector<double> nodal_metric2;
+    std::vector<E_Float> nodal_metric2;
     NUGA::MeshTool::computeNodalDistance2<acrd_t, ngon_unit>(fcA, NG.PGs, nodal_metric2);
     
     E_Float RTOL = -eps;

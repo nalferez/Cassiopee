@@ -276,10 +276,19 @@ E_Bool K_INTERP::InterpData::coeffInterpHexa(E_Float x, E_Float y, E_Float z,
   }
     
   /* Compute index to find the most probable triangle */
+#ifdef E_ADOLC
+  E_Float vx = (K_CONST::ONE + K_FUNC::E_sign(xi-yi)) * K_CONST::ONE_HALF;
+  E_Float vy = (K_CONST::ONE + K_FUNC::E_sign(yi-zi)) * K_CONST::ONE_HALF; 
+  E_Float vz = (K_CONST::ONE + K_FUNC::E_sign(zi-xi)) * K_CONST::ONE_HALF; 
+  is1 = E_Int(vx.value());
+  is2 = E_Int(vy.value());
+  is3 = E_Int(vz.value());
+#else
   is1 = E_Int((K_CONST::ONE + K_FUNC::E_sign(xi-yi)) * K_CONST::ONE_HALF);
   is2 = E_Int((K_CONST::ONE + K_FUNC::E_sign(yi-zi)) * K_CONST::ONE_HALF);
   is3 = E_Int((K_CONST::ONE + K_FUNC::E_sign(zi-xi)) * K_CONST::ONE_HALF);
-  
+#endif
+
   itri = indtr[isomm+8*is1+16*is2+32*is3];
 
   indr = indtd[0+itri*4];
@@ -592,10 +601,19 @@ E_Bool K_INTERP::InterpData::getCoeffInterpHexa(E_Float x, E_Float y, E_Float z,
   }
     
   /* Compute index to find the most probable triangle */
+#ifdef E_ADOLC
+  E_Float vx = (K_CONST::ONE + K_FUNC::E_sign(xi-yi)) * K_CONST::ONE_HALF;
+  E_Float vy = (K_CONST::ONE + K_FUNC::E_sign(yi-zi)) * K_CONST::ONE_HALF;
+  E_Float vz = (K_CONST::ONE + K_FUNC::E_sign(zi-xi)) * K_CONST::ONE_HALF;
+  E_Int is1 = static_cast<E_Int>(vx.value());
+  E_Int is2 = static_cast<E_Int>(vy.value());
+  E_Int is3 = static_cast<E_Int>(vz.value());
+#else
   E_Int is1 = static_cast<E_Int>((K_CONST::ONE + K_FUNC::E_sign(xi-yi)) * K_CONST::ONE_HALF);
   E_Int is2 = static_cast<E_Int>((K_CONST::ONE + K_FUNC::E_sign(yi-zi)) * K_CONST::ONE_HALF);
   E_Int is3 = static_cast<E_Int>((K_CONST::ONE + K_FUNC::E_sign(zi-xi)) * K_CONST::ONE_HALF);
-  
+#endif
+
   E_Int itri = indtr[isomm+8*is1+16*is2+32*is3];
 
   E_Int indr = indtd[0+itri*4];

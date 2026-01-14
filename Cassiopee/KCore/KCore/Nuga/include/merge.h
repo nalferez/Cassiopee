@@ -77,60 +77,7 @@ merge_no_order_omp
 
   E_Float tol2 = tol*tol;
 
-  // Premiere version - elle ne thread pas
-  /*
-
-//#pragma omp parallel default(shared)
-    {
-      std::vector<E_Int> onodes;
-      E_Int m;
-      E_Float Xn[3]; E_Float Xm[3];
-      size_t size; E_Float d2;
-      E_Int mID, iID;
-
-//#pragma omp for schedule(dynamic)
-      for (E_Int i = 0; i < npts; i++)
-      {
-        coordAcc.getEntry(i, Xn);
-        //printf("pt %f %f %f\n", Xn[0], Xn[1], Xn[2]);
-        onodes.clear();
-        tree.getInSphere(Xn, tol, onodes);
-        size = onodes.size();
-        //printf("cloud size %d\n", size);
-        if (size > 0)
-        {
-          //m = *std::min_element(onodes.begin(), onodes.end());
-          //std::sort(onodes.begin(), onodes.end());
-          iID = new_IDs[i];
-         
-          for (E_Int j = 0; j < size; j++)
-          {
-            m = onodes[j];
-            mID = new_IDs[m]; // firewall needed
-            if (i > m)
-            {
-              if (mID == m) { new_IDs[i] = m; break; }
-              else if (mID != i)
-              {
-                coordAcc.getEntry(mID, Xm);
-                d2 = (Xm[0]-Xn[0])*(Xm[0]-Xn[0])+
-                  (Xm[1]-Xn[1])*(Xm[1]-Xn[1])+
-                  (Xm[2]-Xn[2])*(Xm[2]-Xn[2]);
-                if (d2 < tol2) { new_IDs[i] = mID; break; }
-              }
-            }
-          }
-          
-        }
-       
-
-      }
-    }
-    printf("ok\n");
-  */
-    
-    // nouvelle version --
-    std::vector< std::vector<E_Int> > allnodes(npts);
+  std::vector< std::vector<E_Int> > allnodes(npts);
 #pragma omp parallel default(shared)
     {
       E_Float Xn[3]; 
@@ -139,7 +86,6 @@ merge_no_order_omp
       for (E_Int i = 0; i < npts; i++)
       {
         coordAcc.getEntry(i, Xn);
-        //printf("pt %f %f %f\n", Xn[0], Xn[1], Xn[2]);
         tree.getInSphere(Xn, tol, allnodes[i]);
       }
     }
