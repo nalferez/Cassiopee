@@ -2926,7 +2926,7 @@ E_Int K_LOC::center2nodeNGon(
 
   for (E_Int et = 0; et < nelts; et++)
   {
-    vector<E_Int>& vertices = cEV[et];
+    const vector<E_Int>& vertices = cEV[et];
     nvert = vertices.size();
     for (E_Int nov = 0; nov < nvert; nov++)
     {
