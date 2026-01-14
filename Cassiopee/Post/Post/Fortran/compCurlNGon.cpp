@@ -31,9 +31,15 @@ E_Int K_POST::computeCurlNGon(
   E_Float* curlx, E_Float* curly, E_Float* curlz
 )
 {
+  E_Int  dim = cn.getDim();
+  if (dim < 3)
+  {
+    printf("computeCurl: not valid for " SF_D_ "D NGONs\n", dim);
+    return 1;
+  }
+  
   // Donnees liees a la connectivite
-  E_Int nfaces = cn.getNFaces(); // nombre total de faces
-  E_Int nelts = cn.getNElts();  // nombre total d elements
+  E_Int nfaces = cn.getNFaces(); E_Int nelts = cn.getNElts();
   E_Int* ngon = cn.getNGon(); E_Int* indPG = cn.getIndPG();
   E_Int* nface = cn.getNFace(); E_Int* indPH = cn.getIndPH();
 
@@ -48,22 +54,10 @@ E_Int K_POST::computeCurlNGon(
   delete cFE;
   E_Float* volp = new E_Float [nelts];
   K_METRIC::compVolNGon(xt, yt, zt, cn, volp); 
+
   // Connectivite Element/Noeuds
   vector<vector<E_Int> > cnEV(nelts);
-  K_CONNECT::connectNG2EV(cn, cnEV); //deja calculee dans NGONVol
-
-  FldArrayI dimElt(nelts); // tableau de la dimension des elements
-  K_CONNECT::getDimElts(cn, dimElt);
-  if (dimElt[0] < 3)
-  {
-    printf("computeCurl: not valid for " SF_D_ "D NGONs\n", dimElt[0]);
-    delete [] volp;
-    delete [] sxp; 
-    delete [] syp;
-    delete [] szp;
-    delete [] snp;
-    return 1;
-  }
+  K_CONNECT::connectNG2EV(cn, cnEV); // deja calculee dans NGONVol
 
   #pragma omp parallel
   {

@@ -353,8 +353,7 @@ namespace K_TRANSFORM
   PyObject* splitSharpEdgesBasics(FldArrayF* f, FldArrayI* cn,
                                   char* eltType, char* varString,
                                   E_Int posx, E_Int posy, E_Int posz,
-                                  E_Int type, E_Float alphaRef,
-                                  E_Float* dirVect);
+                                  E_Float alphaRef, E_Float* dirVect);
   PyObject* splitSharpEdgesNGon(FldArrayF* f, FldArrayI* cn, char* varString,
                                 E_Int posx, E_Int posy, E_Int posz,
                                 E_Float alphaRef, E_Float* dirVect);

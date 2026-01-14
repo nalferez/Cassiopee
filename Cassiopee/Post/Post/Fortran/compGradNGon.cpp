@@ -28,9 +28,15 @@ E_Int K_POST::computeGradNGon(
   E_Float* gradx, E_Float* grady, E_Float* gradz
 )
 {
+  E_Int dim = cn.getDim();
+  if (dim < 3)
+  {
+    printf("computeGrad: not valid for " SF_D_ "D NGONs\n", dim);
+    return 1;
+  }
+  
   // Donnees liees a la connectivite
-  E_Int nfaces = cn.getNFaces(); // nombre total de faces
-  E_Int nelts = cn.getNElts();  // nombre total d elements
+  E_Int nfaces = cn.getNFaces(); E_Int nelts = cn.getNElts();
   E_Int* ngon = cn.getNGon(); E_Int* indPG = cn.getIndPG();
   E_Int* nface = cn.getNFace(); E_Int* indPH = cn.getIndPH();
 
@@ -49,20 +55,6 @@ E_Int K_POST::computeGradNGon(
   // Connectivite Element/Noeuds
   std::vector<std::vector<E_Int> > cnEV(nelts);
   K_CONNECT::connectNG2EV(cn, cnEV); //deja calculee dans NGONVol
-
-  // Tableau de la dimension des elements
-  FldArrayI dimElt(nelts); 
-  K_CONNECT::getDimElts(cn, dimElt);
-  if (dimElt[0] < 3)
-  {
-    printf("computeGrad: not valid for " SF_D_ "D NGONs\n", dimElt[0]);
-    delete [] volp;
-    delete [] sxp; 
-    delete [] syp;
-    delete [] szp;
-    delete [] snp;
-    return 1;
-  }
 
   #pragma omp parallel
   {
@@ -124,6 +116,7 @@ E_Int K_POST::computeGradNGon(
       gradz[et] *= invvol;
     }
   }
+
   delete [] volp;
   delete [] sxp; 
   delete [] syp;
