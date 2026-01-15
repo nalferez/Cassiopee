@@ -196,7 +196,7 @@ namespace NUGA
         // following assert because dir must be well oriented : inward the surface if above, outward otherwise
         // so attractive if above, repulsive if below (to put it far enough to exit interference zone)
         
-        dirs[i].val2 = std::max(lambdaMove*lambdaMove, dirs[i].val2);
+        dirs[i].val2 = K_FUNC::E_max(lambdaMove*lambdaMove, dirs[i].val2);
       }
     }
 

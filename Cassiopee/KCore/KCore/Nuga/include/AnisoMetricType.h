@@ -177,8 +177,8 @@ template <> inline
 void AnisoMetricType<3>::eigen_values(E_Float &lmax, E_Float & lmin) const
 {
   //todo Imad : fixme : asssume here a diagonal matrix!
-  lmin = std::min(_mij[0], std::min(_mij[3], _mij[5]));
-  lmax = std::max(_mij[0], std::max(_mij[3], _mij[5]));
+  lmin = K_FUNC::E_min(_mij[0], K_FUNC::E_min(_mij[3], _mij[5]));
+  lmax = K_FUNC::E_max(_mij[0], K_FUNC::E_max(_mij[3], _mij[5]));
 }
 
 #ifdef DEBUG_METRIC

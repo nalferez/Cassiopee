@@ -256,7 +256,7 @@ namespace DELAUNAY
   E_Float  r = 1;
   size_type n;
   if (::abs(r1 - 1.) < 0.01)
-  d = d0 / std::max(h0, h1);
+  d = d0 / K_FUNC::E_max(h0, h1);
   else
   {
   r = (d0 + h1) / (d0 + h0);

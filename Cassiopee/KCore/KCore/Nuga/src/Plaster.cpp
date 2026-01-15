@@ -152,8 +152,13 @@ Plaster::make
   E_Float njf = 1. + (maxB[1] - minB[1]) / dx;
   nif *= fabs(bump_factor) + 1.; // 2 times more if factor is 1 or -1.
   njf *= fabs(bump_factor) + 1.;
+#ifdef E_ADOLC
+  ni = E_Int(nif.value());
+  nj = E_Int(njf.value());
+#else
   ni = E_Int(nif);
   nj = E_Int(njf);
+#endif
   ni = std::min(ni, NIJMAX);
   nj = std::min(nj, NIJMAX);
 
@@ -484,13 +489,13 @@ Plaster::__bumpPlaster
  E_Float bump_factor, const NUGA::int_set_type& onodes,
  std::vector<E_Float>& z)
 {
-  bump_factor = std::max(bump_factor, -1.); // factor must be in [-1., 1.]
-  bump_factor = std::min(bump_factor, 1.);
+  bump_factor = K_FUNC::E_max(bump_factor, -1.); // factor must be in [-1., 1.]
+  bump_factor = K_FUNC::E_min(bump_factor, 1.);
 
   if (K_FUNC::fEqualZero(bump_factor)) return;
 
   const E_Float BUMP_ANGLE_MAX = 1.5 * NUGA::PI_4; //3PI/8
-  E_Float ta = ::tan(bump_factor * BUMP_ANGLE_MAX);
+  E_Float ta = tan(bump_factor * BUMP_ANGLE_MAX);
 
   std::vector<E_Int> oonodes;
   oonodes.insert(oonodes.end(), onodes.begin(), onodes.end());
@@ -682,8 +687,8 @@ Plaster::__computeCharacteristicLength
   for (E_Int l = 0; l < Lengths.cols(); ++l)
   {
     L = sqrt(Lengths(0,l));
-    min_d = std::min(min_d, L);
-    max_d = std::max(max_d, L);
+    min_d = K_FUNC::E_min(min_d, L);
+    max_d = K_FUNC::E_max(max_d, L);
     perimeter += L;
   }
   return perimeter/connectE2.cols()/*0.5*(min_d+max_d)*/;

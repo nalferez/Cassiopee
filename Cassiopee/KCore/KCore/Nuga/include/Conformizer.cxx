@@ -723,7 +723,7 @@ Conformizer<DIM, Element_t>::__update_tolerance(const K_FLD::FloatArray& coord, 
   E_Float Lmin, Lmax;
   __compute_min_edge_length(coord, _connect0, xc0, Lmin, Lmax);
   E_Float new_tol = MAX_PERCENT*Lmin;
-  _tolerance = std::max(new_tol, _tolerance);
+  _tolerance = K_FUNC::E_max(new_tol, _tolerance);
   
 #ifdef DEBUG_CONFORMIZER
   std::cout << "new tol: "  << _tolerance << std::endl;

@@ -296,7 +296,7 @@ if Dist.ADOLC:
         'KCore/Linear/eigen2.cpp',
         'KCore/Search/OctreeNode.cpp',
         'KCore/Noise/random.cpp',
-        'KCore/Noise/perlin.cpp',
+        #'KCore/Noise/perlin.cpp',
         'KCore/Metric/compCenterInterface.cpp',
         'KCore/Metric/compIntSurf.cpp',
         'KCore/Metric/compIntSurfOfCell.cpp',

@@ -927,7 +927,7 @@ namespace NUGA
         if (!reflex_edges.empty())
         {
           for (std::map<K_MESH::NO_Edge, E_Float>::const_iterator it = reflex_edges.begin(); it != reflex_edges.end(); ++it)
-            worst_reflex_a = std::min(worst_reflex_a, it->second);
+            worst_reflex_a = K_FUNC::E_min(worst_reflex_a, it->second);
 
           //std::cout << "worst angle : " << worst_reflex_a << std::endl;
         }
@@ -1165,7 +1165,7 @@ namespace NUGA
         if (!reflex_edges.empty())
         {
           for (std::map<K_MESH::NO_Edge, E_Float>::const_iterator it = reflex_edges.begin(); it != reflex_edges.end(); ++it) 
-            worst_reflex_a = std::min(worst_reflex_a, it->second);
+            worst_reflex_a = K_FUNC::E_min(worst_reflex_a, it->second);
         
           //std::cout << "worst angle : " << worst_reflex_a << std::endl;
         }

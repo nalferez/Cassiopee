@@ -162,8 +162,12 @@ PyObject* K_TRANSFORM::splitSharpEdgesBasics(
     {
       if (K_STRING::cmp(eltTypes[ic], "TRI") == 0) type.push_back(1);
       else type.push_back(2);  // QUAD
-      delete [] eltTypes[ic];
     }
+  }
+
+  for (size_t ic = 0; ic < eltTypes.size(); ic++)
+  {
+    delete [] eltTypes[ic];
   }
 
   K_FLD::FldArrayI& cm = *(cn->getConnect(0));

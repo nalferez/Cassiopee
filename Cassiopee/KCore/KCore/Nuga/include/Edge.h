@@ -241,7 +241,7 @@ K_MESH::Edge::intersect
     tol1 /= l1;
   }
 
-  if (min_d > std::max(tol0 * l0, tol1 * l1))      // Agonic lines
+  if (min_d > K_FUNC::E_max(tol0 * l0, tol1 * l1))      // Agonic lines
     return false;
   
   if (!coincident) // The lines have exactly one point of intersection.
@@ -350,7 +350,7 @@ K_MESH::Edge::intersect
   
   // tol0 & tol1 are now relative
 
-  if (min_d > std::max(tol0 * l0, tol1 * l1))      // Agonic lines
+  if (min_d > K_FUNC::E_max(tol0 * l0, tol1 * l1))      // Agonic lines
     return false;
 
   if (!coincident) // The lines have exactly one point of intersection.

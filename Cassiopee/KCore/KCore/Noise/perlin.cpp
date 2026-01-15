@@ -107,7 +107,7 @@ void K_NOISE::initNoise(K_NOISE::PDS& data)
 }
 
 //=============================================================================
-double K_NOISE::noise1(E_Float arg, K_NOISE::PDS& data)
+E_Float K_NOISE::noise1(E_Float arg, K_NOISE::PDS& data)
 {
   int bx0, bx1;
   E_Float rx0, rx1, sx, t, u, v, vec[1];
@@ -128,7 +128,7 @@ double K_NOISE::noise1(E_Float arg, K_NOISE::PDS& data)
 }
 
 //=============================================================================
-double K_NOISE::noise2(E_Float vec[2], K_NOISE::PDS& data)
+E_Float K_NOISE::noise2(E_Float vec[2], K_NOISE::PDS& data)
 {
   int bx0, bx1, by0, by1, b00, b10, b01, b11;
   E_Float rx0, rx1, ry0, ry1, *q, sx, sy, a, b, t, u, v;
@@ -165,7 +165,7 @@ double K_NOISE::noise2(E_Float vec[2], K_NOISE::PDS& data)
 }
 
 //=============================================================================
-double K_NOISE::noise3(double vec[3], K_NOISE::PDS& data)
+E_Float K_NOISE::noise3(E_Float vec[3], K_NOISE::PDS& data)
 {
   int bx0, bx1, by0, by1, bz0, bz1, b00, b10, b01, b11;
   E_Float rx0, rx1, ry0, ry1, rz0, rz1, *q, sy, sz, a, b, c, d, t, u, v;
@@ -216,7 +216,7 @@ double K_NOISE::noise3(double vec[3], K_NOISE::PDS& data)
 }
 
 //=============================================================================
-double K_NOISE::perlinNoise1D(E_Float x, E_Float alpha, E_Float beta, int n, 
+E_Float K_NOISE::perlinNoise1D(E_Float x, E_Float alpha, E_Float beta, int n, 
                               K_NOISE::PDS& data)
 {
   int i;

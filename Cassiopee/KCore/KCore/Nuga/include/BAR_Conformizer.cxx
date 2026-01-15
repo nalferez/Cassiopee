@@ -83,8 +83,8 @@ BAR_Conformizer<DIM>::__set_tolerances(E_Float Lmin, E_Float Lmax, E_Float  user
   
   if (user_tolerance > 0.)
   {
-    parent_type::_tolerance = std::min(user_tolerance, tol_max);
-    parent_type::_tolerance = std::max(user_tolerance, tol_min);
+    parent_type::_tolerance = K_FUNC::E_min(user_tolerance, tol_max);
+    parent_type::_tolerance = K_FUNC::E_max(user_tolerance, tol_min);
   }
   else
     parent_type::_tolerance = tol_max;

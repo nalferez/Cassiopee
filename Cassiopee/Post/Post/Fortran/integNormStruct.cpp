@@ -100,13 +100,17 @@ void K_POST::integNormStructNodeCenter2D(
   E_Float res3 = 0.0;
 
   E_Int ni1 = ni - 1;
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [3*nthreads];
 
   #pragma omp parallel
   {
     E_Int ind, ind1, ind2, ind3, ind4;
     E_Float f1, f2, f3, f4;
+    E_Int it = 3*__CURRENT_THREAD__;
+    reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
 
-    #pragma omp for collapse(2) reduction(+:res1,res2,res3)
+    #pragma omp for
     for (E_Int j = 0; j < nj - 1; j++)
     {
       for (E_Int i = 0; i < ni - 1; i++)
@@ -122,16 +126,25 @@ void K_POST::integNormStructNodeCenter2D(
         f3 = ratio[ind3] * field[ind3];
         f4 = ratio[ind4] * field[ind4];
 
-        res1 += sx[ind] * (f1 + f2 + f3 + f4);
-        res2 += sy[ind] * (f1 + f2 + f3 + f4);
-        res3 += sz[ind] * (f1 + f2 + f3 + f4);
+        reti[it] += sx[ind] * (f1 + f2 + f3 + f4);
+        reti[it+1] += sy[ind] * (f1 + f2 + f3 + f4);
+        reti[it+2] += sz[ind] * (f1 + f2 + f3 + f4);
       }
     }
+  }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    res1 += reti[3*it];
+    res2 += reti[3*it+1];
+    res3 += reti[3*it+2];
   }
 
   result[0] = 0.25 * res1;
   result[1] = 0.25 * res2;
   result[2] = 0.25 * res3;
+
+  delete [] reti;
 }
 
 //=============================================================================
@@ -147,12 +160,18 @@ void K_POST::integNormStructCellCenter2D(
   E_Float res2 = 0.0;
   E_Float res3 = 0.0;
 
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [3*nthreads];
+
   #pragma omp parallel
   {
     E_Int ind;
     E_Float ri;
 
-    #pragma omp for collapse(2) reduction(+:res1,res2,res3)
+    E_Int it = 3*__CURRENT_THREAD__;
+    reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
+
+    #pragma omp for
     for (E_Int j = 0; j < nj; j++)
     {
       for (E_Int i = 0; i < ni; i++)
@@ -160,14 +179,23 @@ void K_POST::integNormStructCellCenter2D(
         ind = i + j * ni;
         ri = ratio[ind] * field[ind];
 
-        res1 += ri * sx[ind];
-        res2 += ri * sy[ind];
-        res3 += ri * sz[ind];
+        reti[it] += ri * sx[ind];
+        reti[it+1] += ri * sy[ind];
+        reti[it+2] += ri * sz[ind];
       }
     }
+  }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    res1 += reti[3*it];
+    res2 += reti[3*it+1];
+    res3 += reti[3*it+2];
   }
 
   result[0] = res1;
   result[1] = res2;
   result[2] = res3;
+
+  delete [] reti;
 }

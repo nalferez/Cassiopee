@@ -81,9 +81,9 @@ void TRI_Conformizer<DIM>::__set_tolerances(E_Float Lmin, E_Float Lmax, E_Float 
   
   //  the following are chosen :
   // - max allowed is 5% of MEL
-  E_Float tol_max = std::max(MAX_PERCENT*Lmin, ZERO_MACHINE);
+  E_Float tol_max = K_FUNC::E_max(MAX_PERCENT*Lmin, ZERO_MACHINE);
   // - min allowed is ZERO MACHINE
-  E_Float tol_min = std::max(ZERO_MACHINE*Lmax, ZERO_MACHINE);
+  E_Float tol_min = K_FUNC::E_max(ZERO_MACHINE*Lmax, ZERO_MACHINE);
 
 #ifdef DEBUG_TRI_CONFORMIZER
   if (tol_min > tol_max)

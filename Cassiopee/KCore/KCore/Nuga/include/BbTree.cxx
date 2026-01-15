@@ -244,8 +244,8 @@ K_SEARCH::BbTree<DIM, BBoxType>::getIntersectingBoxes
     BBox3D boxSeg;
     for (size_t i=0; i < DIM; ++i)
     {
-      boxSeg.minB[i]=std::min(P0[i], P1[i]);
-      boxSeg.maxB[i]=std::max(P0[i], P1[i]);
+      boxSeg.minB[i] = K_FUNC::E_min(P0[i], P1[i]);
+      boxSeg.maxB[i] = K_FUNC::E_max(P0[i], P1[i]);
     }
     __getIntersectingBoxesStrict(P0, P1, _root_id, tolerance, out, boxSeg);
   }

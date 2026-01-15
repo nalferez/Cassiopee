@@ -732,7 +732,7 @@ E_Float concave_threshold, E_Float convex_threshold, E_Float rtol, E_Float GRmin
     return 1;
 
   E_Float abstol = __get_abs_tol(crd, rtol, PGS, first_pg, nb_pgs);
-  E_Float angle_max = std::max/*min*/(concave_threshold, convex_threshold) * NUGA::PI;
+  E_Float angle_max = K_FUNC::E_max/*min*/(concave_threshold, convex_threshold) * NUGA::PI;
 
   size_t nb_chains = chains.size();
 
@@ -751,7 +751,7 @@ E_Float concave_threshold, E_Float convex_threshold, E_Float rtol, E_Float GRmin
       edge_angle_t::const_iterator it = reflex_edges.find(E);
       assert(it != reflex_edges.end());
       E_Float a = it->second;
-      chain_angle[c] = std::max(chain_angle[c], fabs(NUGA::PI - a));//max deviation in the chain
+      chain_angle[c] = K_FUNC::E_max(chain_angle[c], fabs(NUGA::PI - a));//max deviation in the chain
     }
   }
 

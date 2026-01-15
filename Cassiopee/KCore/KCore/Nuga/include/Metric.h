@@ -1611,9 +1611,12 @@ namespace DELAUNAY {
     E_Float factor = 0.5;
     T m(factor*d);
     setMetric(N, m);
-           
+
+#ifdef E_ADOLC
+    length_to_points.push_back(std::make_pair(-d.value(), N));
+#else
     length_to_points.push_back(std::make_pair(-d, N));
- 
+#endif
   }
   
   /// pour un edge, threshold doit etre hmax
@@ -1625,7 +1628,12 @@ namespace DELAUNAY {
   {
     tmpNodes.clear();
     E_Float d = length(Ni, Nj, threshold, tmpNodes); // decoupe de l'edge (regulierement?)
+    
+#ifdef E_ADOLC
+    size_type n = std::max(size_type(d.value()), size_type(1));
+#else
     size_type n = std::max(size_type(d), size_type(1));
+#endif
 
     // CBX: est-ce qu'il ne faudrait pas limiter la decoupe de l'edge?
     // quel est l'effet?
