@@ -628,13 +628,13 @@ def subzoneGCStruct__(z, dim, imin, imax, jmin, jmax, kmin, kmax, \
                           zoneDonor=[ddDnrs[nor]], rangeDonor='doubly_defined')
     return z
 
-def subzone(t, minIndex, maxIndex=None, type=None, dimOut=-1):
+def subzone(t, minIndex, maxIndex=None, type=None, dimOut=None):
     """Take a subzone of mesh.
     Usage: subzone(t, (imin,jmin,kmin), (imax,jmax,kmax))"""
     if maxIndex is None: return subzoneUnstruct__(t, minIndex, type, dimOut)
     else: return subzoneStruct__(t, minIndex, maxIndex)
 
-def subzoneUnstruct__(t, indices, type, dimOut=-1):
+def subzoneUnstruct__(t, indices, type, dimOut=None):
     tp = Internal.copyRef(t)
     nodes = Internal.getZones(tp)
     for z in nodes:

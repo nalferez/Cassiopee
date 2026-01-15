@@ -83,3 +83,10 @@ r = r.reshape((1,r.size), order='F')
 bc[2].append([Internal.__FACELIST__, r, [], 'IndexArray_t'])
 ext = C.extractBCOfType(a, 'BCWall')
 test.testT(ext, 7)
+
+# BC sur un basic elements avec une pointList
+a = G.cartHexa((0,0,0), (1,1,1), (10,10,10))
+pointList = [i for i in range(1,100+1)]
+C._addBC2Zone(a, 'wall', 'BCWall', pointList=pointList)
+ext = C.extractBCOfType(a, 'BCWall')
+test.testT(ext, 8)

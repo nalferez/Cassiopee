@@ -851,9 +851,10 @@ def oneovern(a, N, add=1):
     else:
         return transform.oneovern(a, N, add)
 
-def subzone(array, minIndex, maxIndex=None, type=None, dimOut=-1):
+def subzone(array, minIndex, maxIndex=None, type=None, dimOut=None):
     """Take a subzone of mesh.
     Usage: subzone(array, (imin,jmin,kmin), (imax,jmax,kmax), dimOut)"""
+    if dimOut is None: dimOut = -99
     if maxIndex is None: # non structure
         if type == 'elements':
             if len(array) == 5:
