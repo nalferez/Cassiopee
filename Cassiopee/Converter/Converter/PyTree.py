@@ -5324,7 +5324,10 @@ def getBC__(i, z, T, res, reorder=True, extrapFlow=True, shift=0):
                 res.append(zp)
             elif val == 'Vertex': # vertex indices
                 pointList = r[1]
-                zp = T.subzone(z, pointList, type='nodes')
+                if zdim[0] == 'Unstructured' and zdim[3] != 'NGON':
+                    zp = T.subzone(z, pointList, type='nodes', dimOut=-1)
+                else:
+                     zp = T.subzone(z, pointList, type='nodes')
                 zp[0] = z[0]+Internal.SEP1+i[0]
                 _deleteZoneBC__(zp)
                 _deleteGridConnectivity__(zp)
