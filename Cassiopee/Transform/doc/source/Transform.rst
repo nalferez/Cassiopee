@@ -780,7 +780,7 @@ Mesh transformation
 Mesh splitting and merging
 --------------------------
 
-.. py:function:: Transform.subzone(a, minIndex, maxIndex=None, type=None, dimOut=-1)
+.. py:function:: Transform.subzone(a, minIndex, maxIndex=None, type=None, dimOut=None)
 
     .. A1.O0.D0
     
@@ -815,7 +815,7 @@ Mesh splitting and merging
     :type  maxIndex: 3-tuple of integers
     :param type: type of subzone to perform (None, 'elements', 'faces')
     :type  type: None or string
-    :param dimOut: dimension of the output unstructured connectivity when type is None (-1 means same as the intput)
+    :param dimOut: dimension of the output unstructured connectivity when type is None (None means same as the intput, -1 means 2D for a 3D input connectivity)
     :type  dimOut: integer
     :return: subzoned mesh
     :rtype: identical to a

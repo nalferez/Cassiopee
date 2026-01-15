@@ -146,9 +146,11 @@ PyObject* K_TRANSFORM::subzoneStruct(PyObject* self, PyObject* args)
 // ============================================================================
 PyObject* K_TRANSFORM::subzoneUnstruct(PyObject* self, PyObject* args)
 {
+  const E_Int UNSPECIFIED = -99;
+  
   PyObject* array;
   PyObject* listOfNodes;
-  E_Int dimOut = -1;
+  E_Int dimOut = UNSPECIFIED;
 
   Py_ssize_t nargs = PyTuple_GET_SIZE(args);
   if (nargs == 2)
@@ -201,11 +203,21 @@ PyObject* K_TRANSFORM::subzoneUnstruct(PyObject* self, PyObject* args)
   FldArrayI tmap(npts); tmap.setAllValuesAt(-1); E_Int* tmapP = tmap.begin();
 
   E_Int dim = K_CONNECT::getDimME(eltType);
+  if (dimOut == UNSPECIFIED) dimOut = dim;
+  else if (dimOut < 0) dimOut = dim + dimOut;
+
   if (dimOut > dim)
   {
     PyErr_SetString(PyExc_TypeError,
                     "subzoneUnstruct: dimension of the subzone, dimOut, cannot "
                     "be greater than the unstructured array dimension.");
+    RELEASESHAREDU(array, f, cn); return NULL;
+  }
+  else if (dimOut < 0)
+  {
+    PyErr_SetString(PyExc_TypeError,
+                    "subzoneUnstruct: dimension of the subzone, dimOut, cannot "
+                    "be negative.");
     RELEASESHAREDU(array, f, cn); return NULL;
   }
   else if (strcmp(eltType, "NODE") == 0 || dimOut == 0)
@@ -237,7 +249,7 @@ PyObject* K_TRANSFORM::subzoneUnstruct(PyObject* self, PyObject* args)
     RELEASESHAREDS(tpl, f2); RELEASESHAREDU(array, f, cn);
     return tpl;
   }
-  else if (dim == dimOut || dimOut == -1)
+  else if (dim == dimOut)
   {
     // Selectionne les elements subzones - BE/ME
     #pragma omp parallel for
@@ -364,6 +376,8 @@ PyObject* K_TRANSFORM::subzoneUnstruct(PyObject* self, PyObject* args)
     ierr = K_CONNECT::getNFPE(nfpe, eltType, true);
     if (ierr != 0)
     {
+      PyErr_SetString(PyExc_TypeError,
+                      "subzoneUnstruct: element type not supported in getNFPE.");
       RELEASESHAREDU(array, f, cn);
       for (size_t ic = 0; ic < eltTypes.size(); ic++) delete [] eltTypes[ic];
       return NULL;
@@ -559,6 +573,8 @@ PyObject* K_TRANSFORM::subzoneUnstruct(PyObject* self, PyObject* args)
 
     if (ntotUniqueFaces == 0)  // can only happen for a closed 1D contour
     {
+      PyErr_SetString(PyExc_TypeError,
+                      "subzoneUnstruct: empty subzone, closed 1D contour?");
       // Free memory
       for (E_Int i = 0; i < nthreads; i++)
       {

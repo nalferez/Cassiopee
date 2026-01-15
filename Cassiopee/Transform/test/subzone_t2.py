@@ -5,7 +5,7 @@ import KCore.test as test
 
 # type=nodes, with different output dimensions
 
-# TETRA -> TETRA (same as default, dimOut=-1)
+# TETRA -> TETRA (same as default, dimOut=None)
 a = G.cartTetra((0,0,0), (1,1,1), (10,20,10))
 b = T.subzone(a, [10, 19, 20, 220], type='nodes', dimOut=3)
 test.testA([b], 1)
