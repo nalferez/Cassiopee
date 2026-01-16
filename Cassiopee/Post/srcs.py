@@ -102,7 +102,7 @@ cpp_srcs = [
 
 if Dist.ADOLC:
     cpp_srcs = [
-        #"Post/coarsen.cpp",
+        "Post/coarsen.cpp",
         "Post/refine.cpp",
         "Post/refineButterfly.cpp",
         "Post/selectCells.cpp",
@@ -177,10 +177,10 @@ if Dist.ADOLC:
         "Post/isoLine.cpp",
         "Post/isoSurf.cpp",
         "Post/isoSurfMC.cpp",
-        #"Post/isoSurfNGon.cpp",
+        "Post/isoSurfNGon.cpp",
         "Post/computeDiff.cpp",
-        #"Post/computeIndicatorValue.cpp",
-        #"Post/enforceIndicatorNearBodies.cpp",
+        "Post/computeIndicatorValue.cpp",
+        "Post/enforceIndicatorNearBodies.cpp",
         "Post/enforceIndicatorForFinestLevel.cpp",
         "Post/enforceIndicatorForCoarsestLevel.cpp",
         "Post/sharpEdges.cpp",

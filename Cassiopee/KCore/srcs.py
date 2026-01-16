@@ -5,7 +5,7 @@ JPEG = True
 
 import Dist
 if Dist.ADOLC:
-    NUGA = False
+    NUGA = True
     METIS = False
     PNG = False
     JPEG = False

@@ -213,10 +213,19 @@ PyObject* K_POST::computeIndicatorValue(PyObject* self, PyObject* args)
         icmin = 10000000; icmax = -1; jcmin = icmin; jcmax =-1; kcmin=icmin; kcmax=-1;
         for (novert = 1; novert <= nvert; novert++)
         {
-          ind = (*cn)(et,novert)-1;          
+          ind = (*cn)(et,novert)-1;
+          #ifdef E_ADOLC
+          E_Float val = (xo[ind]-xmint[noblk])*dhi; 
+          ic = E_Int(val.value());
+          val = (yo[ind]-ymint[noblk])*dhi;
+          jc = E_Int(val.value());
+          val = (zo[ind]-zmint[noblk])*dhi;
+          kc = E_Int(val.value());
+          #else
           ic = E_Int((xo[ind]-xmint[noblk])*dhi);
           jc = E_Int((yo[ind]-ymint[noblk])*dhi);
           kc = E_Int((zo[ind]-zmint[noblk])*dhi);
+          #endif
           if ( ic < 0 || ic >= nib || jc < 0 || jc >= njb || kc < 0 || kc >= nkb ) goto next;
           icmin  = K_FUNC::E_min(ic,icmin); icmax  = K_FUNC::E_max(ic,icmax);
           jcmin  = K_FUNC::E_min(jc,jcmin); jcmax  = K_FUNC::E_max(jc,jcmax);
@@ -271,9 +280,16 @@ PyObject* K_POST::computeIndicatorValue(PyObject* self, PyObject* args)
         icmin = 10000000; icmax = -1; jcmin = icmin; jcmax =-1; 
         for (novert = 1; novert <= nvert; novert++)
         {
-          ind = (*cn)(et,novert)-1;          
+          ind = (*cn)(et,novert)-1;
+          #ifdef E_ADOLC
+          E_Float val = (xo[ind]-xmint[noblk])*dhi;
+          ic = E_Int(val.value());
+          val = (yo[ind]-ymint[noblk])*dhi;
+          jc = E_Int(val.value());
+          #else
           ic = E_Int((xo[ind]-xmint[noblk])*dhi);
           jc = E_Int((yo[ind]-ymint[noblk])*dhi);
+          #endif
           if ( ic < 0 || ic >= nib || jc < 0 || jc >= njb  ) goto next2;
           icmin = K_FUNC::E_min(ic,icmin); icmax = K_FUNC::E_max(ic,icmax);
           jcmin = K_FUNC::E_min(jc,jcmin); jcmax = K_FUNC::E_max(jc,jcmax);

@@ -1299,14 +1299,14 @@ def convertPyTree2File(t, fileName, format=None, isize=8, rsize=8,
         format = Converter.convertExt2Format__(fileName)
         if format == 'unknown': format = 'bin_cgns'
     if format == 'bin_cgns' or format == 'bin_adf' or format == 'bin_hdf':
-        tp, ntype = Internal.node2PyTree(t)
+        tp, _ = Internal.node2PyTree(t)
         _downgradeTree(tp, upgradeNGon=upgrade)
         Converter.converter.convertPyTree2File(tp[2], fileName, format, links, isize, rsize)
     elif format == 'bin_tau':
-        tp, ntype = Internal.node2PyTree(t)
+        tp, _ = Internal.node2PyTree(t)
         Converter.converter.convertPyTree2FileTau(tp, fileName, format)
     elif format == 'bin_fsdm':
-        tp, ntype = Internal.node2PyTree(t)
+        tp, _ = Internal.node2PyTree(t)
         Converter.converter.convertPyTree2FileFsdm(tp, fileName, format)
     elif format == 'bin_pickle':
         import pickle

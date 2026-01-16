@@ -1581,8 +1581,15 @@ void NUGA::MeshTool::extrude_line
     NUGA::normalize<3>(normN.col(i));
 
   // 3. NEW POINTS (stored line by line)
-  E_Int nbr = E_Int(H / Lmean) + 2; // greater than one
-                                // add space to crd
+  // greater than one
+#ifdef E_ADOLC
+  E_Float val = H / Lmean;
+  E_Int nbr = E_Int(val.value()) + 2; 
+#else
+  E_Int nbr = E_Int(H / Lmean) + 2; 
+#endif
+  
+  // add space to crd
   crd.resize(3, nbp*nbr);
 
   E_Float k = H / nbr;

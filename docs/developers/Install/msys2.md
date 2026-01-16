@@ -68,7 +68,7 @@ pacman -S <package>
 
 List installed packages:
 ```shell
-pacman -Qe
+pacman -Q
 ```
 
 Remove package:

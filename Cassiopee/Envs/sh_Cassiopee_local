@@ -622,7 +622,8 @@ elif [ "$MAC" = "atlas" ]; then
     # Nbre de threads
     export OMP_NUM_THREADS=12
     export PYTHONEXE=python3
-    export PRODMODE=1
+    export PRODMODE=3
+    export PIP_DISABLE_PIP_VERSION_CHECK=1
 
 elif [ "$MAC" = "WDAAA161Z" ]; then
 #----------------------------- msys64 "AlainRE"  ------------------------------

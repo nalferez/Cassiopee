@@ -47,15 +47,14 @@ vol1 = D.Volume2D('vol1', [sketch1, sketch2], orders=[+1,-1])
 D.DRIVER.solve()
 
 D.DRIVER.instantiate({'M':0., 'P': 0., 'xx': 12.})
-#m = vol1.MeshAsReference()
+m = vol1.MeshAsReference()
 
 import CPlot.PyTree as CPlot
 import time
 pt = D.DRIVER.walkDOE()
 while pt is not None:
-    m = vol1.Mesh()
-    #m = sketch1.Mesh()
-    #m = vol1.Dmesh()
+    #m = vol1.Mesh()
+    m = vol1.Dmesh()
     CPlot.display(m)
     CPlot.setState(message="M=%d P=%d xx=%d"%(M.v,P.v,xx.v))
     pt = D.DRIVER.walkDOE()
