@@ -1,4 +1,4 @@
-for i in range(ncont).. Probe documentation master file
+.. Probe documentation master file
 
 :tocdepth: 2
 
