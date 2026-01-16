@@ -96,13 +96,13 @@ class Probe:
 
             if t is not None and loc is not None:
                 self.locateProbeXYZ(t, X, loc)
-            else: raise ValueError("Probe: missing PyTree argument (t) for mode %s"%0) 
+            else: raise ValueError("Probe: missing PyTree argument (t) for mode %s"%0)
 
         # Localisation a partir de ind,blockName (mode=1)
         elif ind is not None and blockName is not None:
             self._mode = 1
             if t is not None: self.locateProbeInd(t, ind, blockName)
-            else: raise ValueError("Probe: missing PyTree argument (t) for mode %s"%1) 
+            else: raise ValueError("Probe: missing PyTree argument (t) for mode %s"%1)
 
         elif tPermeable is not None:
             self._mode = 3
@@ -770,11 +770,11 @@ class Probe:
     def read(self, cont=None, ind=None, probeName=None):
         """Read data from existing probe file."""
         if cont is not None:
-            if ind is not None: 
+            if ind is not None:
                 print('Warning: Probe (read): both cont and ind arguments were provided. Only cont argument is considered.')
             return self.readCont(cont)
         elif ind is not None:
-            if probeName is None: 
+            if probeName is None:
                 print('Warning: Probe (read): no probeName argument was provided with index value(s). Reading the first probe zone by default.')
                 probeName = 0
             return self.readInd(ind, probeName)
@@ -794,7 +794,7 @@ class Probe:
         for z in zones:
             paths = []
             isGC = False; isFS = False; isFC = False
-            
+
             if Internal.getNodeFromName1(z, 'GridCoordinates#0') is not None:
                 isGC = True
                 paths += ['CGNSTree/Base/%s/GridCoordinates#%d'%(z[0], cont)]
