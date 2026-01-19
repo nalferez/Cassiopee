@@ -242,10 +242,10 @@ PyObject* K_POST::integ(PyObject* self, PyObject* args)
 
       if (case1D == 1)
           res = integStruct1D(nic, njc, nkc, center2node, posx, posy, posz, 
-                         *fc, *ff, *ratio, resultat);
+                      *fc, *ff, *ratio, resultat);
       else
           res = integStruct2D(nic, njc, nkc, center2node, posx, posy, posz,
-                       *fc, *ff, *ratio, resultat);
+                      *fc, *ff, *ratio, resultat);
     
       if (res == 0) 
       {

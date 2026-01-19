@@ -112,7 +112,7 @@ def testT(t, number=1):
     import Converter.Internal as Internal
 
     # Transforme t en pyTree, pour pouvoir relire la reference
-    t, ntype = Internal.node2PyTree(t)
+    t, _ = Internal.node2PyTree(t)
 
     # Verifie la compatibilite avec la CGNS lib
     #checkCGNSlib(t, number)
