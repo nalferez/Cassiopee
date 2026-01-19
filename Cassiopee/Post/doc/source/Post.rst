@@ -84,11 +84,6 @@ List of functions
     Post.zipper
     Post.usurp
 
-    Post.Probe.Probe
-    Post.Probe.Probe.extract
-    Post.Probe.Probe.flush
-    Post.Probe.Probe.read
-
 **-- Streams/Isos**
 
 .. autosummary::
@@ -1088,87 +1083,6 @@ Solution extraction
 
     .. literalinclude:: ../build/Examples/Post/usurpPT.py
 
-
-
----------------------------------------
-
-.. py:function:: Post.Probe.Probe(fileName, t=None, X=(x,y,z), ind=None, blockName=None, tPermeable=None, fields=None, append=True, bufferSize=100)
-
-    Create a probe. 4 modes are possible :
-    
-    * mode 0 : if t and (x,y,z) are provided, the probe will extract given fields from t at single position (x,y,z).
-    
-    * mode 1 : if t and (ind, blockName) are provided, the probe will extract given fields from block of t at single index ind of blockName.
-
-    * mode 2 : if t, (x,y,z) and ind are not provided, the probe will store the zones given at extract.
-
-    * mode 3 : if tPermeable is provided, the probe will interpolate on tPermeable.
-
-    Result is periodically flush to file when buffer size exceeds bufferSize.
-
-
-    :param fileName: name of file to dump to
-    :type fileName: string
-    :param t: pyTree containing solution
-    :type t: pyTree
-    :param (x,y,z): position of single probe (mode 0) 
-    :type  (x,y,z): tuple of 3 floats
-    :param ind: index of single probe in blockName (mode 1)
-    :type ind: integer
-    :param blockName: name of block containing probe (mode 1)
-    :type blockName: string
-    :param tPermeable: surface to interpolate to.
-    :type tPermeable: pyTree, zone or list of zones
-    :param fields: list of fields to extract
-    :type fields: list of strings or None 
-    :param append: if True, append result to existing file
-    :type append: Boolean
-    :param bufferSize: size of internal buffer
-    :type bufferSize: int
-    
-    :rtype: probe instance
-
-    *Example of use:*
-
-    * `Probe extraction (pyTree) <Examples/Post/probePT.py>`_:
-
-    .. literalinclude:: ../build/Examples/Post/probePT.py
-
----------------------------------------
-
-.. py:function:: Post.Probe.Probe.extract(t, time=0.)
-
-    Extract probe at given time from t.
-
-    :param t: pyTree containing solution
-    :type t: pyTree
-    :param time: extraction time
-    :type time: float
-    
----------------------------------------
-
-.. py:function:: Post.Probe.Probe.flush()
-
-    Force probe flush to disk.
-
----------------------------------------
-
-
-.. py:function:: Post.Probe.Probe.read(cont=None, ind=None, probeName=None)
-
-    Read all data stored in probe file and return a zone. 
-    Can be used in two ways:
-
-    * cont: extract the given time container (all probe points)
-
-    * ind, probeName: extract the given index, zone (all times)
-
-    :param cont: number of time container
-    :type cont: integer
-    :param ind: index to extract
-    :type ind: integer
-    :param probeName: name of probe zone to extract
-    :type probeName: string
 
 ---------------------------------------
 
