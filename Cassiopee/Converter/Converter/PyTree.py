@@ -3570,10 +3570,12 @@ def _convertArray2NGon(t, recoverBC=True, api=1):
 
     # Recover BCs for NGon
     if recoverBC:
-        zones = Internal.getZones(t); c = 0
-        for z in zones:
+        zones = Internal.getZones(t)
+        for c, z in enumerate(zones):
             if gbcs[c] != [] and len(gbcs[c][0]) > 0: _recoverBCs(z, gbcs[c])
-            c += 1
+            # Delete BC Element connectivities
+            bcConnects = Internal.getElementBoundaryNodes(z)
+            for n in bcConnects: Internal._rmNode(z, n)
     return None
 
 # -- convertPenta2Strand
