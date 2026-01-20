@@ -471,7 +471,8 @@ namespace {
         }
         // Parcourt du dictionnaire,
         // Le dictionnaire ne doit contenir que des valeurs scalaires ou des objets acceptant un buffer memoire
-        if (nb_dict_vars > 0) {
+        if (nb_dict_vars > 0) 
+        {
             PyObject *py_keys = PyDict_Keys(kwds);
             for (E_Int idict = 0; idict < nb_dict_vars; ++idict) {
                 PyObject *  py_str = PyList_GetItem(py_keys, idict);

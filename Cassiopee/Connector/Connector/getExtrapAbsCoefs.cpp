@@ -30,7 +30,7 @@ PyObject* K_CONNECTOR::getExtrapAbsCoefs(PyObject* self, PyObject* args)
   PyObject *pyArrayTypes;
   PyObject *pyArrayCoefs;
   if (!PYPARSETUPLE_(args, OOO_ O_,
-                        &pyIndRcv, &pyIndExtrap, &pyArrayTypes, &pyArrayCoefs))
+                      &pyIndRcv, &pyIndExtrap, &pyArrayTypes, &pyArrayCoefs))
   {
     return NULL;
   }
@@ -102,12 +102,15 @@ PyObject* K_CONNECTOR::getExtrapAbsCoefs(PyObject* self, PyObject* args)
     for (E_Int noind = 0; noind < nbRcvPts; noind++)
     {
       if (extrapPts[noinde] == rcvPts[noind])  
-      {indices.push_back(noind); break;}
+      { indices.push_back(noind); break; }
     }
   E_Int nindices = indices.size();  
-  PyObject* tpl = K_ARRAY::buildArray(1, "extrapolated", nindices, 1, 1);
-  E_Float* sumCfp = K_ARRAY::getFieldPtr(tpl);
-  
+    
+  PyObject* tpl = K_ARRAY::buildArray3(1, "extrapolated", nindices, 1, 1, 1);
+  FldArrayF* sumCf;
+  K_ARRAY::getFromArray3(tpl, sumCf);
+  E_Float* sumCfp = sumCf->begin();
+
   for (E_Int noe = 0; noe < nindices; noe++)
   {        
     E_Int noind = indices[noe];
@@ -182,6 +185,7 @@ PyObject* K_CONNECTOR::getExtrapAbsCoefs(PyObject* self, PyObject* args)
   }     
 
   // sortie
+  RELEASESHAREDS(tpl, sumCf);
   RELEASESHAREDN(pyIndRcv, rcvPtsI);
   RELEASESHAREDN(pyIndExtrap, extrapPtsI);
   RELEASESHAREDN(pyArrayTypes, typesI);

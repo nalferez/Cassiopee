@@ -99,6 +99,7 @@ PyObject* K_CONNECTOR::identifyDegenerated(PyObject* self, PyObject* args)
       structF[noz]->getNfld(), structVarString[noz],
       nit[noz], njt[noz], nkt[noz]);
     E_Float* fp = K_ARRAY::getFieldPtr(tpl);
+    
     E_Int npts = structF[noz]->getSize();
     FldArrayF ftemp0(npts,structF[noz]->getNfld(), fp, true); ftemp0 = *structF[noz];
     posvol = posvt[noz]; postag1 = post1[noz];

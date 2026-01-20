@@ -344,11 +344,12 @@ PyObject* K_CONNECTOR::transferFields(PyObject* self, PyObject* args)
   // Champs a interpoler   //
   //-----------------------//
   // LE VOLUME DONNEUR EST LE DERNIER CHAMP DE interpolatedFields
-  // N EST PAS INTERPOLE 
-  E_Int nfldD = posvars0.size()+1;// variables a transferer + le volume donneur 
+  // N'EST PAS INTERPOLE
+  E_Int nfldD = posvars0.size()+1;// variables a transferer + le volume donneur
   PyObject* tpl = K_ARRAY::buildArray(nfldD, varStringOut, nbInterpPts, 1, 1);
   E_Float* foutp = K_ARRAY::getFieldPtr(tpl);
   FldArrayF interpolatedFields(nbInterpPts, nfldD, foutp, true);
+
   interpolatedFields.setAllValuesAtNull();
   E_Float* ptrVol = interpolatedFields.begin(nfldD);
 

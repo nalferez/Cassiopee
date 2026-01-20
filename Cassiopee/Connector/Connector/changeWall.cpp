@@ -156,40 +156,41 @@ PyObject* K_CONNECTOR::changeWall(PyObject* self, PyObject* args)
     if (poshi == 0) 
     {
       PyErr_SetString(PyExc_TypeError,"changeWall: hmax variable missing in 3rd argument.");
-      for (E_Int iu = 0; iu < nu; iu++)
-        RELEASESHAREDU(objut[iu], unstrF[iu], cnt[iu]);
+      for (E_Int iu = 0; iu < nu; iu++) RELEASESHAREDU(objut[iu], unstrF[iu], cnt[iu]);
       RELEASESHAREDS(arrayCenters,fc); RELEASESHAREDU(firstWallCenters,f1, cn1);
       return NULL;
     }
     if (posci == 0) 
     {
       PyErr_SetString(PyExc_TypeError,"changeWall: cellN variable missing in 3rd argument.");
-      for (E_Int iu = 0; iu < nu; iu++)
-        RELEASESHAREDU(objut[iu], unstrF[iu], cnt[iu]);
+      for (E_Int iu = 0; iu < nu; iu++) RELEASESHAREDU(objut[iu], unstrF[iu], cnt[iu]);
       RELEASESHAREDS(arrayCenters,fc); RELEASESHAREDU(firstWallCenters,f1, cn1);
       return NULL;
     }
     posxt.push_back(posxi); posyt.push_back(posyi); poszt.push_back(poszi); 
     posht.push_back(poshi); posct.push_back(posci);
   }
-  /*-------------------- Fin des verifs --------------------------------------*/
-  PyObject* tpl = K_ARRAY::buildArray(fc->getNfld(), varStringc, imc, jmc, kmc);
-  E_Float* fcp2 = K_ARRAY::getFieldPtr(tpl);
-  FldArrayF fc2(fc->getSize(), fc->getNfld(), fcp2, true); fc2.setAllValuesAt(*fc);
-  changeWall(imc, jmc, kmc, fc2.begin(posc), 
-             f1->getSize(), f1->begin(posindw), f1->begin(posdir1), f1->begin(posdir2),f1->begin(posdir3),
+  /*-------------------- Fin des verifs --------------------------------------*/  
+  PyObject* tpl = K_ARRAY::buildArray3(fc->getNfld(), varStringc, imc, jmc, kmc, f1->getApi());
+  FldArrayF* fc2;
+  K_ARRAY::getFromArray3(tpl, fc2);
+  fc2->setAllValuesAt(*fc);
+  changeWall(imc, jmc, kmc, fc2->begin(posc), 
+             f1->getSize(), f1->begin(posindw), 
+             f1->begin(posdir1), f1->begin(posdir2), f1->begin(posdir3),
              f1->begin(poshw),
              posxt, posyt, poszt, posht, posct, cnt, unstrF, 
              fc->begin(posxc), fc->begin(posyc), fc->begin(poszc),
-             fc2.begin(posxc), fc2.begin(posyc), fc2.begin(poszc), planarTol);
-
+             fc2->begin(posxc), fc2->begin(posyc), fc2->begin(poszc), planarTol);
+ 
   // cleaning
-  for (E_Int iu = 0; iu < nu; iu++)
-    RELEASESHAREDU(objut[iu], unstrF[iu], cnt[iu]);
-  RELEASESHAREDS(arrayCenters,fc);
-  RELEASESHAREDU(firstWallCenters,f1, cn1);
+  for (E_Int iu = 0; iu < nu; iu++) RELEASESHAREDU(objut[iu], unstrF[iu], cnt[iu]);
+  RELEASESHAREDS(arrayCenters, fc);
+  RELEASESHAREDU(firstWallCenters, f1, cn1);
+  RELEASESHAREDS(tpl, fc2);
   return tpl;
 }
+
 //=============================================================================
 /* Nouvel algo de projection double wall */
 //=============================================================================

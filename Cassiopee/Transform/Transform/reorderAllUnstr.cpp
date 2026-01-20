@@ -81,7 +81,7 @@ PyObject* K_TRANSFORM::reorderAllUnstr(PyObject* self, PyObject* args)
 
     if ((strcmp(eltType, "TRI") != 0) && (strcmp(eltType, "QUAD") != 0))
     {
-      std::cout << "eltType " << eltType << std::endl;
+      //std::cout << "eltType " << eltType << std::endl;
       delete f; delete cn;
       PyErr_SetString(PyExc_TypeError,
                       "reorderAllUnstr: currently only supported for TRI or QUAD arrays.");
@@ -103,7 +103,7 @@ PyObject* K_TRANSFORM::reorderAllUnstr(PyObject* self, PyObject* args)
 
     if (strcmp(eltType, "QUAD") == 0)
     {
-      is_quad[i]=true;
+      is_quad[i] = true;
       size_t sz = cn->cols();
       tri_cnts[i] = new IntArray;
       IntArray& tcnt = *tri_cnts[i];
@@ -112,18 +112,16 @@ PyObject* K_TRANSFORM::reorderAllUnstr(PyObject* self, PyObject* args)
       E_Int T[3];
       for (size_t i=0; i < sz; ++i)
       {
-        T[0]=qcnt(0,i); T[1]=qcnt(1,i);T[2]=qcnt(2,i);
+        T[0] = qcnt(0,i); T[1]=qcnt(1,i); T[2]=qcnt(2,i);
         tcnt.pushBack(T, T+3);
-        T[0]=qcnt(0,i); T[1]=qcnt(2,i);T[2]=qcnt(3,i);
+        T[0] = qcnt(0,i); T[1]=qcnt(2,i); T[2]=qcnt(3,i);
         tcnt.pushBack(T, T+3);
       }
     }
     else tri_cnts[i]=cn;
 
-    //std::cout << "zone type is quad : " << is_quad[i] << std::endl;
-
-    crds[i]=f;
-    cnts[i]=cn;
+    crds[i] = f;
+    cnts[i] = cn;
   }//parcours de toutes les zones
 
   bool otwd = (outward == 1);

@@ -187,17 +187,16 @@ PyObject* K_CONNECTOR::setIBCTransfersD(PyObject* self, PyObject* args)
     return NULL;
   }
 
-  PyObject* tpl  = K_ARRAY::buildArray(nvars, varStringD, nbRcvPts, 1, 1);
-  E_Float* frp   = K_ARRAY::getFieldPtr(tpl);
-  FldArrayF fieldROut(nbRcvPts, nvars, frp, true);
+  PyObject* tpl = K_ARRAY::buildArray3(nvars, varStringD, nbRcvPts, 1, 1, fd->getApi());
+  FldArrayF* fieldROut;
+  K_ARRAY::getFromArray3(tpl, fieldROut);
   //
   //utile la mise a zero???
   //
-  fieldROut.setAllValuesAtNull();
+  fieldROut->setAllValuesAtNull();
 
   // Transferts
   // Types valides: 2, 3, 4, 5
-
 
   //vector<E_Float*> vectOfRcvFields(nvars);
   //vector<E_Float*> vectOfDnrFields(nvars);
@@ -208,18 +207,18 @@ PyObject* K_CONNECTOR::setIBCTransfersD(PyObject* self, PyObject* args)
 
   for (E_Int eq = 0; eq < nvars; eq++)
   {
-    vectOfRcvFields[eq] = fieldROut.begin(eq+1);
+    vectOfRcvFields[eq] = fieldROut->begin(eq+1);
     vectOfDnrFields[eq] = fd->begin(eq+1);
   }
 
   // tableau temporaire pour utiliser la routine commune setIBCTransfersCommon
   FldArrayI rcvPtsI(nbRcvPts); E_Int*  rcvPts = rcvPtsI.begin();
 
-////
-////
-//  Interpolation parallele
-////
-////
+  ////
+  ////
+  //  Interpolation parallele
+  ////
+  ////
 # include "commonInterpTransfers_direct.h"
 
   E_Int threadmax_sdm  = __NUMTHREADS__;
@@ -228,7 +227,7 @@ PyObject* K_CONNECTOR::setIBCTransfersD(PyObject* self, PyObject* args)
   size = size + size % 8;                  // on rajoute du bas pour alignememnt 64bits
 
   FldArrayF  tmp(size*17*threadmax_sdm);
-  E_Float* ipt_tmp=  tmp.begin();
+  E_Float* ipt_tmp = tmp.begin();
 
   E_Float param_real[30]; 
   param_real[ GAMMA] = gamma;
@@ -246,7 +245,7 @@ PyObject* K_CONNECTOR::setIBCTransfersD(PyObject* self, PyObject* args)
    //indice loop pour paralelisation omp
   E_Int ideb, ifin;
 #ifdef _OPENMP
-  E_Int  ithread           = omp_get_thread_num()+1;
+  E_Int  ithread = omp_get_thread_num()+1;
   E_Int  Nbre_thread_actif = omp_get_num_threads(); // nombre de thread actif dans cette zone
 #else
   E_Int ithread = 1;
@@ -260,12 +259,12 @@ PyObject* K_CONNECTOR::setIBCTransfersD(PyObject* self, PyObject* args)
   { ideb = (ithread-1)*(chunk+1); ifin = ideb + (chunk+1); }
   else { ideb = (chunk+1)*r+(ithread-r-1)*chunk; ifin = ideb + chunk; }
 
-  if (varType == 2 ||varType == 21) 
-      setIBCTransfersCommonVar2(bcType, rcvPts, nbRcvPts, ideb, ifin, ithread,
-                                xPC, yPC, zPC, xPW, yPW, zPW, xPI, yPI, zPI, 
-                                density, ipt_tmp, size, nvars,
-                                param_real, 
-                                vectOfDnrFields, vectOfRcvFields);
+  if (varType == 2 ||varType == 21)
+    setIBCTransfersCommonVar2(bcType, rcvPts, nbRcvPts, ideb, ifin, ithread,
+                              xPC, yPC, zPC, xPW, yPW, zPW, xPI, yPI, zPI, 
+                              density, ipt_tmp, size, nvars,
+                              param_real, 
+                              vectOfDnrFields, vectOfRcvFields);
   else 
   {
     printf("setIBCTransfersD: varType must be 2 or 21. \n");
@@ -274,11 +273,13 @@ PyObject* K_CONNECTOR::setIBCTransfersD(PyObject* self, PyObject* args)
 
   delete [] RcvFields;  delete [] DnrFields;
   // sortie
+  RELEASESHAREDS(tpl, fieldROut);
   RELEASESHAREDB(resd, arrayD, fd, cnd);
   BLOCKRELEASEMEMD;
   BLOCKRELEASEMEM2;
   return tpl;
 }
+
 //=============================================================================
 /* Transfert de champs conservatifs sous forme de numpy
    From zone-
@@ -323,7 +324,7 @@ PyObject* K_CONNECTOR::_setIBCTransfersD(PyObject* self, PyObject* args)
   char* varStringOut = new char[K_ARRAY::VARSTRINGLENGTH];
 
   //codage general (lent ;-) )
-  if (compact==0)
+  if (compact == 0)
   {
     /*---------------------------------------------*/
     /* Extraction des infos sur le domaine donneur */
@@ -388,26 +389,27 @@ PyObject* K_CONNECTOR::_setIBCTransfersD(PyObject* self, PyObject* args)
 # include "getfromzonecompactD.h"
   }
 
-  PyObject* tpl = K_ARRAY::buildArray(nvars, varStringOut, nbRcvPts, 1, 1);
-  E_Float*  frp = K_ARRAY::getFieldPtr(tpl);
-  FldArrayF fieldROut(nbRcvPts, nvars, frp, true);
+  PyObject* tpl = K_ARRAY::buildArray3(nvars, varStringOut, nbRcvPts, 1, 1, 1);
+  FldArrayF* fieldROut;
+  K_ARRAY::getFromArray3(tpl, fieldROut);
+
   //
   //utile la mise a zero???
   //
-  fieldROut.setAllValuesAtNull();
+  fieldROut->setAllValuesAtNull();
 
   //vector<E_Float*> vectOfRcvFields(nvars);
   //vector<E_Float*> vectOfDnrFields(nvars);
-  E_Float** RcvFields = new E_Float*[ nvars];
-  E_Float** DnrFields = new E_Float*[ nvars];
+  E_Float** RcvFields = new E_Float*[nvars];
+  E_Float** DnrFields = new E_Float*[nvars];
   E_Float** vectOfRcvFields = RcvFields;
   E_Float** vectOfDnrFields = DnrFields;
 
-  if (compact==0)
+  if (compact == 0)
   {
     for (E_Int eq = 0; eq < nvars; eq++)
     {
-      vectOfRcvFields[eq] = fieldROut.begin(eq+1);
+      vectOfRcvFields[eq] = fieldROut->begin(eq+1);
       vectOfDnrFields[eq] = fieldsD[ posvarsD[eq] ];
     }
   }
@@ -415,7 +417,7 @@ PyObject* K_CONNECTOR::_setIBCTransfersD(PyObject* self, PyObject* args)
   {
     for (E_Int eq = 0; eq < nvars; eq++)
     {
-      vectOfRcvFields[eq] = fieldROut.begin(eq+1);
+      vectOfRcvFields[eq] = fieldROut->begin(eq+1);
       vectOfDnrFields[eq] = iptroD + eq*ndimdxD;
     }
   }
@@ -486,6 +488,7 @@ PyObject* K_CONNECTOR::_setIBCTransfersD(PyObject* self, PyObject* args)
   // sortie
   delete [] varStringOut;
   delete [] RcvFields;  delete [] DnrFields;
+  RELEASESHAREDS(tpl, fieldROut);
   RELEASESHAREDZ(hook, varStringD, eltTypeD);
   BLOCKRELEASEMEMD;
   BLOCKRELEASEMEM2;
