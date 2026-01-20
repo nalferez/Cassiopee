@@ -424,7 +424,6 @@ NUGA::MeshTool::computeNodeNormalsFromPGNormals
     }
   }
   
-  E_Int c = 0;
   for (E_Int n = 0; n < idmaxp1; ++n)
   {
     p = node_normals.col(n);
@@ -434,7 +433,6 @@ NUGA::MeshTool::computeNodeNormalsFromPGNormals
       for (E_Int k = 0; k < 3; ++k)
         p[k] /= count[n];
       NUGA::normalize<3>(p);
-      ++c;
     }
   }
   

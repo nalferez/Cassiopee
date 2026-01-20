@@ -659,21 +659,21 @@ void Tetrahedron::reorder_pgs(ngo_t& ng, const K_FLD::IntArray& F2E, E_Int i)
 
   bool commonNodes[3];
 
-  for (int k = 1; k < 4; ++k)
+  for (E_Int k = 1; k < 4; ++k)
   {
-    int count = 0;
+    //E_Int count = 0;
     commonNodes[0] = commonNodes[1] = commonNodes[2] = false;
 
     E_Int testedPG = faces[k]-1;
     E_Int* pNode = ng.PGs.get_facets_ptr(testedPG);
 
-    for (int j = 0; j < 3; ++j)
+    for (E_Int j = 0; j < 3; ++j)
     {
       auto it = glmap.find(pNode[j]);
       if (it != glmap.end())
       {
         // found
-        count++;
+        //count++;
         commonNodes[it->second] = true;
       }
     }
@@ -696,8 +696,7 @@ void Tetrahedron::reorder_pgs(ngo_t& ng, const K_FLD::IntArray& F2E, E_Int i)
   assert (F2Id != IDX_NONE && F2Id != 0 && F2Id != F1Id && F2Id != F3Id);
   assert (F3Id != IDX_NONE && F3Id != 0 && F3Id != F1Id && F3Id != F2Id);
 
-  for (int i = 0; i < nb_faces; ++i)
-    faces[i] = mol[i];
+  for (E_Int i = 0; i < nb_faces; ++i) faces[i] = mol[i];
 }
 
 }
