@@ -625,6 +625,7 @@ def setValue(t, var, ind, val):
     return None
 
 def _getIndexField(t):
+    """Return the index field."""
     return _TZGC1(t, 'nodes', True, Converter.getIndexField)
 
 def getIndexField(t):

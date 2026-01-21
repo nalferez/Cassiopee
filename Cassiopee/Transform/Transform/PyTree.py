@@ -150,12 +150,12 @@ _symetrize = _symmetrize
 def perturbate(a, radius, dim=3):
     """Perturbate a mesh randomly of radius
     Usage: perturbate(a, radius, dim)"""
-    return C.TZA1(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim)
+    return C.TZA3(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim)
 
 def _perturbate(a, radius, dim=3):
     """Perturbate a mesh randomly of radius
     Usage: perturbate(a, radius, dim)"""
-    return C._TZA1(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim)
+    return C._TZA3(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim)
 
 def smoothField(t, eps=0.1, niter=1, type=0, varNames=[]):
     """Smooth given fields."""
@@ -217,7 +217,7 @@ def _deform(t, vector=['dx','dy','dz']):
     """Deform surface by moving surface of the vector (dx, dy, dz).
     Usage: deform(t, vector=['dx','dy','dz'])"""
     if len(vector) != 3: raise ValueError("deform: 3 variables are required.")
-    return C._TZA1(t, 'nodes', 'nodes', False, Transform.deform, vector)
+    return C._TZA3(t, 'nodes', 'nodes', False, Transform.deform, vector)
 
 def deformNormals(t, alpha, niter=1):
     """Deform a a surface of alpha times the surface normals.
@@ -270,8 +270,8 @@ def freeForm(a, controlPoints):
 
 def _freeForm(a, controlPoints):
     """Compute free form deformation vector."""
-    array = C.getAllFields(a, 'nodes', api=1)
-    control = C.getAllFields(controlPoints, 'nodes', api=1)[0]
+    array = C.getAllFields(a, 'nodes', api=3)
+    control = C.getAllFields(controlPoints, 'nodes', api=3)[0]
     array = Transform.freeForm(array, control)
     C.setFields(array, a, 'nodes', writeDim=False)
     return None
@@ -939,9 +939,6 @@ def _adaptBCMatch(z, z1, z2, winz1, winz2, t=None):
         triracopp = triracopp__(trirac)
 
         if oppBlock == z[0]: # self attached BCMatch
-            #print("z,z1,z2",z[0],z1[0],z2[0])
-            #print('windonor',winDonor, winz1, winz2)
-            #print('windir',getWinDir(winz), getCutDir(winz1,winz2))
 
             #wins1 = intersectWins__(winz1, winDonor, ret=1)
             #wins2 = intersectWins__(winz2, winDonor, ret=1)
@@ -956,13 +953,11 @@ def _adaptBCMatch(z, z1, z2, winz1, winz2, t=None):
             # Point de cut
             if wini is not None: # point de cut sur winz? Pt de cut sur winDonor
 
-                #print('intersect z1 en ',wini1)
                 # wini1 sur z, winopp sur z, winopp1 sur z1, winopp2 sur z2
                 ind0 = donorIndex__(winz,winDonor,trirac,(wini1[0],wini1[2],wini1[4]))
                 ind1 = donorIndex__(winz,winDonor,trirac,(wini1[1],wini1[3],wini1[5]))
                 winopp = [min(ind0[0],ind1[0]),max(ind0[0],ind1[0]),
                           min(ind0[1],ind1[1]),max(ind0[1],ind1[1]),min(ind0[2],ind1[2]),max(ind0[2],ind1[2])]
-                #print('correspond au donneur ',winopp)
 
                 # DBX
                 #winopp1 = intersectWins__(winz1, winopp, ret=0)
@@ -1057,13 +1052,11 @@ def _adaptBCMatch(z, z1, z2, winz1, winz2, t=None):
 
             if wini is not None:
 
-                #print('intersect z2 en ',wini1)
                 # wini1 sur z, winopp sur z, winopp1 sur z1, winopp2 sur z2
                 ind0 = donorIndex__(winz,winDonor,trirac,(wini1[0],wini1[2],wini1[4]))
                 ind1 = donorIndex__(winz,winDonor,trirac,(wini1[1],wini1[3],wini1[5]))
                 winopp = [min(ind0[0],ind1[0]),max(ind0[0],ind1[0]),
                           min(ind0[1],ind1[1]),max(ind0[1],ind1[1]),min(ind0[2],ind1[2]),max(ind0[2],ind1[2])]
-                #print('correspond au donneur ',winopp)
 
                 # DBX
                 #winopp1 = intersectWins__(winz1, winopp, ret=0)
