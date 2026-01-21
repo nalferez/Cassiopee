@@ -237,11 +237,11 @@ def _deformNormals(t, alpha, niter=1):
 def deformPoint(a, xyz, dxdydz, depth, width):
     """Deform mesh by moving point (x,y,z) of a vector (dx, dy, dz).
     Usage: deformPoint(a, (x,y,z), (dx,dy,dz), width, depth)"""
-    return C.TZGC1(a, 'nodes', True, Transform.deformPoint, xyz, dxdydz, depth, width)
+    return C.TZGC3(a, 'nodes', True, Transform.deformPoint, xyz, dxdydz, depth, width)
 
 def _deformPoint(a, xyz, dxdydz, depth, width):
     """Deform mesh by moving point (x,y,z) of a vector (dx, dy, dz)."""
-    return C._TZGC1(a, 'nodes', False, Transform.deformPoint, xyz, dxdydz, depth, width)
+    return C._TZGC3(a, 'nodes', False, Transform.deformPoint, xyz, dxdydz, depth, width)
 
 def deformMesh(a, surfDelta, beta=4., type='nearest'):
     """Deform a mesh a wrt surfDelta defining surface grids and deformation vector on it.
@@ -385,8 +385,8 @@ def _patch(t1, t2, position=None, nodes=None, order=None):
     zones1 = Internal.getZones(t1)
     zones2 = Internal.getZones(t2)
     for z1,z2 in zip(zones1, zones2):
-        a2 = C.getAllFields(z2, 'nodes', api=1)[0]
-        C._TZA1(z1, 'nodes', 'nodes', True, Transform.patch, a2, position, nodes, order)
+        a2 = C.getAllFields(z2, 'nodes', api=3)[0]
+        C._TZA3(z1, 'nodes', 'nodes', True, Transform.patch, a2, position, nodes, order)
     return None
 
 #===============
@@ -461,8 +461,8 @@ def oneovern(t, N):
 
 def _oneovern(t, N):
     """Take one over N points from mesh."""
-    centers = C.getAllFields(t, 'centers', api=1)
-    C._TZA1(t, 'nodes', 'nodes', True, Transform.oneovern, N, 1)
+    centers = C.getAllFields(t, 'centers', api=3)
+    C._TZA3(t, 'nodes', 'nodes', True, Transform.oneovern, N, 1)
     zones = Internal.getZones(t)
     for c, z in enumerate(zones):
         if centers[c] != []:
@@ -773,7 +773,7 @@ def triracopp__(trirac):
         i1 = abs(trirac[no])-1
         m[i1,no] = signt
     mopp = numpy.linalg.inv(m)
-    triracopp=[1,2,3]
+    triracopp = [1,2,3]
     for i in range(3):
         for no in range(3):
             if mopp[no,i] != 0:
@@ -1715,7 +1715,7 @@ def _reorderStruct__(t, order, topTree):
         _reorderBC__(t, order)
         _reorderBCOverlap__(t, order)
         zones = Internal.getZones(t)
-        zoneNames=[] # zones dont le PointRange est a modifier ou en tant que PointRangeDonor si c'est la zoneDonor
+        zoneNames = [] # zones dont le PointRange est a modifier ou en tant que PointRangeDonor si c'est la zoneDonor
         for z in zones: zoneNames.append(z[0])
         _reorderBCMatch__(t, order, zoneNames)
         _reorderBCNearMatch__(t, order, zoneNames)

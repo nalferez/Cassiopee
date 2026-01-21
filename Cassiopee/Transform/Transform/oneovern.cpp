@@ -34,7 +34,7 @@ PyObject* K_TRANSFORM::oneovern(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_ TIII_ I_,
                     &array, &Ni, &Nj, &Nk, &Add))
   {
-      return NULL;
+    return NULL;
   }
   // Get E_Int value
   E_Int ni = Ni; E_Int nj = Nj; E_Int nk = Nk;
