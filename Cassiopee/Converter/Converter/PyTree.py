@@ -6672,11 +6672,11 @@ def diffArrays(A, B, removeCoordinates=True, atol=1.e-11, rtol=0.):
         A1 = getAllFields(zones1[no], 'nodes', api=3); A1 = Internal.clearList(A1)
         A2 = getAllFields(zones2[no], 'nodes', api=3); A2 = Internal.clearList(A2)
         # elimination des solutions aux noeuds
-        node = Internal.getNodesFromName1(zones1[no], Internal.__FlowSolutionNodes__)
-        if node != []:
-            (parent, d) = Internal.getParentOfNode(t1, node[0])
+        node = Internal.getNodeFromName1(zones1[no], Internal.__FlowSolutionNodes__)
+        if node is not None:
+            (parent, d) = Internal.getParentOfNode(zones1[no], node)
             if parent is not None: del parent[2][d]
-
+            
         if A1 != [] and A2 != []:
             diff = Converter.diffArrays(A1, A2, atol=atol, rtol=rtol)
             setFields(diff, zones1[no], 'nodes')
@@ -6684,15 +6684,15 @@ def diffArrays(A, B, removeCoordinates=True, atol=1.e-11, rtol=0.):
         # centres
         A1 = getAllFields(zones1[no], 'centers', api=3); A1 = Internal.clearList(A1)
         A2 = getAllFields(zones2[no], 'centers', api=3); A2 = Internal.clearList(A2)
-        node = Internal.getNodesFromName1(zones1[no], Internal.__FlowSolutionCenters__)
-        if node != []:
-            (parent, d) = Internal.getParentOfNode(t1, node[0])
+        node = Internal.getNodeFromName1(zones1[no], Internal.__FlowSolutionCenters__)
+        if node is not None:
+            (parent, d) = Internal.getParentOfNode(zones1[no], node)
             if parent is not None: del parent[2][d]
 
         if A1 != [] and A2 != []:
             diff = Converter.diffArrays(A1, A2, atol=atol, rtol=rtol)
             setFields(diff, zones1[no], 'centers')
-    if removeCoordinates: t1 = rmNodes(t1, Internal.__GridCoordinates__)
+    if removeCoordinates: _rmNodes(t1, Internal.__GridCoordinates__)
     return t1
 
 def diffArraysGeom(A, B, removeCoordinates=True, atol=1.e-10, rtol=0.):

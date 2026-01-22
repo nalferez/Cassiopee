@@ -35,13 +35,14 @@ PyObject* K_CONVERTER::convertBAR2Struct(PyObject* self, PyObject* args)
                                      cn, eltType);
   if (res != 2)
   {
-    if (res == 1) delete f;
+    if (res == 1) RELEASESHAREDS(array, f);
     return array;
   }
   if (K_STRING::cmp(eltType, "BAR") != 0)
   {
     PyErr_SetString(PyExc_TypeError, "convertBAR2Struct: array must be of BAR type.");
-    delete f; delete cn; return NULL;
+    RELEASESHAREDU(array, f, cn);
+    return NULL;
   }
   E_Int posx = K_ARRAY::isCoordinateXPresent(varString); posx++;
   E_Int posy = K_ARRAY::isCoordinateYPresent(varString); posy++;
@@ -49,7 +50,8 @@ PyObject* K_CONVERTER::convertBAR2Struct(PyObject* self, PyObject* args)
   if (posx == 0 || posy == 0 || posz == 0)
   {
     PyErr_SetString(PyExc_TypeError, "convertBAR2Struct: array must contain coordinates.");
-    delete f; delete cn; return NULL;
+    RELEASESHAREDU(array, f, cn);
+    return NULL;
   }
   K_CONNECT::cleanConnectivity(posx, posy, posz, eps, "BAR", *f, *cn);
   FldArrayI& cm = *(cn->getConnect(0));
@@ -60,9 +62,9 @@ PyObject* K_CONVERTER::convertBAR2Struct(PyObject* self, PyObject* args)
   FldArrayF* fout = new FldArrayF(ni, nfld);
   K_CONNECT::orderBAR2Struct(posx, posy, posz, *f, cm, *fout);
   E_Int api = f->getApi();
-  delete f; delete cn;
+  RELEASESHAREDU(array, f, cn);  
   ni = fout->getSize();
   PyObject* tpl = K_ARRAY::buildArray3(*fout, varString, ni, nj, nk, api);
-  delete fout; 
+  delete fout;
   return tpl;
 }
