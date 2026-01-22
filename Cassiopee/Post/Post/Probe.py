@@ -584,8 +584,12 @@ class Probe:
     def extract3(self, tcs, time, onlyTransfer=False):
         """Extract for mode=3."""
         if self._probeZones is None:
-            self.createProbeZones(self._ts)
-            self.checkFile(append=self._append)
+            if onlyTransfer:
+                self._probeZones = [] # create empty probeZones if onlyTransfer=True
+                # don't write probe file if onlyTransfer=True
+            else:
+                self.createProbeZones(self._ts)
+                self.checkFile(append=self._append)                 
             for v in self._fields: C._initVars(self._ts, v, 0.)
 
         Cmpi.barrier()
@@ -870,18 +874,6 @@ class Probe:
         if Internal.getNodeFromName1(pz, 'FlowSolution#Centers#0') is not None: isFC = True
         ncont = 0 # nbre de containers pleins
         while Internal.getNodeFromName1(pz, 'FlowSolution#%s'%ncont) is not None: ncont += 1
-
-        ##################################################################################################
-        # The following are meant to replicate previous (wrong) behaviors.
-        # To be deleted in a future commit
-        ##################################################################################################
-        isFC = False
-        ncont2 = 0
-        while Internal.getNodeFromName1(pz, 'FlowSolution#Centers#%s'%ncont2) is not None: ncont2 += 1
-        if Internal.getNodeFromName1(pz, Internal.__FlowSolutionCenters__) is not None: ncont2 += 1
-        ncont += ncont2
-        ##################################################################################################
-
         paths = ['CGNSTree/Base/%s/%s'%(pz[0], Internal.__FlowSolutionNodes__)]
         nodesTime = Distributed.readNodesFromPaths(self._fileName, paths)
         pt = Internal.getNodeFromName1(nodesTime[0], 'time')[1]
@@ -897,12 +889,6 @@ class Probe:
         # print('sizeTimeCont', sizeTimeCont)
         # print('ncont', ncont)
         # print('csize', csize)
-
-        ##################################################################################################
-        # same.
-        ##################################################################################################
-        ncont -= ncont2
-        ##################################################################################################
 
         # Rebuild full 1D zone (time only)
         out = G.cart((0,0,0), (1,1,1), (sizeTime,sizeNPts,1))
