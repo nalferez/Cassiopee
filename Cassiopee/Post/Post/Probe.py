@@ -589,7 +589,7 @@ class Probe:
                 # don't write probe file if onlyTransfer=True
             else:
                 self.createProbeZones(self._ts)
-                self.checkFile(append=self._append)                 
+                self.checkFile(append=self._append)
             for v in self._fields: C._initVars(self._ts, v, 0.)
 
         Cmpi.barrier()
