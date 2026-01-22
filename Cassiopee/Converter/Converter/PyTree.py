@@ -716,12 +716,15 @@ def deleteFlowSolutions__(a, loc='both'):
     return b
 
 def _deleteFlowSolutions__(a, loc='both'):
+    zones = Internal.getZones(a)
     if loc == 'centers' or loc == 'both':
-        centers = Internal.getNodesFromName3(a, Internal.__FlowSolutionCenters__)
-        if centers != []: _rmNodes(a, Internal.__FlowSolutionCenters__)
+        for z in zones:
+            centers = Internal.getNodesFromName1(z, Internal.__FlowSolutionCenters__)
+            if centers != []: _rmNodes(z, Internal.__FlowSolutionCenters__)
     if loc == 'nodes' or loc == 'both':
-        nodes = Internal.getNodesFromName3(a, Internal.__FlowSolutionNodes__)
-        if nodes != []: _rmNodes(a, Internal.__FlowSolutionNodes__)
+        for z in zones:
+            nodes = Internal.getNodesFromName1(z, Internal.__FlowSolutionNodes__)
+            if nodes != []: _rmNodes(z, Internal.__FlowSolutionNodes__)
     return None
 
 # -- deleteGridConnectivity__
@@ -736,23 +739,16 @@ def _deleteFlowSolutions__(a, loc='both'):
 #   si kind='families': detruit les BCOverlap non autoattach definies par des familles de zones donneuses
 # Par defaut, kind='all', detruit alors les 2 (self + other)
 def deleteGridConnectivity__(a, type='None', kind='all'):
-    if type == 'None':
-        cn = Internal.getNodesFromName3(a, 'ZoneGridConnectivity')
-        if cn != []: a = rmNodes(a, 'ZoneGridConnectivity')
-    elif type == 'BCMatch':
-        if kind == 'self': _deleteSelfBCMatch__(a)
-        elif kind == 'other': _deleteOtherBCMatch__(a)
-        else: a = rmBCOfType(a, 'BCMatch')
-    elif type == 'BCOverlap':
-        if kind == 'other': _deleteBCOverlapWithDonorZone__(a)
-        elif kind == 'self': _deleteBCOverlapWithoutDonorZone__(a)
-        else: a = rmBCOfType(a, 'BCOverlap')
-    return a
+    b = Internal.copyRef(a)
+    _deleteGridConnectivity__(b, type, kind)
+    return b
 
 def _deleteGridConnectivity__(a, type='None', kind='all'):
+    zones = Internal.getZones(a)
     if type == 'None':
-        cn = Internal.getNodesFromName3(a, 'ZoneGridConnectivity')
-        if cn != []: _rmNodes(a, 'ZoneGridConnectivity')
+        for z in zones:
+            cn = Internal.getNodesFromName1(z, 'ZoneGridConnectivity')
+            if cn != []: _rmNodes(z, 'ZoneGridConnectivity')
     elif type == 'BCMatch':
         if kind == 'self': _deleteSelfBCMatch__(a)
         elif kind == 'other': _deleteOtherBCMatch__(a)
@@ -821,7 +817,6 @@ def _deleteBCOverlapWithDonorZone__(a, removeDnrZones=True, removeDnrFam=True):
             if r is not None:
                 val = Internal.getValue(r)
                 if val == 'Overset' and zoneName != donorName: # no auto attach
-                    removeGC = False
                     typeOfDnr = 0 # 1: zone, 2: family
                     # check if donorName is a zone name
                     if Internal.getNodeFromName(zones,donorName) is not None: typeOfDnr = 1
@@ -837,16 +832,16 @@ def _deleteBCOverlapWithDonorZone__(a, removeDnrZones=True, removeDnrFam=True):
 # Enleve les noeuds ZoneBC d'un type donne
 # si type != 'None' enleve seulement le type de BC specifie
 def deleteZoneBC__(a, type='None'):
-    if type == 'None':
-        bc = Internal.getNodesFromName3(a, 'ZoneBC')
-        if bc != []: a = rmNodes(a, 'ZoneBC')
-    else: a = rmBCOfType(a, type)
-    return a
+    b = Internal.copyRef(a)
+    _deleteZoneBC__(b, type)
+    return b
 
 def _deleteZoneBC__(a, type='None'):
+    zones = Internal.getZones(a)
     if type == 'None':
-        bc = Internal.getNodesFromName3(a, 'ZoneBC')
-        if bc != []: _rmNodes(a, 'ZoneBC')
+        for z in zones:
+            bc = Internal.getNodesFromName1(z, 'ZoneBC')
+            if bc != []: _rmNodes(z, 'ZoneBC')
     else: _rmBCOfType(a, type)
     return None
 
@@ -1705,7 +1700,7 @@ def setFields(arrays, t, loc, writeDim=True):
                     info = [Internal.__GridCoordinates__, None, [], 'GridCoordinates_t']
                     z[2].append(info)
                 else: info = coordNode
-                l = Internal.getNodesFromName(info, variable)
+                l = Internal.getNodesFromName1(info, variable)
                 if l != []:
                     l[0][1] = Internal.createDataNode(variable, a, p, cellDim)[1]
                 else:
@@ -1727,7 +1722,7 @@ def setFields(arrays, t, loc, writeDim=True):
                     z[2].append(info)
                 else:
                     info = flowNode
-                l = Internal.getNodesFromName(info, variable)
+                l = Internal.getNodesFromName1(info, variable)
                 if loc == 'nodes':
                     node = Internal.createDataNode(variable, a, p, cellDim)
                 else:
@@ -1743,21 +1738,21 @@ def setFields(arrays, t, loc, writeDim=True):
         if writeDim and loc == 'nodes' and vars != []:
             z[1] = Internal.array2PyTreeDim(a)
             if len(a) == 5: # structure
-                typeNodes = Internal.getNodesFromType1(z, 'ZoneType_t')
-                val = Internal.getValue(typeNodes[0])
+                typeNode = Internal.getNodeFromType1(z, 'ZoneType_t')
+                val = Internal.getValue(typeNode)
                 if val != 'Structured':
                     # Supprimer GridElementsNode
                     GENodes = Internal.getElementNodes(z)
                     for n in GENodes:
                         p, r = Internal.getParentOfNode(z, n)
                         del p[2][r]
-                    Internal._setValue(typeNodes[0], 'Structured')
+                    Internal._setValue(typeNode, 'Structured')
 
             elif len(a) == 4: # non structure
-                typeNodes = Internal.getNodesFromType1(z, 'ZoneType_t')
-                val = Internal.getValue(typeNodes[0])
+                typeNode = Internal.getNodeFromType1(z, 'ZoneType_t')
+                val = Internal.getValue(typeNode)
                 if val == 'Structured':
-                    Internal._setValue(typeNodes[0], 'Unstructured')
+                    Internal._setValue(typeNode, 'Unstructured')
                     if isinstance(a[2], list): # Array2/Array3
                         Internal.setElementConnectivity2(z, a)
                     else: # Array1
@@ -2796,7 +2791,7 @@ def _nullifyBCDataSetVectors(t, bndType, loc='FaceCenter',
         niZ = dimZ[1]; njZ = dimZ[2]; nkZ = dimZ[3]
         allbcs = Internal.getNodesFromType2(z, 'BC_t')
         bcs = Internal.getNodesFromValue(allbcs, bndType)
-        bcs += getFamilyBCs(z,families)    # CW : plutot allbcs ??
+        bcs += getFamilyBCs(z, families)    # CW : plutot allbcs ??
         for bc in bcs:
             PR = Internal.getNodeFromName1(bc, 'PointRange')
             PL = Internal.getNodeFromName1(bc, 'PointList')
@@ -2872,7 +2867,7 @@ def _createBCDataSetOfType(t, bndType, loc='FaceCenter', update=True, vectors=[]
         niZ = dimZ[1]; njZ = dimZ[2]; nkZ = dimZ[3]
         allbcs = Internal.getNodesFromType2(z, 'BC_t')
         bcs = Internal.getNodesFromValue(allbcs, bndType)
-        bcs += getFamilyBCs(z,families)
+        bcs += getFamilyBCs(z, families)
         FSNode = Internal.getNodeFromName1(z, FSCont)
         varnames=[]
         for fs in FSNode[2]:
@@ -3291,7 +3286,7 @@ def rmBCDataVars(t,var):
     _rmBCDataVars(tc,var)
     return tc
 
-def _rmBCDataVars(t,var):
+def _rmBCDataVars(t, var):
     if not isinstance(var, list): vars = [var]
     else: vars = var
 
@@ -3299,9 +3294,9 @@ def _rmBCDataVars(t,var):
     if isStd >= 0:
         for c in t[isStd:]: rmBCDataVars__(c,vars)
     else:
-        rmBCDataVars__(t,vars)
+        rmBCDataVars__(t, vars)
 
-def rmBCDataVars__(t,vars):
+def rmBCDataVars__(t, vars):
     for v in vars:
         bcnodes = Internal.getNodesFromType(t, 'BC_t')
         for bcnode in bcnodes:
@@ -3982,11 +3977,10 @@ def _addBC2StructZone__(z, bndName, bndType, wrange=[], faceList=[],
 
     else: # classical BC
         # Cree le noeud zoneBC si besoin
-        zoneBC = Internal.getNodesFromType1(z, 'ZoneBC_t')
-        if zoneBC == []:
+        zoneBC = Internal.getNodeFromType1(z, 'ZoneBC_t')
+        if zoneBC is None:
             z[2].append(['ZoneBC', None, [], 'ZoneBC_t'])
             zoneBC = z[2][-1]
-        else: zoneBC = zoneBC[0]
         # Cree le noeud de BC
         Internal._createChild(zoneBC, bndName, 'BC_t', value=bndType1)
         info = zoneBC[2][-1]
@@ -6712,9 +6706,9 @@ def diffArraysGeom(A, B, removeCoordinates=True, atol=1.e-10, rtol=0.):
         # remplacement des solutions aux noeuds par diffn
         A1 = getAllFields(zones1[no], 'nodes', api=3); A1 = Internal.clearList(A1)
         A2 = getAllFields(zones2[no], 'nodes', api=3); A2 = Internal.clearList(A2)
-        node = Internal.getNodesFromName1(zones1[no], Internal.__FlowSolutionNodes__)
-        if node != []:
-            (parent, d) = Internal.getParentOfNode(t1, node[0])
+        node = Internal.getNodeFromName1(zones1[no], Internal.__FlowSolutionNodes__)
+        if node is not None:
+            (parent, d) = Internal.getParentOfNode(zones1[no], node)
             if parent is not None: del parent[2][d]
         if A1 != [] and A2 != []:
             setFields(diffn, zones1[no], 'nodes')
@@ -6723,14 +6717,14 @@ def diffArraysGeom(A, B, removeCoordinates=True, atol=1.e-10, rtol=0.):
         if diffc is None: continue # one array is different on coordinates
         A1 = getAllFields(zones1[no], 'centers', api=3); A1 = Internal.clearList(A1)
         A2 = getAllFields(zones2[no], 'centers', api=3); A2 = Internal.clearList(A2)
-        node = Internal.getNodesFromName1(zones1[no], Internal.__FlowSolutionCenters__)
-        if node != []:
-            (parent, d) = Internal.getParentOfNode(t1, node[0])
+        node = Internal.getNodeFromName1(zones1[no], Internal.__FlowSolutionCenters__)
+        if node is not None:
+            (parent, d) = Internal.getParentOfNode(zones1[no], node)
             if parent is not None: del parent[2][d]
         if A1 != [] and A2 != []:
             setFields(diffc, zones1[no], 'centers')
 
-    if removeCoordinates: t1 = rmNodes(t1, Internal.__GridCoordinates__)
+    if removeCoordinates: _rmNodes(t1, Internal.__GridCoordinates__)
     return t1
 
 def diffArraysGeom__(z1, z2, atol, rtol=0.):
@@ -6873,9 +6867,9 @@ def _addState(t, state=None, value=None, adim='adim1',
             state = KCore.Adim.dim4(UInf, TInf, PInf, LInf, alphaZ, alphaY,
                                     Mus, MutSMuInf, TurbLevelInf, Mtip)
 
-    UInf   = state[1] / state[0]
-    VInf   = state[2] / state[0]
-    WInf   = state[3] / state[0]
+    UInf = state[1] / state[0]
+    VInf = state[2] / state[0]
+    WInf = state[3] / state[0]
     addState2Node2__(t, ntype, 'VelocityX', UInf)
     addState2Node2__(t, ntype, 'VelocityY', VInf)
     addState2Node2__(t, ntype, 'VelocityZ', WInf)

@@ -190,7 +190,7 @@ def testF(infile, number=1):
     # Chek infile
     a = os.access(infile, os.F_OK)
     if not a:
-        print("DIFF: file "+infile+' doesnt exist.')
+        print("DIFF: file "+infile+" doesnt exist.")
 
     # Check Data directory
     a = os.access(DATA, os.F_OK)
@@ -323,7 +323,7 @@ def testO(objet, number=1):
         if oldData: a = pickle.load(file, encoding='latin1')
         else: a = pickle.load(file)
         file.close()
-        print("Reading '"+reference+"'... done.")
+        print(f"Reading {reference}... done.")
         if isinstance(a, str) and a == 'Undumpable object': return True
         return checkObject_(objet, a, reference)
 
@@ -354,7 +354,7 @@ def checkTree(t1, t2):
             checkTree__(node1, node2)
 
 def buildDict__(curr, mdict, node):
-    d = curr+'/'+node[0]
+    d = f"{curr}/{node[0]}"
     mdict[d] = node
     for i in node[2]: buildDict__(d, mdict, i)
 
