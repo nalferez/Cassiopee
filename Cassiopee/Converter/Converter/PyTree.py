@@ -6676,7 +6676,7 @@ def diffArrays(A, B, removeCoordinates=True, atol=1.e-11, rtol=0.):
         if node is not None:
             (parent, d) = Internal.getParentOfNode(zones1[no], node)
             if parent is not None: del parent[2][d]
-            
+
         if A1 != [] and A2 != []:
             diff = Converter.diffArrays(A1, A2, atol=atol, rtol=rtol)
             setFields(diff, zones1[no], 'nodes')
