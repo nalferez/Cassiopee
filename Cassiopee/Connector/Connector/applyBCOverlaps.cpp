@@ -219,7 +219,11 @@ PyObject* K_CONNECTOR::applyBCOverlapsNG(PyObject* self, PyObject* args)
         voisins.push_back(nov1-1);
       }
     }
-    //std::unique(voisins.begin(), voisins.end()); 
+    std::sort(voisins.begin(), voisins.end());
+    voisins.erase(
+        std::unique(voisins.begin(), voisins.end()),
+        voisins.end()
+    );
 
     // depth voisinage
     if (depth > 1)
@@ -243,8 +247,13 @@ PyObject* K_CONNECTOR::applyBCOverlapsNG(PyObject* self, PyObject* args)
             voisinsL.push_back(nov1);
           }
         }
-        //std::unique(voisinsL.begin(), voisinsL.end());
-        voisins.clear(); voisins = voisinsL; voisinsL.clear();
+
+        std::sort(voisinsL.begin(), voisinsL.end());
+        voisinsL.erase(
+            std::unique(voisinsL.begin(), voisinsL.end()),
+            voisinsL.end()
+        );
+        voisins = std::move(voisinsL);
       }
     }
     RELEASESHAREDS(tpl, f2);
@@ -253,7 +262,7 @@ PyObject* K_CONNECTOR::applyBCOverlapsNG(PyObject* self, PyObject* args)
   {
     K_CONNECT::connectNG2FE(*cn, cFE);
     nelts = f->getSize(); // nombre total d'elements
-        
+
     E_Int api = f->getApi();
     tpl = K_ARRAY::buildArray3(*f, varString, *cn, "NGON", api);
     FldArrayF* f2;
@@ -262,7 +271,7 @@ PyObject* K_CONNECTOR::applyBCOverlapsNG(PyObject* self, PyObject* args)
 
     E_Int* cFE1 = cFE.begin(1);
     E_Int* cFE2 = cFE.begin(2);
-      
+
     // identify elements with tagged face 
     for (E_Int i = 0; i < nfacesBC; i++)
     {
@@ -280,7 +289,12 @@ PyObject* K_CONNECTOR::applyBCOverlapsNG(PyObject* self, PyObject* args)
         voisins.push_back(e2-1);
       }
     }
-    //std::unique(voisins.begin(), voisins.end());
+
+    std::sort(voisins.begin(), voisins.end());
+    voisins.erase(
+        std::unique(voisins.begin(), voisins.end()),
+        voisins.end()
+    );
     
     // depth elements
     if (depth > 1)
@@ -302,8 +316,13 @@ PyObject* K_CONNECTOR::applyBCOverlapsNG(PyObject* self, PyObject* args)
             voisinsL.push_back(etv);
           }
         }
-        //std::unique(voisinsL.begin(), voisinsL.end());
-        voisins.clear(); voisins = voisinsL; voisinsL.clear();
+
+        std::sort(voisinsL.begin(), voisinsL.end());
+        voisinsL.erase(
+            std::unique(voisinsL.begin(), voisinsL.end()),
+            voisinsL.end()
+        );
+        voisins = std::move(voisinsL);
       }
     }
     RELEASESHAREDS(tpl, f2);  
