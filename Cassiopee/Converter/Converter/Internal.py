@@ -3853,8 +3853,8 @@ def addOneLayer2BC(t, dir, N=1):
   return a
 
 def _addOneLayer2BC(a, dir, N=1):
-  nodes = getZones(a)
-  for z in nodes:
+  zones = getZones(a)
+  for z in zones:
     # ZoneBC
     bnds = getNodesFromType2(z, 'BC_t')
     for bnd in bnds:
@@ -3862,7 +3862,7 @@ def _addOneLayer2BC(a, dir, N=1):
       for w in wins:
         (parent, d) = getParentOfNode(bnd, w)
         win = range2Window(w[1])
-        win[-1]+=N
+        win[-1] += N
         parent[2][d][1] = window2Range(win)
 
     # Connectivite match/nearmatch/overlap
@@ -5244,15 +5244,15 @@ def _mergeEltsTPerType(t):
     typesEltsT={}
     rangeMinT={}; rangeMaxT={}
     rmaxall = -1
-    for elts_t in getNodesFromType(z,'Elements_t'):
+    for elts_t in getNodesFromType1(z, 'Elements_t'):
       name = getName(elts_t)
       typeEt = getValue(elts_t)[0]
       if typeEt not in typesEltsT: typesEltsT[name]=[]
       typesEltsT[name].append(typeEt)
-      eltRange = getNodeFromType(elts_t,"IndexRange_t")
+      eltRange = getNodeFromType(elts_t, "IndexRange_t")
       rangeMinT[name] = getValue(eltRange)[0]
       rangeMaxT[name] = getValue(eltRange)[1]
-      rmaxall = max(rangeMaxT[name]+1,rmaxall)
+      rmaxall = max(rangeMaxT[name]+1, rmaxall)
 
     # init
     rmin = 1; rmax= -1
@@ -5262,9 +5262,9 @@ def _mergeEltsTPerType(t):
       name1 = -1; name2 = -1
       #start
       for name in rangeMinT:
-        if rangeMinT[name]==rmin:
+        if rangeMinT[name] == rmin:
           rmax = rangeMaxT[name]
-          EltsT = getNodeFromName1(z,name)
+          EltsT = getNodeFromName1(z, name)
           etype = typesEltsT[name]
           name1 = name
           break
@@ -5278,7 +5278,7 @@ def _mergeEltsTPerType(t):
             if typesEltsT[name]==etype:
               found = 1
               name2 = name
-              EltsT2 = getNodeFromName1(z,name2)
+              EltsT2 = getNodeFromName1(z, name2)
             else: found = 0
 
         if found == 0:
@@ -5322,7 +5322,7 @@ def _mergeBCDataSets__(z, bcNode):
   dataSetLocs = []
   nod = -1; no = 0
   for d in dataSets:
-    loc = getNodeFromName1(d,'GridLocation')
+    loc = getNodeFromName1(d, 'GridLocation')
     if loc is not None:
       if getValue(loc)=='FaceCenter': dataSetLocs.append(1)
       else : dataSetLocs.append(0)
@@ -5434,7 +5434,12 @@ def getBCDataSet(z, bcNode, withLoc=False):
 # Retourne un dictionnaire
 def getBCDataSets(z, bcNode):
   ret = {}
-  nodes1 = getNodesFromType(z, 'BCDataSet_t')
+  nodes1 = []
+  zonebc = getNodeFromType1(z, 'ZoneBC_t')
+  if zonebc is not None:
+    BCs = getNodesFromType1(zonebc, 'BC_t')
+    for bc in BCs:
+      nodes1 += getNodesFromType1(bc, 'BCDataSet_t') 
   for n in nodes1:
     datas = getNodesFromType2(n, 'DataArray_t')
     ploc = 'Vertex'
@@ -5442,7 +5447,7 @@ def getBCDataSets(z, bcNode):
     if l is not None: ploc = getValue(l)
     ret[getName(n)] = [datas, ploc]
 
-  nodes2 = getNodesFromType(z, 'ZoneSubRegion_t')
+  nodes2 = getNodesFromType1(z, 'ZoneSubRegion_t')
   bcName = getName(bcNode)
   for n in nodes2:
     bcRegionNameNode = getNodeFromName1(n, 'BCRegionName')
@@ -5535,7 +5540,7 @@ def getBCDataSetContainers(name, z):
             if allLocDS[nobcdata]==matchingLoc: # OK: locations are consistent
               datas = getNodesFromName1(allBCDatas[nobcdata],fname)
               if datas != []:
-                dataSetL+=[[allRanges[nobcdata], datas[0][1]]]
+                dataSetL += [[allRanges[nobcdata], datas[0][1]]]
           if dataSetL != []: # variable exists both in flow solution and in bcdataset
             dataFS = [fname, loc, dataSetL]
             containers.append(dataFS)
@@ -5573,7 +5578,7 @@ def getBCDataSetContainers(name, z):
               if allLocDS[nobcdata]==matchingLoc: # OK: locations are consistent
                 datas = getNodesFromName1(allBCDatas[nobcdata],varname)
                 if datas != []:
-                  dataSetL+=[[allRanges[nobcdata], datas[0][1]]]
+                  dataSetL += [[allRanges[nobcdata], datas[0][1]]]
             if dataSetL != []: # variable exists both in flow solution and in bcdataset
               dataFS = [varname, loc, dataSetL]
               containers.append(dataFS)

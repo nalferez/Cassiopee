@@ -397,7 +397,7 @@ def _oneovernBC__(t, N):
     C._rmBCOfType(t, 'BCMatch'); C._rmBCOfType(t, 'BCNearMatch')
     nodes = Internal.getZones(t)
     for z in nodes:
-        wins = Internal.getNodesFromType(z, 'BC_t')
+        wins = Internal.getNodesFromType2(z, 'BC_t')
         for w in wins:
             w0 = Internal.getNodeFromName1(w, 'PointRange')
             (parent, d) = Internal.getParentOfNode(z, w0)
@@ -422,7 +422,7 @@ def _oneovernBC__(t, N):
             r2 = Internal.window2Range(range0)
             parent[2][d][1] = r2
 
-        connect = Internal.getNodesFromType(z, 'ZoneGridConnectivity_t')
+        connect = Internal.getNodesFromType1(z, 'ZoneGridConnectivity_t')
         for cn in connect:
             wins = Internal.getNodesFromName2(cn, 'PointRange')
             for w in wins:
@@ -594,7 +594,7 @@ def subzoneGCStruct__(z, dim, imin, imax, jmin, jmax, kmin, kmax, \
             if val == 'Overset':
                 if isout == 0:
                     DDDnrName=None
-                    for UDN in Internal.getNodesFromType1(i,'UserDefinedData_t'):
+                    for UDN in Internal.getNodesFromType1(i, 'UserDefinedData_t'):
                         if Internal.getNodeFromName1(UDN,'doubly_defined') is not None:
                             DDDnrName=Internal.getValue(i)
                             break
@@ -1391,7 +1391,7 @@ def _reorderBC__(t, order):
         dim = Internal.getZoneDim(z)
         if dim[0] == 'Structured' and len(order) == 3:
             oi = order[0]; oj = order[1]; ok = order[2]
-            wins = Internal.getNodesFromType(z, 'BC_t')
+            wins = Internal.getNodesFromType2(z, 'BC_t')
             for w in wins:
                 w0 = Internal.getNodeFromName1(w, 'PointRange')
                 range0 = reorderIndices__(w0[1], dim, oi, oj, ok)
@@ -1407,7 +1407,7 @@ def _reorderBCOverlap__(a, order):
         dim = Internal.getZoneDim(z)
         if dim[0] == 'Structured' and len(order) == 3:
             oi = order[0]; oj = order[1]; ok = order[2]
-            connect = Internal.getNodesFromType(z, 'GridConnectivity_t')
+            connect = Internal.getNodesFromType2(z, 'GridConnectivity_t')
             for i in connect:
                 pr = Internal.getNodeFromName1(i, 'PointRange')
                 r = Internal.getNodesFromType(i, 'GridConnectivityType_t')
@@ -1573,7 +1573,7 @@ def _reorderBCNearMatch__(a, order, zoneNames):
         dim = Internal.getZoneDim(z)
         if dim[0] == 'Structured' and len(order) == 3:
             oi = order[0]; oj = order[1]; ok = order[2]
-            connect = Internal.getNodesFromType(z, 'GridConnectivity_t')
+            connect = Internal.getNodesFromType1(z, 'GridConnectivity_t')
             for cn in connect:
                 type = Internal.getNodeFromName1(cn, 'GridConnectivityType')
                 if type is not None: val = Internal.getValue(type)
@@ -2480,11 +2480,11 @@ def splitSizeUpR_OMP__(t, N, R, multigrid, dirs, minPtsPerDir):
     for b in bases:
         zones = Internal.getNodesFromType1(b, 'Zone_t')
         for z in zones:
-            solverParam=Internal.createChild(z,'.Solver#Param','UserDefinedData_t',value=None,children=[],pos=-1)
-            ompthread  =Internal.createChild(solverParam,  'omp_threads'  ,'UserDefinedData_t',value=None,children=[],pos=-1)
-            sol  = Internal.getNodeFromName1(z, 'FlowSolution#Centers')
-            solth=Internal.getNodeFromName1(sol, 'thread_number')
-            solsz=Internal.getNodeFromName1(sol, 'thread_subzone')
+            solverParam = Internal.createChild(z,'.Solver#Param','UserDefinedData_t',value=None,children=[],pos=-1)
+            ompthread = Internal.createChild(solverParam,  'omp_threads'  ,'UserDefinedData_t',value=None,children=[],pos=-1)
+            sol = Internal.getNodeFromName1(z, 'FlowSolution#Centers')
+            solth = Internal.getNodeFromName1(sol, 'thread_number')
+            solsz = Internal.getNodeFromName1(sol, 'thread_subzone')
             for i in range(1,R+1):
                 thnode=[]
                 thnode=Internal.createChild(ompthread,str(i),'UserDefinedData_t',value=None,children=[],pos=-1)
@@ -2993,7 +2993,7 @@ def splitMultiplePts(t, dim=3):
             stdNode = Internal.isStdNode(t)
             if stdNode == 0: type = 3 # liste de zones
             else: type = 4 # une zone
-            zones = Internal.getNodesFromType(t, 'Zone_t')
+            zones = Internal.getZones(t)
             tp = C.newPyTree(['Base']); tp[2][1][2] = zones
 
     count = 2
