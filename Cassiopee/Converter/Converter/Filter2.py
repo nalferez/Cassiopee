@@ -876,7 +876,7 @@ def chunk2part(dt):
     cy = I.getNodeFromName2(z, 'CoordinateY')[1]
     cz = I.getNodeFromName2(z, 'CoordinateZ')[1]
 
-    ngon = I.getNodeFromName2(z, 'NGonElements')
+    ngon = I.getNGonNode(z)
     ngonc = I.getNodeFromName1(ngon, 'ElementConnectivity')[1]
     ngonso = I.getNodeFromName1(ngon, 'ElementStartOffset')[1]
 
@@ -898,17 +898,17 @@ def chunk2part(dt):
             if f[3] == 'DataArray_t':
                 soln.append(f[1]); solNames.append(f[0])
 
-    zonebc = I.getNodeFromType(z, 'ZoneBC_t')
+    zonebc = I.getNodeFromType1(z, 'ZoneBC_t')
     bcs = []
     bcNames = []; bcTypes = {}
     familyNames = {}
     if zonebc is not None:
-        BCs = I.getNodesFromType(zonebc, 'BC_t')
+        BCs = I.getNodesFromType1(zonebc, 'BC_t')
         for bc in BCs:
             bcname = bc[0]; bctype = I.getValue(bc)
 
             if bctype == 'FamilySpecified':
-                fname = I.getNodeFromType(bc, 'FamilyName_t')
+                fname = I.getNodeFromType1(bc, 'FamilyName_t')
                 fn = I.getValue(fname)
                 bcTypes[bcname] = fn
             else:

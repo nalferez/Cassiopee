@@ -106,7 +106,7 @@ namespace K_MEMORY {
 
     private:
         pointer m_pt_data;
-        size_type     m_size;
+        size_type m_size;
     };
 }
 #endif

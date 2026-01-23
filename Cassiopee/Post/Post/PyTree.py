@@ -1327,7 +1327,7 @@ def integ(t, var=''):
         cont = Internal.getNodeFromName1(z, Internal.__FlowSolutionCenters__)
         if cont is not None:
             vol = Internal.getNodeFromName1(cont, 'vol')
-            ratio = Internal.getNodeFromName1(cont, 'ratio')
+            #ratio = Internal.getNodeFromName1(cont, 'ratio')
         if vol is None:
             removeVol = True
             G._getVolumeMap(z)
