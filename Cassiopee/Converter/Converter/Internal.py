@@ -5439,7 +5439,7 @@ def getBCDataSets(z, bcNode):
   if zonebc is not None:
     BCs = getNodesFromType1(zonebc, 'BC_t')
     for bc in BCs:
-      nodes1 += getNodesFromType1(bc, 'BCDataSet_t') 
+      nodes1 += getNodesFromType1(bc, 'BCDataSet_t')
   for n in nodes1:
     datas = getNodesFromType2(n, 'DataArray_t')
     ploc = 'Vertex'
