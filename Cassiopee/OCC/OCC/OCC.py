@@ -852,9 +852,9 @@ def mergeCAD(hooks):
     return occ.mergeCAD(hooks)
 
 # trim two set of surfaces
-def _trimFaces(hook, faceList1, faceList2):
+def _trimFaces(hook, faceList1, faceList2, mode=2, algo=0):
     """Trim a set of faces with another set of faces."""
-    occ.trimFaces(hook, faceList1, faceList2)
+    occ.trimFaces(hook, faceList1, faceList2, mode, algo)
     return None
 
 # split all faces

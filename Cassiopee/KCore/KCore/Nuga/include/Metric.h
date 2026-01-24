@@ -110,7 +110,8 @@ namespace DELAUNAY {
     
     inline bool aniso_smooth(size_type Ni, size_type Nj, E_Float gr);
     
-    bool is_valid() {
+    bool is_valid() 
+    {
       bool res=true; E_Int i=0; 
       for (; (i < _field.size()) && res; ++i) res &= isValidMetric(_field[i]); 
       if (i != _field.size()) std::cout << "failed at " << i-1 << std::endl; 
@@ -139,7 +140,7 @@ namespace DELAUNAY {
 
     int size() const { return _field.size(); }
 
-    field_type* get_field() {return &_field; }
+    field_type* get_field() { return &_field; }
 
   
   //protected:
@@ -152,9 +153,9 @@ namespace DELAUNAY {
 
     inline bool isValidMetric(const E_Float* mi);
     
-    inline bool isIsotropic(const T& mi) { return true;}
+    inline bool isIsotropic(const T& mi) { return true; }
     
-    inline bool isWeakAniso(size_type Ni, E_Float r) { return true;}
+    inline bool isWeakAniso(size_type Ni, E_Float r) { return true; }
 
     inline void setUserMetric(const K_FLD::FloatArray& Umetric, field_type& metric);
 
@@ -277,10 +278,10 @@ namespace DELAUNAY {
   VarMetric<Aniso2D>::get_h2_along_dir(size_type Ni, const E_Float* dir)
   {
     E_Float L2 = NUGA::sqrNorm<2>(dir);
-    
-    const E_Float& m11 = _field[Ni][0];
-    const E_Float& m12 = _field[Ni][1];
-    const E_Float& m22 = _field[Ni][2];
+    const Aniso2D& mi = _field[Ni];
+    const E_Float& m11 = mi[0];
+    const E_Float& m12 = mi[1];
+    const E_Float& m22 = mi[2];
     
     E_Float k2 = (m11*dir[0] * dir[0] + 2.* m12*dir[0] * dir[1] + m22 * dir[1] * dir[1]);
     if (k2 != 0.) k2 = 1. / k2;
@@ -293,12 +294,13 @@ namespace DELAUNAY {
   E_Float
   VarMetric<Aniso3D>::get_h2_along_dir(size_type Ni, const E_Float* dir)
   {
-    const E_Float& m11 = _field[Ni][0];
-    const E_Float& m12 = _field[Ni][1];
-    const E_Float& m13 = _field[Ni][2];
-    const E_Float& m22 = _field[Ni][3];
-    const E_Float& m23 = _field[Ni][4];
-    const E_Float& m33 = _field[Ni][5];
+    const Aniso3D& mi = _field[Ni];
+    const E_Float& m11 = mi[0];
+    const E_Float& m12 = mi[1];
+    const E_Float& m13 = mi[2];
+    const E_Float& m22 = mi[3];
+    const E_Float& m23 = mi[4];
+    const E_Float& m33 = mi[5];
 
     E_Float l = m11*dir[0]*dir[0] + m22*dir[1]*dir[1] + m33*dir[2]*dir[2] +
     2.*m12*dir[0]*dir[1] + 2.*m13*dir[0]*dir[2] + 2.*m23*dir[1]*dir[2];

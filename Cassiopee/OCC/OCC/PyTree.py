@@ -1408,9 +1408,12 @@ def _fillHole(hook, edges, faces=None, continuity=0):
     return None
 
 # trim two set of surfaces
-def _trimFaces(hook, faces1, faces2):
+# if mode=0, faces2 cut faces1
+# if mode=1, faces1 cut faces2
+# if mode=2, both cut
+def _trimFaces(hook, faces1, faces2, mode=2, algo=0):
     """Trim a set of faces with another set of faces."""
-    OCC.occ.trimFaces(hook, faces1, faces2)
+    OCC.occ.trimFaces(hook, faces1, faces2, mode, algo)
     return None
 
 # split faces
