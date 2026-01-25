@@ -1010,7 +1010,7 @@ def _revertBXGridConnectivity(a):
 
             nodes = Internal.getNodesFromType1(g, 'GridConnectivity_t')
             for n in nodes:
-                gctype = Internal.getNodeFromType(n,'GridConnectivityType_t')
+                gctype = Internal.getNodeFromType(n, 'GridConnectivityType_t')
                 gctype = Internal.getValue(gctype)
                 if gctype == 'Abutting':
                     # Recherche le nom de la bandelette en raccord

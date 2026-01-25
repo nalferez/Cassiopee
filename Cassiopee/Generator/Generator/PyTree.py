@@ -1055,7 +1055,7 @@ def modifyBC__(dir, ni0, nj0, nk0, z):
     dims = Internal.getZoneDim(z)
     if dims[0] == 'Unstructured': return z
     ni = dims[1]; nj = dims[2]; nk = dims[3]
-    wins = Internal.getNodesFromType(z, 'BC_t')
+    wins = Internal.getNodesFromType2(z, 'BC_t')
     # BC
     for w in wins:
         (parent, d) = Internal.getParentOfNode(z, w)

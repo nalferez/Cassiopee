@@ -146,7 +146,7 @@ def extractIBMWallFields(tc, tb=None, coordRef='wall', famZones=[], IBCNames="IB
         return out
 
     else:
-        allZSR = Internal.getNodesFromType(tc,'ZoneSubRegion_t')
+        allZSR = Internal.getNodesFromType(tc, 'ZoneSubRegion_t')
         if allZSR != []:
             allIBCD = Internal.getNodesFromName(allZSR, IBCNames)
             for IBCD in allIBCD:

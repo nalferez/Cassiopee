@@ -682,8 +682,8 @@ def _correctDonorRanges(t, ntype):
 #==============================================================================
 def _reorderBCMatchPointRange(t):
     for z in Internal.getZones(t):
-        for gc in Internal.getNodesFromType(z, 'GridConnectivity1to1_t'):
-            TR = Internal.getNodeFromName(gc, 'Transform')
+        for gc in Internal.getNodesFromType2(z, 'GridConnectivity1to1_t'):
+            TR = Internal.getNodeFromName1(gc, 'Transform')
             TR = Internal.getValue(TR)
             trirac1 = TR[0]; trirac2 = TR[1]; trirac3 = TR[2]
             PRN = Internal.getNodeFromName(gc, 'PointRangeDonor')
@@ -1234,9 +1234,9 @@ def _correctBC_PL2ER(t):
         if zdim[0] == 'Unstructured':
             ztype = zdim[3]
             if ztype != 'NGON':
-                for zbc in Internal.getNodesFromType(z, 'BC_t'):
+                for zbc in Internal.getNodesFromType2(z, 'BC_t'):
                     bndName = Internal.getName(zbc)
-                    bndType = Internal.getValue(zbc)
+                    #bndType = Internal.getValue(zbc)
                     gcl = Internal.getNodeFromType(zbc, 'GridLocation_t')
                     PL = Internal.getNodeFromName(zbc, 'PointList')
                     if PL is not None:

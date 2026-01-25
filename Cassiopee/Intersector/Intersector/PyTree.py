@@ -369,7 +369,7 @@ def concatenateBC(bctype, zones, wallpgs, cur_shift):
 
         #print(' -- zone : %d / %d' %(i+1, len(zones)))
         i = i+1
-        bnds = Internal.getNodesFromType(z, 'BC_t')
+        bnds = Internal.getNodesFromType2(z, 'BC_t')
         #print(" -- this zone has %d boundaries"%(len(bnds)))
         #print(' -- cur shift %d' %(cur_shift))
 
@@ -403,7 +403,7 @@ def updatePointLists(z, zones, oids):
 
 def updateBCPointLists1(z, oids):
     bnds = Internal.getNodesFromType(z, 'BC_t')
-    zname = z[0]
+    #zname = z[0]
 
     ptLists = []
     for bb in bnds:
@@ -433,14 +433,14 @@ def updateBCPointLists1(z, oids):
         ptl[0][1] = ptLists[i]
         #print('shape dans updateBCPointLists1 : '+str(numpy.shape(ptl[0][1])))
         #print(ptl[0][1])
-        i=i+1
+        i += 1
 
     for p in bc_to_remove: Internal._rmNodeFromPath(z, p)
 
 def updateJoinsPointLists1(z, zones, oids):
 
     joins = Internal.getNodesFromType(z, 'GridConnectivity_t')
-    zname=z[0]
+    zname = z[0]
 
     ptLists = []
     for j in joins:
@@ -452,7 +452,7 @@ def updateJoinsPointLists1(z, zones, oids):
     # recalcul des pointlist
     ptLists = XOR.updatePointLists(oids, ptLists)
 
-    i=0
+    i = 0
     # update the Join pointlist and synchronize with other zones (their pointListDonnor)
     for j in joins:
         donnorName = "".join(Internal.getValue(j))
@@ -460,7 +460,7 @@ def updateJoinsPointLists1(z, zones, oids):
         # Match has disappeared > remove from tree
         if not isinstance(ptLists[i], numpy.ndarray):
             Internal._rmNode(z, j)
-            i=i+1
+            i += 1
             continue
 
         ptl = Internal.getNodeFromName1(j, 'PointList')
@@ -473,27 +473,27 @@ def updateJoinsPointLists1(z, zones, oids):
                 #dname = "".join(jd[1])
                 dname = "".join(Internal.getValue(jd))
                 # print("dname / zname : ", dname, zname)
-                if (dname != zname) : continue
+                if dname != zname: continue
                 ptlD = Internal.getNodeFromName1(jd, 'PointListDonor')
 
                 PG0 = ptl[1][0][0] # first polygon in the point list
                 PG0D = ptlD[1][0][0] # first polygon in the point list
-                if (PG0 != PG0D) : continue # not the right join (in case of multiple joins for 2 zones) : the first PG must be the same (assume one PG only in one join)
+                if PG0 != PG0D: continue # not the right join (in case of multiple joins for 2 zones) : the first PG must be the same (assume one PG only in one join)
 
                 ptLists[i] = numpy.reshape(ptLists[i], (1,len(ptLists[i])))
 
-                ptl[1]  = ptLists[i]
+                ptl[1] = ptLists[i]
                 ptlD[1] = ptLists[i]
 
                 break
-            i=i+1
+            i += 1
 
 def getJoinsPtList(z, zname2id):
 	raccords = Internal.getNodesFromType2(z, 'GridConnectivity_t')
-	nb_racs = len(raccords)
+	#nb_racs = len(raccords)
 
-	jzid=[]
-	jptlist=[]
+	jzid = []
+	jptlist = []
 
 	j=0
 	for rac in raccords:
@@ -1060,11 +1060,11 @@ def _booleanUnionMZ(t1, t2, xtol=0., jtol=0., agg_mode=1, improve_qual=False, si
 
     iz = -1
     for z in z2s:
-        iz +=1
+        iz += 1
 
         mesh = res[i]
-        pg_oids=res[i+1]
-        ph_oids=res[i+2]
+        pg_oids = res[i+1]
+        ph_oids = res[i+2]
 
         # print(" ")
         # print("OP2 - pgoids: ", pg_oids)

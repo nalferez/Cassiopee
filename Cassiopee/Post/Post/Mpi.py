@@ -34,9 +34,9 @@ def computeGradLSQ(t, fldNames):
     rfields = X.exchangeFields(t, fldNames)
 
     # get comm list
-    zgc = Internal.getNodeFromType(zone, 'ZoneGridConnectivity_t')
+    zgc = Internal.getNodeFromType1(zone, 'ZoneGridConnectivity_t')
     if zgc is None: raise ValueError('ZoneGridConnectivity not found.')
-    comms = Internal.getNodesFromType(zgc, 'GridConnectivity1to1_t')
+    comms = Internal.getNodesFromType1(zgc, 'GridConnectivity1to1_t')
     if comms is None: raise ValueError('GridConnectivity1to1 not found.')
     ptlists = []
     for comm in comms:
