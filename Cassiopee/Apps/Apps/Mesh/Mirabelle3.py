@@ -476,10 +476,10 @@ def _refine(t, zonesToRefine, dirs, refined={}, factor=2):
 # Return zoneName, window and window direction
 def getAWallWindow(t):
     for z in Internal.getZones(t):
-        BCs = Internal.getNodesFromName(z, 'BC_t')
+        BCs = Internal.getNodesFromType2(z, 'BC_t')
         for b in BCs:
             if Internal.getValue(b) == 'BCWall':
-                pr = Internal.getNodeFromName(b, 'PointRange')
+                pr = Internal.getNodeFromName1(b, 'PointRange')
                 w = Internal.range2Window(pr[1])
                 dir = T.getWinDir(w)
                 return (z[0], w, dir)

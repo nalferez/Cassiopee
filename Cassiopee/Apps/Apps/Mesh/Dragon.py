@@ -207,7 +207,7 @@ def createDragonMesh0(body, dictOfParams={}, check=False, directory_tmp_files='.
             #C._initVars(t,'{centers:indic}=logical_and({centers:vol}-%g>-%g,{centers:vol}-%g<%g)'%(aera,eps,aera,eps))
             #a1 = P.selectCells2(t, 'centers:indic',strict=0)
             a1 = P.selectCells(o, 'abs({centers:vol}-%f)<%f'%(area,eps), strict=0)
-            a1 = Internal.getNodeFromType(a1,'Zone_t'); a1[0]='octree%d'%i
+            a1 = Internal.getNodeFromType(a1, 'Zone_t'); a1[0]='octree%d'%i
             npts = int(max(1,maxnpts/2**i));print(i,npts)
             T._addkplane(a1,N=npts)
             T._scale(a1, factor=(1.,1.,locmax/npts))
@@ -386,7 +386,7 @@ def createDragonMesh0(body, dictOfParams={}, check=False, directory_tmp_files='.
     tp = C.newPyTree(['Base']); tp[2][1][2] += [m]
 
     print('add families')
-    base = Internal.getNodeFromType(tp,'CGNSBase_t')
+    base = Internal.getNodeFromType1(tp, 'CGNSBase_t')
     #print(base)
     if nbsyms > 0:
         C._addFamily2Base(base, 'RIGHT', bndType='BCSymmetryPlane')
@@ -423,8 +423,8 @@ def createDragonMeshForBladeInChannel(ts, dictOfParams={}, check=False, director
         raise("ValueError: createDragonMesh: 3 zones must be defined: HUB/SHROUD/BLADE")
         return None
 
-    surf_hub = Internal.getNodeFromName(ts,"HUB")
-    if surf_hub is None or surf_hub==[]:
+    surf_hub = Internal.getNodeFromName(ts, "HUB")
+    if surf_hub is None or surf_hub == []:
         raise("ValueError: no base/zone of name HUB found.")
         return None
 

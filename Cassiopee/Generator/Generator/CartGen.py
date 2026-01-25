@@ -279,9 +279,9 @@ def cartRx2(XC0, XC1, HC, XF0, XF1, R, dim=3, rank=None, size=None):
 
                 zn[0] = z[0]
                 D2._addProcNode(zn, rank)
-                n = Internal.getNodesFromName(z, 'ZoneBC')
+                n = Internal.getNodesFromType1(z, 'ZoneBC_t')
                 zn[2] += n
-                n = Internal.getNodesFromName(z, 'ZoneGridConnectivity')
+                n = Internal.getNodesFromType1(z, 'ZoneGridConnectivity_t')
                 zn[2] += n
                 b[2][c] = zn
 
@@ -425,15 +425,11 @@ def cartRx3(XC0, XC1, HC, XF0, XF1, R, dim=3, rank=None, size=None):
 
             if z[3] == 'Zone_t' and Cmpi.getProc(z) == rank:
                 if z[0] in data: # bloc non splitte
-                    #print(z[0], 'bloc non splite', flush=True)
                     d = data[z[0]]
                     zn = G.cartr1(d[0], d[1], d[2], d[3], d[4], d[5])
                 else:
-                    #print(z[0],'bloc splitte', flush=True)
                     source, dest = Internal.getLoc2Glob(z)
                     d = data[source]
-                    #print('source', source, flush=True)
-                    # print('dest', dest, flush=True)
                     P = d[0]; H = d[1]; R = d[2] ; N = d[3] ; dL = d[4] ; dR = d[5]
                     i1 = dest[0]-1; j1 = dest[2]-1; k1 = dest[4]-1
                     i2 = dest[1]-1; j2 = dest[3]-1; k2 = dest[5]-1
@@ -514,9 +510,9 @@ def cartRx3(XC0, XC1, HC, XF0, XF1, R, dim=3, rank=None, size=None):
 
                 zn[0] = z[0]
                 D2._addProcNode(zn, rank)
-                n = Internal.getNodesFromName(z, 'ZoneBC')
+                n = Internal.getNodesFromType1(z, 'ZoneBC_t')
                 zn[2] += n
-                n = Internal.getNodesFromName(z, 'ZoneGridConnectivity')
+                n = Internal.getNodesFromType1(z, 'ZoneGridConnectivity_t')
                 zn[2] += n
                 b[2][c] = zn
 
@@ -746,7 +742,7 @@ def cartRxHollow(XC0, XC1, HC, XH0, XH1, XF0, XF1, R, dim=3, rank=None, size=Non
                         else:
                             if k1 == 0: ratioz = (R[2]**k1-1.)/(R[2]-1.); Hz = H[2]*R[2]**k1
                             else: ratioz = 1. + (R[2]**(k1-1) -1.)/(R[2]-1.); Hz = H[2]*R[2]**(k1 - 1)
-                    elif doubleLeft[2] == 0 and doubleRight[2] ==1:
+                    elif doubleLeft[2] == 0 and doubleRight[2] == 1:
                         if R[2] == 1: ratioz=k1; Hz = H[2]
                         else:
                             if k1 == 0: ratioz = (R[2]**k1 - 1.)/(R[2] - 1.); Hz = H[2]*R[2]**k1
@@ -767,9 +763,9 @@ def cartRxHollow(XC0, XC1, HC, XH0, XH1, XF0, XF1, R, dim=3, rank=None, size=Non
 
                 zn[0] = z[0]
                 D2._addProcNode(zn, rank)
-                n = Internal.getNodesFromName(z, 'ZoneBC')
+                n = Internal.getNodesFromType1(z, 'ZoneBC_t')
                 zn[2] += n
-                n = Internal.getNodesFromName(z, 'ZoneGridConnectivity')
+                n = Internal.getNodesFromType1(z, 'ZoneGridConnectivity_t')
                 zn[2] += n
                 b[2][c] = zn
 

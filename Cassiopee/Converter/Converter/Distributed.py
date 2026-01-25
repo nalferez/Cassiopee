@@ -889,7 +889,7 @@ def computeGraph(t, type='bbox', t2=None, procDict=None, rank=0,
             proc = getProcLocal__(z, procDict)
             GC = Internal.getNodesFromType2(z, 'GridConnectivity_t')
             for c in GC:
-                gctype = Internal.getNodeFromType(c,'GridConnectivityType_t')
+                gctype = Internal.getNodeFromType(c, 'GridConnectivityType_t')
                 if Internal.getValue(gctype)=='Abutting':
                     donor = Internal.getValue(c)
                     popp = getProcGlobal__(donor, t, procDict)

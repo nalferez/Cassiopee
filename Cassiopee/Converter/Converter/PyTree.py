@@ -5169,10 +5169,10 @@ def getBC2__(zbc, z, T, res, extrapFlow=True):
     if zdim[0] == 'Unstructured':
         ztype = zdim[3]
         if ztype != 'NGON':
-            bndName = Internal.getName(zbc)
-            bndType = Internal.getValue(zbc)
-            gcl = Internal.getNodeFromType(zbc, 'GridLocation_t')
-            PL = Internal.getNodeFromName(zbc, 'PointList')
+            #bndName = Internal.getName(zbc)
+            #bndType = Internal.getValue(zbc)
+            gcl = Internal.getNodeFromType1(zbc, 'GridLocation_t')
+            PL = Internal.getNodeFromName1(zbc, 'PointList')
             if PL is not None:
                 val = Internal.getValue(gcl)
                 if val == 'FaceCenter' or val == 'CellCenter' or val == 'EdgeCenter':

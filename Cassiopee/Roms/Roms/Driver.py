@@ -791,7 +791,7 @@ class Surface():
             C._convertArray2NGon(z, recoverBC=False)
             p = P.exteriorFaces(z)
             C._addBC2Zone(z, 'wall', 'BCWall', subzone=p)
-            Internal.getNodeFromType(z, 'BC_t')[0] = 'wall'
+            Internal.getNodeFromType2(z, 'BC_t')[0] = 'wall'
             T._addkplane(z)
             T._contract(z, (0,0,0), (1,0,0), (0,1,0), 0.1)
 

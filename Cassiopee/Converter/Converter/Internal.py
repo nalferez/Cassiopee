@@ -3864,7 +3864,7 @@ def _addOneLayer2BC(a, dir, N=1):
         parent[2][d][1] = window2Range(win)
 
     # Connectivite match/nearmatch/overlap
-    connect = getNodesFromType2(z, 'ZoneGridConnectivity_t')
+    connect = getNodesFromType1(z, 'ZoneGridConnectivity_t')
     for cn in connect:
       wins = getNodesFromName2(cn, 'PointRange')
       transf =  getNodesFromName(cn, 'Transform')
@@ -3872,7 +3872,7 @@ def _addOneLayer2BC(a, dir, N=1):
       for w in wins:
         (parent, d) = getParentOfNode(cn, w)
         win = range2Window(w[1])
-        win[-1]+=N
+        win[-1] += N
         parent[2][d][1] = window2Range(win)
       nom = 0
       for w in winsopp: # passe seult pour les matchs/nearmatch
@@ -3883,7 +3883,7 @@ def _addOneLayer2BC(a, dir, N=1):
         else: diropp = abs(transf[nom][1][dir-1])
         (parent, d) = getParentOfNode(cn, w)
         win = range2Window(w[1])
-        win[-1]+=N
+        win[-1] += N
         parent[2][d][1] = window2Range(win)
         nom += 1
   return None

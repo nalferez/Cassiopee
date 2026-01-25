@@ -588,7 +588,7 @@ def _recoverBoundaryConditions__(t, f_pytree, zbcs, bctypes, bcnames):
                 len_ids = Internal.getValue(f)[0][1]
                 ids = ids[ids[:] > -1] - 1
                 ids = ids.tolist()
-                if len(ids) > 0 :
+                if len(ids) > 0:
                     zf = T.subzone(f,ids, type='elements')
                     if bcnames[nobc] != "QuadNQuad":
                         G_AMR._addBC2Zone__(z, bctypes[nobc], bctypes[nobc], zf)
@@ -599,13 +599,13 @@ def _recoverBoundaryConditions__(t, f_pytree, zbcs, bctypes, bcnames):
                     if len(ids_new) > 0:
                         f = T.subzone(f,ids_new, type='elements')
                 elif len(ids) == 0 and bcnames[nobc] == "QuadNQuad":
-                    elts = Internal.getNodesFromType(z, "Elements_t")
+                    elts = Internal.getNodesFromType1(z, "Elements_t")
                     maxElt = Internal.getNodeFromName(elts[-1], "ElementRange")[1][1]
-                    CODABCType="QuadNQuad"
+                    CODABCType = "QuadNQuad"
                     Internal.newElements(name=CODABCType, etype=7, econnectivity=numpy.empty(0),
                                          erange=[maxElt+1, maxElt], eboundary=1, parent=z)
                     C._addBC2Zone(z,CODABCType,"FamilySpecified:"+CODABCType, elementRange=[maxElt+1,maxElt])
-                    zone_bc =  Internal.getNodeFromType(z,"ZoneBC_t")
+                    zone_bc = Internal.getNodeFromType1(z, 'ZoneBC_t')
                     lastbcname = C.getLastBCName(CODABCType)
                     node_bc = Internal.getNodeFromName(zone_bc, lastbcname)
                     node_bc[0] = CODABCType
@@ -689,6 +689,7 @@ def getMinimumSpacing__(t, dim, snear=1e-1):
 
 def computeDistance_IP_DP_front42_nonAdaptive__(t, Reynolds, yplus_target, Lref, dim, snear=1e-2):
     # not used currently - not sure what it does... need to look into it
+    import D_IBM
     distance_IP = D_IBM.computeModelisationHeight(Re=Reynolds, yplus=yplus_target, L=Lref)
     locsize = getMinimumSpacing__(t, dim, snear)
     distance_DP = distance_IP+2*(dim**0.5)*locsize
@@ -868,9 +869,6 @@ def computeSurfaceQuadraturePoints__(t, IBM_parameters, frontIP):
         connectivity_IBMFace[[0,1,2,3]] = connectivity_IBMFace[[pos_first, pos_second, pos_third, pos_fourth]]
         nodalData = numpy.hstack([coordsX[connectivity_IBMFace].reshape(4,1), coordsY[connectivity_IBMFace].reshape(4,1), coordsZ[connectivity_IBMFace].reshape(4,1)])
         quadPoints_surf_location[i:i+N_IP_per_face,:] = interpolationMatrix.dot(nodalData)
-
-
-    print("Time to compute the surface quadrature points : ", toc-tic)
 
     N_IP_surf = N_IBM_cells * N_IP_per_face
 

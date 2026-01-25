@@ -1107,7 +1107,7 @@ def importVariables(t1, t2, method=0, eps=1.e-6, addExtra=1):
             if tag[noz1] == 0:
                 z = zones1[noz1]
                 loc = locDict[z[0]]
-                if abs(loc)==1: # ajout direct
+                if abs(loc) == 1: # ajout direct
                     base[0][2].append(z)
 
                 elif abs(loc) == 2: # ajout coord en noeud et champ direct (qui correspond aux centres du  nouveau)
@@ -1123,13 +1123,13 @@ def importVariables(t1, t2, method=0, eps=1.e-6, addExtra=1):
                             z = C.setFields([ar], z, 'nodes')
                     fields = Internal.getNodesFromType1(z, 'FlowSolution_t')
                     for x in fields:
-                        gloc= Internal.getNodeFromType(x, 'GridLocation_t')
+                        gloc = Internal.getNodeFromType1(x, 'GridLocation_t')
                         vloc = 1
                         if gloc is None: vloc = 0
                         else:
                             if gloc[1][0]=='V': vloc=0# =='Vertex'
                         if vloc == 0:
-                            ax = Internal.getNodesFromType(x, 'DataArray_t')
+                            ax = Internal.getNodesFromType1(x, 'DataArray_t')
                             for sx in ax:
                                 ar = Internal.convertDataNode2Array(sx, dim, cn)[1]
                                 z = C.setFields([ar], z, 'centers')

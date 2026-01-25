@@ -1020,7 +1020,7 @@ def _rmRindCells0(t):
         dimZone = dim[4]
         if dim[0] == 'Structured':
             imz = dim[1] ; jmz = dim[2] ; kmz = dim[3]
-            rindnode = Internal.getNodeFromType(zp,'Rind_t')
+            rindnode = Internal.getNodeFromType(zp, 'Rind_t')
             if rindnode is not None:
                 rindnode = Internal.getValue(rindnode)
                 rindimin = rindnode[0]; rindimax = rindnode[1]

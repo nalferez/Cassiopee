@@ -19,8 +19,8 @@ zsr = Internal.createNode('IBCD'+'_3_'+zname, 'ZoneSubRegion_t', value=zname)
 Internal._createChild(zsr, 'GridLocation', 'GridLocation_t', value='CellCenter')
 # mimic the IBM wall pt info
 a2 = D.circle((0,0,0),1, N=40); a2 = C.convertArray2Tetra(a2); a2 = G.close(a2)
-GC = Internal.getNodeFromType(a2,"GridCoordinates_t")
-FSN = Internal.getNodeFromType(a2,'FlowSolution_t')
+GC = Internal.getNodeFromType1(a2, 'GridCoordinates_t')
+FSN = Internal.getNodeFromType1(a2, 'FlowSolution_t')
 nIBC = Internal.getZoneDim(a2)[1]
 XP = numpy.zeros((nIBC),numpy.float64)
 XN = Internal.getNodeFromName(GC,'CoordinateX')[1]; XP[:]=XN[:]
