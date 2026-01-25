@@ -1438,7 +1438,7 @@ Array / PyTree common manipulations
     :type varNameString: string or list of strings
     :param value: value in case of constant init or function.
     :type value: float or function and parameters
-    :param isVectorized: when using functions, indicates that function is vectorized.
+    :param isVectorized: when using functions, indicates that function is in vectorized form.
     :type isVectorized: boolean
     :rtype: identical to input
 

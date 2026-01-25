@@ -2836,9 +2836,7 @@ def window2Range(win):
 
 # -- ClearList: supprime les [] d'une liste
 def clearList(list):
-  t = []
-  for i in list:
-    if i != []: t.append(i)
+  t = [x for x in list if x != []]
   return t
 
 # -- Change a variable name to a CGNS name

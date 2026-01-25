@@ -360,37 +360,43 @@ def curve__(f, N):
         a[0,i] = r[0]; a[1,i] = r[1]; a[2,i] = r[2]
     return ['x,y,z', a, N, 1, 1]
 
-def surface(f, N=100):
+def surface(f, N=100, isVectorized=False):
     """Create a surface from a user defined parametric function or a formula.
     Usage: a = surface(f, N)"""
     if isinstance(f, str): return surface_(f, N)
-    else: return surface__(f, N)
+    else: return surface__(f, N, isVectorized)
 
 # Surface parametree a partir d'une formule
 def surface_(f, N):
     import Converter; import Generator
-    a = Generator.cart( (0,0,0), (1./(N-1),1./(N-1),1), (N,N,1))
+    a = Generator.cart((0,0,0), (1./(N-1),1./(N-1),1), (N,N,1))
     a[0] = 't,u,z'
     a = Converter.initVars(a, f)
     a = Converter.extractVars(a, ['x','y','z'])
     return a
 
 # Surface parametree a partir d'une fonction
-def surface__(f, N):
+def surface__(f, N, isVectorized=False):
+    import Generator
     a = numpy.zeros((3, N*N), dtype=numpy.float64)
     r = f(0,0)
     if len(r) != 3:
         print("Warning: surface: parametric function must return a (x,y,z) tuple.")
         return ['x,y,z', a, N, N, 1]
-    for j in range(N):
-        u = 1.*j/(N-1)
-        for i in range(N):
-            ind = i + j*N
-            t = 1.*i/(N-1)
-            r = f(t,u)
-            a[0,ind] = r[0]
-            a[1,ind] = r[1]
-            a[2,ind] = r[2]
+    if isVectorized: # if f is vectorized, apply it on vectors
+        x = Generator.cart((0,0,0), (1./(N-1),1./(N-1),1), (N,N,1))
+        x = x[1]
+        (a[0,:], a[1,:], a[2,:]) = f(x[0,:],x[1,:])
+    else:
+        for j in range(N):
+            u = 1.*j/(N-1)
+            for i in range(N):
+                ind = i + j*N
+                t = 1.*i/(N-1)
+                r = f(t,u)
+                a[0,ind] = r[0]
+                a[1,ind] = r[1]
+                a[2,ind] = r[2]
     return ['x,y,z', a, N, N, 1]
 
 # - informations -

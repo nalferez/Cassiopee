@@ -98,7 +98,7 @@ def deleteCanvasBase():
     if nodes == []: return
     canvas = nodes[0]
     # delete from plotter
-    zones = Internal.getNodesFromType(canvas, 'Zone_t')
+    zones = Internal.getZones(canvas)
     dels = []
     for z in zones: dels.append(canvas[0]+Internal.SEP1+z[0])
     CPlot.delete(dels)

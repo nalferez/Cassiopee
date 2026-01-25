@@ -1073,8 +1073,8 @@ def _evalPositionIBC(tc,time):
             a32         = ey*ez*(1.-numpy.cos(angle)) + ex*numpy.sin(angle)
             a33         = numpy.cos(angle)            + ez**2*(1.-numpy.cos(angle))
 
-            for subz in Internal.getNodesFromType(z,'ZoneSubRegion_t'):
-                if subz[0][0:3]=="IBC":
+            for subz in Internal.getNodesFromType(z, 'ZoneSubRegion_t'):
+                if subz[0][0:3] == "IBC":
                     for var in list_vars:
                         coordX_PC     = Internal.getNodeFromName(subz,'CoordinateX_P'+var)[1]
                         coordX_PCInit = Internal.getNodeFromName(subz,'CoordinateX_P'+var+'#Init')[1]

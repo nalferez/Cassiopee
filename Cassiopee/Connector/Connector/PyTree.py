@@ -537,9 +537,9 @@ def connectMatchPeriodicNGON__(a, rotationCenter, rotationAngle, translation, to
     infoPer = duplicatePeriodicZones__(allExtFaces0,rotationCenter,rotationAngleD,translation,tol,dim)
     nzonesU = len(zonesU)
     typePeriodic = infoPer[0]
-    if typePeriodic==1: signT = [-1,1]; signR=[0,0]
-    elif typePeriodic==2: signT=[0,0]; signR=[-1,1]
-    elif typePeriodic==3: signT = [-1,-1,1,1]; signR=[-1,1,-1,1]
+    if typePeriodic==1: signT = [-1,1]; signR = [0,0]
+    elif typePeriodic==2: signT = [0,0]; signR = [-1,1]
+    elif typePeriodic==3: signT = [-1,-1,1,1]; signR = [-1,1,-1,1]
     dupname = 'DUPPER_' # prefix for duplicated zones
     for i in range(1, len(infoPer)):
         # renommage des zones dupliquees
@@ -598,9 +598,9 @@ def connectMatchPeriodicStruct__(a,rotationCenter,rotationAngle,translation,tol,
     infoPer = duplicatePeriodicZones__(zonesS, rotationCenter, rotationAngleD, translation, tol, dim)
     nzonesS = len(zonesS)
     typePeriodic = infoPer[0]
-    if typePeriodic == 1: signT = [-1,1]; signR=[0,0]
-    elif typePeriodic == 2: signT=[0,0]; signR=[-1,1]
-    elif typePeriodic == 3: signT = [-1,-1,1,1]; signR=[-1,1,-1,1]
+    if typePeriodic == 1: signT = [-1,1]; signR = [0,0]
+    elif typePeriodic == 2: signT = [0,0]; signR = [-1,1]
+    elif typePeriodic == 3: signT = [-1,-1,1,1]; signR = [-1,1,-1,1]
     dupname = 'DUPPER_' # prefix for duplicated zones
     for i in range(1, len(infoPer)):
         # renommage des zones dupliquees
@@ -783,7 +783,7 @@ def connectNearMatch(t, ratio=2, tol=1.e-6, dim=3):
     else: allRatios = [ratio]
 
     model ='Euler'
-    bases = Internal.getNodesFromType2(t, 'CGNSBase_t')
+    bases = Internal.getNodesFromType1(t, 'CGNSBase_t')
     if bases != []:
         eq = Internal.getNodeFromName2(bases[0], 'GoverningEquations')
         if eq is not None: model = Internal.getValue(eq)
@@ -837,9 +837,9 @@ def connectNearMatch(t, ratio=2, tol=1.e-6, dim=3):
         if allTags1 != [] and len(allTags1) == len(allTags2):
             allTags = Connector.identifyMatchingNM(allTags2, allTags1,tol)
         else: allTags = []
-        allWins=allWins2+allWins1
-        typeOfWins=typeOfWins2+typeOfWins1
-        indirBlkOfWins=indirBlkOfWins2+indirBlkOfWins1
+        allWins = allWins2+allWins1
+        typeOfWins = typeOfWins2+typeOfWins1
+        indirBlkOfWins = indirBlkOfWins2+indirBlkOfWins1
         dimsI = dimsI2+dimsI1
         dimsJ = dimsJ2+dimsJ1
         dimsK = dimsK2+dimsK1
@@ -1567,8 +1567,8 @@ def _applyBCOverlapsStructured(z, depth, loc, val=2, cellNName='cellN', oversetF
                         info = userDef[0][2][0]
                         if info[0] == 'doubly_defined': isDD = 1
                 if isDD == 0:
-                    r = Internal.getNodesFromType(o, 'IndexRange_t')
-                    l = Internal.getNodesFromType(o, 'IndexArray_t')
+                    r = Internal.getNodesFromType1(o, 'IndexRange_t')
+                    l = Internal.getNodesFromType1(o, 'IndexArray_t')
                     if r == [] and l == []:
                         print("Warning: applyBCOverlaps: BCOverlap is ill-defined.")
                     elif r != []:
@@ -1580,13 +1580,13 @@ def _applyBCOverlapsStructured(z, depth, loc, val=2, cellNName='cellN', oversetF
                                                            val=val, cellNName=cellNName)
     # defined by a family with .Solver#Overlap
     # list of families of type overset
-    for bc in Internal.getNodesFromType2(z,'BC_t'):
-        famName = Internal.getNodeFromType1(bc,'FamilyName_t')
+    for bc in Internal.getNodesFromType2(z, 'BC_t'):
+        famName = Internal.getNodeFromType1(bc, 'FamilyName_t')
         if famName is not None:
             famName = Internal.getValue(famName)
             if famName in oversetFamNames:
-                r = Internal.getNodesFromType(bc, 'IndexRange_t')
-                l = Internal.getNodesFromType(bc, 'IndexArray_t')
+                r = Internal.getNodesFromType1(bc, 'IndexRange_t')
+                l = Internal.getNodesFromType1(bc, 'IndexArray_t')
                 if r == [] and l == []:
                     print("Warning: applyBCOverlaps: BCOverlap is ill-defined.")
                 elif r != []:
@@ -1619,8 +1619,8 @@ def applyBCOverlapsStructured(z, depth, loc, val=2, cellNName='cellN',
                         info = userDef[0][2][0]
                         if info[0] == 'doubly_defined': isDD = 1
                 if isDD == 0:
-                    r = Internal.getNodesFromType(o, 'IndexRange_t')
-                    l = Internal.getNodesFromType(o, 'IndexArray_t')
+                    r = Internal.getNodesFromType1(o, 'IndexRange_t')
+                    l = Internal.getNodesFromType1(o, 'IndexArray_t')
                     if r == [] and l == []:
                         print("Warning: applyBCOverlaps: BCOverlap is ill-defined.")
                     elif r != []:
@@ -1638,8 +1638,8 @@ def applyBCOverlapsStructured(z, depth, loc, val=2, cellNName='cellN',
         if famName is not None:
             famName = Internal.getValue(famName)
             if famName in oversetFamNames:
-                r = Internal.getNodesFromType(bc, 'IndexRange_t')
-                l = Internal.getNodesFromType(bc, 'IndexArray_t')
+                r = Internal.getNodesFromType1(bc, 'IndexRange_t')
+                l = Internal.getNodesFromType1(bc, 'IndexArray_t')
                 if r == [] and l == []:
                     print("Warning: applyBCOverlaps: BCOverlap is ill-defined.")
                 elif r != []:
@@ -1677,11 +1677,11 @@ def applyBCOverlaps(t, depth=2, loc='centers', val=2, cellNName='cellN'):
     _addCellN__(a, loc=loc, cellNName=cellNName)
 
     # only non doubly defined
-    oversetFamNames=[]
-    for fam in Internal.getNodesFromType(a,'Family_t'):
-        OV = Internal.getNodeFromName1(fam,'.Solver#Overlap')
+    oversetFamNames = []
+    for fam in Internal.getNodesFromType2(a, 'Family_t'):
+        OV = Internal.getNodeFromName1(fam, '.Solver#Overlap')
         if OV is not None:
-            dd = Internal.getNodeFromName1(OV,'doubly_defined')
+            dd = Internal.getNodeFromName1(OV, 'doubly_defined')
             if dd is None:
                 oversetFamNames.append(Internal.getName(fam))
 
@@ -1699,9 +1699,9 @@ def applyBCOverlaps(t, depth=2, loc='centers', val=2, cellNName='cellN'):
 def _applyBCOverlaps(a, depth=2, loc='centers', val=2, cellNName='cellN', checkCellN=True):
     # ajout du celln si n'existe pas pour une zone
     if checkCellN: _addCellN__(a, loc=loc, cellNName=cellNName)
-    oversetFamNames=[]
-    for fam in Internal.getNodesFromType(a,'Family_t'):
-        OV = Internal.getNodeFromName1(fam,'.Solver#Overlap')
+    oversetFamNames = []
+    for fam in Internal.getNodesFromType2(a, 'Family_t'):
+        OV = Internal.getNodeFromName1(fam, '.Solver#Overlap')
         if OV is not None:
             oversetFamNames.append(Internal.getName(fam))
     zones = Internal.getZones(a)

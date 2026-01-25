@@ -777,98 +777,6 @@ def _projectOnFaces(hook, a, faceList=None):
     return None
 
 #=============================================================================
-# CAD global operations
-#=============================================================================
-
-# read CAD and return CAD hook
-def readCAD(fileName, format='fmt_step'):
-    """Read CAD file and return a CAD hook."""
-    h = occ.readCAD(fileName, format)
-    return h
-
-def createEmptyCAD(fileName="None", format='fmt_step'):
-    """Create an empty CAD."""
-    h = occ.createEmptyCAD(fileName, format)
-    return h
-
-# write CAD to file
-def writeCAD(hook, fileName, format='fmt_step'):
-    """Write CAD file."""
-    occ.writeCAD(hook, fileName, format)
-    return None
-
-# Translate
-def _translate(hook, vector, faceList=None):
-    """Translate all or given faces."""
-    occ.translate(hook, vector, faceList)
-    return None
-
-# Rotate
-def _rotate(hook, Xc, axis, angle, faceList=None):
-    """Rotate all or given faces."""
-    occ.rotate(hook, Xc, axis, angle, faceList)
-    return None
-
-# Scale
-def _scale(hook, factor, X, faceList=None):
-    """Scale all or given faces."""
-    occ.scale(hook, factor, X, faceList)
-    return None
-
-# sew a set of faces
-# faces: face list numbers
-def _sewing(hook, faceList=None, tol=1.e-6):
-    """Sew some faces (suppress redundant edges)."""
-    occ.sewing(hook, faceList, tol)
-    return None
-
-# add fillet from edges with given radius
-def _addFillet(hook, edges, radius, new2OldEdgeMap=[], new2OldFaceMap=[]):
-    """Add fillet on given edges."""
-    occ.addFillet(hook, edges, radius, new2OldEdgeMap, new2OldFaceMap)
-    return None
-
-# edgeMap and faceMap are new2old maps
-def _removeFaces(hook, faceList, new2OldEdgeMap=[], new2OldFaceMap=[]):
-    """Remove given faces."""
-    occ.removeFaces(hook, faceList, new2OldEdgeMap, new2OldFaceMap)
-    return None
-
-# fill hole from edges
-# edges: edge list numbers (must be ordered)
-def _fillHole(hook, edges, faceList=None, continuity=0):
-    """Fill hole defined by close loop of edges."""
-    occ.fillHole(hook, edges, faceList, continuity)
-    return None
-
-# merge faces
-def _mergeFaces(hook, faceList=None):
-    """Merge some faces."""
-    occ.mergeFaces(hook, faceList)
-    return None
-
-def mergeCAD(hooks):
-    """Merge CAD hooks in one new hook."""
-    return occ.mergeCAD(hooks)
-
-# trim two set of surfaces
-def _trimFaces(hook, faceList1, faceList2, mode=2, algo=0):
-    """Trim a set of faces with another set of faces."""
-    occ.trimFaces(hook, faceList1, faceList2, mode, algo)
-    return None
-
-# split all faces
-def _splitFaces(hook, area):
-    """Split all faces to be less than area."""
-    occ.splitFaces(hook, area)
-    return None
-
-def _splitEdge(hook, edgeNo, param=-999., P=(0,0,0)):
-    """Split edge no at param or point P."""
-    occ.splitEdge(hook, edgeNo, param, P)
-    return None
-
-#=============================================================================
 # CAD information
 #=============================================================================
 
@@ -987,3 +895,95 @@ def _loft(hook, profiles, guides):
 def _boolean(hook, faces1, faces2, op=0, rev1=1, rev2=1):
     """Boolean operation on two surfaces."""
     occ.boolean(hook, faces1, faces2, op, rev1, rev2)
+
+#=============================================================================
+# CAD global operations
+#=============================================================================
+
+# read CAD and return CAD hook
+def readCAD(fileName, format='fmt_step'):
+    """Read CAD file and return a CAD hook."""
+    h = occ.readCAD(fileName, format)
+    return h
+
+def createEmptyCAD(fileName="None", format='fmt_step'):
+    """Create an empty CAD."""
+    h = occ.createEmptyCAD(fileName, format)
+    return h
+
+# write CAD to file
+def writeCAD(hook, fileName, format='fmt_step'):
+    """Write CAD file."""
+    occ.writeCAD(hook, fileName, format)
+    return None
+
+# Translate
+def _translate(hook, vector, faceList=None):
+    """Translate all or given faces."""
+    occ.translate(hook, vector, faceList)
+    return None
+
+# Rotate
+def _rotate(hook, Xc, axis, angle, faceList=None):
+    """Rotate all or given faces."""
+    occ.rotate(hook, Xc, axis, angle, faceList)
+    return None
+
+# Scale
+def _scale(hook, factor, X, faceList=None):
+    """Scale all or given faces."""
+    occ.scale(hook, factor, X, faceList)
+    return None
+
+# sew a set of faces
+# faces: face list numbers
+def _sewing(hook, faceList=None, tol=1.e-6):
+    """Sew some faces (suppress redundant edges)."""
+    occ.sewing(hook, faceList, tol)
+    return None
+
+# add fillet from edges with given radius
+def _addFillet(hook, edges, radius, new2OldEdgeMap=[], new2OldFaceMap=[]):
+    """Add fillet on given edges."""
+    occ.addFillet(hook, edges, radius, new2OldEdgeMap, new2OldFaceMap)
+    return None
+
+# edgeMap and faceMap are new2old maps
+def _removeFaces(hook, faceList, new2OldEdgeMap=[], new2OldFaceMap=[]):
+    """Remove given faces."""
+    occ.removeFaces(hook, faceList, new2OldEdgeMap, new2OldFaceMap)
+    return None
+
+# fill hole from edges
+# edges: edge list numbers (must be ordered)
+def _fillHole(hook, edges, faceList=None, continuity=0):
+    """Fill hole defined by close loop of edges."""
+    occ.fillHole(hook, edges, faceList, continuity)
+    return None
+
+# merge faces
+def _mergeFaces(hook, faceList=None):
+    """Merge some faces."""
+    occ.mergeFaces(hook, faceList)
+    return None
+
+def mergeCAD(hooks):
+    """Merge CAD hooks in one new hook."""
+    return occ.mergeCAD(hooks)
+
+# trim two set of surfaces
+def _trimFaces(hook, faceList1, faceList2):
+    """Trim a set of faces with another set of faces."""
+    occ.trimFaces(hook, faceList1, faceList2)
+    return None
+
+# split all faces to be less than area
+def _splitFaces(hook, area):
+    """Split all faces to be less than area."""
+    occ.splitFaces(hook, area)
+    return None
+
+def _splitEdge(hook, edgeNo, param=-999., P=(0,0,0)):
+    """Split edge no at param or point P."""
+    occ.splitEdge(hook, edgeNo, param, P)
+    return None

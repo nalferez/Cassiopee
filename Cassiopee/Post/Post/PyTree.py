@@ -1123,7 +1123,7 @@ def importVariables(t1, t2, method=0, eps=1.e-6, addExtra=1):
                             z = C.setFields([ar], z, 'nodes')
                     fields = Internal.getNodesFromType1(z, 'FlowSolution_t')
                     for x in fields:
-                        gloc= Internal.getNodeFromType(x,'GridLocation_t')
+                        gloc= Internal.getNodeFromType(x, 'GridLocation_t')
                         vloc = 1
                         if gloc is None: vloc = 0
                         else:

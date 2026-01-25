@@ -31,9 +31,9 @@ def AdaptMesh_Init(t, normal2D=None, comm=[], gcells=None, gfaces=None):
     array = C.getFields(I.__GridCoordinates__, z, api=3)[0]
 
     bcs = []
-    zonebc = I.getNodeFromType(z, 'ZoneBC_t')
+    zonebc = I.getNodeFromType1(z, 'ZoneBC_t')
     if zonebc is not None:
-        zbc = I.getNodesFromType(zonebc, 'BC_t')
+        zbc = I.getNodesFromType1(zonebc, 'BC_t')
 
         bc_count = 0
 

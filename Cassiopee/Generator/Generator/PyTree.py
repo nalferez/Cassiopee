@@ -145,9 +145,9 @@ def adaptMesh__(a, indicator="indicator", hook=None, dim=3, conformize=False, sp
     conformizei = 0
     if conformize: conformizei=1
 
-    hangHook=True
+    hangHook = True
     if hook is None:
-        hangHook=False
+        hangHook = False
         hook = _createHook4AdaptMesh(a, dim=dim, splitInfos=None)
 
     FSC = Internal.getNodeFromName(a, Internal.__FlowSolutionCenters__)
@@ -212,8 +212,8 @@ def _createHook4AdaptMesh(a, dim=3, splitInfos=None):
         nfaceselts = Internal.getNFaceNode(z)
         ER = Internal.getNodeFromName(nfaceselts, 'ElementRange')[1]
         ncells = ER[1]-ER[0]+1
-        gcells=numpy.arange(0, ncells)
-        gfaces=numpy.arange(1,nfaces+1)
+        gcells = numpy.arange(0, ncells)
+        gfaces = numpy.arange(1,nfaces+1)
         hook = XC.AdaptMesh_Init(z, normal2D, comm=[], gcells=gcells, gfaces=gfaces)
     else:
         comms = splitInfos["graph"]

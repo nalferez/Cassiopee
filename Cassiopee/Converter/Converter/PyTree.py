@@ -1143,7 +1143,7 @@ def convertFile2PyTree(fileName, format=None, nptsCurve=20, nptsLine=2,
             # auto setting
             (hmin,hmax,hausd) = OCC.occ.analyseEdges(hook)
         CTK.CADHOOK = hook
-        t = OCC.meshAll(hook, hmax, hmax, hausd) # constant hmax
+        t = OCC.meshAll(hook, hmin=hmax, hmax=hmax, hausd=hausd) # constant hmax
         _upgradeTree(t, uncompress, upgrade)
         return t
 

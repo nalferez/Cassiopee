@@ -402,7 +402,7 @@ def checkUniqueNames(t, ntype):
     errors = []
 
     if ntype == 'CGNSBase_t':
-        nodes = Internal.getNodesFromType(t, 'CGNSBase_t')
+        nodes = Internal.getBases(t)
         for n in nodes:
             name = n[0]
             if name not in nameServer: nameServer[name] = 0
@@ -682,11 +682,11 @@ def _correctDonorRanges(t, ntype):
 #==============================================================================
 def _reorderBCMatchPointRange(t):
     for z in Internal.getZones(t):
-        for gc in Internal.getNodesFromType(z,'GridConnectivity1to1_t'):
-            TR = Internal.getNodeFromName(gc,"Transform")
+        for gc in Internal.getNodesFromType(z, 'GridConnectivity1to1_t'):
+            TR = Internal.getNodeFromName(gc, 'Transform')
             TR = Internal.getValue(TR)
             trirac1 = TR[0]; trirac2 = TR[1]; trirac3 = TR[2]
-            PRN = Internal.getNodeFromName(gc,'PointRangeDonor')
+            PRN = Internal.getNodeFromName(gc, 'PointRangeDonor')
             win = Internal.range2Window(Internal.getValue(PRN))
             [imin, imax, jmin, jmax, kmin, kmax] = win
             if imin != imax and trirac1<0:
