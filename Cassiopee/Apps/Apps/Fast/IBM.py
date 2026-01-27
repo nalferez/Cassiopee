@@ -717,7 +717,7 @@ def _modifcellNSymmetryPlan(t, depth=2,dim=3):
             if bctyp == 'BCSymmetryPlane':
                 ptrg = Internal.getNodeFromName1(bc,'PointRange')
                 #dimZ = Internal.getZoneDim(z)
-                
+
                 idir = Ghost.getDirection__(dim, [ptrg])
                 cellN = Internal.getNodeFromName2(z,'cellN')[1]
 

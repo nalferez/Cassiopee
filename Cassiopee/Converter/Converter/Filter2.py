@@ -732,14 +732,14 @@ def updateTreeWithPartialLoadDict(distTree, partialDictLoad):
 
 def loadTreeFromFilter(filename, distTree, comm, hdfFilter):
     hdfFilterWithDim = {key: value for (key, value) in hdfFilter.items() \
-                           if isinstance(value, (list, tuple))}
+                        if isinstance(value, (list, tuple))}
 
     partialDictLoad = C.convertFile2PartialPyTreeFromPath(filename, hdfFilterWithDim, comm)
     updateTreeWithPartialLoadDict(distTree, partialDictLoad)
 
     # > Match with callable
     hdfFilterWithFunc = {key: value for (key, value) in hdfFilter.items() \
-                            if not isinstance(value, (list, tuple))}
+                         if not isinstance(value, (list, tuple))}
     unlockedOnce = True
     while (len(hdfFilterWithFunc) > 0 and unlockedOnce):
         nextHdfFilter = dict()
@@ -753,7 +753,7 @@ def loadTreeFromFilter(filename, distTree, comm, hdfFilter):
         partialDictLoad = C.convertFile2PartialPyTreeFromPath(filename, nextHdfFilter, comm)
         updateTreeWithPartialLoadDict(distTree, partialDictLoad)
         hdfFilterWithFunc = {key: value for (key, value) in nextHdfFilter.items() \
-                                if not isinstance(value, (list, tuple))}
+                             if not isinstance(value, (list, tuple))}
 
     if unlockedOnce is False:
         raise RuntimeError("Something strange in the loading process")
