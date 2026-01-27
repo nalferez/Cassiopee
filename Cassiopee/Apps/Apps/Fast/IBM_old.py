@@ -493,13 +493,13 @@ def extrudeCartesian(t, tb, check=False, extrusion="cart", dz=0.01, NPas=10, spa
 
         for z in Internal.getZones(tree):
 
-            zdim     = Internal.getValue(z)
+            zdim = Internal.getValue(z)
 
             # Modif rind cellule GH en kmin et kmax
             rind = Internal.getNodeFromName1(z, "Rind")[1]
             rind[4]=ific; rind[5]=ific
             # Modif range BC
-            BCs = Internal.getNodesFromType(z, "BC_t")
+            BCs = Internal.getNodesFromType2(z, "BC_t")
             for bc in BCs:
                 ptrg = Internal.getNodeFromName(bc, "PointRange")[1]
                 ptrg[2,0] = 3

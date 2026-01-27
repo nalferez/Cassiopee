@@ -28,7 +28,7 @@ def extractBCOfType(t,bndType):
     for z in Internal.getZones(t):
         zp = Internal.copyRef(z)
         Internal._rmNodesFromType(zp,"FlowSolution_t")
-        connects = Internal.getNodesFromType(z,"Elements_t")
+        connects = Internal.getNodesFromType1(z, "Elements_t")
         cnQUAD = None
         for cn in connects:
             val = Internal.getValue(cn)[0]
@@ -42,8 +42,8 @@ def extractBCOfType(t,bndType):
                 Internal._rmNodesFromName(zp,cn[0])
 
         # physical BCs
-        for bc in Internal.getNodesFromType(z,'BC_t'):
-            if Internal.getValue(bc)==bndType:
+        for bc in Internal.getNodesFromType2(z, 'BC_t'):
+            if Internal.getValue(bc) == bndType:
                 PL = Internal.getNodeFromName(bc,'PointList')
                 GridLoc = Internal.getNodeFromType(bc,'GridLocation_t')
                 GridLoc = Internal.getValue(GridLoc)
@@ -58,7 +58,7 @@ def extractBCOfType(t,bndType):
                 PL = Internal.getNodeFromName(gc,'PointList')
                 GridLoc = Internal.getNodeFromType(gc,'GridLocation_t')
                 GridLoc = Internal.getValue(GridLoc)
-                if PL is not None and GridLoc=='FaceCenter':
+                if PL is not None and GridLoc == 'FaceCenter':
                     PL = Internal.getValue(PL)[0].tolist() # list of elements
                     array = C.getFields(Internal.__GridCoordinates__, zp, api=1)[0]
                     array = Transform.transform.subzoneElements(array, PL)
@@ -106,12 +106,12 @@ def prepare(t_case, t, tskel, check=False):
     # PointList and PointListDonor are actually FaceList, start at 0, ordered as Cartesian !!!
     prefzone ='CART_P' #zone names are eventually prefixed by this name
     for z in Internal.getZones(t):
-        gcnodes = Internal.getNodesFromType(z,'GridConnectivity1to1_t')
+        gcnodes = Internal.getNodesFromType(z, 'GridConnectivity1to1_t')
         for gcnode in gcnodes:
             zdnrname = Internal.getValue(gcnode)
             dnrproc = procDict[zdnrname]
             if dnrproc == Cmpi.rank:
-                Internal._rmNode(z,gcnode)
+                Internal._rmNode(z, gcnode)
     graphM={}
     _create1To1Connectivity(t, tskel=tskel, dim=dimPb, convertOnly=True)
     dictOfAbuttingSurfaces={}

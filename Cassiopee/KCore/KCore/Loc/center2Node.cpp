@@ -171,7 +171,7 @@ E_Int K_LOC::center2nodeStruct(FldArrayF& FCenter,
           ind3 = ind2 + alpha;
 
           for (E_Int n = 1; n <= nv; n++)
-              FNode(ind,n) = 0.25*(FCenter(ind0,n)+FCenter(ind1,n)+FCenter(ind2,n)+FCenter(ind3,n));
+            FNode(ind,n) = 0.25*(FCenter(ind0,n)+FCenter(ind1,n)+FCenter(ind2,n)+FCenter(ind3,n));
         }
       }
     }
@@ -210,10 +210,10 @@ E_Int K_LOC::center2nodeStruct(FldArrayF& FCenter,
           ind7 = ind6 + alpha;
 
           for (E_Int n = 1; n <= nv; n++)
-              FNode(ind,n) = 0.125*(FCenter(ind0,n)+FCenter(ind1,n)+
-                FCenter(ind2,n)+FCenter(ind3,n)+
-                FCenter(ind4,n)+FCenter(ind5,n)+
-                FCenter(ind6,n)+FCenter(ind7,n));
+            FNode(ind,n) = 0.125*(FCenter(ind0,n)+FCenter(ind1,n)+
+              FCenter(ind2,n)+FCenter(ind3,n)+
+              FCenter(ind4,n)+FCenter(ind5,n)+
+              FCenter(ind6,n)+FCenter(ind7,n));
         }
       }
     }
@@ -298,8 +298,8 @@ E_Int K_LOC::center2nodeStruct(FldArrayF& FCenter,
           else w = 1./w;
                
           for (E_Int n = 1; n <= nv; n++)
-              FNode(ind,n) = w*(cellN0*FCenter(ind0,n)+cellN1*FCenter(ind1,n)+
-                cellN2*FCenter(ind2,n)+cellN3*FCenter(ind3,n));
+            FNode(ind,n) = w*(cellN0*FCenter(ind0,n)+cellN1*FCenter(ind1,n)+
+              cellN2*FCenter(ind2,n)+cellN3*FCenter(ind3,n));
         }
       }
     }
@@ -360,10 +360,10 @@ E_Int K_LOC::center2nodeStruct(FldArrayF& FCenter,
           else w = 1./w;
                
           for (E_Int n = 1; n <= nv; n++)
-              FNode(ind,n) = w*(cellN0*FCenter(ind0,n)+cellN1*FCenter(ind1,n)+
-                cellN2*FCenter(ind2,n)+cellN3*FCenter(ind3,n)+
-                cellN4*FCenter(ind4,n)+cellN5*FCenter(ind5,n)+
-                cellN6*FCenter(ind6,n)+cellN7*FCenter(ind7,n));
+            FNode(ind,n) = w*(cellN0*FCenter(ind0,n)+cellN1*FCenter(ind1,n)+
+              cellN2*FCenter(ind2,n)+cellN3*FCenter(ind3,n)+
+              cellN4*FCenter(ind4,n)+cellN5*FCenter(ind5,n)+
+              cellN6*FCenter(ind6,n)+cellN7*FCenter(ind7,n));
         }
       }
     }
@@ -2831,7 +2831,6 @@ E_Int K_LOC::center2nodeUnstruct(FldArrayF& FCenter,
     FldArrayI& cm = *(cn.getConnect(ic));
     E_Int ne = cm.getSize(); // nombre de centres = nombre d'elements
     E_Int nt = cm.getNfld(); // nombre de points par elements de cette connectivite
-    
 
     // Traitement special pour le champ "cellnaturefield" - reecriture
     // de fnode(cellN), ie, cellNNode

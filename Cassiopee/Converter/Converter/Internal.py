@@ -3469,7 +3469,7 @@ def convertDataNodes2Array2(nodes, dim, connects, loc=-1):
   if dim[1] != dim[2]: # on peut decider
     if s == dim[2]: ettype = ettype.replace(',', '*,') + '*'
     elif s != dim[1]:
-      print("Warning: convertDataNodes2Array2: incoherency zone/array.")
+      print("Warning: convertDataNodes2Array2: incoherency zone (%d,%d)/array(%d)."%(dim[1],dim[2],s))
   else: # force + no check
     if loc == 1: ettype = ettype.replace(',', '*,') + '*'
   return [vars, field, cr, ettype]
@@ -3500,11 +3500,13 @@ def convertDataNodes2Array3(nodes, dim, connects, loc=-1):
     else:
       # Le tableau n'est pas coherent avec les noeuds ou les centres
       # de la zone
+      print("Warning: convertDataNodes2Array3: incoherency zone (%d,%d)/array (%d)."%(ni*nk*nk,ni1*nj1*nk1,s))
+      import traceback
+      traceback.print_stack()
       size = ar.shape; lsize = len(size)
       if lsize == 1: ni = size[0]; nj = 1; nk = 1
       elif lsize == 2: ni = size[0]; nj = size[1]; nk = 1
       elif lsize == 3: ni = size[0]; nj = size[1]; nk = size[2]
-      print("Warning: convertDataNodes2Array3: incoherency zone/array.")
       return [vars, field, ni, nj, nk]
 
   # unstructured
@@ -3579,7 +3581,10 @@ def convertDataNodes2Array3(nodes, dim, connects, loc=-1):
   if dim[1] != dim[2]: # on peut decider
     if s == dim[2]: eltString = eltString.replace(',', '*,') + '*'
     elif s != dim[1]:
-      print("Warning: convertDataNodes2Array3: incoherency zone/array.")
+      print("Warning: convertDataNodes2Array3: incoherency zone (%d,%d)/array (%d)."%(dim[1],dim[2],s))
+      import traceback
+      traceback.print_stack()
+
   else: # force + no check
     if loc == 1: eltString = eltString.replace(',', '*,') + '*'
   return [vars, field, cr, eltString]

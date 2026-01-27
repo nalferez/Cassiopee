@@ -267,14 +267,12 @@ def setCursor(cursor, B=None, C=None, D=None):
 def buildCPlotArrays(a, topTree=[]):
     if CPlot.__LOCATION__ == 'nodes':
         if __FIELD__ == '__all__':
-            a = C.center2Node(a, Internal.__FlowSolutionCenters__)
+            ap = C.center2Node(a, Internal.__FlowSolutionCenters__)
         else:
             v = __FIELD__.split(':')
             if len(v) == 2 and v[0] == 'centers':
-                a = C.center2Node(a, __FIELD__)
-    else: a = C.node2Center(a)
-
-    ap = Internal.copyRef(a)
+                ap = C.center2Node(a, __FIELD__)
+    else: ap = C.node2Center(a)
 
     # Oneovern for structured grids
     if __ONEOVERN__ > 1:
