@@ -39,7 +39,7 @@ PyObject* K_GENERATOR::cartNGon(PyObject* self, PyObject* args)
   E_Int ngonType = 1;
   if (!PYPARSETUPLE_(args, TRRR_ TRRR_ TIII_ I_,
                     &xo, &yo, &zo, &hi, &hj, &hk, &ni, &nj, &nk, &ngonType))
-    {
+  {
     return NULL;
   }
   

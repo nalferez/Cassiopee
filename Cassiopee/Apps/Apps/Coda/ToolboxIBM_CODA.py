@@ -7,17 +7,14 @@ import Converter
 import Converter.Distributed as CD
 import Generator.PyTree as G
 import Post.PyTree as P
-import Connector.OversetData as XOD
 import Converter.Mpi as Cmpi
-import Connector.connector as connector
 import numpy
 import Dist2Walls.PyTree as DTW
 import KCore.test as test
 import Connector.PyTree as X
-import Connector.Mpi as Xmpi
 import Transform
-import Distributor2.PyTree as D2
 import Geom.PyTree as D
+import fnmatch
 
 TOL = 1.e-6
 rank = Cmpi.rank; size = Cmpi.size

@@ -279,9 +279,9 @@ def check():
     bases = Internal.getBases(tp)
     nb = 0
     for b in bases:
-        nodes = Internal.getNodesFromType1(b, 'Zone_t')
+        zones = Internal.getNodesFromType1(b, 'Zone_t')
         nz = 0
-        for z in nodes:
+        for z in zones:
             ztype = Internal.getZoneType(z)
             winz = wins[nb][nz]
             if ztype == 1: # structure

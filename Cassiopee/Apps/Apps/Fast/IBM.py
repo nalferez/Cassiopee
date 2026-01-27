@@ -899,7 +899,7 @@ def setInterpData_Hybride(t_octree, tc_octree, t_curvi, blankingMatrix=None, bla
 
         for base in bases: print("verif base order", base[0])
 
-        X._blankCells(t_final, blankingBodies, blankingMatrix, cellNName='cellN', XRaydim1=300, XRaydim2=300, dim=3, delta=0.)
+        X._blankCells(t_curvi, blankingBodies, blankingMatrix, cellNName='cellN', XRaydim1=300, XRaydim2=300, dim=3, delta=0.)
         '''
         BM = numpy.zeros((nbases, 1),dtype=numpy.int32)
         c=0

@@ -4389,15 +4389,16 @@ def _recoverBCs(t, BCInfo, tol=1.e-11, removeBC=True):
     else: return _recoverBCs2(t, BCInfo, tol)
 
 # N'efface pas les matchs et bc deja existantes
-def _recoverBCs2(t, BCInfo, tol):
+def _recoverBCs2(t, BCInfo, tol=1.e-11):
     try: import Post.PyTree as P
     except: raise ImportError("_recoverBCs: requires Post module.")
     try: import Transform.PyTree as T
     except: raise ImportError("_recoverBCs: requires Transform module.")
     try: import Generator.PyTree as G
     except: raise ImportError("_recoverBCs: requires Generator module.")
+    zones = Internal.getZones(t)
     (BCs, BCNames, BCTypes) = BCInfo
-    for z in Internal.getZones(t):
+    for z in zones:
         indicesF = []
         zf = P.exteriorFaces(z, indices=indicesF)
         indicesF = indicesF[0]
@@ -4480,18 +4481,20 @@ def _recoverBCs2(t, BCInfo, tol):
             freeHook(hook)
     return None
 
-def _recoverBCs1(a, T, tol=1.e-11):
+def _recoverBCs1(a, BCInfo, tol=1.e-11):
     """Recover given BCs on a tree.
     Usage: _recoverBCs(a, (BCs, BCNames, BCTypes), tol)"""
-    try:import Post.PyTree as P
+    try: import Post.PyTree as P
     except: raise ImportError("_recoverBCs: requires Post module.")
     _deleteZoneBC__(a)
     zones = Internal.getZones(a)
-    (BCs, BCNames, BCTypes) = T
+    (BCs, BCNames, BCTypes) = BCInfo
     for z in zones:
         indicesF = []
         try: f = P.exteriorFaces(z, indices=indicesF)
         except: continue
+        dim = Internal.getZoneDim(z)
+        if dim[0] == 'Structured': raise ValueError("recoverBC: not for structured grids.")
         indicesF = indicesF[0]
         hook = createHook(f, 'elementCenters')
 
@@ -4506,9 +4509,9 @@ def _recoverBCs1(a, T, tol=1.e-11):
                 erange = Internal.getNodeFromName1(e, 'ElementRange')[1]
                 size += erange[1]-erange[0]+1
             n = len(elts)
-            if n == 1:
+            if n == 1: # BE or NGon
                 ids = identifyElements(hook, b, tol)
-            else:
+            else: # ME
                 bb = breakConnectivity(b)
                 ids = numpy.array([], dtype=Internal.E_NpyInt)
                 for bc in bb:
@@ -4518,10 +4521,13 @@ def _recoverBCs1(a, T, tol=1.e-11):
             ids  = ids[ids > -1]
             sizebc = ids.size
             if sizebc > 0:
+                #if dim[3] == 'NGON':
                 id2 = numpy.empty(sizebc, dtype=Internal.E_NpyInt)
                 id2[:] = indicesF[ids[:]-1]
                 _addBC2Zone(z, BCNames[c], BCTypes[c], faceList=id2)
-
+                #else:
+                #    _addBC2Zone(z, BCNames[c], BCTypes[c], subzone=b)
+                
                 # Recupere BCDataSets
                 fsc = Internal.getNodeFromName(b, Internal.__FlowSolutionCenters__)
 
@@ -4542,9 +4548,7 @@ def _recoverBCs1(a, T, tol=1.e-11):
                                 val0 = numpy.array([val0])
                             val1 = val0[ids0>-1]
                             Internal._createUniqueChild(d, node[0], 'DataArray_t', value=val1)
-
         freeHook(hook)
-
     return None
 
 # -- pushBC
@@ -5091,7 +5095,7 @@ def getEmptyBCForBEZone__(z, dims, pbDim, splitFactor):
 def getEmptyBCForNGonZone__(z, dims, pbDim, splitFactor):
     try: import Transform.PyTree as T; import Post.PyTree as P
     except: raise ImportError("getEmptyBC: requires Transform and Post modules.")
-    indicesF=[]
+    indicesF = []
     f = P.exteriorFaces(z, indices=indicesF)
     indicesF = indicesF[0]
     # BC classique

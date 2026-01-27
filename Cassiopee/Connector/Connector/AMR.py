@@ -651,12 +651,12 @@ def _addIBCDatasets__(t, f, image_pts, wall_pts, ip_pts, IBM_parameters):
                     zf = T.subzone(f,ids, type='elements')
                     G_AMR._addBC2Zone__(z, "IBMWall%d" %nobc, "FamilySpecified:IBMWall", zf)
 
-        for bc in Internal.getNodesFromType(z, 'BC_t'):
+        for bc in Internal.getNodesFromType2(z, 'BC_t'):
             famName = Internal.getNodeFromName(bc, 'FamilyName')
             if famName is not None:
-                if Internal.getValue(famName)=='IBMWall':
+                if Internal.getValue(famName) == 'IBMWall':
                     namebc = bc[0]
-                    ibcdataset=Internal.createNode('BCDataSet','BCDataSet_t', parent=bc,value='Null')
+                    ibcdataset = Internal.createNode('BCDataSet','BCDataSet_t', parent=bc,value='Null')
                     for i in range(N_IP_per_face):
                         dnrPts = Internal.createNode("DonorPointCoordinates"+str(list_suffix_datasets[i]), 'BCData_t', parent=ibcdataset)
                         wallPts = Internal.createNode("WallPointCoordinates"+str(list_suffix_datasets[i]), 'BCData_t', parent=ibcdataset)
@@ -689,7 +689,7 @@ def getMinimumSpacing__(t, dim, snear=1e-1):
 
 def computeDistance_IP_DP_front42_nonAdaptive__(t, Reynolds, yplus_target, Lref, dim, snear=1e-2):
     # not used currently - not sure what it does... need to look into it
-    import D_IBM
+    import Geom.IBM as D_IBM
     distance_IP = D_IBM.computeModelisationHeight(Re=Reynolds, yplus=yplus_target, L=Lref)
     locsize = getMinimumSpacing__(t, dim, snear)
     distance_DP = distance_IP+2*(dim**0.5)*locsize

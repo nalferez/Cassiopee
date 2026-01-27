@@ -15,7 +15,7 @@ def initUnsteadyChimera(t):
     alreadyBlanked={}                                                       # alreadyBlanked: tells if key zone is already blanked or not
 
     # initialize dictionaries
-    zones= Internal.getNodesFromType(t,'Zone_t')
+    zones = Internal.getZones(t)
     Id = 0
     for z in zones: zoneId[z[0]] = Id; Id = Id+1
     alreadyBlanked={}
@@ -55,7 +55,7 @@ def computeUnsteadyInterp(tp, hook, ite,loc='cell', nGhostCells=2):
         iteration = hook[2]
         listInterpData = hook[5]
         ref = hook[8]
-    zones = Internal.getNodesFromType(tp,'Zone_t')
+    zones = Internal.getZones(tp)
     for z in zones:
         donorName = z[0]
         dim = Internal.getZoneDim(z)

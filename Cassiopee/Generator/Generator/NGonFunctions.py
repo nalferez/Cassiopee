@@ -148,7 +148,7 @@ def _createBCNearMatch(a_hexa,bcnearmatch):
     return None
 
 def _createBCStandard(a_hexa,a):
-    nodes_bcs = Internal.getNodesFromType(a,"BC_t")
+    nodes_bcs = Internal.getNodesFromType(a, "BC_t")
     for node_bc in nodes_bcs:
         bctype = Internal.getValue(node_bc)
         bcname = Internal.getName(node_bc)

@@ -265,15 +265,18 @@ def setCursor(cursor, B=None, C=None, D=None):
 # - prend les elts exterieurs pour les Tetra et les Hexa
 #==============================================================================
 def buildCPlotArrays(a, topTree=[]):
+
     if CPlot.__LOCATION__ == 'nodes':
         if __FIELD__ == '__all__':
-            ap = C.center2Node(a, Internal.__FlowSolutionCenters__)
+            a = C.center2Node(a, Internal.__FlowSolutionCenters__)
         else:
             v = __FIELD__.split(':')
             if len(v) == 2 and v[0] == 'centers':
-                ap = C.center2Node(a, __FIELD__)
-    else: ap = C.node2Center(a)
+                a = C.center2Node(a, __FIELD__)
+    else: a = C.node2Center(a)
 
+    ap = Internal.copyRef(a)
+    
     # Oneovern for structured grids
     if __ONEOVERN__ > 1:
         for z in Internal.getZones(ap):

@@ -104,7 +104,7 @@ def run(t=None):
 
     if t is not None:
         if Internal.isTopTree(t): CTK.t = t
-        else: CTK.t, ntype = Internal.node2PyTree(t)
+        else: CTK.t, _ = Internal.node2PyTree(t)
 
     if CTK.t != []:
         # upgrade tree
