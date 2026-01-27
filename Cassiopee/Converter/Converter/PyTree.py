@@ -4527,7 +4527,7 @@ def _recoverBCs1(a, BCInfo, tol=1.e-11):
                 _addBC2Zone(z, BCNames[c], BCTypes[c], faceList=id2)
                 #else:
                 #    _addBC2Zone(z, BCNames[c], BCTypes[c], subzone=b)
-                
+
                 # Recupere BCDataSets
                 fsc = Internal.getNodeFromName(b, Internal.__FlowSolutionCenters__)
 

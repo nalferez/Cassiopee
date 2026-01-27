@@ -276,7 +276,7 @@ def buildCPlotArrays(a, topTree=[]):
     else: a = C.node2Center(a)
 
     ap = Internal.copyRef(a)
-    
+
     # Oneovern for structured grids
     if __ONEOVERN__ > 1:
         for z in Internal.getZones(ap):
