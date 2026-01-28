@@ -4242,7 +4242,7 @@ def getElementNodes(z):
     elt = GE[1][0]
     dimElt = eltNo2Dim(elt)
     dim = max(dim, dimElt)
-  for GE in GEl:  
+  for GE in GEl:
     #if GE[1][1] == 0: out.append(GE)
     elt = GE[1][0]
     dimElt = eltNo2Dim(elt)

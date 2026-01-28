@@ -2972,7 +2972,7 @@ def _initBCDataSet(t, varNameString, val1=None, val2=None):
                         np = max(imax-imin,1)*max(jmax-jmin,1)*max(kmax-kmin,1)
                     elif np2[1].size == 2: # element range
                         npr = np2[1].ravel("k")
-                        np = npr[1] - npr[0] 
+                        np = npr[1] - npr[0]
                 elif np3 is not None:
                     if np3[1].size == 6: # structured range
                         win = Internal.range2Window(np3[1])
@@ -2982,7 +2982,7 @@ def _initBCDataSet(t, varNameString, val1=None, val2=None):
                         np = max(imax-imin,1)*max(jmax-jmin,1)*max(kmax-kmin,1)
                     elif np3[1].size == 2: # element range
                         npr = np3[1].ravel("k")
-                        np = npr[1] - npr[0] 
+                        np = npr[1] - npr[0]
                 else: raise ValueError('initBCDataSet: no PointRange or PointList in BC.')
                 fields = Converter.array('empty',np,1,1)
             fn = Converter.initVars(fields, varNameString, val1, val2)
