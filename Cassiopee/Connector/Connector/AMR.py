@@ -127,7 +127,7 @@ def prepareAMRData(t_case, t, IBM_parameters=None, check=False, dim=3, localDir=
     for bc in Internal.getNodesFromType(t, 'BC_t'):
         bctype = Internal.getValue(bc)
         bcname = Internal.getName(bc)
-        if bctype not in bctypes :
+        if bctype not in bctypes:
             bctypes.append(bctype)
             bcnames.append(bcname)
 

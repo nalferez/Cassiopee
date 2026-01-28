@@ -840,8 +840,12 @@ def _deleteZoneBC__(a, type='None'):
     zones = Internal.getZones(a)
     if type == 'None':
         for z in zones:
-            bc = Internal.getNodesFromName1(z, 'ZoneBC')
-            if bc != []: _rmNodes(z, 'ZoneBC')
+            # remove ZoneBC_t
+            bcs = Internal.getNodesFromType1(z, 'ZoneBC_t')
+            for bc in bcs: Internal._rmNodeByPath(z, bc[0])
+            # remove associated Elements_t corresponding to BCs
+            elts = Internal.getElementBoundaryNodes(z)
+            for e in elts: Internal._rmNodeByPath(z, e[0])
     else: _rmBCOfType(a, type)
     return None
 
@@ -2956,18 +2960,32 @@ def _initBCDataSet(t, varNameString, val1=None, val2=None):
             else:
                 np1 = Internal.getNodeFromName1(b, 'PointList')
                 np2 = Internal.getNodeFromName1(b, 'PointRange')
-                if np2 is not None:
-                    win = Internal.range2Window(np2[1])
-                    imin = win[0]; imax = win[1]
-                    jmin = win[2]; jmax = win[3]
-                    kmin = win[4]; kmax = win[5]
-                    np = max(imax-imin,1)*max(jmax-jmin,1)*max(kmax-kmin,1)
-                elif np1 is not None:
+                np3 = Internal.getNodeFromName1(b, 'ElementRange')
+                if np1 is not None:
                     np = np1[1].size
+                elif np2 is not None:
+                    if np2[1].size == 6: # structured range
+                        win = Internal.range2Window(np2[1])
+                        imin = win[0]; imax = win[1]
+                        jmin = win[2]; jmax = win[3]
+                        kmin = win[4]; kmax = win[5]
+                        np = max(imax-imin,1)*max(jmax-jmin,1)*max(kmax-kmin,1)
+                    elif np2[1].size == 2: # element range
+                        npr = np2[1].ravel("k")
+                        np = npr[1] - npr[0] 
+                elif np3 is not None:
+                    if np3[1].size == 6: # structured range
+                        win = Internal.range2Window(np3[1])
+                        imin = win[0]; imax = win[1]
+                        jmin = win[2]; jmax = win[3]
+                        kmin = win[4]; kmax = win[5]
+                        np = max(imax-imin,1)*max(jmax-jmin,1)*max(kmax-kmin,1)
+                    elif np3[1].size == 2: # element range
+                        npr = np3[1].ravel("k")
+                        np = npr[1] - npr[0] 
                 else: raise ValueError('initBCDataSet: no PointRange or PointList in BC.')
                 fields = Converter.array('empty',np,1,1)
             fn = Converter.initVars(fields, varNameString, val1, val2)
-            nofld = fn[1].shape[0]-1
             varName = varNameString.split('=')[0]
             varName = varName.replace('{', '')
             varName = varName.replace('}', '')
@@ -4458,9 +4476,12 @@ def _recoverBCs2(t, BCInfo, tol=1.e-11):
                         ids = ids[ids > -1]
                         sizebc = ids.size
                         if sizebc > 0:
+                            #if dim[3] == 'NGON':
                             id2 = numpy.empty(sizebc, dtype=Internal.E_NpyInt)
                             id2[:] = indicesE[ids[:]-1]
                             _addBC2Zone(z, BCNames[c], BCTypes[c], faceList=id2)
+                            #else:
+                            #    _addBC2Zone(z, BCNames[c], BCTypes[c], subzone=b)
 
                             # Recupere BCDataSets
                             fsc = Internal.getNodeFromName(b, Internal.__FlowSolutionCenters__)
@@ -6209,16 +6230,14 @@ def _fillEmptyBCWith(t, bndName, bndType, dim=3):
                 dims = Internal.getZoneDim(z)
                 if dims[0] == 'Unstructured':
                     eltType = dims[3]
+                    #if eltType == 'NGON':
                     if eltType != 'MIXED':
                         _addBC2Zone(z, bndName+str(c), bndType, faceList=w); c += 1
-                    else:
-                        try:
-                            import Transform.PyTree as T
-                            zbc = T.subzone(z, w, type='faces')
-                            _addBC2Zone(z, bndName+str(c), bndType, subzone=zbc); c += 1
-                        except:
-                            raise ImportError("_fillEmptyBCWith: requires Transform module for unstructured MIXED zones")
-
+                    else: # BE or ME
+                        try: import Transform.PyTree as T
+                        except: raise ImportError("_fillEmptyBCWith: requires Transform module for unstructured zones")
+                        zbc = T.subzone(z, w, type='faces')
+                        _addBC2Zone(z, bndName+str(c), bndType, subzone=zbc); c += 1
     return None
 
 #==============================================================================

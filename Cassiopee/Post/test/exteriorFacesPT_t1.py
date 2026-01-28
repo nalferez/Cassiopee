@@ -16,13 +16,13 @@ test.testT(b, 1)
 a = G.cartTetra((0,0,0), (1,1.,1), (20,2,1))
 C._addVars(a,'Density'); C._addVars(a,'centers:cellN')
 b = P.exteriorFaces(a)
-test.testT(b,2)
+test.testT(b, 2)
 
 # cas 3D
 a = G.cart((0,0,0), (1,1,1), (4,4,6))
 C._addVars(a,'Density'); C._addVars(a,'centers:cellN')
 b = P.exteriorFaces(a)
-test.testT(b,3)
+test.testT(b, 3)
 
 # cas avec indices
 indices = []

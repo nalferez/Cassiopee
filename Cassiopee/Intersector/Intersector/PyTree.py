@@ -624,9 +624,9 @@ def updateJoinsPointLists2(z, zones, jzids, ptLists):
             # print(numpy.shape(ptl[1]))
 
             # find rank for this id and set list
-            i=-1
+            i = -1
             for k in jzids:
-                i+=1
+                i += 1
                 if k != id: continue
 
                 #print('new j')
@@ -634,7 +634,7 @@ def updateJoinsPointLists2(z, zones, jzids, ptLists):
                 ptLists[i] = numpy.reshape(ptLists[i], (1,len(ptLists[i])))
                 # print(ptLists[i])
 
-                ptl[1]= ptLists[i]
+                ptl[1] = ptLists[i]
                 ptlD[1] = ptLists[i]
 
                 break
@@ -1097,9 +1097,7 @@ def _booleanUnionMZ(t1, t2, xtol=0., jtol=0., agg_mode=1, improve_qual=False, si
     # Search for BC family nodes
     fam_nodes = Internal.getNodesFromType(t1, 'Family_t')
 
-    for node in fam_nodes:
-        zs.append(node)
-
+    for node in fam_nodes: zs.append(node)
 
     # Create new matches
     dict1_ptl = res[i]
@@ -1755,11 +1753,11 @@ def _triangulateBC(t, bctype):
 
         coords = Converter.convertArray2NGon(coords)
 
-        bnds = Internal.getNodesFromType(z, 'BC_t')
+        bnds = Internal.getNodesFromType2(z, 'BC_t')
 
         bcpgs = []
         for bb in bnds :
-            if (Internal.isValue(bb, bctype) == False) : continue
+            if Internal.isValue(bb, bctype) == False: continue
             bcpgs.append(bb[2][1][1][0]) # POINTLIST NUMPY
 
         if bcpgs == []: continue
@@ -1769,7 +1767,7 @@ def _triangulateBC(t, bctype):
         res = XOR.triangulateSpecifiedFaces(coords, bcpgs)
 
         mesh = res[0]
-        pg_oids=res[1]
+        pg_oids = res[1]
 
         # MAJ du maillage de la zone
         C.setFields([mesh], z, 'nodes')
@@ -4148,7 +4146,7 @@ def concatenate(t, tol=1.e-15):
                 # Check size
                 for BCData in Internal.getNodesFromType(BCDataSet, "BCData_t"):
                     for data in Internal.getNodesFromType(BCData, "DataArray_t"):
-                        if ( len(data[1]) != len(pointList)):
+                        if len(data[1]) != len(pointList):
                             raise ValueError('Concatenate. BC size differs for BCDataSet.')
 
                 Internal._addChild(bc,BCDataSet)

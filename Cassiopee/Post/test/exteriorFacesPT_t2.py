@@ -11,7 +11,7 @@ C._addVars(a,'Density'); C._addVars(a,'centers:cellN')
 t = C.newPyTree(['Base',1,a])
 t[2][1] = C.addState(t[2][1], 'Mach', 0.6)
 t = P.exteriorFaces(t)
-test.testT(t,1)
+test.testT(t, 1)
 
 # test faces interieures au sens strict :
 # faces n'ayant que des noeuds exterieurs
@@ -20,7 +20,7 @@ C._addVars(a,'Density'); C._addVars(a,'centers:cellN')
 t = C.newPyTree(['Base',1,a])
 t[2][1] = C.addState(t[2][1], 'Mach', 0.6)
 t = P.exteriorFaces(t)
-test.testT(t,2)
+test.testT(t, 2)
 
 # cas 3D
 a = G.cart((0,0,0), (1,1,1), (4,4,6))
@@ -28,4 +28,4 @@ C._addVars(a,'Density'); C._addVars(a,'centers:cellN')
 t = C.newPyTree(['Base',1,a])
 t[2][1] = C.addState(t[2][1], 'Mach', 0.6)
 t = P.exteriorFaces(t)
-test.testT(t,3)
+test.testT(t, 3)

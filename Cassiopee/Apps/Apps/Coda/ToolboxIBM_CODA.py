@@ -196,10 +196,10 @@ def prepare(t_case, t, tskel, check=False):
     t = C.node2Center(t,['TurbulentDistance'])
     t = P.computeGrad(t, 'TurbulentDistance')
     graddvars=["centers:gradxTurbulentDistance",'centers:gradyTurbulentDistance','centers:gradzTurbulentDistance']
-    t = C.center2Node(t,graddvars)
+    t = C.center2Node(t, graddvars)
     #print("After computeGrad : Perform transfers of gradient correctly ????")
     #Internal._rmNodesFromName(t,Internal.__FlowSolutionCenters__)
-    C._rmVars(t,graddvars)
+    C._rmVars(t, graddvars)
     #
     # Extract front faces
     if IBCType == -1:
@@ -217,9 +217,9 @@ def prepare(t_case, t, tskel, check=False):
     frontType=1
     varsn = ['gradxTurbulentDistance','gradyTurbulentDistance','gradzTurbulentDistance']
 
-    front1 =[]
+    front1 = []
     he = 0.
-    frontDict={}
+    frontDict = {}
     for z in Internal.getZones(t):
         f = P.frontFaces(z,'cellN')
         if Internal.getZoneDim(f)[1]>0:
@@ -232,7 +232,6 @@ def prepare(t_case, t, tskel, check=False):
 
     print(" Compute IBM Wall points...")
 
-    loc='FaceCenter'
     he = he*1.8 # distmax = sqrt(3)*dx => he min = distmax + dx + tol
     #varsn = ['gradxTurbulentDistance','gradyTurbulentDistance','gradzTurbulentDistance']
     allip_pts=[]; allwall_pts=[]; allimage_pts=[]
@@ -986,14 +985,14 @@ def cartRxLoc(X0, H, N, Nb, depth=0, addCellN=False, addBCMatch=False, rank=None
                     out.append(z)
     return out
 
-#suppose que les connectivites quad sont contigues
+# suppose que les connectivites quad sont contigues
 def mergeQuadConn(z):
     NBVERTQ = 4
-    BCs = Internal.getNodesFromType(z, "BC_t")
+    BCs = Internal.getNodesFromType(z, 'BC_t')
 
     rminglob = -1; rmaxglob = -1
     rangeMinT={}; rangeMaxT={}
-    allElts_t = Internal.getNodesFromType(z,'Elements_t')
+    allElts_t = Internal.getNodesFromType(z, 'Elements_t')
     for elts_t in allElts_t:
         typeEt = Internal.getValue(elts_t)[0]
         if typeEt == 7:
@@ -1056,11 +1055,11 @@ def mergeQuadConn0(z):
     rangeMinT={}; rangeMaxT={}
     rmaxall = -1; rminall = 100000000
 
-    for elts_t in Internal.getNodesFromType(z,"Elements_t"):
+    for elts_t in Internal.getNodesFromType(z, "Elements_t"):
         typeEt = Internal.getValue(elts_t)[0]
         if typeEt == 7:
             name = Internal.getName(elts_t)
-            eltRange = Internal.getNodeFromName1(elts_t,"ElementRange")
+            eltRange = Internal.getNodeFromName1(elts_t, "ElementRange")
             rangeMinT[name] = Internal.getValue(eltRange)[0]
             rangeMaxT[name] = Internal.getValue(eltRange)[1]
             rmaxall = max(rangeMaxT[name]+1,rmaxall)

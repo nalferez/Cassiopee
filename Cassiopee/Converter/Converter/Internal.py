@@ -4241,11 +4241,28 @@ def getElementNodes(z):
   for GE in GEl:
     elt = GE[1][0]
     dimElt = eltNo2Dim(elt)
+    dim = max(dim, dimElt)
+  for GE in GEl:  
+    #if GE[1][1] == 0: out.append(GE)
+    elt = GE[1][0]
+    dimElt = eltNo2Dim(elt)
     if dimElt == dim: out.append(GE)
-    elif dimElt > dim:
-      out.clear()
-      dim = dimElt
-      out.append(GE)
+  return out
+
+# -- Retourne une liste des noeuds Elements_t de boundary d'une zone
+# Retourne [] si il n'y en a pas.
+def getElementBoundaryNodes(z):
+  dim = 0; out = []
+  GEl = getNodesFromType1(z, 'Elements_t')
+  for GE in GEl:
+    elt = GE[1][0]
+    dimElt = eltNo2Dim(elt)
+    dim = max(dim, dimElt)
+  for GE in GEl:
+    #if GE[1][1] > 0: out.append(GE)
+    elt = GE[1][0]
+    dimElt = eltNo2Dim(elt)
+    if dimElt < dim: out.append(GE)
   return out
 
 # -- Retourne le noeud Element_t NGon si il existe
@@ -4261,15 +4278,6 @@ def getNFaceNode(z):
   for GE in GEl:
     if GE[1][0] == 23: return GE
   return None
-
-# -- Retourne une liste des noeuds Elements_t de boundary d'une zone
-# Retourne [] si il n'y en a pas.
-def getElementBoundaryNodes(z):
-  GEl = getNodesFromType1(z, 'Elements_t')
-  out = []
-  for GE in GEl:
-    if GE[1][1] > 0: out.append(GE)
-  return out
 
 # -- Update la numerotation des ElementRanges dans l'ordre des connectivites
 def _updateElementRange(z):

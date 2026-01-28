@@ -611,7 +611,7 @@ def setInterpData_Hybride(t_3d, tc_3d, t_curvi, extrusion=None, interpDataType=1
             for zsr in Internal.getNodesFromType(zc, "ZoneSubRegion_t"):
                 zsrname = Internal.getName(zsr)
                 zsrname = zsrname.split('_')
-                if zsrname[0]=='IBCD' and zsrname[1] == itype:
+                if zsrname[0] == 'IBCD' and zsrname[1] == itype:
                     zrname = Internal.getValue(zsr)
                     ptlistD= Internal.getNodeFromName(zsr,'PointListDonor')[1]
                     zloc   = Internal.getNodeFromName(t_3d,zrname)

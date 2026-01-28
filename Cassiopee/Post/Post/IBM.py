@@ -846,8 +846,8 @@ def createCloudIBM__(tc, ibctypes=[], famZones=[], extraIBCVariables=['yplusIP']
     cpt_name = 0
     tl = C.newPyTree(['CLOUD_IBCW'])
     for zc in Internal.getZones(tp):
-        allIBCD = Internal.getNodesFromType(zc,"ZoneSubRegion_t")
-        allIBCD = Internal.getNodesFromName(allIBCD,"IBCD_*")
+        allIBCD = Internal.getNodesFromType(zc, "ZoneSubRegion_t")
+        allIBCD = Internal.getNodesFromName(allIBCD, "IBCD_*")
         for IBCD in allIBCD:
             ztype = int(IBCD[0].split("_")[1])
 

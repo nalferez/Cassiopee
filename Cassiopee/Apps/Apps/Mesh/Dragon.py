@@ -786,7 +786,7 @@ def createDragonMeshForBladeInChannel(ts, dictOfParams={}, check=False, director
 
     print('add families')
     tp = C.newPyTree(['Base']); tp[2][1][2] += [mesh_final]
-    base = Internal.getNodeFromType(tp,'CGNSBase_t')
+    base = Internal.getNodeFromType1(tp, 'CGNSBase_t')
     C._addFamily2Base(base, 'INLET', bndType='BCInflow')
     C._addFamily2Base(base, 'OUTLET', bndType='BCOutflow')
     C._addFamily2Base(base, 'HUB', bndType='BCWall')
@@ -796,11 +796,11 @@ def createDragonMeshForBladeInChannel(ts, dictOfParams={}, check=False, director
 
 def createInternalTetraMesh__(ext_TRI, ts, hext):
     # ts  : ['HUB','SHROUD','BLADE','AMONT','AVAL','PERIODIC']
-    mesh_cart = Internal.getNodesFromName(ts,'SHROUD')
-    mesh_spin = Internal.getNodesFromName(ts,'HUB')
-    mesh_amont = Internal.getNodesFromName(ts,'AMONT')
-    mesh_aval = Internal.getNodesFromName(ts,'AVAL')
-    mesh_perios =  Internal.getNodesFromName(ts,'PERIODIC')
+    mesh_cart = Internal.getNodesFromName1(ts, 'SHROUD')
+    mesh_spin = Internal.getNodesFromName1(ts, 'HUB')
+    mesh_amont = Internal.getNodesFromName1(ts, 'AMONT')
+    mesh_aval = Internal.getNodesFromName1(ts, 'AVAL')
+    mesh_perios =  Internal.getNodesFromName1(ts, 'PERIODIC')
 
     ext = P.exteriorFaces(ext_TRI)
     # ATTENTION REORDER COHERENT CAR NORMALES VERS L INTERIEUR
@@ -814,7 +814,7 @@ def createInternalTetraMesh__(ext_TRI, ts, hext):
     for e in ext:
         DTW._distance2Walls(e, mesh_perios, loc='nodes')
         dl = D.getLength(e)/C.getNPts(e)
-        toldistrel=0.1*dl
+        toldistrel = 0.1*dl
         e1 = P.selectCells(e,'{TurbulentDistance}>%g'%toldistrel,strict=0)
         e1 = T.splitConnexity(e1) # on doit en avoir 2
         DTW._distance2Walls(e1, mesh_amont, loc='nodes')

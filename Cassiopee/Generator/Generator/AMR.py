@@ -879,7 +879,7 @@ def _createQuadConnectivityFromNgonPointList__(a_hexa, a, PL, bcname, bctype):
 
     # --- Ajout des nouveaux éléments à la zone ---
     zone = Internal.getZones(a_hexa)[0]
-    elt_nodes = Internal.getNodesFromType(zone, "Elements_t")
+    elt_nodes = Internal.getNodesFromType1(zone, "Elements_t")
     last_id = Internal.getNodeFromName(elt_nodes[-1], "ElementRange")[1][1]
 
     Internal.newElements(
