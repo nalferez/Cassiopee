@@ -641,11 +641,12 @@ def interiorFaces(t, strict=0):
 def exteriorFacesStructured(t):
     """Return the list of exterior faces for a structured mesh
     Usage: exteriorFacesStructured(a)"""
+    C._deleteZoneBC__(t)
     t = C.deleteFlowSolutions__(t, 'centers')
     zones = Internal.getZones(t)
     listzones = []
     for z in zones:
-        field = C.getAllFields(z, 'nodes', api=1)[0]
+        field = C.getAllFields(z, 'nodes', api=3)[0]
         A = Post.exteriorFacesStructured(field)
         c = 1
         for a in A:
@@ -676,6 +677,7 @@ def exteriorElts(t):
 
 def _exteriorElts(t):
     """Exterior (border) elts of a mesh."""
+    C._deleteZoneBC__(t)
     C._deleteFlowSolutions__(t, 'centers')
     C._TZA3(t, 'nodes', 'nodes', True, Post.exteriorElts)
     return None
@@ -689,6 +691,7 @@ def exteriorEltsStructured(t, depth=1):
 
 def _exteriorEltsStructured(t, depth=1):
     """Exterior (border) elts of a mesh as a structured grid."""
+    C._deleteZoneBC__(t)
     C._TZA3(t, 'nodes', 'nodes', True, Post.exteriorEltsStructured, depth)
     C._TZA3(t, 'centers', 'centers', False, Post.exteriorEltsStructured, depth)
     return None
@@ -1111,7 +1114,7 @@ def importVariables(t1, t2, method=0, eps=1.e-6, addExtra=1):
                     base[0][2].append(z)
 
                 elif abs(loc) == 2: # ajout coord en noeud et champ direct (qui correspond aux centres du  nouveau)
-                    C._rmVars(z,Internal.__FlowSolutionCenters__)
+                    C._rmVars(z, Internal.__FlowSolutionCenters__)
                     zc = C.center2Node(z)
                     coords = Internal.getNodesFromType1(zc, 'GridCoordinates_t')
                     dim = Internal.getZoneDim(zc)
@@ -1127,7 +1130,7 @@ def importVariables(t1, t2, method=0, eps=1.e-6, addExtra=1):
                         vloc = 1
                         if gloc is None: vloc = 0
                         else:
-                            if gloc[1][0]=='V': vloc=0# =='Vertex'
+                            if gloc[1][0] == 'V': vloc = 0 # =='Vertex'
                         if vloc == 0:
                             ax = Internal.getNodesFromType1(x, 'DataArray_t')
                             for sx in ax:

@@ -1410,7 +1410,7 @@ def convertPyTree2FilePartial(t, fileName, comm, Filter, ParallelHDF=False,
 
         # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
         # > Write data in filter in file (With creation of DataSpace)
-        skeletonData = None  # Skeleton Data is inefective (Normaly)
+        skeletonData = None  # Skeleton Data is ineffective (Normaly)
         FilterSort = collections.OrderedDict(sorted(Filter.items()))  # Because sometimes proc have not the same order in key and HDF get in trouble !
         Converter.converter.convertPyTree2FilePartial(t, fileName, format, skeletonData, comm, FilterSort)
         # ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
