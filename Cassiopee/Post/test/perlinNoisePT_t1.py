@@ -13,4 +13,3 @@ test.testT(a, 1)
 a = G.cartHexa((0,0,0), (1,1,1), (10,10,1))
 P._perlinNoise(a)
 test.testT(a, 2)
-
