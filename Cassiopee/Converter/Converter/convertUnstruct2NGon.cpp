@@ -80,7 +80,7 @@ PyObject* K_CONVERTER::convertUnstruct2NGon(PyObject* self, PyObject* args)
             strcmp(eltTypConn,"PYRA")==0))
     {
       PyErr_SetString(PyExc_TypeError, 
-                    "convertUnstruct2NGon: elt type of array (%d) is invalid.");
+                    "convertUnstruct2NGon: elt type of array is invalid.");
       for (size_t v = 0; v < eltTypes.size(); v++) delete [] eltTypes[v];
       RELEASESHAREDU(array, f, cnl); return NULL;  
     }

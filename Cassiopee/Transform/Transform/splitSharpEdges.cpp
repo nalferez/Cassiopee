@@ -479,7 +479,7 @@ PyObject* K_TRANSFORM::splitSharpEdgesList(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, OO_ R_,
                     &array, &arrayI, &alphaRef))
   {
-      return NULL;
+    return NULL;
   }
 
   // Check array
