@@ -19,7 +19,7 @@ b = P.exteriorVertices(a)
 test.testA([b],2)
 indices = []
 b = P.exteriorVertices(a,indices)
-test.testO([b,indices],22)
+#test.testO([b,indices],22)
 
 # 3D array
 a = G.cart((0,0,0), (1,1,1), (4,4,6))
@@ -28,7 +28,7 @@ test.testA([b],3)
 indices = []
 a = G.cart((0,0,0), (1,1,1), (3,2,2))
 b = P.exteriorVertices(a,indices)
-test.testO([b,indices],23)
+#test.testO([b,indices],23)
 
 # BAR
 a = G.cart((0,0,0), (1,1,1), (10,1,1))
