@@ -4451,7 +4451,7 @@ def _recoverBCs2(t, BCInfo, tol=1.e-11):
         else:
             undefBC = True
             indicesE = indicesF
-            
+
         if undefBC:
             zf = T.subzone(z, indicesE, type='faces')
             hook = createHook(zf, 'elementCenters')
@@ -4564,7 +4564,7 @@ def _recoverBCs1(a, BCInfo, tol=1.e-11):
                         bcz = Internal.getNodeFromNameAndType(z, newNameOfBC, 'BC_t')
 
                         ds = Internal.newBCDataSet(name='BCDataSet', value='UserDefined',
-                                               gridLocation='FaceCenter', parent=bcz)
+                                                   gridLocation='FaceCenter', parent=bcz)
                         d = Internal.newBCData('NeumannData', parent=ds)
 
                         for node in Internal.getChildren(fsc):
@@ -5088,7 +5088,7 @@ def getEmptyBCForBEZone__(z, dims, pbDim, splitFactor):
 
     zp = Internal.copyRef(z)
     _deleteFlowSolutions__(zp)
-    
+
     defined = [] # BC deja definies
     for bc in bnds:
         flist = Internal.getNodeFromName1(bc, Internal.__FACELIST__)
@@ -5111,7 +5111,7 @@ def getEmptyBCForBEZone__(z, dims, pbDim, splitFactor):
     sel = P.selectCells2(f, 'centers:__tag__')
     if splitFactor >= 180.: sel = T.splitConnexity(sel)
     else: sel = T.splitSharpEdges(sel, alphaRef=splitFactor)
-    
+
     id0 = []
     for s in sel:
         id1 = identifyElements(hook, s)
