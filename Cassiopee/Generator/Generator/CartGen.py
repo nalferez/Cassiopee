@@ -227,12 +227,12 @@ def cartRx2(XC0, XC1, HC, XF0, XF1, R, dim=3, rank=None, size=None):
     # SplitNParts on core
     if size is None: size = 1
     if rank is None: rank = 0
-    b = Internal.getNodeFromName(t, 'CARTESIAN')
+    b = Internal.getNodeFromName1(t, 'CARTESIAN')
     T._splitNParts(b, N=size, topTree=t)
     D2._distribute(b, NProc=size, algorithm='fast')
 
     # SplitSize + ressource : distribue en meme temps
-    b = Internal.getNodeFromName(t, 'FLEX')
+    b = Internal.getNodeFromName1(t, 'FLEX')
     T._splitSize(b, R=size, topTree=t)
     #D2._distribute(t2, NProc=size, algorithm='fast') # deja fait par splitSize
     D2.printStats(b)
@@ -407,12 +407,12 @@ def cartRx3(XC0, XC1, HC, XF0, XF1, R, dim=3, rank=None, size=None):
     # SplitNParts on core
     if size is None: size = 1
     if rank is None: rank = 0
-    b = Internal.getNodeFromName(t, 'CARTESIAN')
+    b = Internal.getNodeFromName1(t, 'CARTESIAN')
     T._splitNParts(b, N=size, topTree=t)
     D2._distribute(b, NProc=size, algorithm='fast')
 
     # SplitSize + ressource : distribue en meme temps
-    b = Internal.getNodeFromName(t, 'FLEX')
+    b = Internal.getNodeFromName1(t, 'FLEX')
     T._splitSize(b, R=size, topTree=t)
     #D2._distribute(t2, NProc=size, algorithm='fast') # deja fait par splitSize
     D2.printStats(b)
@@ -656,12 +656,12 @@ def cartRxHollow(XC0, XC1, HC, XH0, XH1, XF0, XF1, R, dim=3, rank=None, size=Non
     # SplitNParts on core
     if size is None: size = 1
     if rank is None: rank = 0
-    b = Internal.getNodeFromName(t, 'CARTESIAN')
+    b = Internal.getNodeFromName1(t, 'CARTESIAN')
     T._splitNParts(b, N=size, topTree=t)
     D2._distribute(b, NProc=size, algorithm='fast')
 
     # SplitSize + ressource : distribue en meme temps
-    b = Internal.getNodeFromName(t, 'FLEX')
+    b = Internal.getNodeFromName1(t, 'FLEX')
     T._splitSize(b, R=size, topTree=t)
     #D2._distribute(t2, NProc=size, algorithm='fast') # deja fait par splitSize
     D2.printStats(b)

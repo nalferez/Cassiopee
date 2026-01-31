@@ -93,7 +93,7 @@ def convertCAD2PyTree(fileName, format=None, h=0., chordal_err=0.,
 #================================================================================
 def meshSTRUCT(fileName, format="fmt_step", N=11):
     """Return a STRUCT discretisation of CAD."""
-    hook = OCC.occ.readCAD(fileName, format)
+    hook = readCAD(fileName, format)
     return meshSTRUCT__(hook, N)
 
 def meshSTRUCT__(hook, N=11, faceSubset=None, linkFaceNo=None):
@@ -113,7 +113,7 @@ def meshSTRUCT__(hook, N=11, faceSubset=None, linkFaceNo=None):
 #================================================================================
 def meshTRI(fileName, format="fmt_step", N=11, hmax=-1., order=1):
     """Return a TRI discretisation of CAD."""
-    hook = OCC.occ.readCAD(fileName, format)
+    hook = readCAD(fileName, format)
     return meshTRI__(hook, N, hmax, order)
 
 def meshTRI__(hook, N=11, hmax=-1., order=1, faceSubset=None, linkFaceNo=None):
@@ -145,7 +145,7 @@ def meshTRIHO(fileName, format="fmt_step", N=11):
 #================================================================================
 def meshQUAD(fileName, format="fmt_step", N=11, order=1):
     """Return a QUAD discretisation of CAD."""
-    hook = OCC.occ.readCAD(fileName, format)
+    hook = readCAD(fileName, format)
     return meshQUAD__(hook, N, order)
 
 def meshQUAD__(hook, N=11, order=1, faceSubset=None, linkFaceNo=None):
@@ -164,7 +164,7 @@ def meshQUAD__(hook, N=11, order=1, faceSubset=None, linkFaceNo=None):
 
 def meshQUADHO(fileName, format="fmt_step", N=11):
     """Return a QUAD HO discretisation of CAD."""
-    hook = OCC.occ.readCAD(fileName, format)
+    hook = readCAD(fileName, format)
     return meshQUADHO__(hook, N)
 
 def meshQUADHO__(hook, N=11, faceSubset=None, linkFaceNo=None):
@@ -234,10 +234,10 @@ class CAD:
         self.linkEdgeNo = {} # association zone Name -> CAD edge no
 
         # read CAD
-        self.hook = OCC.occ.readCAD(fileName, format)
-        nbfaces = OCC.occ.getNbFaces(self.hook)
+        self.hook = readCAD(fileName, format)
+        nbfaces = getNbFaces(self.hook)
         for i in range(nbfaces): self.faces.append(Face(i+1, self))
-        nbedges = OCC.occ.getNbEdges(self.hook)
+        nbedges = getNbEdges(self.hook)
         for i in range(nbedges): self.edges.append(Edge(i+1, self))
 
     def evalFace(self, face, distribution):
@@ -321,20 +321,6 @@ class CAD:
 #========================
 #=== nouvelle vision ====
 #========================
-def readCAD(fileName, format='fmt_step'):
-    """Read CAD and return a CAD hook."""
-    return OCC.occ.readCAD(fileName, format)
-
-def writeCAD(hook, fileName, format='fmt_step'):
-    """Write CAD file from CAD hook."""
-    OCC.occ.writeCAD(hook, fileName, format)
-    return None
-
-def freeHook(hook):
-    """Free hook."""
-    OCC.occ.freeHook(hook)
-    return None
-
 def _linkCAD2Tree(hook, t):
     """Put hook in CAD/hook for each zone."""
     zones = Internal.getZones(t)
@@ -535,7 +521,7 @@ def meshAll(hook, hmin=-1, hmax=-1., hausd=-1., faceList=None):
 
     # - Faces -
     b = Internal.getNodeFromName1(t, 'FACES')
-    nbFaces = occ.getNbFaces(hook)
+    nbFaces = getNbFaces(hook)
     # distribution parallele (CAD already split)
     if faceList is None:
         N = nbFaces // Cmpi.size
@@ -593,7 +579,7 @@ def meshAllPara(hook, hmin=-1, hmax=-1., hausd=-1.):
     #OCC.occ.writeCAD(hook, "cube_split.step", "fmt_step")
 
     # distribute faces
-    nfaces = OCC.occ.getNbFaces(hook)
+    nfaces = getNbFaces(hook)
 
     arrays = []; weights = []
     for i in range(nfaces):
@@ -760,7 +746,7 @@ def _setCADcontainer(t, fileName, fileFmt, hmin, hmax, hausd):
 def _meshAllEdges(hook, t, hmin=-1., hmax=-1, hausd=-1, N=-1, edgeList=None):
 
     if edgeList is None:
-        nbEdges = occ.getNbEdges(hook)
+        nbEdges = getNbEdges(hook)
         edgeList = range(1, nbEdges+1)
 
     edges = OCC.meshAllEdges(hook, hmin, hmax, hausd, N)
@@ -859,7 +845,7 @@ def _meshAllFacesTri(hook, t, metric=True, faceList=None, hList=[], hmin=-1, hma
         e = C.getFields([Internal.__GridCoordinates__, Internal.__FlowSolutionNodes__], z, api=3)[0]
         dedges.append(e)
 
-    nbFaces = occ.getNbFaces(hook)
+    nbFaces = getNbFaces(hook)
     if faceList is None:
         N = nbFaces // Cmpi.size
         nstart = Cmpi.rank*N
@@ -910,7 +896,7 @@ def _meshAllFacesStruct(hook, t, faceList=None):
         e = C.getFields([Internal.__GridCoordinates__, Internal.__FlowSolutionNodes__], z, api=3)[0]
         dedges.append(e)
 
-    nbFaces = occ.getNbFaces(hook)
+    nbFaces = getNbFaces(hook)
     if faceList is None:
         N = nbFaces // Cmpi.size
         nstart = Cmpi.rank*N
@@ -1344,12 +1330,17 @@ def writeCAD(hook, fileName, format='fmt_step'):
     OCC.occ.writeCAD(hook, fileName, format)
     return None
 
+def freeHook(hook):
+    """Free hook."""
+    OCC.occ.freeHook(hook)
+    return None
+
 # Return the number of edges in CAD hook
 def getNbEdges(hook):
     """Return the number of edges in CAD hook."""
     return OCC.occ.getNbEdges(hook)
 
-# Return the number of faces in CAD hook
+# Return the number of faces in CAD hookget
 def getNbFaces(hook):
     """Return the number of faces in CAD hook."""
     return OCC.occ.getNbFaces(hook)

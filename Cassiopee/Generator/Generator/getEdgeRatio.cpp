@@ -97,13 +97,13 @@ PyObject* K_GENERATOR::getEdgeRatio(PyObject* self, PyObject* args)
     {
       PyErr_SetString(PyExc_TypeError,
                       "getEdgeRatio: failed.");
-      return NULL;          
+        return NULL;
     }
     return tpl;
   }
   else
   {
-    tpl = K_ARRAY::buildArray3(1, "EdgeRatio", f->getSize(), *cn, eltType, api);
+    tpl = K_ARRAY::buildArray3(1, "EdgeRatio", f->getSize(), *cn, eltType, 1, api);
     FldArrayF* field; 
     K_ARRAY::getFromArray3(tpl, field);
     E_Int ret = K_COMPGEOM::getEdgeLength(
