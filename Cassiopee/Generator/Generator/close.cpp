@@ -91,8 +91,7 @@ PyObject* K_GENERATOR::closeMesh(PyObject* self, PyObject* args)
         rmDegeneratedFaces, rmDegeneratedElts, exportIndirPts);
 
     RELEASESHAREDU(array, f, cn);
-    if (tpl == NULL) return array;
-    else return tpl;
+    return tpl;
   }
   else
   {

@@ -392,6 +392,6 @@ PyObject* K_CONVERTER::convertStruct2NGon(PyObject* self, PyObject* args)
   );
   
   RELEASESHAREDU(tpl, f2, cn2);
-  if (tplClean == NULL) return tpl;
-  else { Py_DECREF(tpl); return tplClean; }
+  Py_DECREF(tpl);
+  return tplClean;
 }

@@ -45,7 +45,7 @@ PyObject* K_GENERATOR::stackMesh(PyObject* self, PyObject* args)
 
   E_Int ns = structF.size();
   E_Int nu = unstructF.size();
-  PyObject* tpl=NULL;
+  PyObject* tpl = NULL;
 
   if (ns >= 2) // concatenate all structs, il doivent etre tous ni*nj et memes champs
   {
