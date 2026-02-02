@@ -78,7 +78,7 @@ PyObject* K_TRANSFORM::subzoneStruct(PyObject* self, PyObject* args)
     }
 
     // Construit l'array resultat
-    PyObject* tpl= K_ARRAY::buildArray3(nfld, varString, in, jn, kn, api);
+    PyObject* tpl = K_ARRAY::buildArray3(nfld, varString, in, jn, kn, api);
     E_Float* fnp = K_ARRAY::getFieldPtr(tpl);
     FldArrayF subzone0(injn*kn, nfld, fnp, true);
 

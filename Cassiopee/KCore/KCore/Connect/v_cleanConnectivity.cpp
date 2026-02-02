@@ -120,30 +120,31 @@ PyObject* K_CONNECT::V_cleanConnectivityNGon(
       }
     }
 
-    rmOrphanPts = false;
-    for (E_Int i = 0; i < npts; i++)
+    if (!rmOverlappingPts)
     {
-      if (indir[i] == -1)
+      E_Int norphans = 0;
+      for (E_Int i = 0; i < npts; i++)
       {
-        rmOrphanPts = true;
-        break;
+        if (indir[i] == -1) norphans++;
+        else indir[i] -= norphans;
       }
+      nuniquePts -= norphans;
     }
   }
 
   // 1b. Identify overlapping points geometrically
-  E_Bool rmDirtyPts = (rmOverlappingPts || rmOrphanPts);
   if (rmOverlappingPts)
   {
     nuniquePts = K_CONNECT::V_identifyDirtyPoints(posx, posy, posz, f, tol,
                                                   indir, rmOverlappingPts);
     if (nuniquePts < 0) return NULL;
-    else if (nuniquePts == npts) rmDirtyPts = false;
   }
   //std::cout<<"npts: " << npts << std::endl;
   //std::cout<<"nuniquePts: " << nuniquePts << std::endl;
 
   // An update is necessary before topological operations in 2. & 3.
+  E_Bool rmDirtyPts = true;
+  if (nuniquePts == npts) rmDirtyPts = false;
   if (rmDirtyPts)
   {
     E_Int j, itrl, nv, vidx;
@@ -191,6 +192,7 @@ PyObject* K_CONNECT::V_cleanConnectivityNGon(
     if (nuniqueElts != nelts) rmDuplicatedFaces = true;
     else rmDuplicatedElts = false;
   }
+  if (nuniqueElts == nelts) rmDirtyElts = false;
   //std::cout<<"nelts: " << nelts << std::endl;
   //std::cout<<"nuniqueElts: " << nuniqueElts << std::endl;
 
@@ -204,6 +206,7 @@ PyObject* K_CONNECT::V_cleanConnectivityNGon(
                                                        rmDegeneratedFaces);
     if (nuniqueFaces == nfaces) rmDuplicatedFaces = false;
   }
+  if (nuniqueFaces == nfaces) rmDirtyFaces = false;
   //std::cout<<"nfaces: " << nfaces << std::endl;
   //std::cout<<"nuniqueFaces: " << nuniqueFaces << std::endl;
 
@@ -320,8 +323,8 @@ PyObject* K_CONNECT::V_cleanConnectivityNGon(
   }
 
   // --- 5. Create resized connectivity ---
-  if (rmOverlappingPts || rmDuplicatedFaces || rmDuplicatedElts)
-  {  
+  if (rmDirtyPts || rmDirtyFaces || rmDirtyElts)
+  {
     E_Bool center = false;
     tpl = K_ARRAY::buildArray3(nfld, varString, nuniquePts, nuniqueElts,
                                nuniqueFaces, "NGON", sizeFN2, sizeEF2,
@@ -362,6 +365,10 @@ PyObject* K_CONNECT::V_cleanConnectivityNGon(
     }
 
     RELEASESHAREDU(tpl, f2, cn2);
+  }
+  else  // nothing to do, copy input connectivity
+  {
+    tpl = K_ARRAY::buildArray3(f, varString, cn, "NGON", api);
   }
   
   if (exportIndirPts)
@@ -709,8 +716,6 @@ PyObject* K_CONNECT::V_cleanConnectivityME(
   E_Bool exportIndirPts
 )
 {
-  E_Bool rmDirtyElts = (rmDuplicatedElts || rmDegeneratedElts);
-  
   PyObject* tpl = NULL;
   E_Int nc = cn.getNConnect();
   E_Int vidx;
@@ -765,18 +770,18 @@ PyObject* K_CONNECT::V_cleanConnectivityME(
   }
 
   // 1b. Identify overlapping points geometrically
-  E_Bool rmDirtyPts = (rmOverlappingPts || rmOrphanPts);
-  if (rmDirtyPts)
+  if (rmOverlappingPts)
   {
     nuniquePts = K_CONNECT::V_identifyDirtyPoints(posx, posy, posz, f, tol,
                                                   indir, rmOverlappingPts);
     if (nuniquePts < 0) return NULL;
-    else if (nuniquePts == npts) rmDirtyPts = false;
   }
   //std::cout<<"npts: " << npts << std::endl;
   //std::cout<<"nuniquePts: " << nuniquePts << std::endl;
   
   // An update is necessary before topological operations in 2.
+  E_Bool rmDirtyPts = true;
+  if (nuniquePts == npts) rmDirtyPts = false;
   if (rmDirtyPts)
   {
     // 1.c Reindex vertices (no change in size)
@@ -821,11 +826,10 @@ PyObject* K_CONNECT::V_cleanConnectivityME(
   // --- 2. Identify dirty elements topologically ---
   E_Int ntotUniqueElts = ntotElts;
   std::vector<E_Int> indirPH, nuniqueElts;
-  if (rmDirtyElts)
+  if (rmDuplicatedElts || rmDegeneratedElts)
   {
     ntotUniqueElts = K_CONNECT::V_identifyDirtyElementsME(
         dim, cn, indirPH, nuniqueElts, ntotElts, rmDegeneratedElts);
-    if (ntotUniqueElts == ntotElts) rmDuplicatedElts = false;
   }
   else
   {
@@ -840,6 +844,8 @@ PyObject* K_CONNECT::V_cleanConnectivityME(
   //std::cout<<"ntotUniqueElts: " << ntotUniqueElts << std::endl;
 
   // --- 3. Reindex & Compress connectivities ---
+  E_Bool rmDirtyElts = true;
+  if (ntotUniqueElts == ntotElts) rmDirtyElts = false;
   if (rmDirtyElts)
   {
     E_Int k = 0; // write pointer
@@ -868,8 +874,8 @@ PyObject* K_CONNECT::V_cleanConnectivityME(
   }
 
   // --- 4. Create resized connectivity ---
-  if (rmOverlappingPts || rmDirtyElts)
-  {  
+  if (rmDirtyPts || rmDirtyElts)
+  {
     E_Bool center = false;
     tpl = K_ARRAY::buildArray3(nfld, varString, nuniquePts, nuniqueElts,
                                eltType, center, api);
@@ -899,6 +905,10 @@ PyObject* K_CONNECT::V_cleanConnectivityME(
       }
     }
     RELEASESHAREDU(tpl, f2, cn2);
+  }
+  else  // nothing to do, copy input connectivity
+  {
+    tpl = K_ARRAY::buildArray3(f, varString, cn, eltType, api);
   }
   
   if (exportIndirPts)

@@ -980,6 +980,17 @@ def _close(t, tol=1.e-12, rmOverlappingPts=True, rmOrphanPts=True,
     C.setFields(fields, t, 'nodes')
     return None
 
+def rmOrphans(a):
+    """Remove orphan vertices."""
+    return close(a, rmOverlappingPts=False, rmOrphanPts=True,
+                 rmDuplicatedFaces=False, rmDuplicatedElts=False,
+                 rmDegeneratedFaces=False, rmDegeneratedElts=False)
+
+def _rmOrphans(a):
+    return _close(a, rmOverlappingPts=False, rmOrphanPts=True,
+                  rmDuplicatedFaces=False, rmDuplicatedElts=False,
+                  rmDegeneratedFaces=False, rmDegeneratedElts=False)
+
 def zip(a, tol=1.e-12):
     """Zip zones if they are distant of tol."""
     t = Internal.copyRef(a)
