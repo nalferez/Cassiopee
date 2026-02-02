@@ -168,7 +168,7 @@ def streamLine2(t, X0, vector, N=2000, eps=1.e-2, maxCompt=20):
 def _computeGrad2(t, var, withCellN=True):
     """Compute the gradient of a variable defined in array."""
     if Cmpi.size == 1: return P._computeGrad2(t, var, withCellN)
-    
+
     import Converter.converter
     import Post
 
@@ -322,7 +322,7 @@ def _computeGrad2(t, var, withCellN=True):
 def _computeDiv2(t, var, withCellN=True):
     """Compute the divergence of a variable defined in array."""
     if Cmpi.size == 1: return P._computeDiv2(t, var, withCellN)
-    
+
     import Converter.converter
     import Post
 
@@ -375,8 +375,8 @@ def _computeDiv2(t, var, withCellN=True):
                 tri = Internal.getValue(tri)
                 (t1,t2,t3) = tri
                 [indR,fld] = Converter.converter.extractBCMatchStruct(fields,(iminD,jminD,kminD,imaxD,jmaxD,kmaxD),
-                                                                       (iminR,jminR,kminR,imaxR,jmaxR,kmaxR),
-                                                                       (niR,njR,nkR),(t1,t2,t3))
+                                                                      (iminR,jminR,kminR,imaxR,jmaxR,kmaxR),
+                                                                      (niR,njR,nkR),(t1,t2,t3))
                 oppNode = procDict[donor]
                 n = [donor, z[0], fld, PLD.ravel('k')]
                 if oppNode not in export: export[oppNode] = [n]
