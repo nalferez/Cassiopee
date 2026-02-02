@@ -198,7 +198,6 @@ def _setHoleInterpolatedPoints(t):
     # Compute graph of match
     procDict = Cmpi.getProcDict(t)
     graph = Cmpi.computeGraph(t, type='match', procDict=procDict)
-
     zones = Internal.getZones(t)
     export = {}
 

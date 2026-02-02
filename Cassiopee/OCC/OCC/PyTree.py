@@ -1340,7 +1340,7 @@ def getNbEdges(hook):
     """Return the number of edges in CAD hook."""
     return OCC.occ.getNbEdges(hook)
 
-# Return the number of faces in CAD hookget
+# Return the number of faces in CAD hook
 def getNbFaces(hook):
     """Return the number of faces in CAD hook."""
     return OCC.occ.getNbFaces(hook)

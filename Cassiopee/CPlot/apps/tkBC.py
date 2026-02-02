@@ -51,7 +51,7 @@ def getAllDefinedBC(t):
             if r is not None:
                 if Internal.getValue(r) == 'Abutting1to1': natives.add('BCMatch')
 
-        # BCNearMatch
+        # BCNearMatch or BCOverlap
         nodes = Internal.getNodesFromType2(z, 'GridConnectivity_t')
         for i in nodes:
             r = Internal.getNodeFromType1(i, 'GridConnectivityType_t')
@@ -61,13 +61,7 @@ def getAllDefinedBC(t):
                     if f is not None and Internal.getValue(f).startswith('BCStage'):
                         natives.add(Internal.getValue(f))
                     else: natives.add('BCNearMatch')
-
-        # BCOverlap
-        nodes = Internal.getNodesFromType2(z, 'GridConnectivity_t')
-        for i in nodes:
-            r = Internal.getNodeFromType1(i, 'GridConnectivityType_t')
-            if r is not None:
-                if Internal.getValue(r) == 'Overset': natives.add('BCOverlap')
+                elif Internal.getValue(r) == 'Overset': natives.add('BCOverlap')
 
     natives = list(natives)
     natives.sort(key=str.lower)
