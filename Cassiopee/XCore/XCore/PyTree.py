@@ -34,14 +34,12 @@ def AdaptMesh_Init(t, normal2D=None, comm=[], gcells=None, gfaces=None):
     zonebc = I.getNodeFromType1(z, 'ZoneBC_t')
     if zonebc is not None:
         zbc = I.getNodesFromType1(zonebc, 'BC_t')
-
         bc_count = 0
-
         for bc in zbc:
-            plist = I.getNodeFromName(bc, 'PointList')
+            plist = I.getNodeFromName1(bc, 'PointList')
             name = bc[0]
             #tag = I.getNodeFromName(bc, 'Tag')[1][0]
-            try: tag = I.getNodeFromName(bc, 'Tag')[1][0]
+            try: tag = I.getNodeFromName1(bc, 'Tag')[1][0]
             except: tag = bc_count; bc_count += 1
             bctype = I.getValue(bc)
             bcs.append([plist[1], tag, name, bctype])
@@ -554,13 +552,13 @@ def _triangulateSkin(m):
         if zbc is not None:
             bcs = I.getNodesFromType1(zbc, 'BC_t')
             for bc in bcs:
-                ptlists.append(I.getNodeFromName(bc, 'PointList')[1][0])
+                ptlists.append(I.getNodeFromName1(bc, 'PointList')[1][0])
         m_out, ptlists_out = xcore.triangulate_skin(marr, ptlists)
         C.setFields([m_out], zone, 'nodes')
         if zbc is not None:
             bcs = I.getNodesFromType1(zbc, 'BC_t')
             for j, bc in enumerate(bcs):
-                ptlist = I.getNodeFromName(bc, 'PointList')
+                ptlist = I.getNodeFromName1(bc, 'PointList')
                 ptlist[1] = ptlists_out[j]
 
     return None

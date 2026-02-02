@@ -120,7 +120,7 @@ def createApp(win):
 
     B = TTK.Button(Frame, text="Modify", command=modifyPoint)
     B.grid(row=1, column=1, columnspan=2, sticky=TK.EW)
-    BB = CTK.infoBulle(parent=B, text='Modify point coordinate.')
+    BB = CTK.infoBulle(parent=B, text='Modify point coordinates.')
 
 #==============================================================================
 # Called to display widgets

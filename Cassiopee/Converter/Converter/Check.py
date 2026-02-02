@@ -686,7 +686,7 @@ def _reorderBCMatchPointRange(t):
             TR = Internal.getNodeFromName1(gc, 'Transform')
             TR = Internal.getValue(TR)
             trirac1 = TR[0]; trirac2 = TR[1]; trirac3 = TR[2]
-            PRN = Internal.getNodeFromName(gc, 'PointRangeDonor')
+            PRN = Internal.getNodeFromName1(gc, 'PointRangeDonor')
             win = Internal.range2Window(Internal.getValue(PRN))
             [imin, imax, jmin, jmax, kmin, kmax] = win
             if imin != imax and trirac1<0:
@@ -1144,7 +1144,7 @@ def checkElementNodes(t):
                 c = Internal.getNodeFromName1(connects[iBE], 'ElementConnectivity')
                 if c[1] is None:
                     print("Warning: CheckPyTree: ElementConnectivity is None (may not be loaded).")
-                else:
+                elif c[1].size > 0:
                     minv = numpy.min(c[1]); maxv = numpy.max(c[1])
                     npts = C.getNPts(z)
                     if minv < 1 or maxv > npts:
@@ -1237,8 +1237,8 @@ def _correctBC_PL2ER(t):
                 for zbc in Internal.getNodesFromType2(z, 'BC_t'):
                     bndName = Internal.getName(zbc)
                     #bndType = Internal.getValue(zbc)
-                    gcl = Internal.getNodeFromType(zbc, 'GridLocation_t')
-                    PL = Internal.getNodeFromName(zbc, 'PointList')
+                    gcl = Internal.getNodeFromType1(zbc, 'GridLocation_t')
+                    PL = Internal.getNodeFromName1(zbc, 'PointList')
                     if PL is not None:
                         if gcl is None or Internal.getValue(gcl)=='Vertex':
                             C._initVars(z,'tag',0.)
@@ -1257,9 +1257,9 @@ def _correctBC_PL2ER(t):
 
                         elif Internal.getValue(gcl) == 'FaceCenter':
                             bc_gcname = 'Elements_%s'%(Internal.getName(zbc))
-                            bc_gcnode = Internal.getNodeFromName(z,bc_gcname)
+                            bc_gcnode = Internal.getNodeFromName(z, bc_gcname)
                             if bc_gcnode is not None:
-                                ER = Internal.getNodeFromName(bc_gcnode,'ElementRange')
+                                ER = Internal.getNodeFromName(bc_gcnode, 'ElementRange')
                                 if ER is not None: ER = Internal.getValue(ER)
 
                         if ER is not None:

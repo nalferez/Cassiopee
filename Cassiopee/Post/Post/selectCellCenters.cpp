@@ -317,11 +317,10 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
 
     if (nntot == 0) fout->reAllocMat(0, nfld);
     else if (cleanConnectivity == 1 && posx > 0 && posy > 0 && posz > 0)
-      tpl = K_CONNECT::V_cleanConnectivity(
-        varString, *fout, *acn, eltType, 1.e-10);
+      tpl = K_CONNECT::V_cleanConnectivity(varString, *fout, *acn, eltType, 1.e-10);
     else tpl = K_ARRAY::buildArray3(*fout, varString, *acn, eltType, api);
     delete acn; delete fout;
-    if (res == 1) delete[] eltType;
+    if (res == 1) delete [] eltType;
   }
   else // elements NGON
   {
@@ -353,7 +352,7 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
       new_ph_ids = -1;
       keep_pg    = -1; 
       
-      // Boucle sur le nombre d elements
+      // Boucle sur le nombre d'elements
       for (E_Int i = 0; i < nbElements; i++)
       {
         nbFaces = cnEFp[0];
@@ -494,7 +493,7 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
     delete cout; delete fout;     
   }
 
-  PyList_Append(l,tpl) ; Py_DECREF(tpl);
+  PyList_Append(l,tpl); Py_DECREF(tpl);
     
   RELEASESHAREDB(res, array, f, cnp);
   return l;

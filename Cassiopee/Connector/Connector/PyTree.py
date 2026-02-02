@@ -620,7 +620,7 @@ def connectMatchPeriodicStruct__(a,rotationCenter,rotationAngle,translation,tol,
                     if angle == 180. or angle == -180.:
                         nogci = 0
                         for gc in gcnodes:
-                            if Internal.getValue(gc)==Internal.getName(zonesS[noz]):
+                            if Internal.getValue(gc) == Internal.getName(zonesS[noz]):
                                 rotation_angle = Internal.getNodeFromName(gc, "RotationAngle")
                                 if rotation_angle:
                                     nogci += 1

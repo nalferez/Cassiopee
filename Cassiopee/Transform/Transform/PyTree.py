@@ -2269,7 +2269,7 @@ def _splitSizeUpR__(t, N, R, multigrid, dirs, minPtsPerDir, topTree):
         import Distributor2.PyTree as D2
         for np, p in enumerate(procs):
             for zname in p[1]:
-                z = Internal.getNodeFromName(t, zname)
+                z = Internal.getNodeFromName2(t, zname)
                 D2._addProcNode(z, np)
     except: pass
     return None

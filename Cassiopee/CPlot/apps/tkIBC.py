@@ -122,7 +122,7 @@ def symmetrize():
     noz = CTK.Nz[0]
     bodySymName = CTK.t[2][nob][0]
     z = CTK.t[2][nob][2][noz]
-    snear_sym = Internal.getValue(Internal.getNodeFromName(z,'snear'))
+    snear_sym = Internal.getValue(Internal.getNodeFromName(z, 'snear'))
 
     if axis == 'Around XY-': dir_sym = 1
     elif axis == 'Around XZ-': dir_sym = 2

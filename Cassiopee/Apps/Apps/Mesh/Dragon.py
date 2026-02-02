@@ -423,17 +423,17 @@ def createDragonMeshForBladeInChannel(ts, dictOfParams={}, check=False, director
         raise("ValueError: createDragonMesh: 3 zones must be defined: HUB/SHROUD/BLADE")
         return None
 
-    surf_hub = Internal.getNodeFromName(ts, "HUB")
+    surf_hub = Internal.getNodeFromName2(ts, "HUB")
     if surf_hub is None or surf_hub == []:
         raise("ValueError: no base/zone of name HUB found.")
         return None
 
-    surf_shroud = Internal.getNodeFromName(ts,"SHROUD")
+    surf_shroud = Internal.getNodeFromName2(ts,"SHROUD")
     if surf_shroud is None or surf_shroud==[]:
         raise("ValueError: no base/zone of name SHROUD found.")
         return None
 
-    surf_blade = Internal.getNodeFromName(ts,'BLADE')
+    surf_blade = Internal.getNodeFromName2(ts,'BLADE')
     if surf_blade is None or surf_blade==[]:
         raise("ValueError: no base/zone of name BLADE found.")
         return None
@@ -503,14 +503,14 @@ def createDragonMeshForBladeInChannel(ts, dictOfParams={}, check=False, director
     distl0 = C.getMaxValue(lines_ext_aube[0],'TurbulentDistance')
     distl1 = C.getMaxValue(lines_ext_aube[1],'TurbulentDistance')
     if distl0 < distl1:
-        lines_ext_aube[0][0]='line_BLADE_HUB'
-        lines_ext_aube[1][0]='line_BLADE_SHROUD'
+        lines_ext_aube[0][0] = 'line_BLADE_HUB'
+        lines_ext_aube[1][0] = 'line_BLADE_SHROUD'
     else:
-        lines_ext_aube[0][0]='line_BLADE_SHROUD'
-        lines_ext_aube[1][0]='line_BLADE_HUB'
+        lines_ext_aube[0][0] = 'line_BLADE_SHROUD'
+        lines_ext_aube[1][0] = 'line_BLADE_HUB'
 
-    line_aube_hub = Internal.getNodeFromName(lines_ext_aube,'line_BLADE_HUB')
-    line_aube_shroud = Internal.getNodeFromName(lines_ext_aube,'line_BLADE_SHROUD')
+    line_aube_hub = Internal.getNodeFromName(lines_ext_aube, 'line_BLADE_HUB')
+    line_aube_shroud = Internal.getNodeFromName(lines_ext_aube, 'line_BLADE_SHROUD')
 
     hook = C.createHook(surf_aube, function='nodes')
     nodesMatch = C.identifyNodes(hook, line_aube_hub)

@@ -132,10 +132,10 @@ def getState():
         VARS[5].set(str(aly*180./math.pi))
 
     # Modele de turbulence
-    node = Internal.getNodeFromName(state, 'Density')
+    node = Internal.getNodeFromName1(state, 'Density')
     if node is not None: Density = Internal.getValue(node)
     else: Density = None
-    node = Internal.getNodeFromName(state, 'Rok')
+    node = Internal.getNodeFromName1(state, 'Rok')
     if node is not None: RokInf = Internal.getValue(node)
     else: RokInf = None
 
@@ -146,7 +146,7 @@ def getState():
 
         MuInf = Density*Vit / max(reynolds,1.e-10) # L=1
 
-        node = Internal.getNodeFromName(state, 'TurbulentSANuTildeDensity')
+        node = Internal.getNodeFromName1(state, 'TurbulentSANuTildeDensity')
         if node is not None:
             RoNuTilde = Internal.getValue(node)
             MutInf = RoNuTilde

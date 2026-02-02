@@ -314,28 +314,28 @@ def computeVariables():
         CTK.TXT.insert('START', 'Error: ', 'Error'); return
 
     # If gamma exists -> suppose full RefState, we take all from it
-    gamma = Internal.getNodeFromName(state, 'Gamma')
+    gamma = Internal.getNodeFromName1(state, 'Gamma')
     fail = False
     if gamma is not None: gamma = Internal.getValue(gamma)
     else: fail = True
 
-    Cv = Internal.getNodeFromName(state, 'Cv')
+    Cv = Internal.getNodeFromName1(state, 'Cv')
     if Cv is not None: Cv = Internal.getValue(Cv)
     else: fail = True
 
-    TInf = Internal.getNodeFromName(state, 'Temperature')
+    TInf = Internal.getNodeFromName1(state, 'Temperature')
     if TInf is not None: TInf = Internal.getValue(TInf)
     else: fail = True
 
-    Ts = Internal.getNodeFromName(state, 'Ts')
+    Ts = Internal.getNodeFromName1(state, 'Ts')
     if Ts is not None: Ts = Internal.getValue(Ts)
     else: fail = True
 
-    Cs = Internal.getNodeFromName(state, 'Cs')
+    Cs = Internal.getNodeFromName1(state, 'Cs')
     if Cs is not None: Cs = Internal.getValue(Cs)
     else: fail = True
 
-    Mus = Internal.getNodeFromName(state, 'Mus')
+    Mus = Internal.getNodeFromName1(state, 'Mus')
     if Mus is not None: Mus = Internal.getValue(Mus)
     else: fail = True
 

@@ -22,7 +22,7 @@ for z in Internal.getZones(a):
     GC = Internal.getNodeFromType1(z, 'GridCoordinates_t')
     Internal._rmNodesFromName(z,GC[0])
     if noz == 1:
-        XA = Internal.getNodeFromName(GC, 'CoordinateX')
+        XA = Internal.getNodeFromName1(GC, 'CoordinateX')
         Internal._rmNodesFromName(GC, 'CoordinateX')
         GC[2].append(XA)
     z[2].append(GC)

@@ -819,7 +819,7 @@ def _deleteBCOverlapWithDonorZone__(a, removeDnrZones=True, removeDnrFam=True):
                 if val == 'Overset' and zoneName != donorName: # no auto attach
                     typeOfDnr = 0 # 1: zone, 2: family
                     # check if donorName is a zone name
-                    if Internal.getNodeFromName(zones,donorName) is not None: typeOfDnr = 1
+                    if Internal.getNodeFromName(zones, donorName) is not None: typeOfDnr = 1
                     else: # check if it is referenced to a family
                         if Internal.getNodeFromName(families,donorName) is not None: typeOfDnr=2
 

@@ -115,11 +115,11 @@ def _eikonal(t,tc=None,loc='nodes', nitmax=10, err=0.01,algo=fmm):
             no = 0
             for z in Internal.getNodesFromType2(t,"Zone_t"):
                 if isConverged[no] == -1: # a ete eikonalise: transferts
-                    z2 = Internal.getNodeFromName(tc,z[0])
-                    C._cpVars(z,loc+':Phi',z2,'Phi')
-                    C._initVars(z2,'flag',1.)
+                    z2 = Internal.getNodeFromName(tc, z[0])
+                    C._cpVars(z, loc+':Phi', z2, 'Phi')
+                    C._initVars(z2, 'flag', 1.)
                     # PAS THREADE ?????
-                    X._setInterpTransfers(t,z2, variables=['Phi','flag'],variablesIBC=None)
+                    X._setInterpTransfers(t, z2, variables=['Phi','flag'], variablesIBC=None)
                 no += 1
 
         # Convergence

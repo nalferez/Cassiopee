@@ -23,9 +23,9 @@ GC = Internal.getNodeFromType1(a2, 'GridCoordinates_t')
 FSN = Internal.getNodeFromType1(a2, 'FlowSolution_t')
 nIBC = Internal.getZoneDim(a2)[1]
 XP = numpy.zeros((nIBC),numpy.float64)
-XN = Internal.getNodeFromName(GC,'CoordinateX')[1]; XP[:]=XN[:]
+XN = Internal.getNodeFromName1(GC,'CoordinateX')[1]; XP[:]=XN[:]
 YP = numpy.zeros((nIBC),numpy.float64)
-YN = Internal.getNodeFromName(GC,'CoordinateY')[1]; YP[:]=YN[:]
+YN = Internal.getNodeFromName1(GC,'CoordinateY')[1]; YP[:]=YN[:]
 ZP = numpy.ones((nIBC),numpy.float64)*0.005
 DENS = numpy.ones((nIBC),numpy.float64)
 PRESS = 101325*numpy.ones((nIBC),numpy.float64)

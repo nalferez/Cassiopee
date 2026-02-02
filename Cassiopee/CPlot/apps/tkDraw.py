@@ -25,7 +25,7 @@ ALLZONES = []
 #==============================================================================
 def getVectorsFromCanvas():
     e1 = (1,0,0); e2 = (0,1,0)
-    node = Internal.getNodeFromName(CTK.t, 'CANVAS')
+    node = Internal.getNodeFromName1(CTK.t, 'CANVAS')
     if node is None: return e1,e2
     zones = Internal.getZones(node)
     if zones == []: return e1,e2
