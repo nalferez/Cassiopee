@@ -48,7 +48,7 @@ t = C.newPyTree(['Base', a])
 test.testT(t, 4)
 
 #-----------------
-# cas 2D sturcture
+# cas 2D structure
 #-----------------
 # Avec un arbre
 a = G.cart((0,0,0),(1,1,1),(10,10,2))
@@ -59,7 +59,7 @@ b = G.cart((10,0,0),(1,1,1),(10,10,2))
 b = C.addBC2Zone(b, 'overlap', 'BCOverlap', 'imin')
 t = C.newPyTree(['Base']); t[2][1][2] += [a,b]
 t[2][1] = C.addState(t[2][1], 'Mach', 0.6)
-t = C.fillEmptyBCWith(t, 'wall', 'BCWall',dim=2)
+t = C.fillEmptyBCWith(t, 'wall', 'BCWall', dim=2)
 test.testT(t, 5)
 
 # Avec une liste de zones
@@ -69,6 +69,6 @@ a = C.addBC2Zone(a, 'overlap', 'BCOverlap', 'imin')
 a = C.addBC2Zone(a, 'match1', 'BCMatch', 'jmin', a, 'jmax', [1,2,3])
 b = G.cart((10,0,0),(1,1,1),(20,20,2)); b[0] = 'cart2'
 b = C.addBC2Zone(b, 'overlap', 'BCOverlap', 'imin')
-A = C.fillEmptyBCWith([a,b], 'wall', 'BCWall',dim=2)
+A = C.fillEmptyBCWith([a,b], 'wall', 'BCWall', dim=2)
 t = C.newPyTree(['Base']); t[2][1][2] += A
 test.testT(t, 6)

@@ -327,7 +327,7 @@ void compute_overlap(const K_FLD::FloatArray& crd1, const ngon_unit& PGs1,
         ELT2::template normal<crd_t, 3>(crd2, nodes2, nb_nodes2, 1, n2);
       
       E_Float ps = NUGA::dot<3>(n1,n2);
-      if (::fabs(ps) < ps_min) continue;
+      if (fabs(ps) < ps_min) continue;
       
       // Polygons pairs are now roughly overlapping/parallel : important in order to have a relevant result when using simplicial_colliding with Triangle::overlap
       
@@ -514,7 +514,7 @@ bool get_colliding<NUGA::aPolygon, edge_mesh_t>
 
     if (z1*z2 < 0.) continue; // means crossing 
 
-    E_Float mz = std::min(::fabs(z1), ::fabs(z2));
+    E_Float mz = std::min(fabs(z1), fabs(z2));
     keep[i] = (mz < ATOL);
   }
 

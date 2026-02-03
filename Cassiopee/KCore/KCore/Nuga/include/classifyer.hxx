@@ -67,7 +67,7 @@ namespace NUGA
 
     operator double() const { return val; }
 
-    double val;
+    E_Float val;
     std::vector<E_Int> masks;
   };
 
@@ -75,7 +75,7 @@ namespace NUGA
   struct data_trait<XCELLN_VAL, zmesh_t>
   {
     using wdata_t = std::vector<color_t>;
-    using outdata_t = std::vector<double>;
+    using outdata_t = std::vector<E_Float>;
 
     static void mark_cell_w_mask(wdata_t & data, E_Int i, E_Int im, E_Int val)
     {
@@ -115,7 +115,7 @@ namespace NUGA
     using outdata_t = typename data_trait<POLICY, zmesh_t>::outdata_t;
 
   public:
-    classifyer(double RTOL):_RTOL(RTOL) {}
+    classifyer(E_Float RTOL):_RTOL(RTOL) {}
 
     void prepare(zmesh_t & z_mesh,
                  const std::vector<K_FLD::FloatArray> &mask_crds,
@@ -142,7 +142,7 @@ namespace NUGA
                            const std::vector<E_Int>& z_priorities, E_Int rank_wnp,
                            std::vector< bmesh_t*> & mask_bits);
 
-    void __build_mask_bits2(zmesh_t& z_mesh, double ARTOL, eMetricType mtype, double PS_MIN, // these parameters to deal with overlapping
+    void __build_mask_bits2(zmesh_t& z_mesh, E_Float ARTOL, eMetricType mtype, E_Float PS_MIN, // these parameters to deal with overlapping
                             const std::vector<K_FLD::FloatArray> &mask_crds,
                             const std::vector<K_FLD::IntArray>& mask_cnts,
                             std::vector< std::vector<E_Int> > &mask_wall_ids,
@@ -261,7 +261,7 @@ namespace NUGA
 
 #ifdef CLASSIFYER_DBG
         E_Float l2 = sqrt(fni[0] * fni[0] + fni[1] * fni[1] + fni[2] * fni[2]);
-        assert(::fabs(l2 - 1.) < EPSILON); // NOT DEGEN
+        assert(fabs(l2 - 1.) < EPSILON); // NOT DEGEN
 #endif
 
         E_Float ray[3];
@@ -327,7 +327,7 @@ namespace NUGA
 
 #ifdef CLASSIFYER_DBG
             E_Float l2 = sqrt(nj[0] * nj[0] + nj[1] * nj[1] + nj[2] * nj[2]);
-            assert(::fabs(l2 - 1.) < EPSILON); // NOT DEGEN
+            assert(fabs(l2 - 1.) < EPSILON); // NOT DEGEN
 #endif
             NUGA::diff<3>(C, ae1G, ray);
             E_Float ps = NUGA::dot<3>(ray, nj);
@@ -363,7 +363,7 @@ namespace NUGA
         omega += K_MESH::Triangle::oriented_trihedral_angle(G1, ae2.m_crd.col(T[0]), ae2.m_crd.col(T[1]), ae2.m_crd.col(T[2]));
       }
 
-      omega = ::fabs(::fabs(omega) - 4. *NUGA::PI);
+      omega = fabs(fabs(omega) - 4. *NUGA::PI);
 
       if (omega < 1.e-13) return IN;
 
@@ -378,7 +378,7 @@ namespace NUGA
         omega += K_MESH::Triangle::oriented_trihedral_angle(G2, ae1.m_crd.col(T[0]), ae1.m_crd.col(T[1]), ae1.m_crd.col(T[2]));
       }
 
-      omega = ::fabs(::fabs(omega) - 4. *NUGA::PI);
+      omega = fabs(fabs(omega) - 4. *NUGA::PI);
 
       if (omega < 1.e-13) return IN_1;
 
@@ -407,14 +407,14 @@ namespace NUGA
     }
 
     
-    static inline eClassify classify2D(NUGA::aPolygon & ae1_2D, NUGA::aPolygon& ae2_2D, double ABSTOL)
+    static inline eClassify classify2D(NUGA::aPolygon & ae1_2D, NUGA::aPolygon& ae2_2D, E_Float ABSTOL)
     {
       DELAUNAY::Triangulator dt;
 
       bool is_in{ false };
       for (E_Int k = 0; k < ae1_2D.m_crd.cols(); ++k)
       {
-        const double* P = ae1_2D.m_crd.col(k);
+        const E_Float* P = ae1_2D.m_crd.col(k);
         // if P is in ae1, ae0 is a piece of ae1
         #ifdef NDEBUG
         ae2_2D.fast_is_in_pred<DELAUNAY::Triangulator, 2>(dt, ae2_2D.m_crd, P, is_in, ABSTOL);
@@ -546,7 +546,7 @@ namespace NUGA
 
     // rearrange by decreasing mask box size (because a bigger mask potentially hides more cells) 
     STACK_ARRAY(int, nbits, maskidx);
-    std::vector<std::pair<double, int>> palma;
+    std::vector<std::pair<E_Float, int>> palma;
 
     for (size_t i = 0; i < nbits; ++i)
     {
@@ -742,7 +742,7 @@ namespace NUGA
   ///
   TEMPLATE_TYPES
   void TEMPLATE_CLASS::__build_mask_bits2
-  (zmesh_t & z_mesh, double ARTOL, eMetricType mtype, double AMAX, // these parameters to deal with overlapping
+  (zmesh_t & z_mesh, E_Float ARTOL, eMetricType mtype, E_Float AMAX, // these parameters to deal with overlapping
    const std::vector<K_FLD::FloatArray> &mask_crds, const std::vector<K_FLD::IntArray>& mask_cnts,
    std::vector< std::vector<E_Int> > &mask_wall_ids,
    const std::vector<E_Int>& z_priorities, E_Int rank_wnp, std::vector< bound_mesh_t*> & mask_bits, bound_mesh_t& WP, bound_mesh_t& WNP)
@@ -1110,7 +1110,7 @@ namespace NUGA
     for (size_t i=0; i < data.size(); ++i)
     {
       if (data[i] == XVAL) xs.push_back(i);
-      dat[i] = ::fabs(data[i]);//for medit
+      dat[i] = fabs(data[i]);//for medit
     }
     if (xs.empty())
       std::cout << "NO COLLISIONS WITH CURRENT MASK" << std::endl;
@@ -1160,7 +1160,7 @@ namespace NUGA
 #endif
 
     // 2.3 : update z_xcelln with IN & X: RULE : IN > X > OUT
-    for (size_t i=0; i < z_xcelln.size(); ++i)z_xcelln[i] = std::min(double(z_xcelln[i]), cur_xcelln[i]);
+    for (size_t i=0; i < z_xcelln.size(); ++i)z_xcelln[i] = std::min(E_Float(z_xcelln[i]), cur_xcelln[i]);
     // 2.4 : check nb of subzones. STOP if < 2
     E_Int nb_subzones = *std::max_element(ALL(cur_xcelln)) - UPPER_COL + 1;
 

@@ -38,7 +38,7 @@ __all__ = [
     'normalize', '_normalize', 'randomizeVar', 'rmVars',
     'send', 'setPartialFields', 'setValue', 'addGhostCellsNGon',
     'checkFileType', 'convertHO2LO', 'convertLO2HO', 'convertExt2Format__',
-    'mergeConnectivity','adaptSurfaceNGon',
+    'mergeConnectivity', 'mergeByEltType', 'adaptSurfaceNGon',
     '_signNGonFaces', '_unsignNGonFaces', 'makeParentElements'
 ]
 
@@ -1387,6 +1387,14 @@ def convertArray2Hexa(array):
         return b
     else: return convertArray2Hexa1__(array)
 
+def mergeByEltType(array):
+    """Merge an unstructured array by element type."""
+    if isinstance(array[0], list):
+        b = []
+        for i in array: b.append(converter.mergeByEltType(i))
+        return b
+    else: return converter.mergeByEltType(array)
+
 def convertArray2NGon__(array, api=1):
     try: sub = array[3]
     except: raise TypeError("convertArray2NGon: arg must be an array.")
@@ -1843,7 +1851,7 @@ def _unsignNGonFaces(a):
         isSigned = 1
         for i in a:
             if isSigned == 1: isSigned = converter.unsignNGonFaces(i)
-            else: break # stop if unsigned
+            else: break # stop if unsigned (assume consistent signness)
     else:
         isSigned = converter.unsignNGonFaces(a)
     return isSigned

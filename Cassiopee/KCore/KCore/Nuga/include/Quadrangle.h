@@ -93,8 +93,8 @@ namespace K_MESH
       b.compute(acrd, _nodes, NB_NODES, 0/*idx start*/);
       for (E_Int i = 0; i < NB_NODES; ++i)
       {
-        bb.minB[i] = std::min(bb.minB[i], b.minB[i]);
-        bb.maxB[i] = std::max(bb.maxB[i], b.maxB[i]);
+        bb.minB[i] = K_FUNC::E_min(bb.minB[i], b.minB[i]);
+        bb.maxB[i] = K_FUNC::E_max(bb.maxB[i], b.maxB[i]);
       }
     }
     

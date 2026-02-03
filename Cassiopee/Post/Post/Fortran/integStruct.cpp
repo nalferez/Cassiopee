@@ -148,12 +148,18 @@ void K_POST::integStructNodeCenter2D(
   E_Int ni1 = ni - 1;
   result = 0.0;
 
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [nthreads];
+
   #pragma omp parallel
   {
     E_Int ind, ind1, ind2, ind3, ind4;
     E_Float f1, f2, f3, f4;
 
-    #pragma omp for collapse(2) reduction(+:result)
+    E_Int it = __CURRENT_THREAD__;
+    reti[it] = 0.;
+
+    #pragma omp for
     for (E_Int j = 0; j <= nj - 2; j++)
     {
       for (E_Int i = 0; i <= ni - 2; i++)
@@ -169,11 +175,17 @@ void K_POST::integStructNodeCenter2D(
         f3 = ratio[ind3] * field[ind3];
         f4 = ratio[ind4] * field[ind4];
 
-        result += surf[ind] * (f1 + f2 + f3 + f4);
+        reti[it] += surf[ind] * (f1 + f2 + f3 + f4);
       }
     }
   }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    result += reti[it];
+  }
   result *= 0.25;
+  delete [] reti;
 }
 
 // ============================================================================
@@ -215,21 +227,30 @@ void K_POST::integStructCellCenter2D(
   E_Float& result)
 {
   result = 0.0;
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [nthreads];
 
   #pragma omp parallel
   {
     E_Int ind;
+    E_Int it = __CURRENT_THREAD__;
+    reti[it] = 0.;
 
-    #pragma omp for collapse(2) reduction(+:result)
+    #pragma omp for
     for (E_Int j = 0; j <= nj1 - 1; j++)
     {
       for (E_Int i = 0; i <= ni1 - 1; i++)
       {
         ind = i + j * ni1;
-        result += ratio[ind] * surf[ind] * field[ind];
+        reti[it] += ratio[ind] * surf[ind] * field[ind];
       }
     }
   }
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    result += reti[it];
+  }
+  delete [] reti;
 }
 
 // ============================================================================

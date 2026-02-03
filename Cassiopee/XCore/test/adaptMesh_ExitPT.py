@@ -13,10 +13,10 @@ Internal._adaptNGon32NGon4(a)
 
 normal2D = numpy.array([0.0,0.0,1.0])
 ngonelts = Internal.getNGonNode(a)
-ER = Internal.getNodeFromName(ngonelts, 'ElementRange')[1]
+ER = Internal.getNodeFromName1(ngonelts, 'ElementRange')[1]
 nfaces = ER[1]
 nfaceselts = Internal.getNFaceNode(a)
-ER = Internal.getNodeFromName(nfaceselts, 'ElementRange')[1]
+ER = Internal.getNodeFromName1(nfaceselts, 'ElementRange')[1]
 ncells = ER[1]-ER[0]+1
 gcells = numpy.arange(0, ncells)
 gfaces = numpy.arange(1, nfaces+1)

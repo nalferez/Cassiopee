@@ -122,37 +122,53 @@ void K_POST::integNormUnstructNodeCenter(
   E_Float res2 = 0.0;
   E_Float res3 = 0.0;
 
-  #pragma omp parallel
-  for (E_Int ic = 0; ic < nc; ic++)
-  {
-    K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
-    E_Int nelts = cm.getSize();
-    E_Int elOffset = nepc[ic];
-    E_Int nvpe = cm.getNfld();
-    E_Float nvpeinv = 1./nvpe;
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [3*nthreads];
 
+  #pragma omp parallel
+  {
     E_Int ind;
     E_Float sum, f;
+    E_Int it = 3*__CURRENT_THREAD__;
+    reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
 
-    #pragma omp for reduction(+:res1,res2,res3)
-    for (E_Int i = 0; i < nelts; i++)
+    for (E_Int ic = 0; ic < nc; ic++)
     {
-      f = 0.0;
-      for (E_Int j = 1; j <= nvpe; j++)
+      K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
+      E_Int nelts = cm.getSize();
+      E_Int elOffset = nepc[ic];
+      E_Int nvpe = cm.getNfld();
+      E_Float nvpeinv = 1./nvpe;
+
+      #pragma omp for
+      for (E_Int i = 0; i < nelts; i++)
       {
-        ind = cm(i, j) - 1;
-        f += ratio[ind] * field[ind];
+        f = 0.0;
+        for (E_Int j = 1; j <= nvpe; j++)
+        {
+          ind = cm(i, j) - 1;
+          f += ratio[ind] * field[ind];
+        }
+        sum = nvpeinv * f;
+        reti[it] += sx[i+elOffset] * sum;
+        reti[it+1] += sy[i+elOffset] * sum;
+        reti[it+2] += sz[i+elOffset] * sum;
       }
-      sum = nvpeinv * f;
-      res1 += sx[i+elOffset] * sum;
-      res2 += sy[i+elOffset] * sum;
-      res3 += sz[i+elOffset] * sum;
     }
+  }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    res1 += reti[3*it];
+    res2 += reti[3*it+1];
+    res3 += reti[3*it+2];
   }
 
   result[0] = res1;
   result[1] = res2;
   result[2] = res3;
+
+  delete [] reti;
 }
 
 // ============================================================================
@@ -168,16 +184,35 @@ void K_POST::integNormUnstructCellCenter(
   E_Float res2 = 0.0;
   E_Float res3 = 0.0;
 
-  #pragma omp parallel for reduction(+:res1,res2,res3)
-  for (E_Int i = 0; i < nelts; i++)
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [3*nthreads];
+
+  #pragma omp parallel 
   {
-    E_Float f = ratio[i] * field[i];
-    res1 += nsurfx[i] * f;
-    res2 += nsurfy[i] * f;
-    res3 += nsurfz[i] * f;
+    E_Float f;
+    E_Int it = 3*__CURRENT_THREAD__;
+    reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
+
+    # pragma omp for
+    for (E_Int i = 0; i < nelts; i++)
+    {
+      f = ratio[i] * field[i];
+      reti[it] += nsurfx[i] * f;
+      reti[it+1] += nsurfy[i] * f;
+      reti[it+2] += nsurfz[i] * f;
+    }
+  }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    res1 += reti[3*it];
+    res2 += reti[3*it+1];
+    res3 += reti[3*it+2];
   }
 
   result[0] = res1;
   result[1] = res2;
   result[2] = res3;
+
+  delete [] reti;
 }

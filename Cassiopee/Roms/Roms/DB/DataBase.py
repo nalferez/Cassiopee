@@ -122,7 +122,7 @@ class DataBase:
     # IN: ref: reference mesh if your sample has the same topology
     # IN: data: the tree, zone, data
     # IN: compressionTol: if None: lossless else compression accuracy
-    def register(self, descp, point, ref=None, data=None, compressionTol=None):
+    def register(self, descp, point, ref=None, data=None, vars=None, compressionTol=None):
         """Register data in db."""
         if self.mode == 'r': raise ValueError('register: can not write in read only mode.')
 
@@ -130,7 +130,6 @@ class DataBase:
             raise ValueError("register: must have all parameters: "+str(self.parameters))
         if ref is None: ref = "None"
 
-        varString = ''
         if data is not None:
             if isinstance(data, numpy.ndarray):
                 data = ['data', data, [], 'DataArray_t']
@@ -144,9 +143,12 @@ class DataBase:
                     variables += ['dx', 'dy', 'dz']
             else:
                 raise ValueError("register: data is invalid.")
-            varString = ''
-            for v in variables: varString += v+','
-            if len(varString) > 2: varString = varString[:-1]
+        else:
+            if vars is not None: variables = vars
+            else: variables = []
+        varString = ''
+        for v in variables: varString += v+','
+        if len(varString) > 2: varString = varString[:-1]
 
         # check if parameters already exists in db
         # and return id
@@ -509,7 +511,8 @@ class DataBase:
             q = rows[c]
             id = q[0]
             print("join: adding", pt, "to "+self.dirName)
-            self.register(q[1], pt, ref=q[3], data=None)
+            vars = q[4].split(',')
+            self.register(q[1], pt, ref=q[3], data=None, vars=vars)
             id2 = self.cursor.lastrowid
             shutil.copy(db2.dirName+"/%05d"%id+".cgns", self.dirName+"/%05d"%id2+".cgns")
 

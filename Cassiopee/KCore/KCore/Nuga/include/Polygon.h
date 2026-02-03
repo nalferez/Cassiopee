@@ -256,7 +256,7 @@ public:
     for (E_Int n = 0; n < nb_nodes; ++n)
     {
       E_Int Ni = *(nodes + n) + shift;
-      val = std::min(val, nodal_tol2[Ni]);
+      val = K_FUNC::E_min(val, nodal_tol2[Ni]);
     }
     return val;
   }
@@ -1089,11 +1089,12 @@ inline void Polygon::imprint(K_FLD::FloatArray& crd1, const E_Int* pnodes1, E_In
 
       if (d2 > EPSILON) continue;
 
+      /*
       if (std::isnan(d2))
       {
         assert(false); // should not happen
         continue;
-      }
+      }*/
 
       if (d2 > EPSILON) continue;
 

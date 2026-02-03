@@ -161,31 +161,43 @@ void K_POST::integUnstructNodeCenter(
   }
   
   result = 0.0;
+  
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [nthreads];
 
   #pragma omp parallel
-  for (E_Int ic = 0; ic < nc; ic++)
   {
-    K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
-    E_Int nelts = cm.getSize();
-    E_Int elOffset = nepc[ic];
-    E_Int nvpe = cm.getNfld();
-    E_Float nvpeinv = 1./nvpe;
-
     E_Int ind;
     E_Float f;
+    E_Int it = __CURRENT_THREAD__;
+    reti[it] = 0.;
 
-    #pragma omp for reduction(+:result)
-    for (E_Int i = 0; i < nelts; i++)
+    for (E_Int ic = 0; ic < nc; ic++)
     {
-      f = 0.0;
-      for (E_Int j = 1; j <= nvpe; j++)
+      K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
+      E_Int nelts = cm.getSize();
+      E_Int elOffset = nepc[ic];
+      E_Int nvpe = cm.getNfld();
+      E_Float nvpeinv = 1./nvpe;
+
+      #pragma omp for
+      for (E_Int i = 0; i < nelts; i++)
       {
-        ind = cm(i, j) - 1;
-        f += ratio[ind] * field[ind];
+        f = 0.0;
+        for (E_Int j = 1; j <= nvpe; j++)
+        {
+          ind = cm(i, j) - 1;
+          f += ratio[ind] * field[ind];
+        }
+        reti[it] += nvpeinv * surf[i+elOffset] * f;
       }
-      result += nvpeinv * surf[i+elOffset] * f;
     }
   }
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    result += reti[it];
+  }
+  delete [] reti;
 }
 
 // ============================================================================
@@ -199,10 +211,25 @@ void K_POST::integUnstructCellCenter(
 {
   result = 0.0;
 
-  #pragma omp parallel for reduction(+:result)
-  for (E_Int i = 0; i < nelts; i++)
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [nthreads];
+
+  #pragma omp parallel
   {
-    E_Float f = ratio[i] * field[i];
-    result += surf[i] * f;
+    E_Float f;
+    E_Int it = __CURRENT_THREAD__;
+    reti[it] = 0.;
+
+    #pragma omp for
+    for (E_Int i = 0; i < nelts; i++)
+    {
+      f = ratio[i] * field[i];
+      reti[it] += surf[i] * f;
+    }
   }
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    result += reti[it];
+  }
+  delete [] reti;
 }

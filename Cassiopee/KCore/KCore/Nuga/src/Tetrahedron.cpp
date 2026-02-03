@@ -74,7 +74,7 @@ E_Float Tetrahedron::quality(const K_FLD::FloatArray& crd, E_Float* Vol)
   p2= crd.col(node(2));
   p3= crd.col(node(3));
   
-  *Vol = V =::fabs(volume(p0, p1, p2, p3));
+  *Vol = V = fabs(volume(p0, p1, p2, p3));
   
   return Q*V/(sqrt(Lmax2)*S);
 }

@@ -85,7 +85,7 @@ PyObject* K_POST::sharpEdges(PyObject* self, PyObject* args)
   E_Float* z = f->begin(posz);
 
   // pointers on field fe (field associated with new connectivity cne)
-  FldArrayF* fe = new FldArrayF(npts,nfld);
+  FldArrayF* fe = new FldArrayF(npts, nfld);
   vector<E_Float*> fep(nfld);
   for (E_Int p = 0; p < nfld; p++) fep[p] = fe->begin(p+1);
 

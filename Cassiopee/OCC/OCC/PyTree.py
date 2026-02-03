@@ -9,10 +9,18 @@ try:
     import Converter.Internal as Internal
     import Converter.Mpi as Cmpi
 except ImportError:
-    raise ImportError("OCC.PyTree: requires Converter module.")
+    raise ImportError("OCC.PyTree: requires Converter, Generator module.")
 
 __version__ = OCC.__version__
 import numpy
+
+from OCC import readCAD, writeCAD, createEmptyCAD, \
+    _translate, _rotate, _scale, _sewing, _splitFaces, \
+    _mergeFaces, _trimFaces, _removeFaces, _fillHole, _addFillet, mergeCAD, \
+    printOCAF, getFaceNameInOCAF, getEdgeNameInOCAF, _splitEdge, \
+    _addArc, _addCircle, _addEllipse, _addSuperEllipse, _addLine, _addSquare, \
+    _addSpline,_addBox, _addSphere, _addCylinder, _addSplineSurface, \
+    _addGordonSurface, _revolve, _sweep, _loft, _boolean
 
 #==============================================================================
 # -- convertCAD2PyTree --
@@ -85,7 +93,7 @@ def convertCAD2PyTree(fileName, format=None, h=0., chordal_err=0.,
 #================================================================================
 def meshSTRUCT(fileName, format="fmt_step", N=11):
     """Return a STRUCT discretisation of CAD."""
-    hook = OCC.occ.readCAD(fileName, format)
+    hook = readCAD(fileName, format)
     return meshSTRUCT__(hook, N)
 
 def meshSTRUCT__(hook, N=11, faceSubset=None, linkFaceNo=None):
@@ -105,7 +113,7 @@ def meshSTRUCT__(hook, N=11, faceSubset=None, linkFaceNo=None):
 #================================================================================
 def meshTRI(fileName, format="fmt_step", N=11, hmax=-1., order=1):
     """Return a TRI discretisation of CAD."""
-    hook = OCC.occ.readCAD(fileName, format)
+    hook = readCAD(fileName, format)
     return meshTRI__(hook, N, hmax, order)
 
 def meshTRI__(hook, N=11, hmax=-1., order=1, faceSubset=None, linkFaceNo=None):
@@ -137,7 +145,7 @@ def meshTRIHO(fileName, format="fmt_step", N=11):
 #================================================================================
 def meshQUAD(fileName, format="fmt_step", N=11, order=1):
     """Return a QUAD discretisation of CAD."""
-    hook = OCC.occ.readCAD(fileName, format)
+    hook = readCAD(fileName, format)
     return meshQUAD__(hook, N, order)
 
 def meshQUAD__(hook, N=11, order=1, faceSubset=None, linkFaceNo=None):
@@ -156,7 +164,7 @@ def meshQUAD__(hook, N=11, order=1, faceSubset=None, linkFaceNo=None):
 
 def meshQUADHO(fileName, format="fmt_step", N=11):
     """Return a QUAD HO discretisation of CAD."""
-    hook = OCC.occ.readCAD(fileName, format)
+    hook = readCAD(fileName, format)
     return meshQUADHO__(hook, N)
 
 def meshQUADHO__(hook, N=11, faceSubset=None, linkFaceNo=None):
@@ -226,10 +234,10 @@ class CAD:
         self.linkEdgeNo = {} # association zone Name -> CAD edge no
 
         # read CAD
-        self.hook = OCC.occ.readCAD(fileName, format)
-        nbfaces = OCC.occ.getNbFaces(self.hook)
+        self.hook = readCAD(fileName, format)
+        nbfaces = getNbFaces(self.hook)
         for i in range(nbfaces): self.faces.append(Face(i+1, self))
-        nbedges = OCC.occ.getNbEdges(self.hook)
+        nbedges = getNbEdges(self.hook)
         for i in range(nbedges): self.edges.append(Edge(i+1, self))
 
     def evalFace(self, face, distribution):
@@ -313,20 +321,6 @@ class CAD:
 #========================
 #=== nouvelle vision ====
 #========================
-def readCAD(fileName, format='fmt_step'):
-    """Read CAD and return a CAD hook."""
-    return OCC.occ.readCAD(fileName, format)
-
-def writeCAD(hook, fileName, format='fmt_step'):
-    """Write CAD file from CAD hook."""
-    OCC.occ.writeCAD(hook, fileName, format)
-    return None
-
-def freeHook(hook):
-    """Free hook."""
-    OCC.occ.freeHook(hook)
-    return None
-
 def _linkCAD2Tree(hook, t):
     """Put hook in CAD/hook for each zone."""
     zones = Internal.getZones(t)
@@ -527,7 +521,7 @@ def meshAll(hook, hmin=-1, hmax=-1., hausd=-1., faceList=None):
 
     # - Faces -
     b = Internal.getNodeFromName1(t, 'FACES')
-    nbFaces = occ.getNbFaces(hook)
+    nbFaces = getNbFaces(hook)
     # distribution parallele (CAD already split)
     if faceList is None:
         N = nbFaces // Cmpi.size
@@ -585,7 +579,7 @@ def meshAllPara(hook, hmin=-1, hmax=-1., hausd=-1.):
     #OCC.occ.writeCAD(hook, "cube_split.step", "fmt_step")
 
     # distribute faces
-    nfaces = OCC.occ.getNbFaces(hook)
+    nfaces = getNbFaces(hook)
 
     arrays = []; weights = []
     for i in range(nfaces):
@@ -752,7 +746,7 @@ def _setCADcontainer(t, fileName, fileFmt, hmin, hmax, hausd):
 def _meshAllEdges(hook, t, hmin=-1., hmax=-1, hausd=-1, N=-1, edgeList=None):
 
     if edgeList is None:
-        nbEdges = occ.getNbEdges(hook)
+        nbEdges = getNbEdges(hook)
         edgeList = range(1, nbEdges+1)
 
     edges = OCC.meshAllEdges(hook, hmin, hmax, hausd, N)
@@ -851,7 +845,7 @@ def _meshAllFacesTri(hook, t, metric=True, faceList=None, hList=[], hmin=-1, hma
         e = C.getFields([Internal.__GridCoordinates__, Internal.__FlowSolutionNodes__], z, api=3)[0]
         dedges.append(e)
 
-    nbFaces = occ.getNbFaces(hook)
+    nbFaces = getNbFaces(hook)
     if faceList is None:
         N = nbFaces // Cmpi.size
         nstart = Cmpi.rank*N
@@ -902,7 +896,7 @@ def _meshAllFacesStruct(hook, t, faceList=None):
         e = C.getFields([Internal.__GridCoordinates__, Internal.__FlowSolutionNodes__], z, api=3)[0]
         dedges.append(e)
 
-    nbFaces = occ.getNbFaces(hook)
+    nbFaces = getNbFaces(hook)
     if faceList is None:
         N = nbFaces // Cmpi.size
         nstart = Cmpi.rank*N
@@ -940,7 +934,7 @@ def _meshAllFacesStruct(hook, t, faceList=None):
 
     return None
 
-# project t on faces
+# project t on CAD faces
 def _projectOnFaces(hook, t, faceList=None):
     """Project t on CAD."""
     zones = Internal.getZones(t)
@@ -949,10 +943,62 @@ def _projectOnFaces(hook, t, faceList=None):
         OCC.occ.projectOnFaces(hook, a, faceList)
     return None
 
-# deviation of mesh to CAD, add deviation field to t
-# from center position
-def _meshDeviation(hook, t):
+# project t on CAD edges
+def _projectOnEdges(hook, t, edgeList=None):
+    """Project t on CAD edges."""
+    zones = Internal.getZones(t)
+    for z in zones:
+        a = C.getFields(Internal.__GridCoordinates__, z, api=3)[0]
+        OCC.occ.projectOnEdges(hook, a, edgeList)
+    return None
+
+def _meshDeviation__(z, zc, F, hook, eList, no):
+    xp = Internal.getNodeFromName2(zc, 'CoordinateX')
+    yp = Internal.getNodeFromName2(zc, 'CoordinateY')
+    zp = Internal.getNodeFromName2(zc, 'CoordinateZ')
+    xp0 = xp[1].copy(); yp0 = yp[1].copy(); zp0 = zp[1].copy()
+    F(hook, zc, eList)
+    diff = (xp[1]-xp0)*(xp[1]-xp0)+(yp[1]-yp0)*(yp[1]-yp0)+(zp[1]-zp0)*(zp[1]-zp0)
+    diff = numpy.sqrt(diff)
+    print("INFO: meshDeviation: %d: %g"%(no, numpy.max(diff)))
+    if z[1][0,0] == zc[1][0,0]:
+        C._initVars(z, 'nodes:deviation', 0.)
+        FS = Internal.getNodeFromName1(z, Internal.__FlowSolutionNodes__)
+        Internal.getNodeFromName1(FS, 'deviation')[1] = diff
+    else:
+        C._initVars(z, 'centers:deviation', 0.)
+        FS = Internal.getNodeFromName1(z, Internal.__FlowSolutionCenters__)
+        Internal.getNodeFromName1(FS, 'deviation')[1] = diff
+
+# deviation of a generated mesh to CAD, add deviation field to t
+# if loc="nodes", from vertex position
+# if loc="centers", from center position
+def _meshDeviation(hook, t, loc='nodes'):
     """Measure deviation from mesh to CAD."""
+    EDGES = Internal.getNodeFromName1(t, 'EDGES')
+    FACES = Internal.getNodeFromName1(t, 'FACES')
+    if EDGES is not None and FACES is not None:
+        _meshDeviation1(hook, t, loc)
+    else:
+        _meshDeviation2(hook, t, loc)
+    return None
+
+def _meshDeviation1(hook, t, loc='nodes'):
+    """Measure deviation from mesh to CAD."""
+    EDGES = Internal.getNodeFromName1(t, 'EDGES')
+    zones = Internal.getZones(EDGES)
+    for z in zones:
+        # no de l'edge
+        try:
+            no = getNo(z)
+            edgeList = [no]
+        except: edgeList = None
+        if loc == "centers":
+            # recupere le maillage en centre
+            zc = C.node2Center(z)
+            _meshDeviation__(z, zc, _projectOnEdges, hook, edgeList, no)
+        else: # nodes
+            _meshDeviation__(z, z, _projectOnEdges, hook, edgeList, no)
     FACES = Internal.getNodeFromName1(t, 'FACES')
     zones = Internal.getZones(FACES)
     for z in zones:
@@ -961,19 +1007,28 @@ def _meshDeviation(hook, t):
             no = getNo(z)
             faceList = [no]
         except: faceList = None
-        # recupere le maillage en centre
-        zc = C.node2Center(z)
-        # Projete le maillage en centre sur la face associee
-        xp = Internal.getNodeFromName2(zc, 'CoordinateX')
-        yp = Internal.getNodeFromName2(zc, 'CoordinateY')
-        zp = Internal.getNodeFromName2(zc, 'CoordinateZ')
-        xp0 = xp[1].copy(); yp0 = yp[1].copy(); zp0 = zp[1].copy()
-        _projectOnFaces(hook, zc, faceList)
-        diff = (xp[1]-xp0)*(xp[1]-xp0)+(yp[1]-yp0)*(yp[1]-yp0)+(zp[1]-zp0)*(zp[1]-zp0)
-        diff = numpy.sqrt(diff)
-        print("INFO: meshDeviation: face %d: %g"%(no, numpy.max(diff)))
-        C._initVars(z, 'centers:dev', 0.)
-        Internal.getNodeFromName2(z, 'dev')[1] = diff
+        if loc == "centers":
+            # recupere le maillage en centre
+            zc = C.node2Center(z)
+            _meshDeviation__(z, zc, _projectOnFaces, hook, faceList, no)
+        else: # nodes
+            _meshDeviation__(z, z, _projectOnFaces, hook, faceList, no)
+    return None
+
+# deviation to edges for any mesh
+def _meshDeviation2(hook, t, loc="nodes"):
+    zones = Internal.getZones(t)
+    for no, z in enumerate(zones):
+        dim = Internal.getZoneDim(z)
+        if dim[4] == 1: F = _projectOnEdges
+        else: F = _projectOnFaces
+
+        if loc == "centers":
+            # recupere le maillage en centre
+            zc = C.node2Center(z)
+            _meshDeviation__(z, zc, F, hook, None, no)
+        else:
+            _meshDeviation__(z, z, F, hook, None, no)
     return None
 
 # set color red to lonelyEdges
@@ -1275,6 +1330,11 @@ def writeCAD(hook, fileName, format='fmt_step'):
     OCC.occ.writeCAD(hook, fileName, format)
     return None
 
+def freeHook(hook):
+    """Free hook."""
+    OCC.occ.freeHook(hook)
+    return None
+
 # Return the number of edges in CAD hook
 def getNbEdges(hook):
     """Return the number of edges in CAD hook."""
@@ -1339,9 +1399,12 @@ def _fillHole(hook, edges, faces=None, continuity=0):
     return None
 
 # trim two set of surfaces
-def _trimFaces(hook, faces1, faces2):
+# if mode=0, faces2 cut faces1
+# if mode=1, faces1 cut faces2
+# if mode=2, both cut
+def _trimFaces(hook, faces1, faces2, mode=2, algo=0):
     """Trim a set of faces with another set of faces."""
-    OCC.occ.trimFaces(hook, faces1, faces2)
+    OCC.occ.trimFaces(hook, faces1, faces2, mode, algo)
     return None
 
 # split faces

@@ -25,10 +25,10 @@ using namespace K_FUNC;
 
 struct stackData
 {
-    K_KINTERP::BlkIntTreeNode* current;
-    E_Float xxmax, yymax, zzmax, ppmax, qqmax, rrmax;
-    E_Float xxmin, yymin, zzmin, ppmin, qqmin, rrmin;
-    E_Int coupure;
+  K_KINTERP::BlkIntTreeNode* current;
+  E_Float xxmax, yymax, zzmax, ppmax, qqmax, rrmax;
+  E_Float xxmin, yymin, zzmin, ppmin, qqmin, rrmin;
+  E_Int coupure;
 };
 
 //=============================================================================

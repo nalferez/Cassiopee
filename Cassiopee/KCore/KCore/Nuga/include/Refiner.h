@@ -256,13 +256,13 @@ namespace DELAUNAY
   E_Float  r = 1;
   size_type n;
   if (::abs(r1 - 1.) < 0.01)
-  d = d0 / std::max(h0, h1);
+  d = d0 / K_FUNC::E_max(h0, h1);
   else
   {
   r = (d0 + h1) / (d0 + h0);
   d = ::log(r1)/::log(r);
   //n = size_type(d);
-  //r1 = ::pow (r1, 1./n);
+  //r1 = pow (r1, 1./n);
   //d =  (h1 - r1 * h0)/(r1 - 1.);
   //r = r1;
   }
@@ -286,7 +286,7 @@ namespace DELAUNAY
   _pos.pushBack (newP, newP+2);
   Nstart = _pos.cols()-1;
   s = (i+1.)/(n+1.);
-  h = h0 * ::pow (x, s);//(1 - s) * h0 + s * h1;
+  h = h0 * pow (x, s);//(1 - s) * h0 + s * h1;
   _metric.push_back (h);
   alpha *= r;
   length_to_points.push_back(std::make_pair(-n, Nstart));

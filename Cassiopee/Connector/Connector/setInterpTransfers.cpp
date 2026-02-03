@@ -536,18 +536,18 @@ PyObject* K_CONNECTOR::__setInterpTransfers(PyObject* self, PyObject* args)
   E_Int flagIbc = E_Int(flagibc);
   E_Int ibcType =  E_Int(bctype);
   vector<PyArrayObject*> hook;
-  E_Int imdjmd, imd=1, jmd=1, kmd=1, cnNfldD, nvars, ndimdxR, ndimdxD, meshtype;
+  E_Int imdjmd, imd=1, jmd=1, kmd=1, cnNfldD=1, nvars, ndimdxR, ndimdxD=1, meshtype;
   E_Float* iptroD; E_Float* iptroR;
 
   E_Int nidom = PyList_Size(zonesR);
 
   E_Int* ipt_ndimdxR; E_Float** ipt_roR;
   ipt_ndimdxR = new E_Int[nidom];
-  ipt_roR     = new E_Float*[nidom];
+  ipt_roR = new E_Float*[nidom];
 
   E_Float Pr = 0.71;
   PyObject* zone0 = PyList_GetItem(zonesR, 0);
-  PyObject* own   = K_PYTREE::getNodeFromName1(zone0 , ".Solver#ownData");
+  PyObject* own = K_PYTREE::getNodeFromName1(zone0 , ".Solver#ownData");
   if (own != NULL)
   {
     PyObject* paramreal0 = K_PYTREE::getNodeFromName1(own, "Parameter_real");

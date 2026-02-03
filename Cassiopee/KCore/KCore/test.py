@@ -112,7 +112,7 @@ def testT(t, number=1):
     import Converter.Internal as Internal
 
     # Transforme t en pyTree, pour pouvoir relire la reference
-    t, ntype = Internal.node2PyTree(t)
+    t, _ = Internal.node2PyTree(t)
 
     # Verifie la compatibilite avec la CGNS lib
     #checkCGNSlib(t, number)
@@ -190,7 +190,7 @@ def testF(infile, number=1):
     # Chek infile
     a = os.access(infile, os.F_OK)
     if not a:
-        print("DIFF: file "+infile+' doesnt exist.')
+        print("DIFF: file "+infile+" doesnt exist.")
 
     # Check Data directory
     a = os.access(DATA, os.F_OK)
@@ -323,7 +323,7 @@ def testO(objet, number=1):
         if oldData: a = pickle.load(file, encoding='latin1')
         else: a = pickle.load(file)
         file.close()
-        print("Reading '"+reference+"'... done.")
+        print(f"Reading {reference}... done.")
         if isinstance(a, str) and a == 'Undumpable object': return True
         return checkObject_(objet, a, reference)
 
@@ -354,7 +354,7 @@ def checkTree(t1, t2):
             checkTree__(node1, node2)
 
 def buildDict__(curr, mdict, node):
-    d = curr+'/'+node[0]
+    d = f"{curr}/{node[0]}"
     mdict[d] = node
     for i in node[2]: buildDict__(d, mdict, i)
 
@@ -1019,3 +1019,115 @@ def printMem(msg, waitTime=0.1):
     else: print('{:<40} : {} kB '.format(msg,tot))
     sys.stdout.flush()
     return tot
+
+#==============================================================================
+# Create files for all types of grids in pytree (for testing)
+#==============================================================================
+def createTestT(N=10):
+    import Converter.PyTree as C
+    import Generator.PyTree as G
+    import Post.PyTree as P
+    import Transform.PyTree as T
+
+    h = 10./N
+
+    # 1D struct
+    z = G.cart((0,0,0), (h,h,h), (N,1,1))
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    C.convertPyTree2File(z, 'struct1d.cgns')
+
+    # 2D struct
+    z = G.cart((0,0,0), (h,h,h), (N,N,1))
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    C._addBC2Zone(z, 'wall', 'BCWall', 'imin')
+    C.convertPyTree2File(z, 'struct2d.cgns')
+
+    # 3D struct
+    z = G.cart((0,0,0), (h,h,h), (N,N,N))
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    C._addBC2Zone(z, 'wall', 'BCWall', 'imin')
+    C.convertPyTree2File(z, 'struct3d.cgns')
+
+    # hexa
+    z = G.cartHexa((0,0,0), (h,h,h), (N,N,N))
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    p = P.exteriorFaces(z)
+    p = T.splitSharpEdges(p, 30.)
+    C._addBC2Zone(z, 'wall', 'BCWall', subzone=p[0])
+    C.convertPyTree2File(z, 'hexa.cgns')
+
+    # tetra
+    z = G.cartTetra((0,0,0), (h,h,h), (N,N,N))
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    p = P.exteriorFaces(z)
+    p = T.splitSharpEdges(p, 30.)
+    C._addBC2Zone(z, 'wall', 'BCWall', subzone=p[0])
+    C.convertPyTree2File(z, 'tetra.cgns')
+
+    # tri
+    z = G.cartTetra((0,0,0), (h,h,h), (N,N,N))
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    C.convertPyTree2File(z, 'tri.cgns')
+
+    # quad
+    z = G.cartHexa((0,0,0), (h,h,h), (N,N,N))
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    C.convertPyTree2File(z, 'quad.cgns')
+
+    # penta+tetra
+    a = G.cartPenta((0,0,0), (h,h,h), (N,N,N))
+    T._rotate(a, (4.5,4.5,4.5), (0,1,0), 90.)
+    b = G.cartTetra((9,0,0), (h,h,h), (N,N,N))
+    z = C.mergeConnectivity(a, b, boundary=0)
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    # add BC when addBC2Zone ready
+    C.convertPyTree2File(z, 'penta+tetra.cgns')
+
+    # hexa+hexa
+    a = G.cartHexa((0,0,0), (h,h,h), (N,N,N))
+    b = G.cartHexa((9,0,0), (h,h,h), (N,N,N))
+    z = C.mergeConnectivity(a, b, boundary=0)
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    # add BC when addBC2Zone ready
+    C.convertPyTree2File(z, 'hexa+hexa.cgns')
+
+    # tri+quad
+    a = G.cartHexa((0,0,0), (h,h,h), (N,N,1))
+    b = G.cartTetra((9,0,0), (h,h,h), (N,N,1))
+    z = C.mergeConnectivity(a, b, boundary=0)
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    C.convertPyTree2File(z, 'tri+quad.cgns')
+
+    # ngonv3
+    z = G.cartNGon((0,0,0), (h,h,h), (N,N,N))
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    p = P.exteriorFaces(z)
+    p = T.splitSharpEdges(p, 30.)
+    C._addBC2Zone(z, 'wall', 'BCWall', subzone=p[0])
+    C.convertPyTree2File(z, 'ngonv3.cgns')
+
+    # ngonv4
+    z = G.cartNGon((0,0,0), (h,h,h), (N,N,N), api=3)
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    p = P.exteriorFaces(z)
+    p = T.splitSharpEdges(p, 30.)
+    C._addBC2Zone(z, 'wall', 'BCWall', subzone=p[0])
+    C.convertPyTree2File(z, 'ngonv4.cgns')
+
+    # ngonv4 2d
+    z = G.cartNGon((0,0,0), (h,h,h), (N,N,1), api=3)
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    C.convertPyTree2File(z, 'ngonv42d.cgns')

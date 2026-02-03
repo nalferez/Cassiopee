@@ -31,17 +31,15 @@ def AdaptMesh_Init(t, normal2D=None, comm=[], gcells=None, gfaces=None):
     array = C.getFields(I.__GridCoordinates__, z, api=3)[0]
 
     bcs = []
-    zonebc = I.getNodeFromType(z, 'ZoneBC_t')
+    zonebc = I.getNodeFromType1(z, 'ZoneBC_t')
     if zonebc is not None:
-        zbc = I.getNodesFromType(zonebc, 'BC_t')
-
+        zbc = I.getNodesFromType1(zonebc, 'BC_t')
         bc_count = 0
-
         for bc in zbc:
-            plist = I.getNodeFromName(bc, 'PointList')
+            plist = I.getNodeFromName1(bc, 'PointList')
             name = bc[0]
             #tag = I.getNodeFromName(bc, 'Tag')[1][0]
-            try: tag = I.getNodeFromName(bc, 'Tag')[1][0]
+            try: tag = I.getNodeFromName1(bc, 'Tag')[1][0]
             except: tag = bc_count; bc_count += 1
             bctype = I.getValue(bc)
             bcs.append([plist[1], tag, name, bctype])
@@ -146,9 +144,9 @@ def exchangeFields(t, fldNames):
             fld = I.getNodeFromName2(fsolc, fldName)
             if fld is None: raise ValueError(fldName, 'not found.')
             flds.append(fld[1])
-        zgc = I.getNodeFromType(zone, 'ZoneGridConnectivity_t')
+        zgc = I.getNodeFromType1(zone, 'ZoneGridConnectivity_t')
         if zgc is None: raise ValueError('ZoneGridConnectivity not found')
-        comms = I.getNodesFromType(zgc, 'GridConnectivity1to1_t')
+        comms = I.getNodesFromType1(zgc, 'GridConnectivity1to1_t')
         if comms is None: raise ValueError('GridConnectivity1to1 not found')
         comm_list = []
         for comm in comms:
@@ -174,7 +172,7 @@ def loadAndSplitElt(fileName):
     XYZ = []
     XYZ.append(cx); XYZ.append(cy); XYZ.append(cz)
 
-    cns = I.getNodesFromType(z, 'Elements_t')
+    cns = I.getNodesFromType1(z, 'Elements_t')
 
     chunks = []
 
@@ -229,13 +227,13 @@ def loadAndSplitNGon(fileName):
             if f[3] == 'DataArray_t':
                 soln.append(f[1]); solNames.append(f[0])
 
-    zonebc = I.getNodeFromType(z, 'ZoneBC_t')
+    zonebc = I.getNodeFromType1(z, 'ZoneBC_t')
     bcs = []
     bcNames = []
     bcTypes = {}
     bcTags = {}
     if zonebc is not None:
-        BCs = I.getNodesFromType(zonebc, 'BC_t')
+        BCs = I.getNodesFromType1(zonebc, 'BC_t')
         for i in range(len(BCs)):
             bc = BCs[i]
             bcname = bc[0]
@@ -452,7 +450,7 @@ def intersectMesh(master, slave):
 ###############################################################################
 
 def splitConnex(m):
-    zones = I.getNodesFromType(m, 'Zone_t')
+    zones = I.getZones(m)
     if len(zones) != 1: raise ValueError('Master should be one zone.')
     zm = zones[0]
     marr = C.getFields(I.__GridCoordinates__, zm, api=3)[0]
@@ -482,7 +480,7 @@ def icapsuleIntersect2(IC):
     return xcore.icapsule_intersect2(IC)
 
 def icapsuleSetMaster(IC, m):
-    zones = I.getNodesFromType(m, 'Zone_t')
+    zones = I.getZones(m)
     if len(zones) != 1: raise ValueError('Master should be one zone.')
     zm = zones[0]
     marr = C.getFields(I.__GridCoordinates__, zm, api=3)[0]
@@ -546,21 +544,21 @@ def triangulateSkin(m):
     return m_copy
 
 def _triangulateSkin(m):
-    zones = I.getNodesFromType(m, 'Zone_t')
-    for i, zone in enumerate(zones):
+    zones = I.getZones(m)
+    for zone in zones:
         marr = C.getFields(I.__GridCoordinates__, zone, api=3)[0]
-        zbc = I.getNodeFromType(zone, 'ZoneBC_t')
+        zbc = I.getNodeFromType1(zone, 'ZoneBC_t')
         ptlists = []
         if zbc is not None:
-            bcs = I.getNodesFromType(zbc, 'BC_t')
+            bcs = I.getNodesFromType1(zbc, 'BC_t')
             for bc in bcs:
-                ptlists.append(I.getNodeFromName(bc, 'PointList')[1][0])
+                ptlists.append(I.getNodeFromName1(bc, 'PointList')[1][0])
         m_out, ptlists_out = xcore.triangulate_skin(marr, ptlists)
         C.setFields([m_out], zone, 'nodes')
         if zbc is not None:
-            bcs = I.getNodesFromType(zbc, 'BC_t')
+            bcs = I.getNodesFromType1(zbc, 'BC_t')
             for j, bc in enumerate(bcs):
-                ptlist = I.getNodeFromName(bc, 'PointList')
+                ptlist = I.getNodeFromName1(bc, 'PointList')
                 ptlist[1] = ptlists_out[j]
 
     return None

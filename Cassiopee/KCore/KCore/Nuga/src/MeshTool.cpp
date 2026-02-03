@@ -424,7 +424,6 @@ NUGA::MeshTool::computeNodeNormalsFromPGNormals
     }
   }
   
-  E_Int c = 0;
   for (E_Int n = 0; n < idmaxp1; ++n)
   {
     p = node_normals.col(n);
@@ -434,7 +433,6 @@ NUGA::MeshTool::computeNodeNormalsFromPGNormals
       for (E_Int k = 0; k < 3; ++k)
         p[k] /= count[n];
       NUGA::normalize<3>(p);
-      ++c;
     }
   }
   
@@ -462,7 +460,7 @@ NUGA::MeshTool::computeNodeNormals
     K_MESH::Polygon::normal<acrd_t, 3>(acrd, nodes, nb_nodes, 1, normal);
     E_Float l2 = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
     
-    is_degen[i] = (::fabs(l2 - 1.) >= EPSILON); // DEGEN
+    is_degen[i] = (fabs(l2 - 1.) >= EPSILON); // DEGEN
     
     if (!is_degen[i]) 
     {
@@ -552,7 +550,7 @@ E_Int NUGA::MeshTool::computeNodeRadiusAndAngles
       E_Float c = pt[0]/radius[Ni];
       E_Float s = pt[1]/radius[Ni];
 
-      angles[Ni] = ::atan2(s, c); 
+      angles[Ni] = atan2(s, c); 
 
     }
   }
@@ -593,7 +591,7 @@ E_Int NUGA::MeshTool::smoothNodeNormals(const ngon_unit& pgs, K_FLD::FloatArray&
       NUGA::normalize<3>(incr);
       
       E_Float l2 = sqrt(incr[0] * incr[0] + incr[1] * incr[1] + incr[2] * incr[2]);
-      if(::fabs(l2 - 1.) >= EPSILON) // DEGEN
+      if (fabs(l2 - 1.) >= EPSILON) // DEGEN
         continue;
       
       NUGA::sum<3>(1. - FACTOR, incr, FACTOR, normals.col(Ni), normals.col(Ni));
@@ -635,7 +633,7 @@ void NUGA::MeshTool::compute_or_transfer_normals
     
     E_Float l2 = sqrt(normal[0]*normal[0]+normal[1]*normal[1]+normal[2]*normal[2]);
     
-    if (::fabs(l2 - 1.) < EPSILON) // NOT degen
+    if (fabs(l2 - 1.) < EPSILON) // NOT degen
       T3normals.pushBack(normal, normal+3);
     else
     {
@@ -1298,8 +1296,8 @@ E_Int NUGA::MeshTool::starify_from_node
     
     // Lref for Adim
     box.compute(crd, nodes, nb_nodes, 1);
-    E_Float Lref2 = std::max(box.maxB[0]-box.minB[0], box.maxB[1]-box.minB[1]);
-    Lref2 = std::max(box.maxB[2]-box.minB[2], Lref2);
+    E_Float Lref2 = K_FUNC::E_max(box.maxB[0]-box.minB[0], box.maxB[1]-box.minB[1]);
+    Lref2 = K_FUNC::E_max(box.maxB[2]-box.minB[2], Lref2);
     Lref2 *= Lref2;
     
     // Convexity test : skip if the pair of element (S, Sn) is not convex (i.e. edge swapping is not doable).
@@ -1351,9 +1349,8 @@ NUGA::MeshTool::get_edges_lying_on_plane(const K_FLD::FloatArray& crd, E_Int ind
     NUGA::diff<3>(crd.col(Nj), crd.col(Ni), Eij);
     NUGA::normalize<3>(Eij);
     
-    bool quasi_aligned = (::fabs(NUGA::dot<3>(Eij, normal)) < 0.25);
-    if (!quasi_aligned)
-      continue;
+    bool quasi_aligned = (fabs(NUGA::dot<3>(Eij, normal)) < 0.25);
+    if (!quasi_aligned) continue;
     //E_Float L2 = NUGA::sqrNorm<3>(Eij);
     //if (L2 < EPSILON) L2 = 1.;
 
@@ -1365,8 +1362,7 @@ NUGA::MeshTool::get_edges_lying_on_plane(const K_FLD::FloatArray& crd, E_Int ind
     //E_Float seuil = L2*tol_rel*tol_rel;
     //if (h2 > L2*tol_rel*tol_rel)
     //continue;
-    if (h2 > abstol2)
-      continue;
+    if (h2 > abstol2) continue;
 
     // is Nj close enoough to the plane ?
     NUGA::diff<3>(crd.col(Nj), crd.col(Np), u);
@@ -1376,8 +1372,7 @@ NUGA::MeshTool::get_edges_lying_on_plane(const K_FLD::FloatArray& crd, E_Int ind
 
     //if ((h2) > L2*tol_rel*tol_rel)
       //continue;
-    if (h2 > abstol2)
-      continue;
+    if (h2 > abstol2) continue;
 
     lyingEs.insert(*itE);
   }
@@ -1537,7 +1532,7 @@ E_Float NUGA::MeshTool::get_max_deviation
       K_MESH::Triangle::normal(crd, cT3.col(j), nj);
 
       E_Float alpha = NUGA::angle_measure(ni, nj, E0, E1);
-      amax = std::max(amax, ::fabs(NUGA::PI - alpha)); // max deviation from flatness
+      amax = K_FUNC::E_max(amax, fabs(NUGA::PI - alpha)); // max deviation from flatness
     }
   }
 
@@ -1548,15 +1543,16 @@ E_Float NUGA::MeshTool::get_max_deviation
 void NUGA::MeshTool::extrude_line
 (K_FLD::FloatArray& crd, const K_FLD::IntArray& cntE, const E_Float* dir, E_Float H, K_FLD::IntArray& cntQ4)
 {
-  int nbe = cntE.cols();
-  int nbp = crd.cols();
+  E_Int nbe = cntE.cols();
+  E_Int nbp = crd.cols();
 
   // 1. EDGE NORMALS
   K_FLD::FloatArray normE(3, nbe);
   E_Float Lmean(0.);
-  for (int i = 0; i < nbe; ++i)
+  E_Float Ei[3], ni[3];
+
+  for (E_Int i = 0; i < nbe; ++i)
   {
-    E_Float Ei[3], ni[3];
     NUGA::diff<3>(crd.col(cntE(1, i)), crd.col(cntE(0, i)), Ei);
     NUGA::crossProduct<3>(Ei, dir, ni);//ni is normal to plane(Ei, dir)
     NUGA::crossProduct<3>(ni, Ei, normE.col(i));
@@ -1572,25 +1568,32 @@ void NUGA::MeshTool::extrude_line
 
   // 2. NODES NORMALS
   K_FLD::FloatArray normN(3, nbp, 0.);
-  for (int i = 0; i < nbe; ++i)
+  for (E_Int i = 0; i < nbe; ++i)
   {
-    int Ni = cntE(0, i);
-    int Nj = cntE(1, i);
+    E_Int Ni = cntE(0, i);
+    E_Int Nj = cntE(1, i);
     NUGA::sum<3>(normN.col(Ni), normE.col(i), normN.col(Ni));
     NUGA::sum<3>(normN.col(Nj), normE.col(i), normN.col(Nj));
   }
-  for (int i = 0; i < nbp; ++i)
+  for (E_Int i = 0; i < nbp; ++i)
     NUGA::normalize<3>(normN.col(i));
 
   // 3. NEW POINTS (stored line by line)
-  int nbr = int(H / Lmean) + 2; // greater than one
-                                // add space to crd
+  // greater than one
+#ifdef E_ADOLC
+  E_Float val = H / Lmean;
+  E_Int nbr = E_Int(val.value()) + 2; 
+#else
+  E_Int nbr = E_Int(H / Lmean) + 2; 
+#endif
+  
+  // add space to crd
   crd.resize(3, nbp*nbr);
 
   E_Float k = H / nbr;
-  for (int r = 0; r < nbr - 1; ++r)
+  for (E_Int r = 0; r < nbr - 1; ++r)
   {
-    for (int i = 0; i < nbp; ++i)
+    for (E_Int i = 0; i < nbp; ++i)
     {
       E_Float* Pi = crd.col(i + r * nbp);
       E_Float* newPi = crd.col(i + (r + 1)*nbp);
@@ -1602,19 +1605,19 @@ void NUGA::MeshTool::extrude_line
   cntQ4.clear();
   cntQ4.reserve(4, nbr*nbe);
 
-  for (int r = 0; r < nbr - 1; ++r)
+  for (E_Int r = 0; r < nbr - 1; ++r)
   {
-    for (int i = 0; i < nbe; ++i)
+    for (E_Int i = 0; i < nbe; ++i)
     {
-      int bi = cntE(0, i);
-      int bj = cntE(1, i);
+      E_Int bi = cntE(0, i);
+      E_Int bj = cntE(1, i);
 
-      int Ni = bi + r * nbp;
-      int Nj = bj + r * nbp;
-      int Njp1 = Nj + nbp;
-      int Nip1 = Ni + nbp;
+      E_Int Ni = bi + r * nbp;
+      E_Int Nj = bj + r * nbp;
+      E_Int Njp1 = Nj + nbp;
+      E_Int Nip1 = Ni + nbp;
 
-      int Q4[] = { Ni, Nj, Njp1, Nip1 };
+      E_Int Q4[] = { Ni, Nj, Njp1, Nip1 };
       cntQ4.pushBack(Q4, Q4 + 4);
     }
   }

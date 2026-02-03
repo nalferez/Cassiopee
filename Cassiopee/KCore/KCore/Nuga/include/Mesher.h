@@ -395,7 +395,7 @@ namespace DELAUNAY
     E_Float minX, minY, maxX, maxY, L;
     __compute_bounding_box(_data->hardNodes, minX, minY, maxX, maxY);
 
-    L = std::max(maxY-minY, maxX-minX);
+    L = K_FUNC::E_max(maxY-minY, maxX-minX);
 
     E_Float factor = 0.1;
 
@@ -906,10 +906,10 @@ namespace DELAUNAY
     for (size_type i = 0; i < nb_nodes; ++i)
     {
       pK = _data->pos->col(cloud[i]);
-      minX = std::min(minX, *pK);
-      maxX = std::max(maxX, *pK);
-      minY = std::min(minY, *(pK+1));
-      maxY = std::max(maxY, *(pK+1));
+      minX = K_FUNC::E_min(minX, *pK);
+      maxX = K_FUNC::E_max(maxX, *pK);
+      minY = K_FUNC::E_min(minY, *(pK+1));
+      maxY = K_FUNC::E_max(maxY, *(pK+1));
     }
 
     return _err;

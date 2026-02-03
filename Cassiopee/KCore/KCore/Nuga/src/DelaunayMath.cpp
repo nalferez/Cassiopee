@@ -55,7 +55,7 @@ void DelaunayMath::simultaneous_reduction
 
   K_FLD::FloatArray NN(M1b * M2);
 
-  if (::fabs(NN(1,0)) < 1.e-10)//fixme value epsilon?
+  if (fabs(NN(1,0)) < 1.e-10)//fixme value epsilon?
   {
     V1[0] = 1.; V1[1] = 0.;
     V2[0] = 0.; V2[1] = 1.;
@@ -75,7 +75,7 @@ void DelaunayMath::eigen_vectors
   eigen_values(a00, a11, a10, lambda0, lambda1);
 
   // Diag. matrix case
-  if ((::fabs(a10) < EPSILON) && (::fabs(lambda0-a11)< EPSILON))
+  if ((fabs(a10) < EPSILON) && (fabs(lambda0-a11)< EPSILON))
   {
     if (a00 <= a11)
     {

@@ -132,12 +132,12 @@ def _connectMatchNGon(z, tol=1.e-6):
     indicesBC = []
     for b in bnds:
         f = Internal.getNodeFromName1(b, 'PointList')
-        indicesBC.append(f[1])
+        indicesBC.append(f[1].ravel("k"))
     undefBC = False
     if indicesBC != []:
-        indicesBC = numpy.concatenate(indicesBC, axis=1)
+        indicesBC = numpy.concatenate(indicesBC)
         nfacesExt = indicesF.shape[0]
-        nfacesDef = indicesBC.shape[1]
+        nfacesDef = indicesBC.shape[0]
         if nfacesExt < nfacesDef:
             print('Warning: zone %s: number of faces defined by BCs is greater than the number of external faces. Try to reduce the matching tolerance.'%(z[0]))
         elif nfacesExt > nfacesDef:
@@ -198,7 +198,6 @@ def _setHoleInterpolatedPoints(t):
     # Compute graph of match
     procDict = Cmpi.getProcDict(t)
     graph = Cmpi.computeGraph(t, type='match', procDict=procDict)
-
     zones = Internal.getZones(t)
     export = {}
 

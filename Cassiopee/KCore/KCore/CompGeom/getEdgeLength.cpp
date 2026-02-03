@@ -90,7 +90,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             dz = zt[indC]-zt[indB]; l = dx*dx+dy*dy+dz*dz;
             lout = K_FUNC::E_max(l,lout);
 
-            out[indcell] = std::sqrt(lout);
+            out[indcell] = sqrt(lout);
           }
       }
       else if (type == 1) // min
@@ -116,7 +116,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             dz = zt[indC]-zt[indB]; l = dx*dx+dy*dy+dz*dz;
             lout = K_FUNC::E_min(l,lout);
 
-            out[indcell] = std::sqrt(lout);
+            out[indcell] = sqrt(lout);
           }
       }
       else if (type == 2) // ratio
@@ -142,7 +142,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             dz = zt[indC]-zt[indB]; l = dx*dx+dy*dy+dz*dz;
             lout = K_FUNC::E_max(l,lout); lout2 = K_FUNC::E_min(l,lout2);
 
-            out[indcell] = std::sqrt(lout/lout2);
+            out[indcell] = sqrt(lout/lout2);
           }
       }
     }      
@@ -170,7 +170,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
               l = dx*dx+dy*dy+dz*dz;
               lout = K_FUNC::E_max(l,lout);
             }
-            out[indcell] = std::sqrt(lout);        
+            out[indcell] = sqrt(lout);        
           }
         }
         else if (km == 1) // surface
@@ -196,7 +196,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
                 l = dx*dx+dy*dy+dz*dz;
                 lout = K_FUNC::E_max(l,lout);
               }
-              out[indcell] = std::sqrt(lout);        
+              out[indcell] = sqrt(lout);        
             }
         }
         else
@@ -233,7 +233,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
                   l = dx*dx+dy*dy+dz*dz;
                   lout = K_FUNC::E_max(l,lout);
                 }
-                out[indcell] = std::sqrt(lout);        
+                out[indcell] = sqrt(lout);        
               }
         }
       }
@@ -256,7 +256,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
               l = dx*dx+dy*dy+dz*dz;
               lout = K_FUNC::E_min(l,lout);
             }
-            out[indcell] = std::sqrt(lout);        
+            out[indcell] = sqrt(lout);        
           }
         }
         else if (km == 1)
@@ -281,7 +281,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
                 l = dx*dx+dy*dy+dz*dz;
                 lout = K_FUNC::E_min(l,lout);
               }
-              out[indcell] = std::sqrt(lout);        
+              out[indcell] = sqrt(lout);        
             }
         }
         else
@@ -318,7 +318,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
                   l = dx*dx+dy*dy+dz*dz;
                   lout = K_FUNC::E_min(l,lout);
                 }
-                out[indcell] = std::sqrt(lout);        
+                out[indcell] = sqrt(lout);        
               }
         }
       }
@@ -358,7 +358,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
                 lout = K_FUNC::E_max(l,lout);
                 lout2 = K_FUNC::E_min(l,lout2);
               }
-              out[indcell] = std::sqrt(lout/lout2);
+              out[indcell] = sqrt(lout/lout2);
             }
       }
     }
@@ -410,7 +410,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           noface = elem[j]-1;
           lout = K_FUNC::E_max(lout,loutp[noface]);
         }
-        out[noe] = std::sqrt(lout);
+        out[noe] = sqrt(lout);
       }
       delete [] loutp;
     }
@@ -451,7 +451,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           noface = elem[j]-1;
           lout = K_FUNC::E_min(lout,loutp[noface]);
         }
-        out[noe] = std::sqrt(lout);
+        out[noe] = sqrt(lout);
       }
       delete [] loutp;
     }
@@ -498,7 +498,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           lout = K_FUNC::E_max(lout,loutp[noface]);
           lout2 = K_FUNC::E_min(lout2,lout2p[noface]);
         }
-        out[noe] = std::sqrt(lout/lout2);
+        out[noe] = sqrt(lout/lout2);
       }
       delete [] loutp; delete [] lout2p;
     }
@@ -536,7 +536,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dx = xt[indC]-xt[indA]; dy = yt[indC]-yt[indA]; // CA
           dz = zt[indC]-zt[indA]; l = dx*dx+dy*dy+dz*dz;
           lout = K_FUNC::E_max(l,lout);
-          out[elOffset+et] = std::sqrt(lout);
+          out[elOffset+et] = sqrt(lout);
         }
       }
       else if (type == 1)
@@ -556,7 +556,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dx = xt[indC]-xt[indA]; dy = yt[indC]-yt[indA]; // CA
           dz = zt[indC]-zt[indA]; l = dx*dx+dy*dy+dz*dz;
           lout = K_FUNC::E_min(l,lout);
-          out[elOffset+et] = std::sqrt(lout);
+          out[elOffset+et] = sqrt(lout);
         }
       }
       else if (type == 2)
@@ -576,7 +576,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dx = xt[indC]-xt[indA]; dy = yt[indC]-yt[indA]; // CA
           dz = zt[indC]-zt[indA]; l = dx*dx+dy*dy+dz*dz;
           lout = K_FUNC::E_max(l,lout); lout2 = K_FUNC::E_min(l,lout2);
-          out[elOffset+et] = std::sqrt(lout/lout2);
+          out[elOffset+et] = sqrt(lout/lout2);
         }
       }
     }
@@ -604,7 +604,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dx = xt[indD]-xt[indA]; dy = yt[indD]-yt[indA]; //AD
           dz = zt[indD]-zt[indA]; l = dx*dx+dy*dy+dz*dz;
           lout = K_FUNC::E_max(l,lout);
-          out[elOffset+et] = std::sqrt(lout);
+          out[elOffset+et] = sqrt(lout);
         }
       }
       else if (type == 1)
@@ -628,7 +628,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dx = xt[indD]-xt[indA]; dy = yt[indD]-yt[indA]; //AD
           dz = zt[indD]-zt[indA]; l = dx*dx+dy*dy+dz*dz;
           lout = K_FUNC::E_min(l,lout);
-          out[elOffset+et] = std::sqrt(lout);
+          out[elOffset+et] = sqrt(lout);
         }
       }
       else if (type == 2)
@@ -652,7 +652,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dx = xt[indD]-xt[indA]; dy = yt[indD]-yt[indA]; //AD
           dz = zt[indD]-zt[indA]; l = dx*dx+dy*dy+dz*dz;
           lout = K_FUNC::E_max(l,lout); lout2 = K_FUNC::E_min(l,lout2);
-          out[elOffset+et] = std::sqrt(lout/lout2);
+          out[elOffset+et] = sqrt(lout/lout2);
         }
       }
     }
@@ -688,7 +688,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dx = xt[indB]-xt[indD]; dy = yt[indB]-yt[indD];
           dz = zt[indB]-zt[indD]; l = dx*dx+dy*dy+dz*dz;
           lout = K_FUNC::E_max(l,lout);
-          out[elOffset+et] = std::sqrt(lout);
+          out[elOffset+et] = sqrt(lout);
         }
       }
       else if (type == 1)
@@ -720,7 +720,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dx = xt[indB]-xt[indD]; dy = yt[indB]-yt[indD];
           dz = zt[indB]-zt[indD]; l = dx*dx+dy*dy+dz*dz;
           lout = K_FUNC::E_min(l,lout);
-          out[elOffset+et] = std::sqrt(lout);
+          out[elOffset+et] = sqrt(lout);
         }
       }
       else if (type == 2)
@@ -757,7 +757,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dz = zt[indB]-zt[indD]; l = dx*dx+dy*dy+dz*dz;
           lout = K_FUNC::E_max(l,lout);
           lout2 = K_FUNC::E_min(l,lout2);
-          out[elOffset+et] = std::sqrt(lout/lout2);
+          out[elOffset+et] = sqrt(lout/lout2);
         }
       }
     }
@@ -795,7 +795,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             lout = K_FUNC::E_max(l,lout);
           }
           // Edge Ratio 
-          out[elOffset+et] = std::sqrt(lout);    
+          out[elOffset+et] = sqrt(lout);    
         }
       }
       else if (type == 1)
@@ -826,7 +826,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             lout = K_FUNC::E_min(l,lout);
           }
           // Edge Ratio 
-          out[elOffset+et] = std::sqrt(lout);    
+          out[elOffset+et] = sqrt(lout);    
         }
       }
       else if (type == 2)
@@ -859,7 +859,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             lout2 = K_FUNC::E_min(l,lout2);
           }
           // Edge Ratio 
-          out[elOffset+et] = std::sqrt(lout/lout2);    
+          out[elOffset+et] = sqrt(lout/lout2);    
         }
       }
     }
@@ -895,7 +895,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             l = dx*dx+dy*dy+dz*dz;
             lout = K_FUNC::E_max(l,lout);
           } 
-          out[elOffset+et] = std::sqrt(lout);
+          out[elOffset+et] = sqrt(lout);
         }
       }
       else if (type == 1)
@@ -924,7 +924,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             l = dx*dx+dy*dy+dz*dz;
             lout = K_FUNC::E_min(l,lout);
           } 
-          out[elOffset+et] = std::sqrt(lout);
+          out[elOffset+et] = sqrt(lout);
         }
       }
       else if (type == 2)
@@ -955,7 +955,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             lout = K_FUNC::E_max(l,lout);
             lout2 = K_FUNC::E_min(l,lout2);
           } 
-          out[elOffset+et] = std::sqrt(lout/lout2);
+          out[elOffset+et] = sqrt(lout/lout2);
         }
       }
     }
@@ -991,7 +991,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             l = dx*dx+dy*dy+dz*dz;
             lout = K_FUNC::E_max(l,lout);
           }
-          out[elOffset+et] = std::sqrt(lout);    
+          out[elOffset+et] = sqrt(lout);    
         }
       }
       else if (type == 1)
@@ -1019,7 +1019,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             l = dx*dx+dy*dy+dz*dz;
             lout = K_FUNC::E_min(l,lout);
           } 
-          out[elOffset+et] = std::sqrt(lout);    
+          out[elOffset+et] = sqrt(lout);    
         }
       }
       else if (type == 2)
@@ -1049,7 +1049,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
             lout = K_FUNC::E_max(l,lout);
             lout2 = K_FUNC::E_min(l,lout2);
           } 
-          out[elOffset+et] = std::sqrt(lout/lout2);
+          out[elOffset+et] = sqrt(lout/lout2);
         }
       }
     }
@@ -1065,7 +1065,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dx = xt[indB]-xt[indA]; dy = yt[indB]-yt[indA]; // AB
           dz = zt[indB]-zt[indA]; l = dx*dx+dy*dy+dz*dz;
           lout = l;          
-          out[elOffset+et] = std::sqrt(lout);
+          out[elOffset+et] = sqrt(lout);
         }
       }
       else if (type == 1)
@@ -1077,7 +1077,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dz = zt[indB]-zt[indA]; l = dx*dx+dy*dy+dz*dz;
           lout = l;          
           lout = K_FUNC::E_min(l,lout);
-          out[elOffset+et] = std::sqrt(lout);
+          out[elOffset+et] = sqrt(lout);
         }
       }
       else if (type == 2)
@@ -1089,7 +1089,7 @@ E_Int K_COMPGEOM::getEdgeLength(E_Float* xt, E_Float* yt, E_Float* zt,
           dz = zt[indB]-zt[indA]; l = dx*dx+dy*dy+dz*dz;
           lout = l; lout2 = l;          
           lout = K_FUNC::E_max(l,lout); lout2 = K_FUNC::E_min(l,lout2);
-          out[elOffset+et] = std::sqrt(lout/lout2);
+          out[elOffset+et] = sqrt(lout/lout2);
         }
       }
     }

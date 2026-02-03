@@ -65,14 +65,11 @@ PyObject* K_GENERATOR::getInCircleMap(PyObject* self, PyObject* args)
   E_Float* xt = f->begin(posx);
   E_Float* yt = f->begin(posy);
   E_Float* zt = f->begin(posz);
-  E_Int* cn1 = cn->begin(1);
-  E_Int* cn2 = cn->begin(2);
-  E_Int* cn3 = cn->begin(3);
   
   E_Float p1[3]; E_Float p2[3]; E_Float p3[3];
   for (E_Int et = 0; et < ncells; et++)
   {
-    E_Int ind1 = cn1[et]-1; E_Int ind2 = cn2[et]-1; E_Int ind3 = cn3[et]-1;
+    E_Int ind1 = (*cn)(et,1)-1; E_Int ind2 = (*cn)(et,2)-1; E_Int ind3 = (*cn)(et,3)-1;
     p1[0] = xt[ind1]; p1[1] = yt[ind1]; p1[2] = zt[ind1];  
     p2[0] = xt[ind2]; p2[1] = yt[ind2]; p2[2] = zt[ind2];  
     p3[0] = xt[ind3]; p3[1] = yt[ind3]; p3[2] = zt[ind3];

@@ -242,10 +242,10 @@ PyObject* K_POST::integ(PyObject* self, PyObject* args)
 
       if (case1D == 1)
           res = integStruct1D(nic, njc, nkc, center2node, posx, posy, posz, 
-                         *fc, *ff, *ratio, resultat);
+                      *fc, *ff, *ratio, resultat);
       else
           res = integStruct2D(nic, njc, nkc, center2node, posx, posy, posz,
-                       *fc, *ff, *ratio, resultat);
+                      *fc, *ff, *ratio, resultat);
     
       if (res == 0) 
       {
@@ -407,7 +407,7 @@ PyObject* K_POST::integ2(PyObject* self, PyObject* args)
   E_Float* v = fields[posVol];
   
   E_Int n;
-  E_Int one = K_CONST::ONE;
+  E_Int one = 1;
   if (res == 1)
   {
     n = K_FUNC::E_max(ni-1, one) * K_FUNC::E_max(nj-1, one) * K_FUNC::E_max(nk-1, one);
@@ -415,18 +415,41 @@ PyObject* K_POST::integ2(PyObject* self, PyObject* args)
   else n = nj;
 
   E_Float ret = 0.;
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [nthreads];
+
   if (posRatio == -1)
   {
-    #pragma omp parallel for reduction(+:ret)
-    for (E_Int i = 0; i < n; i++) ret += fp[i]*v[i];
+    #pragma omp parallel
+    {
+      E_Int it = __CURRENT_THREAD__;
+      reti[it] = 0.;
+      #pragma omp for
+      for (E_Int i = 0; i < n; i++)
+        reti[it] += fp[i]*v[i];
+    }
+    for (E_Int it = 0; it < nthreads; it++)
+    {
+      ret += reti[it];
+    }
   }
   else
   {
     E_Float* r = fields[posRatio];
-    #pragma omp parallel for reduction(+:ret)
-    for (E_Int i = 0; i < n; i++) ret += fp[i]*v[i]*r[i];
+    #pragma omp parallel
+    {
+      E_Int it = __CURRENT_THREAD__;
+      reti[it] = 0.;
+      #pragma omp for
+      for (E_Int i = 0; i < n; i++)
+        reti[it] += fp[i]*v[i]*r[i];
+    }
+    for (E_Int it = 0; it < nthreads; it++)
+    {
+      ret += reti[it];
+    }
   }
   RELEASESHAREDZ(hook, varString, eltType);
-
+  delete [] reti;
   return Py_BuildValue(R_, ret);
 }

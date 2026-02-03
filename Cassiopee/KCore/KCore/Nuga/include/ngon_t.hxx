@@ -275,8 +275,8 @@ struct ngon_t
     for (E_Int i = 0; i < nb_pgs; ++i)
     {
       E_Int s = ng.PGs.stride(i);
-      min_s = std::min(min_s, s);
-      max_s = std::max(max_s, s);
+      min_s = K_FUNC::E_min(min_s, s);
+      max_s = K_FUNC::E_max(max_s, s);
     }
 
     if (min_s <= 0) // stride 0 => error
@@ -1646,21 +1646,21 @@ struct ngon_t
         const E_Float& emax21 = L(1, Nip1);
         if (emin21 < edge_ratio2*emax21) ++n_bad_nodes;
 
-        E_Float emin = sqrt(std::min(emin2, emin21));
+        E_Float emin = sqrt(K_FUNC::E_min(emin2, emin21));
         if (Lmax > 0. && emin > Lmax) continue; // consider only edges under Lmax (if valid value)
 
-        bool small_edge = ::fabs(emin - Lref) < 1.e-6 * emin ; // NiNj is (or very near) the smallest incident edge
+        bool small_edge = fabs(emin - Lref) < 1.e-6 * emin ; // NiNj is (or very near) the smallest incident edge
 
         if (n_bad_nodes == 2 && small_edge)
         {
-          nids[std::min(Ni, Nip1)] = std::max(Ni, Nip1); //X-interface preserving policy : assign max, most chances to be an X point 
+          nids[K_FUNC::E_min(Ni, Nip1)] = std::max(Ni, Nip1); //X-interface preserving policy : assign max, most chances to be an X point 
           has_changed = true;
         }
       }
     }
 
     // update the pointers to point to the leaves
-    for (size_t i =0; i < nids.size(); ++i)
+    for (size_t i = 0; i < nids.size(); ++i)
     {
       E_Int Fi = nids[i];
       while (Fi != nids[Fi])Fi=nids[Fi];
@@ -2075,7 +2075,7 @@ struct ngon_t
       K_MESH::Polygon::normal<acrd_t, 3>(acrd, nodes, nb_nodes, 1, W);
       E_Float l2 = sqrt(W[0]*W[0]+W[1]*W[1]+W[2]*W[2]);
       
-      if (::fabs(l2 - 1.) >= EPSILON) // NORMAL CALCULATION FAILED
+      if (fabs(l2 - 1.) >= EPSILON) // NORMAL CALCULATION FAILED
       {
         /*E_Float Lmin=NUGA::FLOAT_MAX;
         E_Float Lmax = -1;
@@ -2084,8 +2084,8 @@ struct ngon_t
           E_Int ni = *(nodes+n)-1;
           E_Int nj = *(nodes+(n+1)%nb_nodes)-1;
           E_Float d2 = NUGA::sqrDistance(crd.col(ni), crd.col(nj), 3);
-          Lmin = std::min(Lmin, d2);
-          Lmax = std::max(Lmax, d2);
+          Lmin = K_FUNC::E_min(Lmin, d2);
+          Lmax = K_FUNC::E_max(Lmax, d2);
         }
         
         Lmin = sqrt(Lmin);
@@ -2098,7 +2098,7 @@ struct ngon_t
           
           if (type == K_MESH::Triangle::HAT)
           {
-            flagPG[i]=HAT;
+            flagPG[i] = HAT;
             ++normal_err_hat_count;
 
 #ifdef DEBUG_NGON_T
@@ -2736,9 +2736,9 @@ static E_Int stats_bad_volumes
       }
       
       if (vj < vi)
-        ar = std::min(vj / vi, ar);
+        ar = K_FUNC::E_min(vj / vi, ar);
       else
-        ar = std::min(vi / vj, ar);   
+        ar = K_FUNC::E_min(vi / vj, ar);   
     }
     
     aspect_ratio[i] = ar;
@@ -3356,7 +3356,7 @@ E_Int remove_unreferenced_pgs(Vector_t<E_Int>& pgnids, Vector_t<E_Int>& phnids)
         }
       
         K_MESH::Polyhedron<UNKNOWN>::metrics(crd, cT3, v, G);
-        v = ::fabs(v);
+        v = fabs(v);
         if (v < vm[id])
         {
           vm[id]=v;
@@ -4324,7 +4324,7 @@ static E_Int volumes (const K_FLD::FloatArray& crd, const ngon_t& ng, std::vecto
 #endif
     for (E_Int i = 0; i < nb_phs; ++i){
       err = K_MESH::Polyhedron<UNKNOWN>::metrics2<TriangulatorType>(dt, crd, ng.PGs, ng.PHs.get_facets_ptr(i), ng.PHs.stride(i), v, Gdum, all_pgs_cvx);
-      v = ::fabs(v);
+      v = fabs(v);
       if (!err) vols[i] = v;
       else ++errcount;
     }
@@ -4418,7 +4418,7 @@ static E_Int centroids(const ngon_t& ng, const K_FLD::FloatArray& crd, K_FLD::Fl
 #endif
     for (E_Int i = 0; i < nb_phs; ++i){
       err = K_MESH::Polyhedron<UNKNOWN>::metrics2<TriangulatorType>(dt, crd, ng.PGs, ng.PHs.get_facets_ptr(i), ng.PHs.stride(i), v, centroids.col(i), false);
-      v = ::fabs(v);
+      v = fabs(v);
       if (!err) vols[i] = v;
       else ++errcount;
     }
@@ -4997,7 +4997,7 @@ static E_Int extrude_faces
   if (strategy != CST_ABS)
   {
     E_Float Lcomp(0.);
-    height_factor =  std::min(1., height_factor); // 100% max
+    height_factor = K_FUNC::E_min(1., height_factor); // 100% max
     K_FLD::FloatArray L;
     NUGA::MeshTool::computeIncidentEdgesSqrLengths(coord, ghost_pgs, L);
 
@@ -5231,8 +5231,8 @@ static E_Int extrude_revol_faces
 
     E_Float* newp = coord.col(nid);
 
-    newp[0] = radius[i] * ::cos(a);
-    newp[1] = radius[i] * ::sin(a);
+    newp[0] = radius[i] * cos(a);
+    newp[1] = radius[i] * sin(a);
     newp[2] = p[2];
 
     img[i] = nid++;
@@ -5721,7 +5721,7 @@ static int validate_moves_by_fluxes
         PH0.volume<TriangulatorType>(crd, orient.get_facets_ptr(PHn), v, dt);
       }
 
-      minvol = std::min(minvol, v);
+      minvol = K_FUNC::E_min(minvol, v);
     }
 
     // extract shell

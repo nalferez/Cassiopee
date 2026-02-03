@@ -886,7 +886,7 @@ class Handle:
                 connectivities = Internal.getElementNodes(z)
                 for c in connectivities:
                     eltName, nb_nodes_per_elt = Internal.eltNo2EltName(c[1][0])
-                    rg = Internal.getNodeFromName(c, 'ElementRange')
+                    rg = Internal.getNodeFromName1(c, 'ElementRange')
                     nb_elts = rg[1][1]
                     nb_loc_elts = nb_elts // Cmpi.size
                     reste_elts = nb_elts % Cmpi.size
@@ -958,7 +958,7 @@ class Handle:
                             eltrange = Internal.createNode('ElementRange', 'IndexRange_t', value=numpy.array([1, connectivity.shape[0]]))
                             Internal.addChild(c, eltrange)
                             Internal.addChild(c, eltconnectivity)
-                grdcrd = Internal.getNodeFromName(z, 'GridCoordinates')
+                grdcrd = Internal.getNodeFromName1(z, Internal.__GridCoordinates__)
                 xcrds = numpy.array(splitted_data[0]["vertex"][:,0])
                 ycrds = numpy.array(splitted_data[0]["vertex"][:,1])
                 zcrds = numpy.array(splitted_data[0]["vertex"][:,2])

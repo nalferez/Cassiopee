@@ -196,10 +196,10 @@ def quadrangle(P1, P2, P3, P4, N=0, ntype='QUAD'):
     else:
         return C.convertArrays2ZoneNode('quadrangle', [a])
 
-def surface(f, N=100):
+def surface(f, N=100, isVectorized=False):
     """Create a surface from a user defined parametric function.
     Usage: surface(f, N)"""
-    a = Geom.surface(f, N)
+    a = Geom.surface(f, N, isVectorized)
     return C.convertArrays2ZoneNode('surface', [a])
 
 def getLength(t):

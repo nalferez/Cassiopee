@@ -30,12 +30,14 @@
 #include "converter.h"
 using namespace K_FLD;
 
-static struct python_parameters_dictionnary {
-    std::size_t         nb_vars;
+static struct python_parameters_dictionnary 
+{
+    std::size_t nb_vars;
     std::vector<char *> m_param_names;
 } py_params;
 
-struct py_ast_handler {
+struct py_ast_handler 
+{
     PyObject_HEAD 
     Expression::ast *pt_ast;
 };
@@ -43,13 +45,14 @@ struct py_ast_handler {
 PyAPI_DATA(PyTypeObject) py_ast_handler_type;
 
 // Namespace anonyme, remplace avantageusement le static
-namespace {
-    std::vector<const char *> list_of_symbols() {
-        auto &                    st = Expression::symbol_table::get();
+namespace 
+{
+    std::vector<const char *> list_of_symbols() 
+    {
+        auto& st = Expression::symbol_table::get();
         std::vector<const char *> symbols;
         symbols.reserve(st.size());
-        for (auto &vk : st)
-            symbols.push_back(vk.first.data());
+        for (auto &vk : st) symbols.push_back(vk.first.data());
         return symbols;
     }
     // .........................................................................................
@@ -77,7 +80,7 @@ namespace {
     // -----------------------------------------------------------------------------------------
     PyObject *py_ast_handler_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
         py_ast_handler *self;
-        self         = (py_ast_handler *)type->tp_alloc(type, 0);
+        self = (py_ast_handler *)type->tp_alloc(type, 0);
         self->pt_ast = nullptr;
         return (PyObject *)self;
     }
@@ -91,7 +94,7 @@ namespace {
     }
     // -----------------------------------------------------------------------------------------
     struct data_array {
-        PyObject * array;
+        PyObject  *array;
         FldArrayF *f;
         FldArrayI *cn;
         E_Int      res;
@@ -101,7 +104,7 @@ namespace {
         std::vector<double>                                  scal_variables;
         // Preparation de la table des symboles :
         // .......................................
-        //auto &st          = Expression::symbol_table::get();
+        //auto &st = Expression::symbol_table::get();
         auto  symbol_kwds = list_of_symbols();
 
         // Recherche du nombre d'arguments passes pour l'expression avec verification
@@ -121,11 +124,11 @@ namespace {
         // =====================================================================
         // ==                   PARCOURTS DES ARGUMENTS                       ==
         // =====================================================================
-        E_Int      ni, nj, nk;
+        E_Int ni, nj, nk;
         FldArrayF *f;
         FldArrayI *cn;
-        char *     varString;
-        char *     eltType;
+        char* varString;
+        char* eltType;
         // On va prendre le premier argument de type array ( dans args ou dans kwds si args est vide ) comme modele
         // d'array Et on verifie sa validite en tant que tableau cassiopee Si la fonction ne contient que des scalaires
         // en parametre, nfld = 1 et npts = 1. res = 0
@@ -180,7 +183,8 @@ namespace {
         if (nb_args_vars > 0) RELEASESHAREDB(res, parray, f, cn);
         // Parcourt des arguments
         std::vector<data_array> arrays(nb_args_vars);
-        for (E_Int iargs = 0; iargs < nb_args_vars; ++iargs) {
+        for (E_Int iargs = 0; iargs < nb_args_vars; ++iargs) 
+        {
             // Tous les objets de la liste doivent etre des arrays de style
             // cassiopee compatible avec le tableau de reference :
             PyObject *array2 = PyTuple_GetItem(args, iargs);
@@ -292,6 +296,7 @@ namespace {
         } 
         else 
         {
+            // prev version
             const char *resultStr = "Result";
             if (res == 1) // Si structure :
             {
@@ -321,10 +326,53 @@ namespace {
 #pragma omp parallel for shared(size, cnpp, cnp) private(i)
                 for (i = 0; i < size; i++) cnp[i] = cnpp[i];
             }
+
+            // new version
+            /*
+            FldArrayF fn(npts, 1);
+            E_Float *fnp = fn.begin();
+            */
+
             auto vout = K_MEMORY::vector_view<E_Float>(fnp, npts);
             Py_BEGIN_ALLOW_THREADS;
             self->pt_ast->eval(cpp_dico, vout);
             Py_END_ALLOW_THREADS;
+
+            // new version
+            /*
+            const char *resultStr = "Result";
+            if (res == 1) 
+            {
+                E_Int api = arrays[0].f->getApi();
+                result = K_ARRAY::buildArray3(1, resultStr, ni, nj, nk, api);
+                FldArrayF* f2;
+                K_ARRAY::getFromArray3(result, f2);
+                E_Float* f2p = f2->begin();
+                for (E_Int i = 0; i < npts; i++)
+                {
+                  f2p[i] = fnp[i];
+                }
+                RELEASESHAREDS(result, f2);
+            } 
+            else 
+            {
+                E_Int nelts = arrays[0].cn->getSize();
+                E_Int api = arrays[0].f->getApi();
+                result = K_ARRAY::buildArray3(1, resultStr, npts, nelts, eltType, false, api);
+                FldArrayF* f2; FldArrayI* cn2;
+                K_ARRAY::getFromArray3(result, f2, cn2);
+                E_Float* f2p = f2->begin();
+                for (E_Int i = 0; i < npts; i++)
+                {
+                  f2p[i] = fnp[i];
+                }
+                for (E_Int n = 1; n <= cn2->getNfld(); n++)
+                  for (E_Int i = 0; i < nelts; i++)
+                    (*cn2)(i,n) = (*arrays[0].cn)(i,n);
+                RELEASESHAREDU(result, f2, cn2);
+            }
+            */
+
             for (E_Int jargs = 0; jargs < nb_args_vars; jargs++) 
             {
                 RELEASESHAREDB(arrays[jargs].res, arrays[jargs].array, arrays[jargs].f, arrays[jargs].cn);
@@ -471,7 +519,8 @@ namespace {
         }
         // Parcourt du dictionnaire,
         // Le dictionnaire ne doit contenir que des valeurs scalaires ou des objets acceptant un buffer memoire
-        if (nb_dict_vars > 0) {
+        if (nb_dict_vars > 0) 
+        {
             PyObject *py_keys = PyDict_Keys(kwds);
             for (E_Int idict = 0; idict < nb_dict_vars; ++idict) {
                 PyObject *  py_str = PyList_GetItem(py_keys, idict);
@@ -569,7 +618,7 @@ namespace {
         std::vector<double>                                  scal_variables;
         // Preparation de la table des symboles :
         // .......................................
-        //auto &st          = Expression::symbol_table::get();
+        //auto &st = Expression::symbol_table::get();
         auto  symbol_kwds = list_of_symbols();
 
         // Recherche du nombre d'arguments passes pour l'expression avec verification

@@ -191,8 +191,8 @@ namespace K_MESH
 
         for (E_Int i = 0; i < 3; ++i)
         {
-          bb.minB[i] = std::min(bb.minB[i], b.minB[i]);
-          bb.maxB[i] = std::max(bb.maxB[i], b.maxB[i]);
+          bb.minB[i] = K_FUNC::E_min(bb.minB[i], b.minB[i]);
+          bb.maxB[i] = K_FUNC::E_max(bb.maxB[i], b.maxB[i]);
         }
       }
     }
@@ -374,8 +374,8 @@ namespace K_MESH
 
       // angular criterion
       E_Float angle_threshold = NUGA::PI*(1. - threshold);
-      angle_threshold = std::min(NUGA::PI, angle_threshold);
-      angle_threshold = std::max(angle_threshold, EPSILON);
+      angle_threshold = K_FUNC::E_min(NUGA::PI, angle_threshold);
+      angle_threshold = K_FUNC::E_max(angle_threshold, EPSILON);
 
       typedef K_FLD::ArrayAccessor<K_FLD::FloatArray> acrd_t;
       acrd_t acrd(crd);
@@ -389,7 +389,6 @@ namespace K_MESH
       for (E_Int i = 0; i < nb_pgs; ++i)
       {
         E_Int PGi = *(first_pg + i) - 1;
-        //std::cout << PGi << std::endl;
         const E_Int* pNi = PGS.get_facets_ptr(PGi);
         E_Int  nb_nodes = PGS.stride(PGi);
         E_Int* pKn = lneighbors.get_facets_ptr(i);//i because lneighbor is local : sized as nb_pgs
@@ -564,8 +563,8 @@ namespace K_MESH
 
       // angular criterion
       E_Float angle_threshold = NUGA::PI*(1. - concave_threshold);
-      angle_threshold = std::min(NUGA::PI, angle_threshold);
-      angle_threshold = std::max(angle_threshold, EPSILON);
+      angle_threshold = K_FUNC::E_min(NUGA::PI, angle_threshold);
+      angle_threshold = K_FUNC::E_max(angle_threshold, EPSILON);
 
       // aggregate
       std::vector<E_Int> maski(nb_pgsi, 1), maskj(nb_pgsj, 1);
@@ -700,11 +699,11 @@ namespace K_MESH
 
       // angular criterions
       E_Float angle_concave = NUGA::PI*(1. - concave_threshold);
-      angle_concave = std::min(NUGA::PI, angle_concave);
-      angle_concave = std::max(angle_concave, EPSILON);
+      angle_concave = K_FUNC::E_min(NUGA::PI, angle_concave);
+      angle_concave = K_FUNC::E_max(angle_concave, EPSILON);
       E_Float angle_convex = NUGA::PI*(1. + convex_threshold);
-      angle_convex = std::max(NUGA::PI, angle_convex);
-      angle_convex = std::min(angle_convex, 2.*NUGA::PI - EPSILON);
+      angle_convex = K_FUNC::E_max(NUGA::PI, angle_convex);
+      angle_convex = K_FUNC::E_min(angle_convex, 2.*NUGA::PI - EPSILON);
 
       typedef K_FLD::ArrayAccessor<K_FLD::FloatArray> acrd_t;
       acrd_t acrd(crd);
@@ -803,11 +802,11 @@ namespace K_MESH
 
       // angular criterions
       E_Float angle_concave = NUGA::PI*(1. - concave_threshold);
-      angle_concave = std::min(NUGA::PI, angle_concave);
-      angle_concave = std::max(angle_concave, EPSILON);
+      angle_concave = K_FUNC::E_min(NUGA::PI, angle_concave);
+      angle_concave = K_FUNC::E_max(angle_concave, EPSILON);
       E_Float angle_convex = NUGA::PI*(1. + convex_threshold);
-      angle_convex = std::max(NUGA::PI, angle_convex);
-      angle_convex = std::min(angle_convex, 2.*NUGA::PI - EPSILON);
+      angle_convex = K_FUNC::E_max(NUGA::PI, angle_convex);
+      angle_convex = K_FUNC::E_min(angle_convex, 2.*NUGA::PI - EPSILON);
 
       typedef K_FLD::ArrayAccessor<K_FLD::FloatArray> acrd_t;
       acrd_t acrd(crd);
@@ -966,7 +965,7 @@ namespace K_MESH
         K_MESH::Triangle::normal(crd, pK, Normi);
         E_Float l2 = sqrt(Normi[0] * Normi[0] + Normi[1] * Normi[1] + Normi[2] * Normi[2]);
 
-        if (::fabs(l2 - 1.) >= EPSILON) continue;  // DEGEN : not a good quality triangulation
+        if (fabs(l2 - 1.) >= EPSILON) continue;  // DEGEN : not a good quality triangulation
 
         E_Int p0 = *pK; // first T3 point
         NUGA::diff<3>(point, crd.col(p0), P0Pt);
@@ -1275,7 +1274,7 @@ namespace K_MESH
         const E_Float* p3 = crd.col(phnodes[2] - 1);
         const E_Float* p4 = crd.col(phnodes[3] - 1);
 
-        V = ::fabs(::K_MESH::Tetrahedron::volume(p1, p2, p3, p4));
+        V = fabs(::K_MESH::Tetrahedron::volume(p1, p2, p3, p4));
 
         G[0] = 0.25 * (p1[0] + p2[0] + p3[0] + p4[0]);
         G[1] = 0.25 * (p1[1] + p2[1] + p3[1] + p4[1]);
@@ -1321,7 +1320,7 @@ namespace K_MESH
         const E_Float* p2 = crd.col(*(pS + 1));
         const E_Float* p3 = crd.col(*(pS + 2));
 
-        v = ::fabs(Tetrahedron::volume(p1, p2, p3, p4));//must be absolute value when not reorienting as for the star-shaped case
+        v = fabs(Tetrahedron::volume(p1, p2, p3, p4));//must be absolute value when not reorienting as for the star-shaped case
 
         V += v;
 
@@ -1403,7 +1402,7 @@ namespace K_MESH
         E_Float Lmin2, Lmax2;
         PG.edge_length_extrema(crd, Lmin2, Lmax2);
 
-        if (MTYPE == NUGA::ISO_MIN) val = std::min(val, Lmin2);
+        if (MTYPE == NUGA::ISO_MIN) val = K_FUNC::E_min(val, Lmin2);
         else if (MTYPE == NUGA::ISO_MAX) val = std::max(val, Lmax2);
         else val += (sqrt(Lmin2) + sqrt(Lmax2));
       }
@@ -1428,7 +1427,7 @@ namespace K_MESH
         E_Int nb_nodes = _pgs->stride(PGi);
 
         E_Float L2r = K_MESH::Polygon::Lref2(nodes, nb_nodes, nodal_tol2, -1);
-        val = std::min(val, L2r);
+        val = K_FUNC::E_min(val, L2r);
       }
       return val;
     }
@@ -1463,7 +1462,7 @@ namespace K_MESH
           const E_Float* p3 = crd.col(phnodes[2]-1);
           const E_Float* p4 = crd.col(phnodes[3]-1);
 
-          V=::fabs(::K_MESH::Tetrahedron::volume(p1, p2, p3, p4));
+          V = fabs(::K_MESH::Tetrahedron::volume(p1, p2, p3, p4));
 
           G[0] = 0.25 * (p1[0]+p2[0]+p3[0]+p4[0]);
           G[1] = 0.25 * (p1[1]+p2[1]+p3[1]+p4[1]);
@@ -2332,8 +2331,8 @@ namespace K_MESH
             for (E_Int n = 0; n < 4; ++n)
             {
               E_Float L = NUGA::sqrDistance(crd.col(nodes[n] - 1), crd.col(nodes[(n + 1) % nnodes] - 1), 3);
-              Lmin = std::min(L, Lmin);
-              Lmax = std::max(L, Lmax);
+              Lmin = K_FUNC::E_min(L, Lmin);
+              Lmax = K_FUNC::E_max(L, Lmax);
             }
             if (Lmin >= aniso_ratio * aniso_ratio*Lmax) return false;
           }
@@ -2356,10 +2355,11 @@ namespace K_MESH
             E_Float L0 = NUGA::sqrDistance(crd.col(nodes[0] - 1), crd.col(nodes[1] - 1), 3);
             E_Float L1 = NUGA::sqrDistance(crd.col(nodes[1] - 1), crd.col(nodes[2] - 1), 3);
 
-            E_Float Lmin = std::min(L0, L1);
-            E_Float Lmax = std::max(L0, L1);
+            E_Float Lmin = K_FUNC::E_min(L0, L1);
+            E_Float Lmax = K_FUNC::E_max(L0, L1);
 
-            if (Lmin < aniso_ratio*aniso_ratio*Lmax) { //aniso
+            if (Lmin < aniso_ratio*aniso_ratio*Lmax) 
+            { //aniso
               is_aniso[i] = true;
               if (Lmax == L0)
               {
@@ -2387,11 +2387,9 @@ namespace K_MESH
                 {
                   E_Int Ni = nodes[n] - 1;
                   E_Int Nip1 = nodes[(n + 1) % nnodes] - 1;
-                  //std::cout << "Ni/Nip1/topi/topip1 : " << Ni << "/" << Nip1 << "/" << two_top_pts[2*j] << "/" << two_top_pts[(2*j)+1] << std::endl;
                   if ((two_top_pts[2 * i] == Ni && two_top_pts[(2 * i) + 1] == Nip1) ||
                     (two_top_pts[2 * i] == Nip1 && two_top_pts[(2 * i) + 1] == Ni))
                   {
-                    //std::cout << "found bot/tp" << std::endl;
                     bot = j;
                     top = HX6opposites[j];
                     return true;
@@ -2409,7 +2407,6 @@ namespace K_MESH
     {
       return ELT_t::is_of_type(PGs, firstPG, nb_pgs);
     }
-
 
     ///
     static bool is_basic(const ngon_unit & PGs, const E_Int* faces, E_Int nb_faces)
@@ -2431,13 +2428,15 @@ namespace K_MESH
       std::vector<E_Int> nodes;
       unique_nodes(*_pgs, _faces, _nb_faces, nodes);
       //std::sort(unodes.begin(), unodes.end());
-      if (poids != nullptr) {
+      if (poids != nullptr) 
+      {
         poids->clear();
         poids->resize(nodes.size());
       }
 
       crd.reserve(3, nodes.size());
-      for (size_t i = 0; i < nodes.size(); ++i) {
+      for (size_t i = 0; i < nodes.size(); ++i) 
+      {
         crd.pushBack(crdi.col(nodes[i] - 1), crdi.col(nodes[i] - 1) + 3);
         if (poids != nullptr)(*poids)[i] = nodes[i];
       }

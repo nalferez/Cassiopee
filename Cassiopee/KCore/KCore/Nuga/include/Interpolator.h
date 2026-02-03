@@ -70,7 +70,7 @@ public:
   {
   }
 
-  inline T interpolate(const T& H0, const T& H1, E_Float u) const {return H0 * ::pow(H1/H0, u);} //iso
+  inline T interpolate(const T& H0, const T& H1, E_Float u) const {return H0 * pow(H1/H0, u);} //iso
 
 };
 

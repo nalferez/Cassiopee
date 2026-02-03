@@ -40,7 +40,7 @@ PyObject* K_TRANSFORM::contract(PyObject* self, PyObject* args)
                     &array, &xc, &yc, &zc, &dir1x, &dir1y, &dir1z,
                     &dir2x, &dir2y, &dir2z, &alpha))
   {
-      return NULL;
+    return NULL;
   }
 
   // Check array
@@ -133,7 +133,7 @@ PyObject* K_TRANSFORM::deformPoint(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ RR_,
                     &array, &xi, &yi, &zi, &dx, &dy, &dz, &depth, &width))
   {
-      return NULL;
+    return NULL;
   }
 
   // Check array

@@ -777,6 +777,126 @@ def _projectOnFaces(hook, a, faceList=None):
     return None
 
 #=============================================================================
+# CAD information
+#=============================================================================
+
+# Return the number of edges in CAD hook
+def getNbEdges(hook):
+    """Return the number of edges in CAD hook."""
+    return occ.getNbEdges(hook)
+
+# Return the number of faces in CAD hook
+def getNbFaces(hook):
+    """Return the number of faces in CAD hook."""
+    return occ.getNbFaces(hook)
+
+# Return the file and format used to load CAD in hook
+def getFileAndFormat(hook):
+    """Return file and format of associated CAD file."""
+    return occ.getFileAndFormat(hook)
+
+# Return the area of specified faces
+def getFaceArea(hook, faceList=None):
+    """Return the area of given faces."""
+    return occ.getFaceArea(hook, faceList)
+
+# identify tag component
+def identifyTags__(a):
+    return occ.identifyTags(a)
+
+# print OCAF document
+def printOCAF(hook):
+    """Print OCAF document."""
+    occ.printOCAF(hook)
+
+def getFaceNameInOCAF(hook):
+    """Return face names in OCAF."""
+    return occ.getFaceNameInOCAF2(hook)
+
+def getEdgeNameInOCAF(hook):
+    """Return edge names in OCAF."""
+    return occ.getEdgeNameInOCAF2(hook)
+
+#=============================================================================
+# CAD modeling
+#=============================================================================
+def _addArc(hook, P1, P2, P3):
+    """Add an arc to hook."""
+    occ.addArc(hook, P1, P2, P3)
+    return None
+
+def _addCircle(hook, C, axis, R, makeFace=False):
+    """Add a circle to hook."""
+    occ.addCircle(hook, C, axis, R, makeFace)
+    return None
+
+def _addEllipse(hook, C, axis, R1, R2, makeFace=False):
+    """Add an ellipse to hook."""
+    occ.addEllipse(hook, C, axis, R1, R2, makeFace)
+    return None
+
+def _addSuperEllipse(hook, C, R1, R2, n=4, samples=36, makeFace=False):
+    """Add a super ellipse to hook."""
+    occ.addSuperEllipse(hook, C, R1, R2, n, samples, makeFace)
+    return None
+
+def _addLine(hook, P1, P2):
+    """Add a line to hook."""
+    occ.addLine(hook, P1, P2)
+    return None
+
+def _addSquare(hook, P1, P2, P3, P4, makeFace=False):
+    """Add a square to hook."""
+    occ.addSquare(hook, P1, P2, P3, P4, makeFace)
+    return None
+
+def _addSpline(hook, Points, method, degree):
+    """Add a spline to hook."""
+    occ.addSpline(hook, Points, method, degree)
+    return None
+
+def _addBox(hook, P1, P2, P3, P4, P5, P6, P7, P8):
+    """Add a box to hook."""
+    occ.addBox(hook, P1, P2, P3, P4, P5, P6, P7, P8)
+    return None
+
+def _addSphere(hook, C, R):
+    """Add a sphere to hook."""
+    occ.addSphere(hook, C, R)
+    return None
+
+def _addCylinder(hook, C, axis, R, H):
+    """Add a cylinder to hook."""
+    occ.addCylinder(hook, C, axis, R, H)
+    return None
+
+def _addSplineSurface(hook, points, degree):
+    """Add a spline surface to hook."""
+    occ.addSplineSurface(hook, points, 2, degree)
+    return None
+
+def _addGordonSurface(hook, ucurves, vcurves):
+    """Add a Gordon surface to hook."""
+    occ.addGordonSurface(hook, ucurves, vcurves)
+    return None
+
+def _revolve(hook, edges, C, axis, angle):
+    """Revolve edges to create surface."""
+    occ.revolve(hook, edges, C, axis, angle)
+
+def _sweep(hook, profiles, paths):
+    """Sweep profiles along paths."""
+    occ.sweep(hook, profiles, paths)
+
+def _loft(hook, profiles, guides):
+    """Loft profiles."""
+    occ.loft(hook, profiles, guides)
+
+def _boolean(hook, faces1, faces2, op=0, rev1=1, rev2=1):
+    """Boolean operation on two surfaces."""
+    occ.boolean(hook, faces1, faces2, op, rev1, rev2)
+
+#=============================================================================
 # CAD global operations
 #=============================================================================
 
@@ -786,7 +906,7 @@ def readCAD(fileName, format='fmt_step'):
     h = occ.readCAD(fileName, format)
     return h
 
-def createEmptyCAD(fileName="unknown.stp", format='fmt_step'):
+def createEmptyCAD(fileName="None", format='fmt_step'):
     """Create an empty CAD."""
     h = occ.createEmptyCAD(fileName, format)
     return h
@@ -857,7 +977,7 @@ def _trimFaces(hook, faceList1, faceList2):
     occ.trimFaces(hook, faceList1, faceList2)
     return None
 
-# split all faces
+# split all faces to be less than area
 def _splitFaces(hook, area):
     """Split all faces to be less than area."""
     occ.splitFaces(hook, area)
@@ -867,123 +987,3 @@ def _splitEdge(hook, edgeNo, param=-999., P=(0,0,0)):
     """Split edge no at param or point P."""
     occ.splitEdge(hook, edgeNo, param, P)
     return None
-
-#=============================================================================
-# CAD information
-#=============================================================================
-
-# Return the number of edges in CAD hook
-def getNbEdges(hook):
-    """Return the number of edges in CAD hook."""
-    return occ.getNbEdges(hook)
-
-# Return the number of faces in CAD hook
-def getNbFaces(hook):
-    """Return the number of faces in CAD hook."""
-    return occ.getNbFaces(hook)
-
-# Return the file and format used to load CAD in hook
-def getFileAndFormat(hook):
-    """Return file and format of associated CAD file."""
-    return occ.getFileAndFormat(hook)
-
-# Return the area of specified faces
-def getFaceArea(hook, faceList=None):
-    """Return the area of given faces."""
-    return occ.getFaceArea(hook, faceList)
-
-# identify tag component
-def identifyTags__(a):
-    return occ.identifyTags(a)
-
-# print OCAF document
-def printOCAF(hook):
-    """Print OCAF document."""
-    occ.printOCAF(hook)
-
-def getFaceNameInOCAF(hook):
-    """Return face names in OCAF."""
-    return occ.getFaceNameInOCAF2(hook)
-
-def getEdgeNameInOCAF(hook):
-    """Return edge names in OCAF."""
-    return occ.getEdgeNameInOCAF2(hook)
-
-#=============================================================================
-# CAD modeling
-#=============================================================================
-def _addArc(hook, P1, P2, P3):
-    """Add an arc to hook."""
-    occ.addArc(hook, P1, P2, P3)
-    return None
-
-def _addCircle(hook, C, axis, R, makeFace=False):
-    """Add a box to hook."""
-    occ.addCircle(hook, C, axis, R, makeFace)
-    return None
-
-def _addEllipse(hook, C, axis, R1, R2, makeFace=False):
-    """Add an ellipse to hook."""
-    occ.addEllipse(hook, C, axis, R1, R2, makeFace)
-    return None
-
-def _addSuperEllipse(hook, C, R1, R2, n=4, samples=36, makeFace=False):
-    """Add a super ellipse to hook."""
-    occ.addSuperEllipse(hook, C, R1, R2, n, samples, makeFace)
-    return None
-
-def _addLine(hook, P1, P2):
-    """Add an ellipse to hook."""
-    occ.addLine(hook, P1, P2)
-    return None
-
-def _addSquare(hook, P1, P2, P3, P4, makeFace=False):
-    """Add a square to hook."""
-    occ.addSquare(hook, P1, P2, P3, P4, makeFace)
-    return None
-
-def _addSpline(hook, Points, method, degree):
-    """Add a spline to hook."""
-    occ.addSpline(hook, Points, method, degree)
-    return None
-
-def _addBox(hook, P1, P2, P3, P4, P5, P6, P7, P8):
-    """Add a box to hook."""
-    occ.addBox(hook, P1, P2, P3, P4, P5, P6, P7, P8)
-    return None
-
-def _addSphere(hook, C, R):
-    """Add a sphere to hook."""
-    occ.addSphere(hook, C, R)
-    return None
-
-def _addCylinder(hook, C, axis, R, H):
-    """Add a cylinder to hook."""
-    occ.addCylinder(hook, C, axis, R, H)
-    return None
-
-def _addSplineSurface(hook, points, degree):
-    """Add a spline surface to hook."""
-    occ.addSplineSurface(hook, points, 2, degree)
-    return None
-
-def _addGordonSurface(hook, ucurves, vcurves):
-    """Add a Gordon surface to hook."""
-    occ.addGordonSurface(hook, ucurves, vcurves)
-    return None
-
-def _revolve(hook, edges, C, axis, angle):
-    """Revolve edges to create surface."""
-    occ.revolve(hook, edges, C, axis, angle)
-
-def _sweep(hook, profiles, paths):
-    """Sweep profiles along paths."""
-    occ.sweep(hook, profiles, paths)
-
-def _loft(hook, profiles, guides):
-    """Loft profiles."""
-    occ.loft(hook, profiles, guides)
-
-def _boolean(hook, faces1, faces2, op=0, rev1=1, rev2=1):
-    """Boolean operation on two surfaces."""
-    occ.boolean(hook, faces1, faces2, op, rev1, rev2)

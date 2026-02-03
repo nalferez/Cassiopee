@@ -732,7 +732,7 @@ E_Float concave_threshold, E_Float convex_threshold, E_Float rtol, E_Float GRmin
     return 1;
 
   E_Float abstol = __get_abs_tol(crd, rtol, PGS, first_pg, nb_pgs);
-  E_Float angle_max = std::max/*min*/(concave_threshold, convex_threshold) * NUGA::PI;
+  E_Float angle_max = K_FUNC::E_max/*min*/(concave_threshold, convex_threshold) * NUGA::PI;
 
   size_t nb_chains = chains.size();
 
@@ -751,7 +751,7 @@ E_Float concave_threshold, E_Float convex_threshold, E_Float rtol, E_Float GRmin
       edge_angle_t::const_iterator it = reflex_edges.find(E);
       assert(it != reflex_edges.end());
       E_Float a = it->second;
-      chain_angle[c] = std::max(chain_angle[c], ::fabs(NUGA::PI - a));//max deviation in the chain
+      chain_angle[c] = K_FUNC::E_max(chain_angle[c], fabs(NUGA::PI - a));//max deviation in the chain
     }
   }
 
@@ -761,8 +761,7 @@ E_Float concave_threshold, E_Float convex_threshold, E_Float rtol, E_Float GRmin
   ivec_t chain;
   for (size_t c = 0; c < nb_chains; ++c)
   {
-    if (chains_type[c] == 1)
-      continue;
+    if (chains_type[c] == 1) continue;
 
     chain.clear();
     chain.insert(chain.end(), chains[c].begin(), chains[c].end()); //using &a[0] whan a is a deque is coorupted
@@ -1513,7 +1512,7 @@ if (PHi == faultyPH)
         int nnodes = PGS.stride(PGi);
 
         K_MESH::Polygon::normal<K_FLD::FloatArray, 3>(crd, pn, nnodes, 1, nPGi);
-        E_Float ps = ::fabs(NUGA::dot<3>(N, nPGi));
+        E_Float ps = fabs(NUGA::dot<3>(N, nPGi));
         if (ps > 0.99) return false;
       }
     }
@@ -1661,9 +1660,9 @@ if (PHi == faultyPH)
   K_MESH::Polyhedron<UNKNOWN>::metrics2(dt, crd, twoPH.PGs, pgs0, nb_pgs0, v1, G, false/*not all cvx*/);
   K_MESH::Polyhedron<UNKNOWN>::metrics2(dt, crd, twoPH.PGs, pgs1, nb_pgs1, v2, G, false/*not all cvx*/);
 
-  if (::fabs(v1) < V * GRmin) //null or two small (doesn't worth a cut)
+  if (fabs(v1) < V * GRmin) //null or two small (doesn't worth a cut)
     return false;
-  if (::fabs(v2) < V* GRmin) //null or too small (doewnt worth a cut)
+  if (fabs(v2) < V* GRmin) //null or too small (doewnt worth a cut)
     return false;
   
   // check also they are not patholical bits
@@ -1683,15 +1682,15 @@ if (PHi == faultyPH)
   E_Int maxAPG11, maxAPG12;
   err = K_MESH::Polyhedron<UNKNOWN>::min_max_angles(crd, twoPH.PGs, pgs0, nb_pgs0, false/*i.e open cell is error*/, orient.get_facets_ptr(0), minA1, maxA1, maxAPG11, maxAPG12);
   if (err) return false; //open cell
-  if ((minA1 < minA) && ::fabs(minA1) < THRESHOLD) return false; // degen (first cond is there to allow splitting cells that have bad minA upon entry
-  if ((maxA1 > maxA) && ::fabs(2.*NUGA::PI - maxA1) < THRESHOLD) return false; // same comment
+  if ((minA1 < minA) && fabs(minA1) < THRESHOLD) return false; // degen (first cond is there to allow splitting cells that have bad minA upon entry
+  if ((maxA1 > maxA) && fabs(2.*NUGA::PI - maxA1) < THRESHOLD) return false; // same comment
   
   E_Float minA2, maxA2;
   E_Int maxAPG21, maxAPG22;
   err = K_MESH::Polyhedron<UNKNOWN>::min_max_angles(crd, twoPH.PGs, pgs1, nb_pgs1, false/*i.e open cell is error*/, orient.get_facets_ptr(1), minA2, maxA2, maxAPG21, maxAPG22);
   if (err) return false; //open cell
-  if ((minA2 < minA) && ::fabs(minA2) < THRESHOLD) return false; // degen (first cond is there to allow splitting cells that have bad minA upon entry
-  if ((maxA2 > maxA) && ::fabs(2.*NUGA::PI - maxA2) < THRESHOLD) return false; // same comment
+  if ((minA2 < minA) && fabs(minA2) < THRESHOLD) return false; // degen (first cond is there to allow splitting cells that have bad minA upon entry
+  if ((maxA2 > maxA) && fabs(2.*NUGA::PI - maxA2) < THRESHOLD) return false; // same comment
 
   K_MESH::Polyhedron<0> PH0(twoPH, 0);
   E_Float fluxvec[3];

@@ -571,7 +571,7 @@ E_Int K_IO::GenIO::tauread(char* file, PyObject*& tree)
 */
 //=============================================================================
 E_Int K_IO::GenIO::tauwrite(char* file, PyObject* tree)
-{  
+{
   /* Open file for writing */
   int ncid, ret;
   ret = nc_create(file, NC_CLOBBER, &ncid);

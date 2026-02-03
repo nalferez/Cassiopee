@@ -110,7 +110,8 @@ namespace DELAUNAY {
     
     inline bool aniso_smooth(size_type Ni, size_type Nj, E_Float gr);
     
-    bool is_valid() {
+    bool is_valid() 
+    {
       bool res=true; E_Int i=0; 
       for (; (i < _field.size()) && res; ++i) res &= isValidMetric(_field[i]); 
       if (i != _field.size()) std::cout << "failed at " << i-1 << std::endl; 
@@ -139,7 +140,7 @@ namespace DELAUNAY {
 
     int size() const { return _field.size(); }
 
-    field_type* get_field() {return &_field; }
+    field_type* get_field() { return &_field; }
 
   
   //protected:
@@ -152,9 +153,9 @@ namespace DELAUNAY {
 
     inline bool isValidMetric(const E_Float* mi);
     
-    inline bool isIsotropic(const T& mi) { return true;}
+    inline bool isIsotropic(const T& mi) { return true; }
     
-    inline bool isWeakAniso(size_type Ni, E_Float r) { return true;}
+    inline bool isWeakAniso(size_type Ni, E_Float r) { return true; }
 
     inline void setUserMetric(const K_FLD::FloatArray& Umetric, field_type& metric);
 
@@ -265,8 +266,8 @@ namespace DELAUNAY {
     const E_Float& a12 = mi[1];
     const E_Float& a22 = mi[2];
     
-    if ( ::fabs(a12) > EPSILON) return false;
-    if ( ::fabs(a11 - a22) > EPSILON) return false;
+    if ( fabs(a12) > EPSILON) return false;
+    if ( fabs(a11 - a22) > EPSILON) return false;
     
     return true;
   }
@@ -277,10 +278,10 @@ namespace DELAUNAY {
   VarMetric<Aniso2D>::get_h2_along_dir(size_type Ni, const E_Float* dir)
   {
     E_Float L2 = NUGA::sqrNorm<2>(dir);
-    
-    const E_Float& m11 = _field[Ni][0];
-    const E_Float& m12 = _field[Ni][1];
-    const E_Float& m22 = _field[Ni][2];
+    const Aniso2D& mi = _field[Ni];
+    const E_Float& m11 = mi[0];
+    const E_Float& m12 = mi[1];
+    const E_Float& m22 = mi[2];
     
     E_Float k2 = (m11*dir[0] * dir[0] + 2.* m12*dir[0] * dir[1] + m22 * dir[1] * dir[1]);
     if (k2 != 0.) k2 = 1. / k2;
@@ -293,12 +294,13 @@ namespace DELAUNAY {
   E_Float
   VarMetric<Aniso3D>::get_h2_along_dir(size_type Ni, const E_Float* dir)
   {
-    const E_Float& m11 = _field[Ni][0];
-    const E_Float& m12 = _field[Ni][1];
-    const E_Float& m13 = _field[Ni][2];
-    const E_Float& m22 = _field[Ni][3];
-    const E_Float& m23 = _field[Ni][4];
-    const E_Float& m33 = _field[Ni][5];
+    const Aniso3D& mi = _field[Ni];
+    const E_Float& m11 = mi[0];
+    const E_Float& m12 = mi[1];
+    const E_Float& m13 = mi[2];
+    const E_Float& m22 = mi[3];
+    const E_Float& m23 = mi[4];
+    const E_Float& m33 = mi[5];
 
     E_Float l = m11*dir[0]*dir[0] + m22*dir[1]*dir[1] + m33*dir[2]*dir[2] +
     2.*m12*dir[0]*dir[1] + 2.*m13*dir[0]*dir[2] + 2.*m23*dir[1]*dir[2];
@@ -317,7 +319,7 @@ namespace DELAUNAY {
     E_Float h1old2 = get_h2_along_dir(Ni, v0);
     E_Float h2old2 = get_h2_along_dir(Ni, v1);
     
-    E_Float rr = (std::min(h1old2, h2old2)/std::max(h1old2, h2old2));
+    E_Float rr = (K_FUNC::E_min(h1old2, h2old2)/K_FUNC::E_max(h1old2, h2old2));
     
     return ( rr < r*r );
   }
@@ -402,7 +404,7 @@ namespace DELAUNAY {
     {
       E_Float a = alpha * n;
       
-      E_Float V[] = {::cos(a), ::sin(a)};
+      E_Float V[] = {cos(a), sin(a)};
 
       const E_Float& u=V[0];
       const E_Float& v=V[1];
@@ -442,7 +444,7 @@ namespace DELAUNAY {
     {
       E_Float a = alpha * n;
 
-      E_Float V[] = { ::cos(a), ::sin(a) };
+      E_Float V[] = { cos(a), sin(a) };
 
       const E_Float& u = V[0];
       const E_Float& v = V[1];
@@ -484,7 +486,7 @@ namespace DELAUNAY {
     for (size_t n=0; n < SAMPLE; ++n)
     {
       E_Float a = alpha * n;
-      E_Float V[] = {::cos(a), ::sin(a)};
+      E_Float V[] = {cos(a), sin(a)};
       
       E_Float Pt[] = {h*V[0] , h*V[1]};
       
@@ -669,12 +671,12 @@ namespace DELAUNAY {
      if (_hmax != NUGA::FLOAT_MAX)
      {
        for (size_t i=0; i < m_iso.size(); ++i)
-         m_iso[i] = std::min(m_iso[i], _hmax);
+         m_iso[i] = K_FUNC::E_min(m_iso[i], _hmax);
      }
      if (_hmin != hmin1)
      {
        for (size_t i=0; i < m_iso.size(); ++i)
-         m_iso[i] = std::max(m_iso[i], _hmin);
+         m_iso[i] = K_FUNC::E_max(m_iso[i], _hmin);
      }
 
      // Set _metric by converting m_iso to an aniso type metric.
@@ -777,10 +779,10 @@ namespace DELAUNAY {
   E_Float d = sqrt(NUGA::sqrDistance(_pos->col(Ni), _pos->col(Nj), _pos->rows()));
   E_Float r1 = h1 / h0;
   if (::abs(r1 - 1.) < 0.01)
-  return d / std::max(h0,h1);
+  return d / K_FUNC::E_max(h0,h1);
   E_Float   r = (d + h1) / (d + h0);
   size_type n = size_type(::log(r1)/::log(r));
-  r1 = ::pow (r1, 1./E_Float(n));
+  r1 = pow (r1, 1./E_Float(n));
   return (h1 - r1 * h0)/(r1 - 1);
   }
   */
@@ -915,38 +917,38 @@ namespace DELAUNAY {
       D(1,1) *= (h2old2 / ybd2);
     else if (ybd2 < EPSILON*EPSILON) // along first axis
       D(0,0) *= (h1old2 / xbd2);
-//    else if (::fabs(lambda0-lambda1) < EPSILON) //isotropic reduce
+//    else if (fabs(lambda0-lambda1) < EPSILON) //isotropic reduce
 //    {
-//      //assert (::fabs(xbd2 - ybd2) < EPSILON*EPSILON);
+//      //assert (fabs(xbd2 - ybd2) < EPSILON*EPSILON);
 //      D(0,0) = 1. / xbd2;
 //      D(1,1) = 1. / ybd2;
 //    }
     else
     {
-      bool first_axis = (ybd2/xbd2 < ::fabs(lambda0/lambda1));
+      bool first_axis = (ybd2/xbd2 < fabs(lambda0/lambda1));
 //      E_Float psu2 = NUGA::dot<2>(normed_dir, v0);
 //      psu2 *= psu2;
 //      E_Float psv2 = NUGA::dot<2>(normed_dir, v1);
 //      psv2 *= psv2;
 //      bool first_axis = (psu2 >= psv2);
-//      E_Float l0new = ::fabs((1. - lambda1*(Xbd[1]*Xbd[1])) / (Xbd[0]*Xbd[0]));
-//      E_Float l1new = ::fabs((1. - lambda0*(Xbd[0]*Xbd[0])) / (Xbd[1]*Xbd[1]));
+//      E_Float l0new = fabs((1. - lambda1*(Xbd[1]*Xbd[1])) / (Xbd[0]*Xbd[0]));
+//      E_Float l1new = fabs((1. - lambda0*(Xbd[0]*Xbd[0])) / (Xbd[1]*Xbd[1]));
 
       // Replace the eigen value to reflect the transfo
       if (first_axis)
-        D(0,0) *= (h1old2 * ::fabs(1. - lambda1 * ybd2) / xbd2);
+        D(0,0) *= (h1old2 * fabs(1. - lambda1 * ybd2) / xbd2);
       else
-        D(1,1) *= (h2old2 * ::fabs(1. - lambda0 * xbd2) / ybd2);
+        D(1,1) *= (h2old2 * fabs(1. - lambda0 * xbd2) / ybd2);
     }
 
     K_FLD::FloatArray new_metric(2,2, 0.);
     new_metric = P * D * tP;
     
 #ifdef DEBUG_METRIC
-    E_Float sym_check = ::fabs(new_metric(0,1) - new_metric(1,0));
+    E_Float sym_check = fabs(new_metric(0,1) - new_metric(1,0));
     if (sym_check >=EPSILON)
     {
-      sym_check = sym_check / std::max(new_metric(0,1), new_metric(1,0));
+      sym_check = sym_check / K_FUNC::E_max(new_metric(0,1), new_metric(1,0));
     }
     //std::cout << sym_check << std::endl;
     assert (sym_check < EPSILON);
@@ -1081,9 +1083,9 @@ namespace DELAUNAY {
     E_Float mu2 = (Mj[0]*v20 + Mj[1]*v21 + Mj[2]*v22) * v20 + (Mj[1]*v20 + Mj[3]*v21 + Mj[4]*v22) * v21 + (Mj[2]*v20 + Mj[4]*v21 + Mj[5]*v22) * v22;
 
     // geometric interpolation
-    E_Float L0 = la0*::pow(mu0 / la0, r);
-    E_Float L1 = la1*::pow(mu1 / la1, r);
-    E_Float L2 = la2*::pow(mu2 / la2, r);
+    E_Float L0 = la0*pow(mu0 / la0, r);
+    E_Float L1 = la1*pow(mu1 / la1, r);
+    E_Float L2 = la2*pow(mu2 / la2, r);
 
     // M = inv(v) * Diag(L0,L1,L2) * inv(transpose(v))
     E_Float iv[3][3];
@@ -1129,7 +1131,7 @@ namespace DELAUNAY {
 
     // do Mi
     E_Float lP = get_h2_along_dir(Ni, NiNj);
-    E_Float fact = ::pow(1. + gr*lP, -2);
+    E_Float fact = pow(1. + gr*lP, -2);
     auto Mjf = Mj * fact;
    
     std::array<E_Float, 9> NN = Mi.inverse() * Mjf;
@@ -1148,9 +1150,9 @@ namespace DELAUNAY {
     E_Float mu1 = (Mjf[0]*v10 + Mjf[1]*v11 + Mjf[2]*v12) * v10 + (Mjf[1]*v10 + Mjf[3]*v11 + Mjf[4]*v12) * v11 + (Mjf[2]*v10 + Mjf[4]*v11 + Mjf[5]*v12) * v12;
     E_Float mu2 = (Mjf[0]*v20 + Mjf[1]*v21 + Mjf[2]*v22) * v20 + (Mjf[1]*v20 + Mjf[3]*v21 + Mjf[4]*v22) * v21 + (Mjf[2]*v20 + Mjf[4]*v21 + Mjf[5]*v22) * v22;
 
-    E_Float L0 = std::max(la0, mu0);
-    E_Float L1 = std::max(la1, mu1);
-    E_Float L2 = std::max(la2, mu2);
+    E_Float L0 = K_FUNC::E_max(la0, mu0);
+    E_Float L1 = K_FUNC::E_max(la1, mu1);
+    E_Float L2 = K_FUNC::E_max(la2, mu2);
 
     E_Float iv[3][3];
     inverse_matrix(v, iv);
@@ -1186,7 +1188,7 @@ namespace DELAUNAY {
 
     // do Mj
     E_Float lQ = get_h2_along_dir(Nj, NiNj);
-    fact = ::pow(1. + gr*lQ, -2);
+    fact = pow(1. + gr*lQ, -2);
     auto Mif = Mi * fact;
 
     NN = Mj.inverse() * Mif;
@@ -1204,9 +1206,9 @@ namespace DELAUNAY {
     mu1 = (Mif[0]*v10 + Mif[1]*v11 + Mif[2]*v12) * v10 + (Mif[1]*v10 + Mif[3]*v11 + Mif[4]*v12) * v11 + (Mif[2]*v10 + Mif[4]*v11 + Mif[5]*v12) * v12;
     mu2 = (Mif[0]*v20 + Mif[1]*v21 + Mif[2]*v22) * v20 + (Mif[1]*v20 + Mif[3]*v21 + Mif[4]*v22) * v21 + (Mif[2]*v20 + Mif[4]*v21 + Mif[5]*v22) * v22;
 
-    L0 = std::max(la0, mu0);
-    L1 = std::max(la1, mu1);
-    L2 = std::max(la2, mu2);
+    L0 = K_FUNC::E_max(la0, mu0);
+    L1 = K_FUNC::E_max(la1, mu1);
+    L2 = K_FUNC::E_max(la2, mu2);
 
     inverse_matrix(v, iv);
     iv[0][0] *= L0; iv[0][1] *= L1; iv[0][2] *= L2;
@@ -1359,7 +1361,7 @@ namespace DELAUNAY {
     K_FLD::FloatArray M1(2,2), M2(2,2), ID(2,2);
     Aniso2D m;
 
-    E_Int max = std::min((E_Int)metric1.size(), (E_Int)metric2.cols());
+    E_Int max = K_FUNC::E_min((E_Int)metric1.size(), (E_Int)metric2.cols());
 
     // fixme need to check validity of m2
     for (E_Int i = 0; i < max; ++i)
@@ -1400,7 +1402,9 @@ namespace DELAUNAY {
     for (size_t i = 0; i < isoM.size(); ++i)
     {
       im = isoM[i];
-      anisoM[i][0] = anisoM[i][2] = (im > 0.) ? 1./(im*im) : 0.;
+      if (im > 0.) anisoM[i][0] = 1./(im*im);
+      else anisoM[i][0] = 0.;
+      anisoM[i][2] = anisoM[i][0];
       anisoM[i][1] = 0.;
     }
   }
@@ -1415,7 +1419,10 @@ namespace DELAUNAY {
     for (size_t i = 0; i < isoM.size(); ++i)
     {
       im = isoM[i];
-      anisoM[i][0] = anisoM[i][3] = anisoM[i][5] = (im > 0.) ? 1. / (im*im) : 0.;
+      if (im > 0.) anisoM[i][0] = 1. / (im*im);
+      else anisoM[i][0] = 0.;
+      anisoM[i][3] = anisoM[i][0]; 
+      anisoM[i][5] = anisoM[i][0];
       anisoM[i][1] = anisoM[i][2] = anisoM[i][4] = 0.;
     }
   }
@@ -1472,7 +1479,7 @@ namespace DELAUNAY {
     E_Float hi0 = _field[Ni];
     E_Float hj0 = _field[Nj];
     
-    if (::fabs(hj0 - hi0) < EPSILON) return false; //same metric so nothing to smooth
+    if (fabs(hj0 - hi0) < EPSILON) return false; //same metric so nothing to smooth
     if (hj0 < hi0)
     {
       std::swap(Ni, Nj);
@@ -1489,8 +1496,8 @@ namespace DELAUNAY {
 
     E_Float hs = hi0 *(1. + (gr-1.) * dij); // extrapolated h at Nj with respect to growth ratio
 
-    hs = std::max(_hmin, hs);
-    hs = std::min(_hmax, hs);
+    hs = K_FUNC::E_max(_hmin, hs);
+    hs = K_FUNC::E_min(_hmax, hs);
     
     if (hj0 <= hs) return false; //false if metric at Nj is smaller than the replacement one.
     
@@ -1519,7 +1526,7 @@ namespace DELAUNAY {
 
     const Aniso2D* pmi0 = &mi0;
     
-    if (::fabs(hj02 - hi02) < EPSILON*EPSILON) return false; //same metric so nothing to smooth
+    if (fabs(hj02 - hi02) < EPSILON*EPSILON) return false; //same metric so nothing to smooth
     
     if (hj02 < hi02) // by convention, "i" refers to the smallest (hence driving) metric, "j" for the one to modify
     {
@@ -1560,7 +1567,7 @@ namespace DELAUNAY {
 
     const Aniso3D* pmi0 = &mi0;
 
-    if (::fabs(hj02 - hi02) < EPSILON*EPSILON) return false; //same metric so nothing to smooth
+    if (fabs(hj02 - hi02) < EPSILON*EPSILON) return false; //same metric so nothing to smooth
 
     if (hj02 < hi02) // by conventtion, "i" refers to the smallest (hence driving) metric, "j" for the one to modify
     {
@@ -1606,9 +1613,12 @@ namespace DELAUNAY {
     E_Float factor = 0.5;
     T m(factor*d);
     setMetric(N, m);
-           
+
+#ifdef E_ADOLC
+    length_to_points.push_back(std::make_pair(-d.value(), N));
+#else
     length_to_points.push_back(std::make_pair(-d, N));
- 
+#endif
   }
   
   /// pour un edge, threshold doit etre hmax
@@ -1620,7 +1630,12 @@ namespace DELAUNAY {
   {
     tmpNodes.clear();
     E_Float d = length(Ni, Nj, threshold, tmpNodes); // decoupe de l'edge (regulierement?)
+    
+#ifdef E_ADOLC
+    size_type n = std::max(size_type(d.value()), size_type(1));
+#else
     size_type n = std::max(size_type(d), size_type(1));
+#endif
 
     // CBX: est-ce qu'il ne faudrait pas limiter la decoupe de l'edge?
     // quel est l'effet?

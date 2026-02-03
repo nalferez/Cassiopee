@@ -127,11 +127,11 @@ public:
     E_Float dy = (maxB[1] - minB[1]);
     E_Float dz = (maxB[2] - minB[2]);
 
-    E_Float Lref = std::max(dx, std::max(dy, dz)); // ensure to get a non-null val
+    E_Float Lref = K_FUNC::E_max(dx, K_FUNC::E_max(dy, dz)); // ensure to get a non-null val
 
-    if (dx > ZERO_M) Lref = std::min(Lref, dx);
-    if (dy > ZERO_M) Lref = std::min(Lref, dy);
-    if (dz > ZERO_M) Lref = std::min(Lref, dz);
+    if (dx > ZERO_M) Lref = K_FUNC::E_min(Lref, dx);
+    if (dy > ZERO_M) Lref = K_FUNC::E_min(Lref, dy);
+    if (dz > ZERO_M) Lref = K_FUNC::E_min(Lref, dz);
 
     Lref *= RTOL;
 
@@ -146,12 +146,12 @@ public:
   // default impl for 3D. Specialization below after the class scope
   void merge(const BoundingBox& b)
   {
-    minB[0] = std::min(minB[0], b.minB[0]);
-    minB[1] = std::min(minB[1], b.minB[1]);
-    minB[2] = std::min(minB[2], b.minB[2]);
-    maxB[0] = std::max(maxB[0], b.maxB[0]);
-    maxB[1] = std::max(maxB[1], b.maxB[1]);
-    maxB[2] = std::max(maxB[2], b.maxB[2]);
+    minB[0] = K_FUNC::E_min(minB[0], b.minB[0]);
+    minB[1] = K_FUNC::E_min(minB[1], b.minB[1]);
+    minB[2] = K_FUNC::E_min(minB[2], b.minB[2]);
+    maxB[0] = K_FUNC::E_max(maxB[0], b.maxB[0]);
+    maxB[1] = K_FUNC::E_max(maxB[1], b.maxB[1]);
+    maxB[2] = K_FUNC::E_max(maxB[2], b.maxB[2]);
   }
 
   static bool intersection(const BoundingBox& b1, const BoundingBox& b2, BoundingBox& b)
@@ -397,10 +397,10 @@ inline void BBox2D::enlarge(E_Float RTOL)
   E_Float dx = (maxB[0] - minB[0]);
   E_Float dy = (maxB[1] - minB[1]);
 
-  E_Float Lref = std::max(dx, dy);
+  E_Float Lref = K_FUNC::E_max(dx, dy);
 
-  if (dx > ZERO_M) Lref = std::min(Lref, dx);
-  if (dy > ZERO_M) Lref = std::min(Lref, dy);
+  if (dx > ZERO_M) Lref = K_FUNC::E_min(Lref, dx);
+  if (dy > ZERO_M) Lref = K_FUNC::E_min(Lref, dy);
 
   Lref *= RTOL;
 
@@ -414,11 +414,11 @@ inline void BBox2D::enlarge(E_Float RTOL)
 template <>
 inline void BBox2D::merge(const BBox2D& b)
 {
-  minB[0] = std::min(minB[0], b.minB[0]);
-  minB[1] = std::min(minB[1], b.minB[1]);
+  minB[0] = K_FUNC::E_min(minB[0], b.minB[0]);
+  minB[1] = K_FUNC::E_min(minB[1], b.minB[1]);
     
-  maxB[0] = std::max(maxB[0], b.maxB[0]);
-  maxB[1] = std::max(maxB[1], b.maxB[1]);
+  maxB[0] = K_FUNC::E_max(maxB[0], b.maxB[0]);
+  maxB[1] = K_FUNC::E_max(maxB[1], b.maxB[1]);
 }
 
 ///

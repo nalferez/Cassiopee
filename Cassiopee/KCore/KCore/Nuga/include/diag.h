@@ -277,7 +277,7 @@ int check_accuracy(E_Float mat[6], E_Float lambda[3], E_Float v[3][3],
                     E_Float maxm, int order, int symmat) 
 {
   E_Float err,tmpx,tmpy,tmpz;
-  float m[6];
+  E_Float m[6];
   int i,j,k;
 
   if ( !symmat ) return 1;
@@ -315,7 +315,8 @@ int check_accuracy(E_Float mat[6], E_Float lambda[3], E_Float v[3][3],
             v[1][0]*v[2][0]+v[1][1]*v[2][1]+ v[1][2]*v[2][2]);
 
     fprintf(stderr,"\n  ## Error: %s:Consistency\n",__func__);
-    for (i=0; i<3; i++) {
+    for (i=0; i<3; i++) 
+    {
       tmpx = v[0][i]*m[0] + v[1][i]*m[1]
         + v[2][i]*m[2] - lambda[i]*v[0][i];
       tmpy = v[0][i]*m[1] + v[1][i]*m[3]

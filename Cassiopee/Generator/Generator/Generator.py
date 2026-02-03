@@ -2191,10 +2191,7 @@ def addNormalLayersStruct__(surfaces, distrib, check=0, niterType=0, niter=0, ni
                 cellNp[noz][1][0,:] = cellN[1][0,:]
                 if cellNs[noz] is None: cellNs[noz] = C.copy(cellN)
                 else:
-                    #print(cellNs[noz])
-                    #print(cellN)
                     cellNs[noz] = G.stack(cellNs[noz], cellN)
-                    #print(cellNs[noz])
                 # modification du lissage pour les points masques
                 ni1 = ni-1
                 ni2 = max(ni-2,0)

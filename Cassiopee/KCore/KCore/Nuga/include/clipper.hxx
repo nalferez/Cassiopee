@@ -282,7 +282,7 @@ namespace NUGA
       // using bbox in 2D frame
       K_SEARCH::BBox2D bx(crd, nb_pts1);
       std::vector<E_Int> new_edge_ids; //in case of compacting, need to propagate original ids in xedge
-      E_Float Lref = std::min(bx.maxB[0] - bx.minB[0], bx.maxB[1] - bx.minB[1]);
+      E_Float Lref = K_FUNC::E_min(bx.maxB[0] - bx.minB[0], bx.maxB[1] - bx.minB[1]);
 
       // discard false overlaps among front (now we are in 2D, those with big altitudes)
       {
@@ -295,7 +295,7 @@ namespace NUGA
 
           if (z1*z2 < 0.) continue; // means crossing 
 
-          E_Float mz = std::min(::fabs(z1), ::fabs(z2));
+          E_Float mz = K_FUNC::E_min(fabs(z1), fabs(z2));
           keep[i] = (mz < Lref); //at least one inside interf zone
           do_compact |= !keep[i];
         }
@@ -343,11 +343,11 @@ namespace NUGA
         for (int k = 0; k < cnt.cols(); ++k)
         {
           E_Float d2 = NUGA::sqrDistance(crd.col(cnt(0, k)), crd.col(cnt(1, k)), 3);
-          Lref2 = std::min(d2, Lref2);
+          Lref2 = K_FUNC::E_min(d2, Lref2);
         }
 
         ABSTOL2D = -sqrt(Lref2) * ARTOL;
-        ABSTOL2D = std::max(ABSTOL2D, ZERO_M);
+        ABSTOL2D = K_FUNC::E_max(ABSTOL2D, ZERO_M);
       }
 
       //
@@ -598,10 +598,10 @@ namespace NUGA
         for (int k = 0; k < cnt.cols(); ++k)
         {
           E_Float d2 = NUGA::sqrDistance(crd.col(cnt(0, k)), crd.col(cnt(1, k)), 3);
-          Lref2 = std::min(d2, Lref2);
+          Lref2 = K_FUNC::E_min(d2, Lref2);
         }
         ABSTOL2D = -sqrt(Lref2) * ARTOL;
-        ABSTOL2D = std::max(ABSTOL2D, ZERO_M);
+        ABSTOL2D = K_FUNC::E_max(ABSTOL2D, ZERO_M);
       }
 
       //

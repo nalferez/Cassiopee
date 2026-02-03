@@ -310,7 +310,7 @@ inline void detect_async_modified_faces(NUGA::ph_mesh_t& vmesh, const E_Float* c
       s2 += fb.surface<3>(m.crd);
     }
 
-    E_Float err = ::fabs((s1 - s2) / s2);
+    E_Float err = fabs((s1 - s2) / s2);
     if (err < 1.e-2)
       tmp.insert(std::make_pair(i.first, i.second));
   }

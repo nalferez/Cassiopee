@@ -183,7 +183,7 @@ E_Bool __intersect
   if (!intersect)
     return false;
 
-  bool one_single_x_point = (u0[1] == NUGA::FLOAT_MAX) || (::fabs(u0[1] - u0[0]) < eps);
+  bool one_single_x_point = (u0[1] == NUGA::FLOAT_MAX) || (fabs(u0[1] - u0[0]) < eps);
   bool share_a_node = (*pS == e0 || *(pS+1) == e0 || *(pS+2) == e0) || (*pS == e1 || *(pS+1) == e1 || *(pS+2) == e1);
   bool one_inside = ((u0[0] > eps) && (u0[0] < 1.-eps));
   

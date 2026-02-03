@@ -129,8 +129,12 @@ PyObject* K_POST::coarsen(PyObject* self, PyObject* args)
   E_Int api = f->getApi();
   FldArrayIS indic(nelts);
   short* indicp = indic.begin();
-  E_Float* findicp = findic->begin(); 
+  E_Float* findicp = findic->begin();
+#ifdef E_ADOLC 
+  for (E_Int i = 0; i < nelts; i++) indicp[i] = short(findicp[i].value());
+#else
   for (E_Int i = 0; i < nelts; i++) indicp[i] = short(findicp[i]);
+#endif
   delete findic;
 
   /* fusion des elements */  

@@ -234,123 +234,131 @@ PyObject* K_TRANSFORM::addkplane(PyObject* self, PyObject* args)
     }
     else  // NGONs
     {
-      E_Int* ngon = cn->getNGon(); E_Int* nface = cn->getNFace();
-      E_Int *indPG = cn->getIndPG(), *indPH = cn->getIndPH();
-      
-      E_Int npts = f->getSize(); E_Int npts2 = 2*npts;
-      E_Int nfaces = cn->getNFaces(); E_Int nelts = cn->getNElts();
-      E_Int sizeFN = cn->getSizeNGon();
-      E_Int sizeEF = cn->getSizeNFace();
-      E_Int ngonType = cn->getNGonType();
-      E_Int shift = 1; if (ngonType == 3) shift = 0;
-     
-      // E_Int sizeEF2 = sizeEF + nelts*2;// (nfaces+2) faces dans le volume
-      // //E_Int nelts2 = nelts; // nb d elts dans le NGON volumique
-      // E_Int nfaces2 = nfaces + 2*nelts;//nb de faces ds le NGON volumique
-      // E_Int sumFS = 0;// dimensionnement du tableau faces/noeuds pour les faces correspondant aux elts surfaciques
-      // E_Int nf;
-      // for (E_Int i = 0; i < nelts; i++)
-      // {
-      //   cn->getElt(i, nf, nface, indPH);
-      //   sumFS += nfloc + shift; // pour chq face vol: nfacesloc vertex + shift pour dimensionner
-      // }
-      // E_Int sizeFN2 = nfaces*(4 + shift) + 2*sumFS; // (nb de sommets + 1)
-      
-      // tpl = K_ARRAY::buildArray3(
-      //   nfld, varString, npts2, nelts, nfaces2,
-      //   "NGON", sizeFN2, sizeEF2, ngonType, false, api
-      // );
-      // K_ARRAY::getFromArray3(tpl, f2, cn2);
+      E_Int nps = f->getSize(); E_Int npv = 2*nps; E_Int nfld = f->getNfld();
+      E_Int* cnsp = cn->begin(); // pointeur sur la connectivite NGON surfacique
+      E_Int nfs = cnsp[0];
+      E_Int sizeFNs = cnsp[1]; //  taille de la connectivite Face/Noeuds
+      E_Int sizeEFs = cnsp[3+sizeFNs]; //  taille de la connectivite Elts/Faces
+      E_Int nes = cnsp[sizeFNs+2];  // nombre total d elements
+      FldArrayI posEltsSurf; K_CONNECT::getPosElts(*cn, posEltsSurf);
+      FldArrayI posFacesSurf; K_CONNECT::getPosFaces(*cn, posFacesSurf);
+      // on verifie que le NGON est surfacique a partir de la premiere face
+      if (cnsp[2] != 2) // la face a plus de 2 sommets ce n'est pas une arete
+      {
+        PyErr_SetString(PyExc_TypeError,
+                        "addkplane: NGON array must be a surface.");
+        RELEASESHAREDU(array, f, cn); return NULL;
+      }
 
-      // E_Int* ngon2 = cn2->getNGon();
-      // E_Int* nface2 = cn2->getNFace();
-      // E_Int *indPG2 = NULL, *indPH2 = NULL; 
-      // if (api == 2 || api == 3) // array2 ou array3
-      // {
-      //   indPG2 = cn2->getIndPG(); indPH2 = cn2->getIndPH();
-      // }
+      E_Int sizeEFv = sizeEFs+nes*2;// (nfacess+2) faces dans le volume
+      //E_Int nev = nes; // nb d elts dans le NGON volumique
+      E_Int nfv = nfs + 2*nes;//nb de faces ds le NGON volumique
+      E_Int sumFS = 0;// dimensionnement du tableau faces/noeuds pour les faces correspondant aux elts surfaciques
+      E_Int* ptr = cnsp+sizeFNs+4;
+      E_Int e = 0;
+      while (e < nes)
+      {
+        E_Int nfloc = ptr[0];
+        sumFS += nfloc+1;// pour chq face vol : nfacesloc vertex + 1 pour dimensionner
+        ptr += nfloc+1;
+        e++;
+      }
+      E_Int sizeFNv = nfs*(4+1) + 2*sumFS;// (nb de sommets + 1)
+      E_Int csize = sizeEFv+sizeFNv+4;
+      tpl = K_ARRAY::buildArray(nfld, varString, npv, nes, -1, "NGON", false, csize);
+      E_Float* nzp = K_ARRAY::getFieldPtr(tpl);
+      FldArrayF nz(npv, nfld, nzp, true);
+      E_Int* cnvp = K_ARRAY::getConnectPtr(tpl);
+      FldArrayI cnv(csize, 1, cnvp, true);
+      cnvp[0] = nfv;
+      cnvp[1] = sizeFNv;
+      cnvp[sizeFNv+2] = nes;
+      cnvp[sizeFNv+3] = sizeEFv;
+      // duplication des champs, avec z = z+1
+      for (E_Int n = 1; n <= nfld; n++)
+      {
+        E_Float* newzonep = nz.begin(n);
+        E_Float* fp = f->begin(n);
+        for (E_Int i = 0; i < nps; i++) newzonep[i] = fp[i];
+        for (E_Int i = 0; i < nps; i++) newzonep[i+nps] = fp[i];
+      }
+      if (posx > 0 && posy > 0 && posz > 0)
+      {
+        E_Float* nfx = nz.begin(posx);
+        E_Float* nfy = nz.begin(posy);
+        E_Float* nfz = nz.begin(posz);
+        E_Float* fx = f->begin(posx);
+        E_Float* fy = f->begin(posy);
+        E_Float* fz = f->begin(posz);
+        for (E_Int i = 0; i < nps; i++)
+        {
+          nfx[i+nps] = fx[i] + vx;
+          nfy[i+nps] = fy[i] + vy;
+          nfz[i+nps] = fz[i] + vz;
+        }
+      }
+      //=======================================================================
+      // connectivites
+      //=======================================================================
+      E_Int* ptrFNv = cnvp+2;//ptr cFN vol
+      E_Int* ptrFNs = cnsp+2;//ptr cFN surf
+      // a partir de chq face construction des faces laterales "quad"
+      // extrudee a partir des faces surfaciques
+      E_Int nofv = 0;
+      while (nofv < nfs)
+      {
+        ptrFNv[0] = 4;
+        ptrFNv[1] = ptrFNs[1];
+        ptrFNv[2] = ptrFNs[2];
+        ptrFNv[3] = ptrFNs[2]+nps;
+        ptrFNv[4] = ptrFNs[1]+nps;
+        ptrFNv += 5; ptrFNs += 3;
+        nofv++;
+      }
+      // a partir des elts: recup des faces laterales: meme numerotation
+      // qu'en surfacique
+      E_Int noe = 0;
+      E_Int* ptrEFv = cnvp+sizeFNv+4;//ptr cEF vol
+      E_Int* ptrEFs = cnsp+sizeFNs+4;//ptr cEF surf
+      while (noe < nes)
+      {
+        E_Int nfacessloc = ptrEFs[0];
+        ptrEFv[0] = nfacessloc+2;
+        for (E_Int nof = 1; nof <= nfacessloc; nof++)
+          ptrEFv[nof] = ptrEFs[nof];
+        noe++;
+        ptrEFs += nfacessloc+1;
+        ptrEFv += nfacessloc+3;
+      }
 
-      // // duplication des champs, avec z = z+1 
-      // for (E_Int n = 1; n <= nfld; n++)
-      // {
-      //   E_Float* fp = f->begin(n); E_Float* f2p = f2->begin(n);
-      //   for (E_Int i = 0; i < npts; i++) f2p[i] = fp[i];
-      //   for (E_Int i = 0; i < npts; i++) f2p[i+npts] = fp[i];
-      // }
+      // construction des faces NGons
+      noe = 0;
+      ptrEFv = cnvp+sizeFNv+4;//ptr cEF vol
+      ptrEFs = cnsp+sizeFNs+4;//ptr cEF surf
+      std::vector<E_Int> indices;
+      while (noe < nes)
+      {
+        // les vertex surfaciques sont dans l'ordre rotatif
+        indices.clear();
+        K_CONNECT::getVertexIndices(cn->begin(), posFacesSurf.begin(), posEltsSurf[noe], indices);
+        E_Int nvert = indices.size();
 
-      // if (posx > 0 && posy > 0 && posz > 0)
-      // {
-      //   E_Float* fx = f->begin(posx); E_Float* f2x = f2->begin(posx);
-      //   E_Float* fy = f->begin(posy); E_Float* f2y = f2->begin(posy);
-      //   E_Float* fz = f->begin(posz); E_Float* f2z = f2->begin(posz);
+        //creation de la face correspondant a l elt surfacique
+        ptrFNv[0] = nvert;
+        for (E_Int i = 0; i < nvert; i++) ptrFNv[i+1] = indices[i];
+        ptrFNv+= nvert+1;
+        //creation de la face shiftee en z+1
+        ptrFNv[0] = nvert;
+        for (E_Int i = 0; i < nvert; i++) ptrFNv[i+1] = indices[i]+nps;
+        ptrFNv+= nvert+1;
 
-      //   for (E_Int i = 0; i < npts; i++)
-      //   {
-      //     f2x[i + npts] = fx[i] + vx;
-      //     f2y[i + npts] = fy[i] + vy;
-      //     f2z[i + npts] = fz[i] + vz;
-      //   }
-      // }
-
-      // //=======================================================================
-      // // connectivites
-      // //=======================================================================
-      // // a partir de chq face construction des faces laterales "quad" 
-      // // extrudee a partir des faces surfaciques
-      // E_Int c1, c2;
-      // for (E_Int i = 0; i < nfaces; i++)
-      // {
-      //   c1 = i*(2 + shift); c2 = i*(4 + shift);
-      //   ngon2[c2] = 4;
-      //   ngon2[c2 + shift] = ngon[c1 + shift];
-      //   ngon2[c2 + shift + 1] = ngon[c1 + shift + 1];
-      //   ngon2[c2 + shift + 2] = ngon[c1 + shift + 1] + npts;
-      //   ngon2[c2 + shift + 3] = ngon[c1 + shift] + npts;
-      // }
-
-      // // a partir des elts: recup des faces laterales: meme numerotation 
-      // // qu'en surfacique
-      // for (E_Int i = 0; i < nelts; i++)
-      // {
-      //   E_Int nfacessloc = ptrEFs[0];
-      //   ptrEFv[0] = nfacessloc+2;
-      //   for (E_Int nof = 1; nof <= nfacessloc; nof++)
-      //     ptrEFv[nof] = ptrEFs[nof];
-      //   ptrEFs += nfacessloc+1;
-      //   ptrEFv += nfacessloc+3;
-      // }
-      
-      // // construction des faces NGons
-      // std::vector<E_Int> indices;
-      // for (E_Int i = 0; i < nelts; i++)
-      // {
-      //   // les vertex surfaciques sont dans l'ordre rotatif
-      //   indices.clear();
-      //   K_CONNECT::getVertexIndices(cn->begin(), posFacesSurf.begin(), posEltsSurf[noe], indices);
-      //   E_Int nvert = indices.size();
-
-      //   //creation de la face correspondant a l elt surfacique
-      //   ptrFNv[0] = nvert;
-      //   for (E_Int i = 0; i < nvert; i++) ptrFNv[i+1] = indices[i];        
-      //   ptrFNv+= nvert+1; 
-      //   //creation de la face shiftee en z+1
-      //   ptrFNv[0] = nvert;
-      //   for (E_Int i = 0; i < nvert; i++) ptrFNv[i+1] = indices[i]+npts;        
-      //   ptrFNv+= nvert+1;
-
-      //   //modif de l'elt: on remplit les 2 derniers
-      //   E_Int nfacesV = ptrEFv[0];
-      //   ptrEFv[nfacesV-1] = nofv+1;
-      //   ptrEFv[nfacesV]   = nofv+2;
-      //   nofv += 2; ptrEFv += nfacesV+1;
-      // }    
-
-      // RELEASESHAREDU(tpl, f2, cn2);
-      PyErr_SetString(PyExc_TypeError,
-                      "addkplane: NGON array not supported yet.");
-      RELEASESHAREDU(array, f, cn);
-      return NULL;
-    }
+        //modif de l'elt: on remplit les 2 derniers
+        E_Int nfacesV = ptrEFv[0];
+        ptrEFv[nfacesV-1] = nofv+1;
+        ptrEFv[nfacesV]   = nofv+2;
+        noe++; nofv += 2; ptrEFv += nfacesV+1;
+      }
+    }//NGONs
     
     RELEASESHAREDU(array, f, cn);
     return tpl;

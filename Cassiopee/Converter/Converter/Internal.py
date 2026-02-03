@@ -2844,9 +2844,7 @@ def window2Range(win):
 
 # -- ClearList: supprime les [] d'une liste
 def clearList(list):
-  t = []
-  for i in list:
-    if i != []: t.append(i)
+  t = [x for x in list if x != []]
   return t
 
 # -- Change a variable name to a CGNS name
@@ -3479,7 +3477,7 @@ def convertDataNodes2Array2(nodes, dim, connects, loc=-1):
   if dim[1] != dim[2]: # on peut decider
     if s == dim[2]: ettype = ettype.replace(',', '*,') + '*'
     elif s != dim[1]:
-      print("Warning: convertDataNodes2Array2: incoherency zone/array.")
+      print("Warning: convertDataNodes2Array2: incoherency zone (%d,%d)/array(%d)."%(dim[1],dim[2],s))
   else: # force + no check
     if loc == 1: ettype = ettype.replace(',', '*,') + '*'
   return [vars, field, cr, ettype]
@@ -3510,11 +3508,13 @@ def convertDataNodes2Array3(nodes, dim, connects, loc=-1):
     else:
       # Le tableau n'est pas coherent avec les noeuds ou les centres
       # de la zone
+      print("Warning: convertDataNodes2Array3: incoherency zone (%d,%d)/array (%d)."%(ni*nk*nk,ni1*nj1*nk1,s))
+      import traceback
+      traceback.print_stack()
       size = ar.shape; lsize = len(size)
       if lsize == 1: ni = size[0]; nj = 1; nk = 1
       elif lsize == 2: ni = size[0]; nj = size[1]; nk = 1
       elif lsize == 3: ni = size[0]; nj = size[1]; nk = size[2]
-      print("Warning: convertDataNodes2Array3: incoherency zone/array.")
       return [vars, field, ni, nj, nk]
 
   # unstructured
@@ -3589,7 +3589,10 @@ def convertDataNodes2Array3(nodes, dim, connects, loc=-1):
   if dim[1] != dim[2]: # on peut decider
     if s == dim[2]: eltString = eltString.replace(',', '*,') + '*'
     elif s != dim[1]:
-      print("Warning: convertDataNodes2Array3: incoherency zone/array.")
+      print("Warning: convertDataNodes2Array3: incoherency zone (%d,%d)/array (%d)."%(dim[1],dim[2],s))
+      import traceback
+      traceback.print_stack()
+
   else: # force + no check
     if loc == 1: eltString = eltString.replace(',', '*,') + '*'
   return [vars, field, cr, eltString]
@@ -3604,12 +3607,12 @@ def _groupByFamily(t, familyChilds=None, unique=False):
     BCNotSpec = []
     for bc in getNodesFromType3(b, 'BC_t'):
       if not isValue(bc, 'FamilySpecified'):
-        childname = getNodesFromName(bc, 'FamilyName')
-        if childname != []: BCNotSpec.append(bc)
+        childname = getNodeFromName1(bc, 'FamilyName')
+        if childname is not None: BCNotSpec.append(bc)
     for bc in BCNotSpec:
-      FamNameNode = getNodeFromType(bc, 'FamilyName_t')
+      FamNameNode = getNodeFromType1(bc, 'FamilyName_t')
       FamilyName= getValue(FamNameNode)
-      solverBC = getNodeFromName(bc, '.Solver#BC')
+      solverBC = getNodeFromName1(bc, '.Solver#BC')
       if not solverBC: solverBCChilds = []
       else: solverBCChilds = solverBC[2]
 
@@ -3861,8 +3864,8 @@ def addOneLayer2BC(t, dir, N=1):
   return a
 
 def _addOneLayer2BC(a, dir, N=1):
-  nodes = getZones(a)
-  for z in nodes:
+  zones = getZones(a)
+  for z in zones:
     # ZoneBC
     bnds = getNodesFromType2(z, 'BC_t')
     for bnd in bnds:
@@ -3870,11 +3873,11 @@ def _addOneLayer2BC(a, dir, N=1):
       for w in wins:
         (parent, d) = getParentOfNode(bnd, w)
         win = range2Window(w[1])
-        win[-1]+=N
+        win[-1] += N
         parent[2][d][1] = window2Range(win)
 
     # Connectivite match/nearmatch/overlap
-    connect = getNodesFromType2(z, 'ZoneGridConnectivity_t')
+    connect = getNodesFromType1(z, 'ZoneGridConnectivity_t')
     for cn in connect:
       wins = getNodesFromName2(cn, 'PointRange')
       transf =  getNodesFromName(cn, 'Transform')
@@ -3882,7 +3885,7 @@ def _addOneLayer2BC(a, dir, N=1):
       for w in wins:
         (parent, d) = getParentOfNode(cn, w)
         win = range2Window(w[1])
-        win[-1]+=N
+        win[-1] += N
         parent[2][d][1] = window2Range(win)
       nom = 0
       for w in winsopp: # passe seult pour les matchs/nearmatch
@@ -3893,7 +3896,7 @@ def _addOneLayer2BC(a, dir, N=1):
         else: diropp = abs(transf[nom][1][dir-1])
         (parent, d) = getParentOfNode(cn, w)
         win = range2Window(w[1])
-        win[-1]+=N
+        win[-1] += N
         parent[2][d][1] = window2Range(win)
         nom += 1
   return None
@@ -4246,11 +4249,28 @@ def getElementNodes(z):
   for GE in GEl:
     elt = GE[1][0]
     dimElt = eltNo2Dim(elt)
+    dim = max(dim, dimElt)
+  for GE in GEl:
+    #if GE[1][1] == 0: out.append(GE)
+    elt = GE[1][0]
+    dimElt = eltNo2Dim(elt)
     if dimElt == dim: out.append(GE)
-    elif dimElt > dim:
-      out.clear()
-      dim = dimElt
-      out.append(GE)
+  return out
+
+# -- Retourne une liste des noeuds Elements_t de boundary d'une zone
+# Retourne [] si il n'y en a pas.
+def getElementBoundaryNodes(z):
+  dim = 0; out = []
+  GEl = getNodesFromType1(z, 'Elements_t')
+  for GE in GEl:
+    elt = GE[1][0]
+    dimElt = eltNo2Dim(elt)
+    dim = max(dim, dimElt)
+  for GE in GEl:
+    #if GE[1][1] > 0: out.append(GE)
+    elt = GE[1][0]
+    dimElt = eltNo2Dim(elt)
+    if dimElt < dim: out.append(GE)
   return out
 
 # -- Retourne le noeud Element_t NGon si il existe
@@ -4266,15 +4286,6 @@ def getNFaceNode(z):
   for GE in GEl:
     if GE[1][0] == 23: return GE
   return None
-
-# -- Retourne une liste des noeuds Elements_t de boundary d'une zone
-# Retourne [] si il n'y en a pas.
-def getElementBoundaryNodes(z):
-  GEl = getNodesFromType1(z, 'Elements_t')
-  out = []
-  for GE in GEl:
-    if GE[1][1] > 0: out.append(GE)
-  return out
 
 # -- Update la numerotation des ElementRanges dans l'ordre des connectivites
 def _updateElementRange(z):
@@ -4401,7 +4412,7 @@ def _adaptNFace2PE(t, remove=False, methodPE=0, shiftPE=False):
           if offset is not None: # NGON4
             offset = offset[1]
             cNFace = cNFace.copy()
-            cNFace = numpy.insert(numpy.abs(cNFace), offset[:-1], offset[1:]-offset[:-1])
+            cNFace = numpy.insert(cNFace, offset[:-1], offset[1:]-offset[:-1])
       c += 1
 
     if cNFace is not None and NGON is not None and cNGon is not None:
@@ -5252,15 +5263,15 @@ def _mergeEltsTPerType(t):
     typesEltsT={}
     rangeMinT={}; rangeMaxT={}
     rmaxall = -1
-    for elts_t in getNodesFromType(z,'Elements_t'):
+    for elts_t in getNodesFromType1(z, 'Elements_t'):
       name = getName(elts_t)
       typeEt = getValue(elts_t)[0]
       if typeEt not in typesEltsT: typesEltsT[name]=[]
       typesEltsT[name].append(typeEt)
-      eltRange = getNodeFromType(elts_t,"IndexRange_t")
+      eltRange = getNodeFromType(elts_t, "IndexRange_t")
       rangeMinT[name] = getValue(eltRange)[0]
       rangeMaxT[name] = getValue(eltRange)[1]
-      rmaxall = max(rangeMaxT[name]+1,rmaxall)
+      rmaxall = max(rangeMaxT[name]+1, rmaxall)
 
     # init
     rmin = 1; rmax= -1
@@ -5270,9 +5281,9 @@ def _mergeEltsTPerType(t):
       name1 = -1; name2 = -1
       #start
       for name in rangeMinT:
-        if rangeMinT[name]==rmin:
+        if rangeMinT[name] == rmin:
           rmax = rangeMaxT[name]
-          EltsT = getNodeFromName1(z,name)
+          EltsT = getNodeFromName1(z, name)
           etype = typesEltsT[name]
           name1 = name
           break
@@ -5286,7 +5297,7 @@ def _mergeEltsTPerType(t):
             if typesEltsT[name]==etype:
               found = 1
               name2 = name
-              EltsT2 = getNodeFromName1(z,name2)
+              EltsT2 = getNodeFromName1(z, name2)
             else: found = 0
 
         if found == 0:
@@ -5330,7 +5341,7 @@ def _mergeBCDataSets__(z, bcNode):
   dataSetLocs = []
   nod = -1; no = 0
   for d in dataSets:
-    loc = getNodeFromName1(d,'GridLocation')
+    loc = getNodeFromName1(d, 'GridLocation')
     if loc is not None:
       if getValue(loc)=='FaceCenter': dataSetLocs.append(1)
       else : dataSetLocs.append(0)
@@ -5442,7 +5453,12 @@ def getBCDataSet(z, bcNode, withLoc=False):
 # Retourne un dictionnaire
 def getBCDataSets(z, bcNode):
   ret = {}
-  nodes1 = getNodesFromType(z, 'BCDataSet_t')
+  nodes1 = []
+  zonebc = getNodeFromType1(z, 'ZoneBC_t')
+  if zonebc is not None:
+    BCs = getNodesFromType1(zonebc, 'BC_t')
+    for bc in BCs:
+      nodes1 += getNodesFromType1(bc, 'BCDataSet_t')
   for n in nodes1:
     datas = getNodesFromType2(n, 'DataArray_t')
     ploc = 'Vertex'
@@ -5450,7 +5466,7 @@ def getBCDataSets(z, bcNode):
     if l is not None: ploc = getValue(l)
     ret[getName(n)] = [datas, ploc]
 
-  nodes2 = getNodesFromType(z, 'ZoneSubRegion_t')
+  nodes2 = getNodesFromType1(z, 'ZoneSubRegion_t')
   bcName = getName(bcNode)
   for n in nodes2:
     bcRegionNameNode = getNodeFromName1(n, 'BCRegionName')
@@ -5543,7 +5559,7 @@ def getBCDataSetContainers(name, z):
             if allLocDS[nobcdata]==matchingLoc: # OK: locations are consistent
               datas = getNodesFromName1(allBCDatas[nobcdata],fname)
               if datas != []:
-                dataSetL+=[[allRanges[nobcdata], datas[0][1]]]
+                dataSetL += [[allRanges[nobcdata], datas[0][1]]]
           if dataSetL != []: # variable exists both in flow solution and in bcdataset
             dataFS = [fname, loc, dataSetL]
             containers.append(dataFS)
@@ -5581,7 +5597,7 @@ def getBCDataSetContainers(name, z):
               if allLocDS[nobcdata]==matchingLoc: # OK: locations are consistent
                 datas = getNodesFromName1(allBCDatas[nobcdata],varname)
                 if datas != []:
-                  dataSetL+=[[allRanges[nobcdata], datas[0][1]]]
+                  dataSetL += [[allRanges[nobcdata], datas[0][1]]]
             if dataSetL != []: # variable exists both in flow solution and in bcdataset
               dataFS = [varname, loc, dataSetL]
               containers.append(dataFS)

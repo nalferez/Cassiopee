@@ -34,7 +34,7 @@ PyObject* K_TRANSFORM::join(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, OO_ R_,
                     &array1, &array2, &tol))
   {
-      return NULL;
+    return NULL;
   }
 
   // Check array
@@ -129,7 +129,7 @@ PyObject* K_TRANSFORM::join(PyObject* self, PyObject* args)
         else
         {
           tpl = joinNGON(*f1, *cn1, *f2, *cn2, posx1, posy1, posz1,
-                        varString, tol);
+                         varString, tol);
         }
       }
       else

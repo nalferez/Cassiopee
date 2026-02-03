@@ -126,62 +126,78 @@ void K_POST::integMomentNormUnstructNodeCenter(
   E_Float res2 = 0.0;
   E_Float res3 = 0.0;
 
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [3*nthreads];
+
   #pragma omp parallel
-  for (E_Int ic = 0; ic < nc; ic++)
   {
     E_Int ind;
     E_Float f, fi;
     E_Float mx, my, mz, sx0, sy0, sz0;
     E_Float centerx, centery, centerz;
+    E_Int it = 3*__CURRENT_THREAD__;
+    reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
   
-    K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
-    E_Int nelts = cm.getSize();
-    E_Int elOffset = nepc[ic];
-    E_Int nvpe = cm.getNfld();
-    E_Float nvpeinv = 1./nvpe;
-
-    #pragma omp for reduction(+:res1,res2,res3)
-    for (E_Int i = 0; i < nelts; i++)
+    for (E_Int ic = 0; ic < nc; ic++)
     {
-      f = 0.0;
-      centerx = 0.0;
-      centery = 0.0;
-      centerz = 0.0;
+      K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
+      E_Int nelts = cm.getSize();
+      E_Int elOffset = nepc[ic];
+      E_Int nvpe = cm.getNfld();
+      E_Float nvpeinv = 1./nvpe;
 
-      for (E_Int j = 1; j <= nvpe; j++)
+      #pragma omp for
+      for (E_Int i = 0; i < nelts; i++)
       {
-        ind = cm(i, j) - 1;
+        f = 0.0;
+        centerx = 0.0;
+        centery = 0.0;
+        centerz = 0.0;
 
-        fi = ratio[ind] * field[ind];
-        f += fi;
+        for (E_Int j = 1; j <= nvpe; j++)
+        {
+          ind = cm(i, j) - 1;
 
-        centerx += xt[ind];
-        centery += yt[ind];
-        centerz += zt[ind];
+          fi = ratio[ind] * field[ind];
+          f += fi;
+
+          centerx += xt[ind];
+          centery += yt[ind];
+          centerz += zt[ind];
+        }
+
+        f *= nvpeinv;
+        centerx = nvpeinv * centerx - cx;
+        centery = nvpeinv * centery - cy;
+        centerz = nvpeinv * centerz - cz;
+
+        sx0 = sx[i+elOffset];
+        sy0 = sy[i+elOffset];
+        sz0 = sz[i+elOffset];
+
+        mx = centery * sz0 - centerz * sy0;
+        my = centerz * sx0 - centerx * sz0;
+        mz = centerx * sy0 - centery * sx0;
+
+        reti[it] += f * mx;
+        reti[it+1] += f * my;
+        reti[it+2] += f * mz;
       }
-
-      f *= nvpeinv;
-      centerx = nvpeinv * centerx - cx;
-      centery = nvpeinv * centery - cy;
-      centerz = nvpeinv * centerz - cz;
-
-      sx0 = sx[i+elOffset];
-      sy0 = sy[i+elOffset];
-      sz0 = sz[i+elOffset];
-
-      mx = centery * sz0 - centerz * sy0;
-      my = centerz * sx0 - centerx * sz0;
-      mz = centerx * sy0 - centery * sx0;
-
-      res1 += f * mx;
-      res2 += f * my;
-      res3 += f * mz;
     }
+  }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    res1 += reti[3*it];
+    res2 += reti[3*it+1];
+    res3 += reti[3*it+2];
   }
 
   result[0] = res1;
   result[1] = res2;
   result[2] = res3;
+
+  delete [] reti;
 }
 
 // ============================================================================
@@ -211,56 +227,72 @@ void K_POST::integMomentNormUnstructCellCenter(
   E_Float res2 = 0.0;
   E_Float res3 = 0.0;
 
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [3*nthreads];
+
   #pragma omp parallel
-  for (E_Int ic = 0; ic < nc; ic++)
   {
     E_Int ind;
     E_Float f;
     E_Float mx, my, mz, sx0, sy0, sz0;
     E_Float centerx, centery, centerz;
-  
-    K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
-    E_Int nelts = cm.getSize();
-    E_Int elOffset = nepc[ic];
-    E_Int nvpe = cm.getNfld();
-    E_Float nvpeinv = 1./nvpe;
+    E_Int it = 3*__CURRENT_THREAD__;
+    reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
 
-    #pragma omp for reduction(+:res1,res2,res3)
-    for (E_Int i = 0; i < nelts; i++)
+    for (E_Int ic = 0; ic < nc; ic++)
     {
-      f = ratio[i+elOffset] * field[i+elOffset];
-      centerx = 0.0;
-      centery = 0.0;
-      centerz = 0.0;
+      K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
+      E_Int nelts = cm.getSize();
+      E_Int elOffset = nepc[ic];
+      E_Int nvpe = cm.getNfld();
+      E_Float nvpeinv = 1./nvpe;
 
-      for (E_Int j = 1; j <= nvpe; j++)
+      #pragma omp for
+      for (E_Int i = 0; i < nelts; i++)
       {
-        ind = cm(i, j) - 1;
+        f = ratio[i+elOffset] * field[i+elOffset];
+        centerx = 0.0;
+        centery = 0.0;
+        centerz = 0.0;
 
-        centerx += xt[ind];
-        centery += yt[ind];
-        centerz += zt[ind];
+        for (E_Int j = 1; j <= nvpe; j++)
+        {
+          ind = cm(i, j) - 1;
+
+          centerx += xt[ind];
+          centery += yt[ind];
+          centerz += zt[ind];
+        }
+
+        centerx = nvpeinv * centerx - cx;
+        centery = nvpeinv * centery - cy;
+        centerz = nvpeinv * centerz - cz;
+
+        sx0 = sx[i+elOffset];
+        sy0 = sy[i+elOffset];
+        sz0 = sz[i+elOffset];
+
+        mx = centery * sz0 - centerz * sy0;
+        my = centerz * sx0 - centerx * sz0;
+        mz = centerx * sy0 - centery * sx0;
+
+        reti[it] += f * mx;
+        reti[it+1] += f * my;
+        reti[it+2] += f * mz;
       }
-
-      centerx = nvpeinv * centerx - cx;
-      centery = nvpeinv * centery - cy;
-      centerz = nvpeinv * centerz - cz;
-
-      sx0 = sx[i+elOffset];
-      sy0 = sy[i+elOffset];
-      sz0 = sz[i+elOffset];
-
-      mx = centery * sz0 - centerz * sy0;
-      my = centerz * sx0 - centerx * sz0;
-      mz = centerx * sy0 - centery * sx0;
-
-      res1 += f * mx;
-      res2 += f * my;
-      res3 += f * mz;
     }
+  }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    res1 += reti[3*it];
+    res2 += reti[3*it+1];
+    res3 += reti[3*it+2];
   }
 
   result[0] = res1;
   result[1] = res2;
   result[2] = res3;
+
+  delete [] reti;
 }

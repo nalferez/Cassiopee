@@ -399,11 +399,7 @@ namespace K_CONNECT
      Enfin les faces sont triees dans la connectivite Elts/Faces 
   IN: noe: no de l'elt
   IN: indices: indices des sommets de l elt tries selon une boucle
-  IN: posElts, posFaces: pour acceder a l elt ou a la face directement
   IN/OUT: connectivite NGON */
-  void orderNGONElement(E_Int noe, std::vector<E_Int>& indices, 
-                        K_FLD::FldArrayI& posElts, K_FLD::FldArrayI& posFaces,
-                        K_FLD::FldArrayI& cNG);
 
   void orderNGONElement(E_Int noe, std::vector<E_Int>& indices, 
                         E_Int* ngon, E_Int* nface, E_Int* indPG,

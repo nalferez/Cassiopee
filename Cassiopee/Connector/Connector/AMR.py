@@ -127,7 +127,7 @@ def prepareAMRData(t_case, t, IBM_parameters=None, check=False, dim=3, localDir=
     for bc in Internal.getNodesFromType(t, 'BC_t'):
         bctype = Internal.getValue(bc)
         bcname = Internal.getName(bc)
-        if bctype not in bctypes :
+        if bctype not in bctypes:
             bctypes.append(bctype)
             bcnames.append(bcname)
 
@@ -250,7 +250,7 @@ def computationDistancesNormals(t, tb, dim=3):
     #if Cmpi.rank==0: C.convertPyTree2File(tb2,"tb2.plt")
 
     tc = C.node2Center(t)
-    tb_WD = getBodiesForWallDistanceComputation(tb2)
+    tb_WD = getBodiesForWallDistanceComputation__(tb2)
     DTW._distance2Walls(t, tb_WD, type='ortho', signed=0, dim=3, loc='centers')
     X._applyBCOverlaps(t, depth=2, loc='centers', val=2, cellNName='cellN')
     C._initVars(t,'{centers:cellNChim}={centers:cellN}')
@@ -588,7 +588,7 @@ def _recoverBoundaryConditions__(t, f_pytree, zbcs, bctypes, bcnames):
                 len_ids = Internal.getValue(f)[0][1]
                 ids = ids[ids[:] > -1] - 1
                 ids = ids.tolist()
-                if len(ids) > 0 :
+                if len(ids) > 0:
                     zf = T.subzone(f,ids, type='elements')
                     if bcnames[nobc] != "QuadNQuad":
                         G_AMR._addBC2Zone__(z, bctypes[nobc], bctypes[nobc], zf)
@@ -599,13 +599,13 @@ def _recoverBoundaryConditions__(t, f_pytree, zbcs, bctypes, bcnames):
                     if len(ids_new) > 0:
                         f = T.subzone(f,ids_new, type='elements')
                 elif len(ids) == 0 and bcnames[nobc] == "QuadNQuad":
-                    elts = Internal.getNodesFromType(z, "Elements_t")
+                    elts = Internal.getNodesFromType1(z, "Elements_t")
                     maxElt = Internal.getNodeFromName(elts[-1], "ElementRange")[1][1]
-                    CODABCType="QuadNQuad"
+                    CODABCType = "QuadNQuad"
                     Internal.newElements(name=CODABCType, etype=7, econnectivity=numpy.empty(0),
                                          erange=[maxElt+1, maxElt], eboundary=1, parent=z)
                     C._addBC2Zone(z,CODABCType,"FamilySpecified:"+CODABCType, elementRange=[maxElt+1,maxElt])
-                    zone_bc =  Internal.getNodeFromType(z,"ZoneBC_t")
+                    zone_bc = Internal.getNodeFromType1(z, 'ZoneBC_t')
                     lastbcname = C.getLastBCName(CODABCType)
                     node_bc = Internal.getNodeFromName(zone_bc, lastbcname)
                     node_bc[0] = CODABCType
@@ -651,12 +651,12 @@ def _addIBCDatasets__(t, f, image_pts, wall_pts, ip_pts, IBM_parameters):
                     zf = T.subzone(f,ids, type='elements')
                     G_AMR._addBC2Zone__(z, "IBMWall%d" %nobc, "FamilySpecified:IBMWall", zf)
 
-        for bc in Internal.getNodesFromType(z, 'BC_t'):
+        for bc in Internal.getNodesFromType2(z, 'BC_t'):
             famName = Internal.getNodeFromName(bc, 'FamilyName')
             if famName is not None:
-                if Internal.getValue(famName)=='IBMWall':
+                if Internal.getValue(famName) == 'IBMWall':
                     namebc = bc[0]
-                    ibcdataset=Internal.createNode('BCDataSet','BCDataSet_t', parent=bc,value='Null')
+                    ibcdataset = Internal.createNode('BCDataSet','BCDataSet_t', parent=bc,value='Null')
                     for i in range(N_IP_per_face):
                         dnrPts = Internal.createNode("DonorPointCoordinates"+str(list_suffix_datasets[i]), 'BCData_t', parent=ibcdataset)
                         wallPts = Internal.createNode("WallPointCoordinates"+str(list_suffix_datasets[i]), 'BCData_t', parent=ibcdataset)
@@ -689,6 +689,7 @@ def getMinimumSpacing__(t, dim, snear=1e-1):
 
 def computeDistance_IP_DP_front42_nonAdaptive__(t, Reynolds, yplus_target, Lref, dim, snear=1e-2):
     # not used currently - not sure what it does... need to look into it
+    import Geom.IBM as D_IBM
     distance_IP = D_IBM.computeModelisationHeight(Re=Reynolds, yplus=yplus_target, L=Lref)
     locsize = getMinimumSpacing__(t, dim, snear)
     distance_DP = distance_IP+2*(dim**0.5)*locsize
@@ -868,9 +869,6 @@ def computeSurfaceQuadraturePoints__(t, IBM_parameters, frontIP):
         connectivity_IBMFace[[0,1,2,3]] = connectivity_IBMFace[[pos_first, pos_second, pos_third, pos_fourth]]
         nodalData = numpy.hstack([coordsX[connectivity_IBMFace].reshape(4,1), coordsY[connectivity_IBMFace].reshape(4,1), coordsZ[connectivity_IBMFace].reshape(4,1)])
         quadPoints_surf_location[i:i+N_IP_per_face,:] = interpolationMatrix.dot(nodalData)
-
-
-    print("Time to compute the surface quadrature points : ", toc-tic)
 
     N_IP_surf = N_IBM_cells * N_IP_per_face
 

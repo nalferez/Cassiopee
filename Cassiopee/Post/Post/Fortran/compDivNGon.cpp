@@ -29,9 +29,15 @@ E_Int K_POST::computeDivNGon(
   E_Float* div
 )
 {
+  E_Int  dim = cn.getDim();
+  if (dim < 3)
+  {
+    printf("computeDiv: not valid for " SF_D_ "D NGONs\n", dim);
+    return 1;
+  }
+  
   // Donnees liees a la connectivite
-  E_Int nfaces = cn.getNFaces(); // nombre total de faces
-  E_Int nelts = cn.getNElts();  // nombre total d elements
+  E_Int nfaces = cn.getNFaces(); E_Int nelts = cn.getNElts();
   E_Int* ngon = cn.getNGon(); E_Int* indPG = cn.getIndPG();
   E_Int* nface = cn.getNFace(); E_Int* indPH = cn.getIndPH();
 
@@ -50,19 +56,6 @@ E_Int K_POST::computeDivNGon(
   // Connectivite Element/Noeuds
   std::vector<std::vector<E_Int> > cnEV(nelts);
   K_CONNECT::connectNG2EV(cn, cnEV); //deja calculee dans NGONVol
-
-  FldArrayI dimElt(nelts); // tableau de la dimension des elements
-  K_CONNECT::getDimElts(cn, dimElt);
-  if (dimElt[0] < 3)
-  {
-    printf("computeDiv: not valid for " SF_D_ "D NGONs\n", dimElt[0]);
-    delete [] volp;
-    delete [] sxp;
-    delete [] syp;
-    delete [] szp;
-    delete [] snp;
-    return 1;
-  }
 
   #pragma omp parallel
   {

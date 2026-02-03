@@ -103,7 +103,7 @@ PyObject* K_GENERATOR::getMaxLength(PyObject* self, PyObject* args)
   }
   else
   {
-    tpl = K_ARRAY::buildArray3(1, "MaxLength", f->getSize(), *cn, eltType, api);
+    tpl = K_ARRAY::buildArray3(1, "MaxLength", f->getSize(), *cn, eltType, 1, api);
     FldArrayF* field; 
     K_ARRAY::getFromArray3(tpl, field);
     E_Int ret = K_COMPGEOM::getEdgeLength(

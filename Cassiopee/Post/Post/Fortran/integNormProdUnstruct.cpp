@@ -101,35 +101,48 @@ void K_POST::integNormProdUnstructNodeCenter(
   }
   
   result = 0.0;
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [nthreads];
 
   #pragma omp parallel
-  for (E_Int ic = 0; ic < nc; ic++)
   {
-    K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
-    E_Int nelts = cm.getSize();
-    E_Int elOffset = nepc[ic];
-    E_Int nvpe = cm.getNfld();
-    E_Float nvpeinv = 1./nvpe;
-
     E_Int ind;
     E_Float fx, fy, fz;
+    E_Int it = __CURRENT_THREAD__;
+    reti[it] = 0.;
 
-    #pragma omp for reduction(+:result)
-    for (E_Int i = 0; i < nelts; i++)
+    for (E_Int ic = 0; ic < nc; ic++)
     {
-      fx = 0.0;
-      fy = 0.0;
-      fz = 0.0;
-      for (E_Int j = 1; j <= nvpe; j++)
+      K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
+      E_Int nelts = cm.getSize();
+      E_Int elOffset = nepc[ic];
+      E_Int nvpe = cm.getNfld();
+      E_Float nvpeinv = 1./nvpe;
+
+      #pragma omp for
+      for (E_Int i = 0; i < nelts; i++)
       {
-        ind = cm(i, j) - 1;
-        fx += ratio[ind] * vx[ind];
-        fy += ratio[ind] * vy[ind];
-        fz += ratio[ind] * vz[ind];
+        fx = 0.0;
+        fy = 0.0;
+        fz = 0.0;
+        for (E_Int j = 1; j <= nvpe; j++)
+        {
+          ind = cm(i, j) - 1;
+          fx += ratio[ind] * vx[ind];
+          fy += ratio[ind] * vy[ind];
+          fz += ratio[ind] * vz[ind];
+        }
+        reti[it] += nvpeinv * (sx[i+elOffset] * fx + sy[i+elOffset] * fy + sz[i+elOffset] * fz);
       }
-      result += nvpeinv * (sx[i+elOffset] * fx + sy[i+elOffset] * fy + sz[i+elOffset] * fz);
     }
   }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    result += reti[it];
+  }
+
+  delete [] reti;
 }
 
 // ============================================================================
@@ -143,12 +156,27 @@ void K_POST::integNormProdUnstructCellCenter(
   E_Float& result)
 {
   result = 0.0;
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [nthreads];
 
-  #pragma omp parallel for reduction(+:result)
-  for (E_Int i = 0; i < nbt; i++)
+  #pragma omp parallel
   {
-    E_Float ri = ratio[i];
-    E_Float sum = sx[i] * vx[i] + sy[i] * vy[i] + sz[i] * vz[i];
-    result += ri * sum;
+    E_Float ri, sum;
+    E_Int it = __CURRENT_THREAD__;
+    reti[it] = 0.;
+
+    #pragma omp for
+    for (E_Int i = 0; i < nbt; i++)
+    {
+      ri = ratio[i];
+      sum = sx[i] * vx[i] + sy[i] * vy[i] + sz[i] * vz[i];
+      reti[it] += ri * sum;
+    }
   }
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    result += reti[it];
+  }
+
+  delete [] reti;
 }

@@ -150,12 +150,12 @@ _symetrize = _symmetrize
 def perturbate(a, radius, dim=3):
     """Perturbate a mesh randomly of radius
     Usage: perturbate(a, radius, dim)"""
-    return C.TZA1(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim)
+    return C.TZA3(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim)
 
 def _perturbate(a, radius, dim=3):
     """Perturbate a mesh randomly of radius
     Usage: perturbate(a, radius, dim)"""
-    return C._TZA1(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim)
+    return C._TZA3(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim)
 
 def smoothField(t, eps=0.1, niter=1, type=0, varNames=[]):
     """Smooth given fields."""
@@ -217,7 +217,7 @@ def _deform(t, vector=['dx','dy','dz']):
     """Deform surface by moving surface of the vector (dx, dy, dz).
     Usage: deform(t, vector=['dx','dy','dz'])"""
     if len(vector) != 3: raise ValueError("deform: 3 variables are required.")
-    return C._TZA1(t, 'nodes', 'nodes', False, Transform.deform, vector)
+    return C._TZA3(t, 'nodes', 'nodes', False, Transform.deform, vector)
 
 def deformNormals(t, alpha, niter=1):
     """Deform a a surface of alpha times the surface normals.
@@ -237,11 +237,11 @@ def _deformNormals(t, alpha, niter=1):
 def deformPoint(a, xyz, dxdydz, depth, width):
     """Deform mesh by moving point (x,y,z) of a vector (dx, dy, dz).
     Usage: deformPoint(a, (x,y,z), (dx,dy,dz), width, depth)"""
-    return C.TZGC1(a, 'nodes', True, Transform.deformPoint, xyz, dxdydz, depth, width)
+    return C.TZGC3(a, 'nodes', True, Transform.deformPoint, xyz, dxdydz, depth, width)
 
 def _deformPoint(a, xyz, dxdydz, depth, width):
     """Deform mesh by moving point (x,y,z) of a vector (dx, dy, dz)."""
-    return C._TZGC1(a, 'nodes', False, Transform.deformPoint, xyz, dxdydz, depth, width)
+    return C._TZGC3(a, 'nodes', False, Transform.deformPoint, xyz, dxdydz, depth, width)
 
 def deformMesh(a, surfDelta, beta=4., type='nearest'):
     """Deform a mesh a wrt surfDelta defining surface grids and deformation vector on it.
@@ -270,8 +270,8 @@ def freeForm(a, controlPoints):
 
 def _freeForm(a, controlPoints):
     """Compute free form deformation vector."""
-    array = C.getAllFields(a, 'nodes', api=1)
-    control = C.getAllFields(controlPoints, 'nodes', api=1)[0]
+    array = C.getAllFields(a, 'nodes', api=3)
+    control = C.getAllFields(controlPoints, 'nodes', api=3)[0]
     array = Transform.freeForm(array, control)
     C.setFields(array, a, 'nodes', writeDim=False)
     return None
@@ -385,8 +385,8 @@ def _patch(t1, t2, position=None, nodes=None, order=None):
     zones1 = Internal.getZones(t1)
     zones2 = Internal.getZones(t2)
     for z1,z2 in zip(zones1, zones2):
-        a2 = C.getAllFields(z2, 'nodes', api=1)[0]
-        C._TZA1(z1, 'nodes', 'nodes', True, Transform.patch, a2, position, nodes, order)
+        a2 = C.getAllFields(z2, 'nodes', api=3)[0]
+        C._TZA3(z1, 'nodes', 'nodes', True, Transform.patch, a2, position, nodes, order)
     return None
 
 #===============
@@ -397,7 +397,7 @@ def _oneovernBC__(t, N):
     C._rmBCOfType(t, 'BCMatch'); C._rmBCOfType(t, 'BCNearMatch')
     nodes = Internal.getZones(t)
     for z in nodes:
-        wins = Internal.getNodesFromType(z, 'BC_t')
+        wins = Internal.getNodesFromType2(z, 'BC_t')
         for w in wins:
             w0 = Internal.getNodeFromName1(w, 'PointRange')
             (parent, d) = Internal.getParentOfNode(z, w0)
@@ -422,7 +422,7 @@ def _oneovernBC__(t, N):
             r2 = Internal.window2Range(range0)
             parent[2][d][1] = r2
 
-        connect = Internal.getNodesFromType(z, 'ZoneGridConnectivity_t')
+        connect = Internal.getNodesFromType1(z, 'ZoneGridConnectivity_t')
         for cn in connect:
             wins = Internal.getNodesFromName2(cn, 'PointRange')
             for w in wins:
@@ -461,8 +461,8 @@ def oneovern(t, N):
 
 def _oneovern(t, N):
     """Take one over N points from mesh."""
-    centers = C.getAllFields(t, 'centers', api=1)
-    C._TZA1(t, 'nodes', 'nodes', True, Transform.oneovern, N, 1)
+    centers = C.getAllFields(t, 'centers', api=3)
+    C._TZA3(t, 'nodes', 'nodes', True, Transform.oneovern, N, 1)
     zones = Internal.getZones(t)
     for c, z in enumerate(zones):
         if centers[c] != []:
@@ -594,7 +594,7 @@ def subzoneGCStruct__(z, dim, imin, imax, jmin, jmax, kmin, kmax, \
             if val == 'Overset':
                 if isout == 0:
                     DDDnrName=None
-                    for UDN in Internal.getNodesFromType1(i,'UserDefinedData_t'):
+                    for UDN in Internal.getNodesFromType1(i, 'UserDefinedData_t'):
                         if Internal.getNodeFromName1(UDN,'doubly_defined') is not None:
                             DDDnrName=Internal.getValue(i)
                             break
@@ -628,13 +628,13 @@ def subzoneGCStruct__(z, dim, imin, imax, jmin, jmax, kmin, kmax, \
                           zoneDonor=[ddDnrs[nor]], rangeDonor='doubly_defined')
     return z
 
-def subzone(t, minIndex, maxIndex=None, type=None, dimOut=-1):
+def subzone(t, minIndex, maxIndex=None, type=None, dimOut=None):
     """Take a subzone of mesh.
     Usage: subzone(t, (imin,jmin,kmin), (imax,jmax,kmax))"""
     if maxIndex is None: return subzoneUnstruct__(t, minIndex, type, dimOut)
     else: return subzoneStruct__(t, minIndex, maxIndex)
 
-def subzoneUnstruct__(t, indices, type, dimOut=-1):
+def subzoneUnstruct__(t, indices, type, dimOut=None):
     tp = Internal.copyRef(t)
     nodes = Internal.getZones(tp)
     for z in nodes:
@@ -642,6 +642,7 @@ def subzoneUnstruct__(t, indices, type, dimOut=-1):
         fc = C.getFields(Internal.__GridCoordinates__, z, api=1)[0]
         fa = C.getFields(Internal.__FlowSolutionNodes__, z, api=1)[0]
         fb = C.getFields(Internal.__FlowSolutionCenters__, z, api=1)[0]
+        C._deleteZoneBC__(z)
         if fa != []: fc = Converter.addVars([fc, fa])
         if fb == []: # no flow sol at centers
             nodes = Transform.subzone(fc, indices, type=type, dimOut=dimOut)
@@ -773,7 +774,7 @@ def triracopp__(trirac):
         i1 = abs(trirac[no])-1
         m[i1,no] = signt
     mopp = numpy.linalg.inv(m)
-    triracopp=[1,2,3]
+    triracopp = [1,2,3]
     for i in range(3):
         for no in range(3):
             if mopp[no,i] != 0:
@@ -939,9 +940,6 @@ def _adaptBCMatch(z, z1, z2, winz1, winz2, t=None):
         triracopp = triracopp__(trirac)
 
         if oppBlock == z[0]: # self attached BCMatch
-            #print("z,z1,z2",z[0],z1[0],z2[0])
-            #print('windonor',winDonor, winz1, winz2)
-            #print('windir',getWinDir(winz), getCutDir(winz1,winz2))
 
             #wins1 = intersectWins__(winz1, winDonor, ret=1)
             #wins2 = intersectWins__(winz2, winDonor, ret=1)
@@ -956,13 +954,11 @@ def _adaptBCMatch(z, z1, z2, winz1, winz2, t=None):
             # Point de cut
             if wini is not None: # point de cut sur winz? Pt de cut sur winDonor
 
-                #print('intersect z1 en ',wini1)
                 # wini1 sur z, winopp sur z, winopp1 sur z1, winopp2 sur z2
                 ind0 = donorIndex__(winz,winDonor,trirac,(wini1[0],wini1[2],wini1[4]))
                 ind1 = donorIndex__(winz,winDonor,trirac,(wini1[1],wini1[3],wini1[5]))
                 winopp = [min(ind0[0],ind1[0]),max(ind0[0],ind1[0]),
                           min(ind0[1],ind1[1]),max(ind0[1],ind1[1]),min(ind0[2],ind1[2]),max(ind0[2],ind1[2])]
-                #print('correspond au donneur ',winopp)
 
                 # DBX
                 #winopp1 = intersectWins__(winz1, winopp, ret=0)
@@ -1057,13 +1053,11 @@ def _adaptBCMatch(z, z1, z2, winz1, winz2, t=None):
 
             if wini is not None:
 
-                #print('intersect z2 en ',wini1)
                 # wini1 sur z, winopp sur z, winopp1 sur z1, winopp2 sur z2
                 ind0 = donorIndex__(winz,winDonor,trirac,(wini1[0],wini1[2],wini1[4]))
                 ind1 = donorIndex__(winz,winDonor,trirac,(wini1[1],wini1[3],wini1[5]))
                 winopp = [min(ind0[0],ind1[0]),max(ind0[0],ind1[0]),
                           min(ind0[1],ind1[1]),max(ind0[1],ind1[1]),min(ind0[2],ind1[2]),max(ind0[2],ind1[2])]
-                #print('correspond au donneur ',winopp)
 
                 # DBX
                 #winopp1 = intersectWins__(winz1, winopp, ret=0)
@@ -1398,7 +1392,7 @@ def _reorderBC__(t, order):
         dim = Internal.getZoneDim(z)
         if dim[0] == 'Structured' and len(order) == 3:
             oi = order[0]; oj = order[1]; ok = order[2]
-            wins = Internal.getNodesFromType(z, 'BC_t')
+            wins = Internal.getNodesFromType2(z, 'BC_t')
             for w in wins:
                 w0 = Internal.getNodeFromName1(w, 'PointRange')
                 range0 = reorderIndices__(w0[1], dim, oi, oj, ok)
@@ -1414,10 +1408,10 @@ def _reorderBCOverlap__(a, order):
         dim = Internal.getZoneDim(z)
         if dim[0] == 'Structured' and len(order) == 3:
             oi = order[0]; oj = order[1]; ok = order[2]
-            connect = Internal.getNodesFromType(z, 'GridConnectivity_t')
+            connect = Internal.getNodesFromType2(z, 'GridConnectivity_t')
             for i in connect:
                 pr = Internal.getNodeFromName1(i, 'PointRange')
-                r = Internal.getNodesFromType(i, 'GridConnectivityType_t')
+                r = Internal.getNodesFromType1(i, 'GridConnectivityType_t')
                 if r != []:
                     val = Internal.getValue(r[0])
                     if val == 'Overset':
@@ -1580,7 +1574,7 @@ def _reorderBCNearMatch__(a, order, zoneNames):
         dim = Internal.getZoneDim(z)
         if dim[0] == 'Structured' and len(order) == 3:
             oi = order[0]; oj = order[1]; ok = order[2]
-            connect = Internal.getNodesFromType(z, 'GridConnectivity_t')
+            connect = Internal.getNodesFromType1(z, 'GridConnectivity_t')
             for cn in connect:
                 type = Internal.getNodeFromName1(cn, 'GridConnectivityType')
                 if type is not None: val = Internal.getValue(type)
@@ -1722,7 +1716,7 @@ def _reorderStruct__(t, order, topTree):
         _reorderBC__(t, order)
         _reorderBCOverlap__(t, order)
         zones = Internal.getZones(t)
-        zoneNames=[] # zones dont le PointRange est a modifier ou en tant que PointRangeDonor si c'est la zoneDonor
+        zoneNames = [] # zones dont le PointRange est a modifier ou en tant que PointRangeDonor si c'est la zoneDonor
         for z in zones: zoneNames.append(z[0])
         _reorderBCMatch__(t, order, zoneNames)
         _reorderBCNearMatch__(t, order, zoneNames)
@@ -1969,9 +1963,9 @@ def _addkplane(t, N=1):
     """Add N k-plane(s) to a mesh."""
     zones = Internal.getZones(t)
     for z in zones:
-        nodes = C.getFields(Internal.__GridCoordinates__, z, api=3)[0]
-        fn = C.getFields(Internal.__FlowSolutionNodes__, z, api=3)[0]
-        fc = C.getFields(Internal.__FlowSolutionCenters__, z, api=3)[0]
+        nodes = C.getFields(Internal.__GridCoordinates__, z, api=1)[0]
+        fn = C.getFields(Internal.__FlowSolutionNodes__, z, api=1)[0]
+        fc = C.getFields(Internal.__FlowSolutionCenters__, z, api=1)[0]
         # Coordinates + fields located at nodes
         if fn != []:
             if nodes == []: nodes = fn
@@ -2275,7 +2269,7 @@ def _splitSizeUpR__(t, N, R, multigrid, dirs, minPtsPerDir, topTree):
         import Distributor2.PyTree as D2
         for np, p in enumerate(procs):
             for zname in p[1]:
-                z = Internal.getNodeFromName(t, zname)
+                z = Internal.getNodeFromName2(t, zname)
                 D2._addProcNode(z, np)
     except: pass
     return None
@@ -2487,11 +2481,11 @@ def splitSizeUpR_OMP__(t, N, R, multigrid, dirs, minPtsPerDir):
     for b in bases:
         zones = Internal.getNodesFromType1(b, 'Zone_t')
         for z in zones:
-            solverParam=Internal.createChild(z,'.Solver#Param','UserDefinedData_t',value=None,children=[],pos=-1)
-            ompthread  =Internal.createChild(solverParam,  'omp_threads'  ,'UserDefinedData_t',value=None,children=[],pos=-1)
-            sol  = Internal.getNodeFromName1(z, 'FlowSolution#Centers')
-            solth=Internal.getNodeFromName1(sol, 'thread_number')
-            solsz=Internal.getNodeFromName1(sol, 'thread_subzone')
+            solverParam = Internal.createChild(z,'.Solver#Param','UserDefinedData_t',value=None,children=[],pos=-1)
+            ompthread = Internal.createChild(solverParam,  'omp_threads'  ,'UserDefinedData_t',value=None,children=[],pos=-1)
+            sol = Internal.getNodeFromName1(z, 'FlowSolution#Centers')
+            solth = Internal.getNodeFromName1(sol, 'thread_number')
+            solsz = Internal.getNodeFromName1(sol, 'thread_subzone')
             for i in range(1,R+1):
                 thnode=[]
                 thnode=Internal.createChild(ompthread,str(i),'UserDefinedData_t',value=None,children=[],pos=-1)
@@ -3000,7 +2994,7 @@ def splitMultiplePts(t, dim=3):
             stdNode = Internal.isStdNode(t)
             if stdNode == 0: type = 3 # liste de zones
             else: type = 4 # une zone
-            zones = Internal.getNodesFromType(t, 'Zone_t')
+            zones = Internal.getZones(t)
             tp = C.newPyTree(['Base']); tp[2][1][2] = zones
 
     count = 2

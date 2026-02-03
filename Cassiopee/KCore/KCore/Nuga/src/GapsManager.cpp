@@ -121,7 +121,7 @@ GapsManager::run
   std::vector<E_Int> colError ;
   K_FLD::FloatArray plaster, posG, posFixed;
   K_FLD::IntArray connectG, connectError;
-  E_Int col(0), /* freecol(0),*/ ni, err, nb_cols;
+  E_Int ni, err, nb_cols;
   E_Int nb_contours = connectBout.size();
 #ifdef DEBUG_GAPSMANAGER
   E_Int errcol(0);
@@ -220,7 +220,6 @@ GapsManager::run
       }
       else
       {
-        ++col;
         connectG.shift(posFixed.cols());
         posFixed.pushBack(posG);
         connectFixed.pushBack(connectG);

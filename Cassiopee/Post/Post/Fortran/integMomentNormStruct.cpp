@@ -104,6 +104,8 @@ void K_POST::integMomentNormStructNodeCenter2D(
   E_Float res3 = 0.0;
 
   E_Int ni1 = ni - 1;
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [3*nthreads];
 
   #pragma omp parallel
   {
@@ -112,8 +114,10 @@ void K_POST::integMomentNormStructNodeCenter2D(
     E_Float mx, my, mz;
     E_Float sx0, sy0, sz0;
     E_Float centerx, centery, centerz;
+    E_Int it = 3*__CURRENT_THREAD__;
+    reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
 
-    #pragma omp for collapse(2) reduction(+:res1,res2,res3)
+    #pragma omp for
     for (E_Int j = 0; j < nj - 1; j++)
     {
       for (E_Int i = 0; i < ni - 1; i++)
@@ -148,16 +152,25 @@ void K_POST::integMomentNormStructNodeCenter2D(
         my = centerz * sx0 - centerx * sz0;
         mz = centerx * sy0 - centery * sx0;
 
-        res1 += f * mx;
-        res2 += f * my;
-        res3 += f * mz;
+        reti[it] += f * mx;
+        reti[it+1] += f * my;
+        reti[it+2] += f * mz;
       }
     }
+  }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    res1 += reti[3*it];
+    res2 += reti[3*it+1];
+    res3 += reti[3*it+2];
   }
 
   result[0] = res1;
   result[1] = res2;
   result[2] = res3;
+
+  delete [] reti;
 }
 
 //=============================================================================
@@ -175,6 +188,8 @@ void K_POST::integMomentNormStructCellCenter2D(
   E_Float res3 = 0.0;
 
   E_Int ni1 = ni - 1;
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [3*nthreads];
 
   #pragma omp parallel
   {
@@ -183,8 +198,10 @@ void K_POST::integMomentNormStructCellCenter2D(
     E_Float mx, my, mz;
     E_Float sx0, sy0, sz0;
     E_Float centerx, centery, centerz;
+    E_Int it = 3*__CURRENT_THREAD__;
+    reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
 
-    #pragma omp for collapse(2) reduction(+:res1,res2,res3)
+    #pragma omp for
     for (E_Int j = 0; j < nj - 1; j++)
     {
       for (E_Int i = 0; i < ni - 1; i++)
@@ -214,14 +231,24 @@ void K_POST::integMomentNormStructCellCenter2D(
         my = centerz * sx0 - centerx * sz0;
         mz = centerx * sy0 - centery * sx0;
 
-        res1 += f * mx;
-        res2 += f * my;
-        res3 += f * mz;
+        reti[it] += f * mx;
+        reti[it+1] += f * my;
+        reti[it+2] += f * mz;
+
       }
     }
+  }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    res1 += reti[3*it];
+    res2 += reti[3*it+1];
+    res3 += reti[3*it+2];
   }
 
   result[0] = res1;
   result[1] = res2;
   result[2] = res3;
+
+  delete [] reti;
 }

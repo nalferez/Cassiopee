@@ -72,15 +72,21 @@ PyObject* K_POST::selectExteriorFacesStructured(PyObject* self, PyObject* args)
   {
     tpl = K_ARRAY::buildArray3(nfld, varString, 1, 1, 1, api);
     K_ARRAY::getFromArray3(tpl, f2);
-    f2p = f2->begin();
-    for (E_Int eq = 0; eq < nfld; eq++) f2p[eq] = (*f)(0, eq+1);
+    for (E_Int eq = 0; eq < nfld; eq++) 
+    { 
+      f2p = f2->begin(eq+1);
+      f2p[0] = (*f)(0, eq+1);
+    }
     RELEASESHAREDS(tpl, f2);
     PyList_Append(l, tpl); Py_DECREF(tpl);
 
     tpl = K_ARRAY::buildArray3(nfld, varString, 1, 1, 1, api);
     K_ARRAY::getFromArray3(tpl, f2);
-    f2p = f2->begin();
-    for (E_Int eq = 0; eq < nfld; eq++) f2p[eq] = (*f)(npts-1, eq+1);
+    for (E_Int eq = 0; eq < nfld; eq++) 
+    {
+      f2p = f2->begin(eq+1);
+      f2p[0] = (*f)(npts-1, eq+1);
+    }
     RELEASESHAREDS(tpl, f2);
     PyList_Append(l, tpl); Py_DECREF(tpl);
   }

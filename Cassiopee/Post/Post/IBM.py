@@ -146,7 +146,7 @@ def extractIBMWallFields(tc, tb=None, coordRef='wall', famZones=[], IBCNames="IB
         return out
 
     else:
-        allZSR = Internal.getNodesFromType(tc,'ZoneSubRegion_t')
+        allZSR = Internal.getNodesFromType(tc, 'ZoneSubRegion_t')
         if allZSR != []:
             allIBCD = Internal.getNodesFromName(allZSR, IBCNames)
             for IBCD in allIBCD:
@@ -846,8 +846,8 @@ def createCloudIBM__(tc, ibctypes=[], famZones=[], extraIBCVariables=['yplusIP']
     cpt_name = 0
     tl = C.newPyTree(['CLOUD_IBCW'])
     for zc in Internal.getZones(tp):
-        allIBCD = Internal.getNodesFromType(zc,"ZoneSubRegion_t")
-        allIBCD = Internal.getNodesFromName(allIBCD,"IBCD_*")
+        allIBCD = Internal.getNodesFromType(zc, "ZoneSubRegion_t")
+        allIBCD = Internal.getNodesFromName(allIBCD, "IBCD_*")
         for IBCD in allIBCD:
             ztype = int(IBCD[0].split("_")[1])
 
@@ -1539,12 +1539,10 @@ def loads(tb_in, tc_in=None, tc2_in=None, wall_out=None, alpha=0., beta=0., Sref
 
         if tc2 is None:
             print('Info: loads: pressure gradients come from tc')
-            if order < 2: tc = extractPressureHO(tc, order=1)
-            else: tc = extractPressureHO(tc, order=2)
+            _extractPressureHighOrder(tc, order=order)
         else:
             print('Info: loads: pressure gradients come from tc2')
-            if order < 2: tc2 = extractPressureHO(tc2, order=1)
-            else: tc2 = extractPressureHO(tc2, order=2)
+            _extractPressureHighOrder(tc2, order=order)
 
     #====================================
     # Extraction des grandeurs a la paroi

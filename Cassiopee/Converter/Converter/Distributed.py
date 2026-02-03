@@ -287,13 +287,13 @@ def _readZones(t, fileName, format=None, rank=None, zoneNames=None):
                 p[c] = loadedZones[m]; zr = p[c]
             else: p[2][c] = loadedZones[m]; zr = p[2][c]
             if rank is not None:
-                node = Internal.getNodeFromName(zr, '.Solver#Param')
+                node = Internal.getNodeFromName1(zr, '.Solver#Param')
                 if node is not None: param = node
                 else:
                     param = ['.Solver#Param', None, [], 'UserDefinedData_t']
                     zr[2].append(param)
                 v = numpy.zeros((1,1), Internal.E_NpyInt); v[0,0] = nproc
-                node = Internal.getNodeFromName(param, 'proc')
+                node = Internal.getNodeFromName1(param, 'proc')
                 if node is not None:
                     node[1] = v
                 else:
@@ -889,7 +889,7 @@ def computeGraph(t, type='bbox', t2=None, procDict=None, rank=0,
             proc = getProcLocal__(z, procDict)
             GC = Internal.getNodesFromType2(z, 'GridConnectivity_t')
             for c in GC:
-                gctype = Internal.getNodeFromType(c,'GridConnectivityType_t')
+                gctype = Internal.getNodeFromType(c, 'GridConnectivityType_t')
                 if Internal.getValue(gctype)=='Abutting':
                     donor = Internal.getValue(c)
                     popp = getProcGlobal__(donor, t, procDict)
@@ -965,7 +965,7 @@ def _setProc(t, nproc):
             param = ['.Solver#Param', None, [], 'UserDefinedData_t']
             z[2].append(param)
         v = numpy.zeros((1,1), Internal.E_NpyInt); v[0,0] = nproc
-        node = Internal.getNodeFromName(param, 'proc')
+        node = Internal.getNodeFromName1(param, 'proc')
         if node is not None: node[1] = v
         else:
             a = ['proc', v, [], 'DataArray_t']

@@ -486,7 +486,7 @@ def intersectObstacleMesh(t, surf_detail,list_bcs):
         nb_cells = (index_i-1) * (index_j-1) * (index_k-1)
 
     zbcs=[]; bctypes=[]; bcs=[];
-    for bc in Internal.getNodesFromType(z,'BC_t'):
+    for bc in Internal.getNodesFromType2(z, 'BC_t'):
         bctype = Internal.getValue(bc)
 
         if bctype not in bctypes:
@@ -498,7 +498,6 @@ def intersectObstacleMesh(t, surf_detail,list_bcs):
         zbc = T.join(zbc)
         zbcs.append(zbc)
         if bctype.startswith("BCWall"):
-            nobc = i
             wall_clean = zbc
 
     #4: intersect surfaces
@@ -516,7 +515,7 @@ def intersectObstacleMesh(t, surf_detail,list_bcs):
 
     return result
 
-def extractNotIBMWallFields(t,IBM_parameters,list_boundary_values_to_extract,discSelectionParaDict,BFtreatment="nodal"):
+def extractNotIBMWallFields(t, IBM_parameters, list_boundary_values_to_extract, discSelectionParaDict, BFtreatment="nodal"):
     print("Extracting wall fields that are not IBM..")
     C._deleteFlowSolutions__(t)
 
@@ -526,14 +525,14 @@ def extractNotIBMWallFields(t,IBM_parameters,list_boundary_values_to_extract,dis
     zoneDim = Internal.getZoneDim(z)
     print(zoneDim[0])
 
-    for i,bc in enumerate(Internal.getNodesFromType(z,'BC_t')):
+    for i,bc in enumerate(Internal.getNodesFromType2(z, 'BC_t')):
         bctype = Internal.getValue(bc)
         if bctype.startswith("BCWall"):
             zbc = C.extractBCOfType(t,bctype)
             break
     zbc = T.join(zbc)
-    FS = Internal.getNodesFromName(zbc,"FlowSolution#Centers")
-    Internal._rmNodesFromName(FS,"CoefSkinFrictionImmersed")
+    FS = Internal.getNodesFromName(zbc, "FlowSolution#Centers")
+    Internal._rmNodesFromName(FS, "CoefSkinFrictionImmersed")
 
     names_var = list_boundary_values_to_extract
     FS_1 = []

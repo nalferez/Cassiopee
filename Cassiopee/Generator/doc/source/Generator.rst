@@ -97,6 +97,7 @@ List of functions
    :nosignatures:
 
    Generator.close
+   Generator.rmOrphans
    Generator.zip
    Generator.selectInsideElts
    Generator.map
@@ -1310,7 +1311,7 @@ Operations on meshes
     :type rmDegeneratedElts: boolean
     :param indices: vertex indirection table following mesh cleaning
     :type indices: [array, list of arrays]
-    :return: modified reference copy of t
+    :return: modified reference copy of a
     :rtype: array or pyTree
 
     *Example of use:*
@@ -1322,7 +1323,26 @@ Operations on meshes
     * `Mesh closing (pyTree) <Examples/Generator/closePT.py>`_:
 
     .. literalinclude:: ../build/Examples/Generator/closePT.py
-        
+
+---------------------------------------
+
+.. py:function:: Generator.rmOrphans(a)
+
+    Remove orphan vertices from an unstructured mesh defined by array a.
+    
+    Exists also as in place version (_rmOrphans) that modifies a and returns None. 
+
+    :param a:  input mesh
+    :type  a:  array or pyTree
+    :return: modified reference copy of a
+    :rtype: array or pyTree
+
+    *Example of use:*
+
+    * `Mesh closing (pyTree) <Examples/Generator/rmOrphansPT.py>`_:
+
+    .. literalinclude:: ../build/Examples/Generator/rmOrphansPT.py
+
 ---------------------------------------
 
 .. py:function:: Generator.zip(a, tol=1.e-12)

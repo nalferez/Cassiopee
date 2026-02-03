@@ -265,6 +265,7 @@ def setCursor(cursor, B=None, C=None, D=None):
 # - prend les elts exterieurs pour les Tetra et les Hexa
 #==============================================================================
 def buildCPlotArrays(a, topTree=[]):
+
     if CPlot.__LOCATION__ == 'nodes':
         if __FIELD__ == '__all__':
             a = C.center2Node(a, Internal.__FlowSolutionCenters__)

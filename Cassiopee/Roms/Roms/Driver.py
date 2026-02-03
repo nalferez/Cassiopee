@@ -791,7 +791,7 @@ class Surface():
             C._convertArray2NGon(z, recoverBC=False)
             p = P.exteriorFaces(z)
             C._addBC2Zone(z, 'wall', 'BCWall', subzone=p)
-            Internal.getNodeFromType(z, 'BC_t')[0] = 'wall'
+            Internal.getNodeFromType2(z, 'BC_t')[0] = 'wall'
             T._addkplane(z)
             T._contract(z, (0,0,0), (1,0,0), (0,1,0), 0.1)
 
@@ -1202,6 +1202,30 @@ class Le:
     def __init__(self, expr1, expr2=None):
         # references sur l'inequation sympy
         self.s = sympy.Le(expr1, expr2)
+        DRIVER.registerInequation(self)
+
+#============================================================
+class Gt:
+    """Constraint inequation"""
+    def __init__(self, expr1, expr2=None):
+        # references sur l'inequation sympy
+        self.s = sympy.Gt(expr1, expr2)
+        DRIVER.registerInequation(self)
+
+#============================================================
+class Ge:
+    """Constraint inequation"""
+    def __init__(self, expr1, expr2=None):
+        # references sur l'inequation sympy
+        self.s = sympy.Ge(expr1, expr2)
+        DRIVER.registerInequation(self)
+
+#============================================================
+class Ne:
+    """Constraint inequation"""
+    def __init__(self, expr1, expr2=None):
+        # references sur l'inequation sympy
+        self.s = sympy.Ne(expr1, expr2)
         DRIVER.registerInequation(self)
 
 #============================================================

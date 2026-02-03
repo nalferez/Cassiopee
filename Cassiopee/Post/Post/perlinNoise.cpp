@@ -86,18 +86,17 @@ PyObject* K_POST::perlinNoise(PyObject* self,PyObject* args)
   FldArrayF* f2;
   K_ARRAY::getFromArray3(tpl, f2);
   // Recopie
-  E_Float* fp = f->begin();
-  E_Float* f2p = f2->begin();
   for (E_Int v = 0; v < nfld-1; v++)
   {
+    E_Float* fp = f->begin(v+1);
+    E_Float* f2p = f2->begin(v+1);
     for (E_Int i = 0; i < npts; i++) f2p[i] = fp[i];
-    f2p += npts; fp += npts;
   }
   // Perlin
   K_NOISE::PDS data;
   K_NOISE::initPerlinNoise(100, data);
 
-  f2p = f2->begin(nfld);
+  E_Float* f2p = f2->begin(nfld);
   E_Float* x = f->begin(posx);
   E_Float* y = f->begin(posy);
   E_Float* z = f->begin(posz);

@@ -151,6 +151,8 @@ void K_POST::integMomentStructNodeCenter2D(const E_Int ni, const E_Int nj,
   E_Float res3 = 0.0;
 
   E_Int ni1 = ni - 1;
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [3*nthreads];
 
   #pragma omp parallel
   {
@@ -164,8 +166,10 @@ void K_POST::integMomentStructNodeCenter2D(const E_Int ni, const E_Int nj,
     E_Float m2x, m2y, m2z;
     E_Float m3x, m3y, m3z;
     E_Float m4x, m4y, m4z;
+    E_Int it = 3*__CURRENT_THREAD__;
+    reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
 
-    #pragma omp for collapse(2) reduction(+:res1,res2,res3)
+    #pragma omp for
     for (E_Int j = 0; j < nj - 1; j++)
     {
       for (E_Int i = 0; i < ni - 1; i++)
@@ -225,16 +229,25 @@ void K_POST::integMomentStructNodeCenter2D(const E_Int ni, const E_Int nj,
         m4z = dx * f4y - dy * f4x;
 
         sind = surf[ind];
-        res1 += sind * (m1x + m2x + m3x + m4x);
-        res2 += sind * (m1y + m2y + m3y + m4y);
-        res3 += sind * (m1z + m2z + m3z + m4z);
+        reti[it] += sind * (m1x + m2x + m3x + m4x);
+        reti[it+1] += sind * (m1y + m2y + m3y + m4y);
+        reti[it+2] += sind * (m1z + m2z + m3z + m4z);
       }
     }
+  }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    res1 += reti[3*it];
+    res2 += reti[3*it+1];
+    res3 += reti[3*it+2];
   }
 
   result[0] = 0.25 * res1;
   result[1] = 0.25 * res2;
   result[2] = 0.25 * res3;
+
+  delete [] reti;
 }
 
 //=============================================================================
@@ -317,14 +330,18 @@ void K_POST::integMomentStructCellCenter2D(const E_Int ni, const E_Int nj,
   E_Float res3 = 0.0;
 
   E_Int ni1 = ni - 1;
+  E_Int nthreads = __NUMTHREADS__;
+  E_Float* reti = new E_Float [3*nthreads];
 
   #pragma omp parallel
   {
     E_Int ind, ind1, ind2, ind3, ind4;
     E_Float srind, mx, my, mz;
     E_Float centerx, centery, centerz;
+    E_Int it = 3*__CURRENT_THREAD__;
+    reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
 
-    #pragma omp for collapse(2) reduction(+:res1,res2,res3)
+    #pragma omp for
     for (E_Int j = 0; j < nj - 1; j++)
     {
       for (E_Int i = 0; i < ni - 1; i++)
@@ -350,16 +367,25 @@ void K_POST::integMomentStructCellCenter2D(const E_Int ni, const E_Int nj,
         my = centerz * vx[ind] - centerx * vz[ind];
         mz = centerx * vy[ind] - centery * vx[ind];
 
-        res1 += srind * mx;
-        res2 += srind * my;
-        res3 += srind * mz;
+        reti[it] += srind * mx;
+        reti[it+1] += srind * my;
+        reti[it+2] += srind * mz;
       }
     }
+  }
+
+  for (E_Int it = 0; it < nthreads; it++)
+  {
+    res1 += reti[3*it];
+    res2 += reti[3*it+1];
+    res3 += reti[3*it+2];
   }
 
   result[0] = res1;
   result[1] = res2;
   result[2] = res3;
+
+  delete [] reti;
 }
 
 //=============================================================================

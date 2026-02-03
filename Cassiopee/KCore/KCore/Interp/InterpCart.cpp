@@ -78,9 +78,18 @@ short K_INTERP::InterpCart::searchInterpolationCellCartO2(E_Int ni, E_Int nj, E_
   if (z < _zmin-EPS) return 0;
   if (z > _zmax+EPS) return 0;
 
+#ifdef E_ADOLC
+  E_Float vx = (x-_xmin)*_hii;
+  E_Float vy = (y-_ymin)*_hji;
+  E_Float vz = (z-_zmin)*_hki;
+  ic = E_Int(vx.value())+_ioff;
+  jc = E_Int(vy.value())+_joff;
+  kc = E_Int(vz.value())+_koff;
+#else
   ic = E_Int((x-_xmin)*_hii)+_ioff;
-  jc = E_Int((y-_ymin)*_hji)+_ioff;
-  kc = E_Int((z-_zmin)*_hki)+_ioff;
+  jc = E_Int((y-_ymin)*_hji)+_joff;
+  kc = E_Int((z-_zmin)*_hki)+_koff;
+#endif
 
   ic = std::min(ic,ni-1); ic = std::max(ic,E_Int(1)); 
   jc = std::min(jc,nj-1); jc = std::max(jc,E_Int(1)); 
@@ -142,9 +151,20 @@ short K_INTERP::InterpCart::searchInterpolationCellCartO3(E_Int ni, E_Int nj, E_
   if (y > _ymax+EPS) return 0;
   if (z < _zmin-EPS) return 0;
   if (z > _zmax+EPS) return 0;
+  
+#ifdef E_ADOLC
+  E_Float vx = (x-_xmin)*_hii;
+  E_Float vy = (y-_ymin)*_hji;
+  E_Float vz = (z-_zmin)*_hki;  
+  ic = E_Int(vx.value())+_ioff;
+  jc = E_Int(vy.value())+_joff;
+  kc = E_Int(vz.value())+_koff;
+#else
   ic = E_Int((x-_xmin)*_hii)+_ioff;
   jc = E_Int((y-_ymin)*_hji)+_joff;
   kc = E_Int((z-_zmin)*_hki)+_koff;
+#endif
+
   ic = std::max(ic,E_Int(1)); ic = std::min(ic,ni-1);
   jc = std::max(jc,E_Int(1)); jc = std::min(jc,nj-1);
   kc = std::max(kc,E_Int(1)); kc = std::min(kc,nk-1);
@@ -341,16 +361,23 @@ short K_INTERP::InterpCart::searchInterpolationCellCartO4(E_Int ni, E_Int nj, E_
   if (y > _ymax+EPS) return 0;
   if (z < _zmin-EPS) return 0;
   if (z > _zmax+EPS) return 0;
+
+#ifdef E_ADOLC
+  E_Float vx = (x-_xmin)*_hii;
+  E_Float vy = (y-_ymin)*_hji;
+  E_Float vz = (z-_zmin)*_hki;
+  ic = E_Int(vx.value())+_ioff;
+  jc = E_Int(vy.value())+_joff;
+  kc = E_Int(vz.value())+_koff;
+#else
   ic = E_Int((x-_xmin)*_hii)+_ioff;
   jc = E_Int((y-_ymin)*_hji)+_joff;
   kc = E_Int((z-_zmin)*_hki)+_koff;
-
+#endif
 
   ic = std::max(ic,E_Int(1)); ic = std::min(ic,ni-1);
   jc = std::max(jc,E_Int(1)); jc = std::min(jc,nj-1);
   kc = std::max(kc,E_Int(1)); kc = std::min(kc,nk-1);
-
-  //printf("nijk: %d %d %d  jc: %d y: %f ymin: %f hij: %f joff: %d \n", ni,nj,nk, jc, y, _ymin, _hji, _joff);
 
   //Dir X(I)
   if (ic >1 ) ic -=1; //on decale le donneur de 1
@@ -389,8 +416,6 @@ short K_INTERP::InterpCart::searchInterpolationCellCartO4(E_Int ni, E_Int nj, E_
   //yjppp
   norm= 6.*_hj*_hj*_hj;
   E_Float ly3 = (y-y_j)*(y-y_jp)*(y-y_jpp)/norm;
-
-  //printf("y: %f y0: %f y1: %f y2: %f y3: %f\n", y, y_j, y_jp, y_jpp, y_jppp);
 
   //Dir Z(K)
   if (kc >1 ) kc -=1; //on decale le donneur de 1
@@ -441,13 +466,31 @@ E_Int K_INTERP::InterpCart::getListOfCandidateCells(E_Float x, E_Float y, E_Floa
   E_Float y0 = y-dy; E_Float y1 = y+dy;
   E_Float z0 = z-dz; E_Float z1 = z+dz;
 
+#ifdef E_ADOLC
+  E_Float vx = (x0-_xmin)*_hii;
+  E_Float vy = (y0-_ymin)*_hji;
+  E_Float vz = (z0-_zmin)*_hki;
+  E_Int icmin = E_Int(vx.value())+_ioff;
+  E_Int jcmin = E_Int(vy.value())+_joff;
+  E_Int kcmin = E_Int(vz.value())+_koff;
+#else
   E_Int icmin = E_Int((x0-_xmin)*_hii)+_ioff;
   E_Int jcmin = E_Int((y0-_ymin)*_hji)+_joff;
   E_Int kcmin = E_Int((z0-_zmin)*_hki)+_koff;
+#endif
 
+#ifdef E_ADOLC
+  vx = (x1-_xmin)*_hii;
+  vy = (y1-_ymin)*_hji;
+  vz = (z1-_zmin)*_hki;
+  E_Int icmax = E_Int(vx.value())+_ioff;
+  E_Int jcmax = E_Int(vy.value())+_joff;
+  E_Int kcmax = E_Int(vz.value())+_koff;
+#else
   E_Int icmax = E_Int((x1-_xmin)*_hii)+_ioff;
   E_Int jcmax = E_Int((y1-_ymin)*_hji)+_joff;
   E_Int kcmax = E_Int((z1-_zmin)*_hki)+_koff;
+#endif
 
   if (icmin < 1 && icmax < 1) return 0;
   if (jcmin < 1 && jcmax < 1) return 0;

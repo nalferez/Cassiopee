@@ -34,7 +34,7 @@ PyObject* K_TRANSFORM::patch(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, OO_ TIII_,
                     &array1, &array2, &ii, &jj, &kk))
   {
-      return NULL;
+    return NULL;
   }
   // Check array
   E_Int im1, jm1, km1, im2, jm2, km2;
@@ -268,7 +268,6 @@ PyObject* K_TRANSFORM::patch2(PyObject* self, PyObject* args)
     for (E_Int ind = 0; ind < nbnodes; ind++)
     {
       ind2 = n0[ind]-1;
-      //printf("%d %d\n ",ind2,f2->getSize());
       fp2[p][ind2] = fp1[p][ind];
     }
   }

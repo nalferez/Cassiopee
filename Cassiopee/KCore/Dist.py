@@ -2339,6 +2339,44 @@ def checkCppLibs(additionalLibs=[], additionalLibPaths=[], Cppcompiler=None,
                 libs += ['gomp']; paths += [l]
             else: ret = False
 
+    # clang (c++, stdc++, omp)
+    if Cppcompiler.find('clang') == 0 or Cppcompiler.find('clang++') == 0:
+        os.environ['CC'] = 'clang'
+        os.environ['CXX'] = 'clang++'
+        cflags = sysconfig.get_config_var('CFLAGS')
+        sysconfig._config_vars['CFLAGS'] = '' # kill setup flags for CC
+        sysconfig._config_vars['LDFLAGS'] = '' # kill setup flags for LD
+
+        l = checkLibFile__('libstdc++.so*', additionalLibPaths)
+        if l is None:
+            l = checkLibFile__('libstdc++.a', additionalLibPaths)
+        if l is not None:
+            libs += ['stdc++']; paths += [l]
+
+        l = checkLibFile__('libc++.so*', additionalLibPaths)
+        if l is None:
+            l = checkLibFile__('libc++.a', additionalLibPaths)
+        if l is not None:
+            libs += ['c++']; paths += [l]
+
+        if DEBUG:
+            l = checkLibFile__('libasan.so*', additionalLibPaths)
+            if l is None:
+                l = checkLibFile__('libasan.a', additionalLibPaths)
+            if l is not None: libs += ["asan"]
+            #l = checkLibFile__('libtsan.so*', additionalLibPaths)
+            #if l is None:
+            #    l = checkLibFile__('libtsan.a', additionalLibPaths)
+            #if l is not None: libs += ["tsan"]
+
+        if useOMP:
+            l = checkLibFile__('libomp.so*', additionalLibPaths)
+            if l is None:
+                l = checkLibFile__('libomp.a', additionalLibPaths)
+            if l is not None:
+                libs += ['omp']; paths += [l]
+            else: ret = False
+
     # icc (stdc++, guide ou iomp5)
     if Cppcompiler.find('icc') == 0 or Cppcompiler.find('icpc') == 0:
         os.environ['CC'] = 'icc' # forced to overide setup.cfg

@@ -321,7 +321,7 @@ E_Float aPolyhedron<TopoShape>::extent() const
 {
   E_Float v(0.);
   volume<DELAUNAY::Triangulator>(v, true/*reorient*/);//fixme : avoid systematic reorient
-  return ::fabs(v);
+  return fabs(v);
 }
 
 template <int TopoShape>
@@ -341,12 +341,13 @@ bool aPolyhedron<TopoShape>::join(E_Float TOL, std::vector<E_Int>& lnids)
   acrd_t acrd(m_crd);
   K_SEARCH::KdTree<> kdt(acrd);
   E_Float TOL2{0.1*Lref2()};
-  for (int n = 0; n < m_crd.cols(); ++n)
+  for (E_Int n = 0; n < m_crd.cols(); ++n)
   {
     E_Float dij2{ TOL };
-    int Nj = kdt.getClosest(n, dij2);
-    if ((Nj != IDX_NONE) && (dij2 < TOL2)) {
-      lnids[std::max(n, Nj)] = std::min(n, Nj);
+    E_Int Nj = kdt.getClosest(n, dij2);
+    if ((Nj != IDX_NONE) && (dij2 < TOL2)) 
+    {
+      lnids[std::max(n, Nj)] = K_FUNC::E_min(n, Nj);
       has_join = true;
     }
   }

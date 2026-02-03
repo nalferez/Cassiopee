@@ -127,9 +127,7 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
     {
       nelts = ncells;
       cn.malloc(nelts, 2);
-      E_Int* cn1 = cn.begin(1);
-      E_Int* cn2 = cn.begin(2);
-
+      
       if (nj1 == 1 && nk1 == 1)
       {
         for (E_Int i = 0; i < ni1; i++)
@@ -137,7 +135,7 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
           // starts from 1
           ind1 = i + 1; //(i,1,1)
           ind2 = ind1 + 1;  //(i+1,1,1)
-          cn1[c] = ind1; cn2[c] = ind2;  
+          cn(c,1) = ind1; cn(c,2) = ind2;  
           c++;
         }
       }
@@ -147,7 +145,7 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
         {
           ind1 = j*ni + 1;  //(1,j,1)
           ind2 = ind1 + ni; //(1,j+1,1)
-          cn1[c] = ind1; cn2[c] = ind2;
+          cn(c,1) = ind1; cn(c,2) = ind2;
           c++;         
         }
       }
@@ -157,7 +155,7 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
         {
           ind1 = 1 + k*ninj; //(1,1,k)
           ind2 = ind1 + ninj;   //(1,1,k+1)
-          cn1[c] = ind1; cn2[c] = ind2;
+          cn(c,1) = ind1; cn(c,2) = ind2;
           c++;
         }
       }
@@ -166,10 +164,6 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
     {
       nelts = ncells;
       cn.malloc(nelts, 4);
-      E_Int* cn1 = cn.begin(1);
-      E_Int* cn2 = cn.begin(2);
-      E_Int* cn3 = cn.begin(3);
-      E_Int* cn4 = cn.begin(4);
       if (nk1 == 1)
       {
         for (E_Int j = 0; j < nj1; j++)
@@ -180,8 +174,8 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
             ind2 = ind1 + 1;  //(i+1,j,1)
             ind3 = ind2 + ni; //(i+1,j+1,1)
             ind4 = ind3 - 1;  //(i,j+1,1)
-            cn1[c] = ind1; cn2[c] = ind2;
-            cn3[c] = ind3; cn4[c] = ind4;
+            cn(c,1) = ind1; cn(c,2) = ind2;
+            cn(c,3) = ind3; cn(c,4) = ind4;
             c++;
           }
       }
@@ -194,9 +188,9 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
             ind2 = ind1 + ninj; //(i,1,k+1)
             ind3 = ind2 + 1;    //(i+1,1,k+1)
             ind4 = ind3 - 1;    //(i,1,k+1)
-            cn1[c] = ind1; cn2[c] = ind2;
-            cn3[c] = ind3; cn4[c] = ind4;
-            c++;         
+            cn(c,1) = ind1; cn(c,2) = ind2;
+            cn(c,3) = ind3; cn(c,4) = ind4;
+            c++;
           }
       }
       else // i1 = 1 
@@ -208,8 +202,8 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
             ind2 = ind1 + ni;   //(1,j+1,k)
             ind3 = ind2 + ninj; //(1,j+1,k+1)
             ind4 = ind3 - ni;   //(1,j,k+1)
-            cn1[c] = ind1; cn2[c] = ind2;
-            cn3[c] = ind3; cn4[c] = ind4;
+            cn(c,1) = ind1; cn(c,2) = ind2;
+            cn(c,3) = ind3; cn(c,4) = ind4;
             c++;
           }
       }// i1 = 1
@@ -218,14 +212,6 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
     { 
       nelts = ncells;
       cn.malloc(nelts,8);
-      E_Int* cn1 = cn.begin(1);
-      E_Int* cn2 = cn.begin(2);
-      E_Int* cn3 = cn.begin(3);
-      E_Int* cn4 = cn.begin(4);
-      E_Int* cn5 = cn.begin(5);
-      E_Int* cn6 = cn.begin(6);
-      E_Int* cn7 = cn.begin(7);
-      E_Int* cn8 = cn.begin(8);
       
       for (E_Int k = 0; k < nk1; k++)
         for (E_Int j = 0; j < nj1; j++)
@@ -240,10 +226,10 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
             ind7 = ind3 + ninj;           //G(i+1,j+1,k+1)
             ind8 = ind4 + ninj;           //H(  i,j+1,k+1) 
             
-            cn1[c] = ind1; cn2[c] = ind2;
-            cn3[c] = ind3; cn4[c] = ind4;
-            cn5[c] = ind5; cn6[c] = ind6;
-            cn7[c] = ind7; cn8[c] = ind8;
+            cn(c,1) = ind1; cn(c,2) = ind2;
+            cn(c,3) = ind3; cn(c,4) = ind4;
+            cn(c,5) = ind5; cn(c,6) = ind6;
+            cn(c,7) = ind7; cn(c,8) = ind8;
             c++;
           }
     } //dim = 3
@@ -251,7 +237,7 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
 
   // Selection
   PyObject* l = PyList_New(0);
-  PyObject* tpl=NULL;
+  PyObject* tpl = NULL;
 
   if (strcmp(eltType, "NGON") != 0) // tous les elements sauf NGON
   {
@@ -315,13 +301,12 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
     for (E_Int i = 0; i < nthreads; i++) delete [] ptr[i];
     delete [] ptr;
 
-    if (nntot == 0) fout->reAllocMat(0, nfld);
-    else if (cleanConnectivity == 1 && posx > 0 && posy > 0 && posz > 0)
-      tpl = K_CONNECT::V_cleanConnectivity(
-        varString, *fout, *acn, eltType, 1.e-10);
+    if (nntot == 0) { fout->reAllocMat(0, nfld); cleanConnectivity = 0; } 
+    if (cleanConnectivity == 1 && posx > 0 && posy > 0 && posz > 0)
+      tpl = K_CONNECT::V_cleanConnectivity(varString, *fout, *acn, eltType, 1.e-10);
     else tpl = K_ARRAY::buildArray3(*fout, varString, *acn, eltType, api);
     delete acn; delete fout;
-    if (res == 1) delete[] eltType;
+    if (res == 1) delete [] eltType;
   }
   else // elements NGON
   {
@@ -353,7 +338,7 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
       new_ph_ids = -1;
       keep_pg    = -1; 
       
-      // Boucle sur le nombre d elements
+      // Boucle sur le nombre d'elements
       for (E_Int i = 0; i < nbElements; i++)
       {
         nbFaces = cnEFp[0];
@@ -362,7 +347,7 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
           cn2p[0] = nbFaces; size2 +=1;
           for (E_Int n = 1; n <= nbFaces; n++)
           {
-            cn2p[n]             = cnEFp[n];
+            cn2p[n] = cnEFp[n];
             keep_pg[cnEFp[n]-1] = +1;
           }
           size2 += nbFaces; cn2p += nbFaces+1; next++;
@@ -491,11 +476,10 @@ PyObject* K_POST::selectCellCenters(PyObject* self, PyObject* args)
 
     cout->setNGonType(cnp->getNGonType());
     tpl = K_ARRAY::buildArray3(*fout, varString, *cout, "NGON", api);
-    delete cout; delete fout;     
+    delete cout; delete fout;
   }
 
-  PyList_Append(l,tpl) ; Py_DECREF(tpl);
-    
+  PyList_Append(l,tpl); Py_DECREF(tpl);  
   RELEASESHAREDB(res, array, f, cnp);
   return l;
 }

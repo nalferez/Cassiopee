@@ -104,11 +104,11 @@ PyObject* K_CONVERTER::convertArray2Tetra(PyObject* self, PyObject* args)
   for (E_Int ic = 0; ic < nc; ic++) foundEltType2Convert |= convConn[ic];
   if (!foundEltType2Convert)
   {
-    // Nothing to convert
+    // Nothing to convert, return a copy
     for (size_t ic = 0; ic < eltTypes.size(); ic++) delete [] eltTypes[ic];
+    PyObject* tpl = K_ARRAY::buildArray3(*f, varString, *cn, eltType, api);
     RELEASESHAREDU(array, f, cn);
-    Py_INCREF(array);  // TODO: to be removed
-    return array;
+    return tpl;
   }
 
   // Coordinates required for PYRA -> TETRA
