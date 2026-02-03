@@ -1035,7 +1035,7 @@ def createTestT(N=10):
     z = G.cart((0,0,0), (h,h,h), (N,1,1))
     C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
     C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
-    C.convertPyTree2File(z, 'struct1d.cgns')    
+    C.convertPyTree2File(z, 'struct1d.cgns')
 
     # 2D struct
     z = G.cart((0,0,0), (h,h,h), (N,N,1))
@@ -1101,7 +1101,7 @@ def createTestT(N=10):
     C.convertPyTree2File(z, 'hexa+hexa.cgns')
 
     # tri+quad
-    a = G.cartHexa((0,0,0), (h,h,h), (N,N,1)) 
+    a = G.cartHexa((0,0,0), (h,h,h), (N,N,1))
     b = G.cartTetra((9,0,0), (h,h,h), (N,N,1))
     z = C.mergeConnectivity(a, b, boundary=0)
     C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
