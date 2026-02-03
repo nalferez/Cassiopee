@@ -415,8 +415,8 @@ def updateBCPointLists1(z, oids):
     # recalcul des pointlist
     ptLists = XOR.updatePointLists(oids, ptLists)
 
-    i=0
-    bc_to_remove=[]
+    i = 0
+    bc_to_remove = []
     #print('update the BC pointlists')
     for bb in bnds:
         torem = False

@@ -1411,7 +1411,7 @@ def _reorderBCOverlap__(a, order):
             connect = Internal.getNodesFromType2(z, 'GridConnectivity_t')
             for i in connect:
                 pr = Internal.getNodeFromName1(i, 'PointRange')
-                r = Internal.getNodesFromType(i, 'GridConnectivityType_t')
+                r = Internal.getNodesFromType1(i, 'GridConnectivityType_t')
                 if r != []:
                     val = Internal.getValue(r[0])
                     if val == 'Overset':

@@ -3599,12 +3599,12 @@ def _groupByFamily(t, familyChilds=None, unique=False):
     BCNotSpec = []
     for bc in getNodesFromType3(b, 'BC_t'):
       if not isValue(bc, 'FamilySpecified'):
-        childname = getNodesFromName(bc, 'FamilyName')
-        if childname != []: BCNotSpec.append(bc)
+        childname = getNodeFromName1(bc, 'FamilyName')
+        if childname is not None: BCNotSpec.append(bc)
     for bc in BCNotSpec:
-      FamNameNode = getNodeFromType(bc, 'FamilyName_t')
+      FamNameNode = getNodeFromType1(bc, 'FamilyName_t')
       FamilyName= getValue(FamNameNode)
-      solverBC = getNodeFromName(bc, '.Solver#BC')
+      solverBC = getNodeFromName1(bc, '.Solver#BC')
       if not solverBC: solverBCChilds = []
       else: solverBCChilds = solverBC[2]
 
