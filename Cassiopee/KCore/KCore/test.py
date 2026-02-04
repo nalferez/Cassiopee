@@ -1100,6 +1100,16 @@ def createTestT(N=10):
     # add BC when addBC2Zone ready
     C.convertPyTree2File(z, 'hexa+hexa.cgns')
 
+    # pyra+penta+hexa
+    a = G.cartPyra((0.,0.,0.), (0.1,0.1,0.1), (5,5,5))
+    b = G.cartPenta((0.4,0.,0.), (0.1,0.1,0.1), (5,5,5))
+    c = G.cartHexa((0.8,0.,0.), (0.1,0.1,0.1), (5,5,5))
+    z = C.mergeConnectivity([a, b, c], boundary=0)
+    C._initVars(z, '{Density}={CoordinateX}+{CoordinateY}')
+    C._initVars(z, '{centers:VelocityX}={centers:CoordinateX}+{centers:CoordinateY}')
+    # add BC when addBC2Zone ready
+    C.convertPyTree2File(z, 'pyra+penta+hexa.cgns')
+
     # tri+quad
     a = G.cartHexa((0,0,0), (h,h,h), (N,N,1))
     b = G.cartTetra((9,0,0), (h,h,h), (N,N,1))

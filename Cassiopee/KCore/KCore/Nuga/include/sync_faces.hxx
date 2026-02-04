@@ -597,7 +597,7 @@ inline void replace_faces(
   for (E_Int i = 0; i < m.cnt.PHs.size(); ++i)
   {
     const E_Int* pPGi = m.cnt.PHs.get_facets_ptr(i);
-    int nb_pgs = m.cnt.PHs.stride(i);
+    E_Int nb_pgs = m.cnt.PHs.stride(i);
 
     molecPH.clear();
 

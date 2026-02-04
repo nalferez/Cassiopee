@@ -202,7 +202,7 @@ class MeshTool
                                             std::vector<E_Float>& radius, std::vector<E_Float>& angles);
 
     template <typename IntCont, short DIM>
-    static void reorder_nodes_on_edge(const K_FLD::FloatArray& pos, IntCont & nodes, int idx_start, std::vector<std::pair<E_Float, E_Int> >& sorter);
+    static void reorder_nodes_on_edge(const K_FLD::FloatArray& pos, IntCont& nodes, E_Int idx_start, std::vector<std::pair<E_Float, E_Int> >& sorter);
 
 private:
 

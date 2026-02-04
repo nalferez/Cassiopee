@@ -75,7 +75,7 @@ static int newton3(E_Float p[4], E_Float x[3])
   E_Float b,c,d,da,db,dc,epsd;
   E_Float delta,fx,dfx,dxx;
   E_Float fdx0,fdx1,dx0,dx1,x1,x2;
-  int it,n;
+  int it, n;
   static char mmgWarn=0;
 
   /* coeffs polynomial, a=1 */
@@ -348,12 +348,12 @@ int check_accuracy(E_Float mat[6], E_Float lambda[3], E_Float v[3][3],
  * \remark the i^{th} eigenvector is stored in v[i][.].
  *
  */
-inline int eigenv(int symmat, E_Float* mat, E_Float lambda[3], E_Float v[3][3]) 
+inline E_Int eigenv(E_Int symmat, E_Float* mat, E_Float lambda[3], E_Float v[3][3]) 
 {
   E_Float a11,a12,a13,a21,a22,a23,a31,a32,a33;
   E_Float aa,bb,cc,dd,ee,ii,vx1[3],vx2[3],vx3[3],dd1,dd2,dd3;
   E_Float maxd,maxm,valm,p[4],w1[3],w2[3],w3[3];
-  int k,n;
+  E_Int k,n;
 
   /* default */
   memcpy(v, Id, 9*sizeof(E_Float));
@@ -404,13 +404,15 @@ inline int eigenv(int symmat, E_Float* mat, E_Float lambda[3], E_Float v[3][3])
     p[2] = -a11 - a22 - a33;
     p[3] =  1.0;
   }
-  else {
+  else 
+  {
     lambda[0] = mat[0];
     lambda[1] = mat[4];
     lambda[2] = mat[8];
 
     maxm = fabs(mat[0]);
-    for (k=1; k<9; k++) {
+    for (k=1; k<9; k++) 
+    {
       valm = fabs(mat[k]);
       if ( valm > maxm )  maxm = valm;
     }
@@ -457,7 +459,7 @@ inline int eigenv(int symmat, E_Float* mat, E_Float lambda[3], E_Float v[3][3])
   }
 
   /* solve polynomial (find roots using newton) */
-  n = newton3(p,lambda);
+  n = newton3(p, lambda);
   if ( n <= 0 )  return 0;
 
   /* compute eigenvectors:
@@ -470,9 +472,11 @@ inline int eigenv(int symmat, E_Float* mat, E_Float lambda[3], E_Float v[3][3])
   w2[0] = a21;  w2[2] = a23;
   w3[0] = a31;  w3[1] = a32;
 
-  if ( n == 1 ) {
+  if ( n == 1 ) 
+  {
     /* vk = crsprd(wi,wj) */
-    for (k=0; k<3; k++) {
+    for (k=0; k<3; k++) 
+    {
       w1[0] = a11 - lambda[k];
       w2[1] = a22 - lambda[k];
       w3[2] = a33 - lambda[k];
@@ -624,7 +628,8 @@ inline int eigenv(int symmat, E_Float* mat, E_Float lambda[3], E_Float v[3][3])
   lambda[2] *= maxm;
 
   /* check accuracy */
-  if ( getenv("MEIGENV_DDEBUG") && symmat ) {
+  if ( getenv("MEIGENV_DDEBUG") && symmat ) 
+  {
     if ( !check_accuracy ( mat, lambda, v, w1, w2, w3, maxm, n, symmat ) )
       return 0;
   }
@@ -641,7 +646,7 @@ inline int eigenv(int symmat, E_Float* mat, E_Float lambda[3], E_Float v[3][3])
  *
  * \warning not used for now
  */
-inline int eigen2(E_Float* mm, E_Float* lambda, E_Float vp[2][2]) 
+inline E_Int eigen2(E_Float* mm, E_Float* lambda, E_Float vp[2][2]) 
 {
   E_Float m[3],dd,a1,xn,ddeltb,rr1,rr2,ux,uy;
 
@@ -768,7 +773,7 @@ vect:
  * Compute eigenelements of a symetric matrix m. Eigenvectors are orthogonal.
  *
  */
-inline int eigensym(E_Float m[3], E_Float lambda[2], E_Float vp[2][2])
+inline E_Int eigensym(E_Float m[3], E_Float lambda[2], E_Float vp[2][2])
 {
   E_Float sqDelta,dd,trm,vnorm;
 

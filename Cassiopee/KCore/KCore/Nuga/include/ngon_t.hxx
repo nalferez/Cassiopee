@@ -186,7 +186,7 @@ struct ngon_t
       
     K_MESH::Quadrangle face;
 
-    for (int i = 0; i < ncells; i++)
+    for (E_Int i = 0; i < ncells; i++)
     {
       E_Int celli_pos = pos + i*(nfpc+1);
 
@@ -1627,9 +1627,9 @@ struct ngon_t
     {
       n_bad_nodes = 0;
       const E_Int* pnodes = PGs.get_facets_ptr(i);
-      int nnodes = PGs.stride(i);
+      E_Int nnodes = PGs.stride(i);
 
-      for (int n=0; n < nnodes; ++n)
+      for (E_Int n=0; n < nnodes; ++n)
       {
         E_Int Ni   = pnodes[n]-1;
         E_Int Nip1 = pnodes[(n+1) % nnodes]-1;
@@ -5675,21 +5675,22 @@ static int validate_moves_by_fluxes
 
     // apply all node moves for PHi (fixme : shell might contain more than one bad ph => process by group of bads ?)
     const E_Int* faces = ngio.PHs.get_facets_ptr(PHi);
-    int nfaces = ngio.PHs.stride(PHi);
+    E_Int nfaces = ngio.PHs.stride(PHi);
 
     has_moves = false;
 
-    for (int f = 0; f < nfaces; ++f)
+    for (E_Int f = 0; f < nfaces; ++f)
     {
       E_Int Fi = faces[f] - 1;
       const E_Int* nodes = ngio.PGs.get_facets_ptr(Fi);
-      int nnodes = ngio.PGs.stride(Fi);
+      E_Int nnodes = ngio.PGs.stride(Fi);
 
       for (E_Int n = 0; n < nnodes; ++n)
       {
         E_Int Ni = nodes[n] - 1;
         if (nids[Ni] >= 0) nidsshell[Ni] = nids[Ni];
-        else {
+        else 
+        {
           nidsshell[Ni] = -nids[Ni] - 1;
           has_moves = true;
         }
@@ -5763,7 +5764,7 @@ static int validate_moves_by_fluxes
       {
         E_Int Fi = faces[f] - 1;
         const E_Int* nodes = ngio.PGs.get_facets_ptr(Fi);
-        int nnodes = ngio.PGs.stride(Fi);
+        E_Int nnodes = ngio.PGs.stride(Fi);
 
         for (E_Int n = 0; n < nnodes; ++n)
         {

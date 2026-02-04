@@ -39,10 +39,9 @@ void
 MeshUtils1D::compute_iso_metric
 (const K_FLD::FloatArray& pos, const K_FLD::IntArray& connect,
  const std::vector<E_Int>& hard_nodes,
- std::vector<E_Float> & metric, E_Float &hmin, E_Float& hmax)
+ std::vector<E_Float>& metric, E_Float& hmin, E_Float& hmax)
 {
-  /// Compute the metric at connect nodes and assigne the mean to other hard nodes.
-
+  /// Compute the metric at connect nodes and assign the mean to other hard nodes.
   std::vector<E_Int> nodes;
   std::vector<E_Int> count;
   K_FLD::IntArray::const_iterator pS;

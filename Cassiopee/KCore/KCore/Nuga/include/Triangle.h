@@ -703,7 +703,7 @@ namespace K_MESH
     {
       E_Float u[3];
       E_Float v[3];
-      for (int j = 0; j < 3; ++j)
+      for (E_Int j = 0; j < 3; ++j)
       {
         u[j] = Q2[j] - P2[j];
         v[j] = R2[j] - P2[j];

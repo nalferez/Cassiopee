@@ -162,10 +162,10 @@ void IdTool::right_shift(E_Int* list, int shift)
   if (shift == 0) return;
 
   E_Int tmp[LIST_SZ];
-  for (int i =0; i < LIST_SZ; ++i)
+  for (E_Int i =0; i < LIST_SZ; ++i)
     tmp[i] = list[(i+shift)% LIST_SZ];
 
-  for (int i =0; i < LIST_SZ; ++i)
+  for (E_Int i =0; i < LIST_SZ; ++i)
     list[i] = tmp[i];    
 }
 

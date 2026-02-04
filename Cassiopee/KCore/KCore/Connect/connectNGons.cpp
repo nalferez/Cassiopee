@@ -340,9 +340,9 @@ E_Int K_CONNECT::getVertexIndices(const E_Int* connect, const E_Int* posFaces,
   }
   else if (dim == 2)
   {
-    int drawn=0;
-    int prev, j, first, n1, n2, next;
-    int n1f2,n2f2,face2;
+    E_Int drawn=0;
+    E_Int prev, j, first, n1, n2, next;
+    E_Int n1f2,n2f2,face2;
 
     // premiere face
     face = ptrelt[1]-1;

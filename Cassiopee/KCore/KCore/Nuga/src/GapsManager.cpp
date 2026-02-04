@@ -287,7 +287,7 @@ GapsManager::run
 #ifdef E_TIME
   std::cout << "aggregate the connectivities " << c.elapsed() << std::endl;
   std::cout << "TOTAL TIME : " << glob.elapsed() << std::endl;
-  std::cout << "SUCCESS : " << col << "/" << connectBout.size() << std::endl;
+  //std::cout << "SUCCESS : " << errcol << "/" << connectBout.size() << std::endl;
   //std::cout << "FAILED  : " << errcol << "/" << connectBout.size() << std::endl;
   //std::cout << "FREE    : " << freecol << "/" << connectBout.size() << std::endl;
 #endif

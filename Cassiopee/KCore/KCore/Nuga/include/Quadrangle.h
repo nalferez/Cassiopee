@@ -128,7 +128,7 @@ namespace K_MESH
 
     static void order_nodes(E_Int *nodes, const E_Int *pN, bool reorient, E_Int i0)
     {
-      for (int i = 0; i < 4; i++)
+      for (E_Int i = 0; i < 4; i++)
         nodes[i] = pN[i];
 
       K_CONNECT::IdTool::right_shift<4>(nodes, i0);

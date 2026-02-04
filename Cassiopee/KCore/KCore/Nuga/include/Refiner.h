@@ -50,7 +50,7 @@ namespace DELAUNAY
   public:
 
     Refiner(MetricType& metric, E_Float growth_ratio, E_Int nb_smooth_iter, E_Bool symmetrize):_metric(metric), _threshold(0.5), 
-            _gr(growth_ratio), _nb_smooth_iter(nb_smooth_iter), _symmetrize(symmetrize), _debug(false){}
+            _gr(growth_ratio), _nb_smooth_iter(nb_smooth_iter), _symmetrize(symmetrize), _debug(false) {}
 
     ~Refiner(void){}
 
@@ -75,8 +75,7 @@ namespace DELAUNAY
 
   /// ajoute les points de raffinement
   template <typename MetricType>
-  void
-    Refiner<MetricType>::computeRefinePoints
+  void Refiner<MetricType>::computeRefinePoints
     (E_Int iter, MeshData& data, const int_set_type& box_nodes,
      const non_oriented_edge_set_type& hard_edges,
      int_vector_type& refine_nodes, E_Int N0/*for metrics changes when smoothing*/)
@@ -109,7 +108,7 @@ namespace DELAUNAY
         all_edges.insert(Ei);
       }
     }
-
+    
     // smooth the metric at each nodes.
     // so do it at leat once whatever the user ask for to improve the overall
     // mesh quality by setting the right metrics at skeleton nodes (__init_refine_points)
@@ -139,7 +138,7 @@ namespace DELAUNAY
 #endif
     
     }
-
+    
     std::vector<std::pair<E_Float, size_type> > length_to_points;
     if (_symmetrize && iter == 0)
     {
@@ -153,17 +152,15 @@ namespace DELAUNAY
         _metric.__compute_refine_points(*data.pos, Ei.node(0), Ei.node(1), _threshold, length_to_points, _tmpNodes);
     }
     std::sort(ALL(length_to_points));
-
+    
     size_type sz = (size_type)length_to_points.size(); // peut devenir trop grand
     for (size_type i = 0; i < sz; ++i)
       refine_nodes.push_back(length_to_points[i].second);
-
   }
 
   /// supprime les points qui ne sont pas dans la box
   template <typename MetricType>
-  void
-    Refiner<MetricType>::filterRefinePoints
+  void Refiner<MetricType>::filterRefinePoints
     (MeshData& data, const int_set_type& box_nodes, 
     int_vector_type& refine_nodes, tree_type& filter_tree)
   {

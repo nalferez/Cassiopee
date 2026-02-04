@@ -45,7 +45,7 @@ E_Int K_ARRAY::getVarName(PyObject* varNames, char* varString)
   nvars = PyList_Size(varNames);
   strcpy(varString, "x,y,z");
 
-  for (int i = 0; i < nvars; i++)
+  for (E_Int i = 0; i < nvars; i++)
   {
     tpl = PyList_GetItem(varNames, i);
     if (PyString_Check(tpl))

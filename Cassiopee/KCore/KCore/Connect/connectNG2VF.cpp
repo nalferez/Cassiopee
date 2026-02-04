@@ -51,7 +51,7 @@ void K_CONNECT::connectNG2VF(FldArrayI& cNG, vector< vector<E_Int> >& cVF)
   }
   
   vector<E_Int>::iterator it;  
-  for (unsigned int nov = 0; nov < cVF.size(); nov++)
+  for (size_t nov = 0; nov < cVF.size(); nov++)
   {
     sort(cVF[nov].begin(), cVF[nov].end()); 
     it = unique(cVF[nov].begin(), cVF[nov].end());

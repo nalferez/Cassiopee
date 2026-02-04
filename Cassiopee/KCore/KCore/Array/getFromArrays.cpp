@@ -237,7 +237,7 @@ E_Int K_ARRAY::getFromArrays(PyObject* o,
   // Dim varString common
   E_Int size = 1;
   E_Int nvertex, nelt, sizeConnect;
-  for (int i = 0; i < n; i++)
+  for (E_Int i = 0; i < n; i++)
   {
     tpl = PyList_GetItem(o, i);
     getInfoFromArray(tpl, varStringl, nil, njl, nkl, nvertex, nelt, 
@@ -247,7 +247,7 @@ E_Int K_ARRAY::getFromArrays(PyObject* o,
   char* varStringCommon = new char [size];
   varStringCommon[0] = '\0';
 
-  for (int i = 0; i < n; i++)
+  for (E_Int i = 0; i < n; i++)
   {
     tpl = PyList_GetItem(o, i);
     resl = K_ARRAY::getFromArray3(tpl, varStringl, f, 

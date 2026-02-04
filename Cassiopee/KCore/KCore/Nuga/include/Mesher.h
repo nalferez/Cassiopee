@@ -21,6 +21,8 @@
 #ifndef __DELAUNAY_MESHER_H__
 #define __DELAUNAY_MESHER_H__
 
+//#define E_TIME
+
 #include "Nuga/include/Kernel.h"
 #include "Nuga/include/delaunay_preds.h"
 #include "Nuga/include/MeshData.h"
@@ -286,7 +288,6 @@ namespace DELAUNAY
       if (!mode.silent_errors) std::cout << "Warning: mesher: error restoring boundaries." << std::endl;
       return _err;
     }
-    
 
 #ifdef E_TIME
     std::cout << c.elapsed() << std::endl;
@@ -380,8 +381,9 @@ namespace DELAUNAY
     // Reset hard nodes to be consistent with hard edges
     hNodes.insert(ALL(_data->hardNodes)); // Append with the input hard nodes.
     _data->hardNodes.clear();
-    E_Int idmax=-1;
-    for (int_set_type::const_iterator it = hNodes.begin(); it != hNodes.end(); ++it){
+    E_Int idmax = -1;
+    for (int_set_type::const_iterator it = hNodes.begin(); it != hNodes.end(); ++it)
+    {
       _data->hardNodes.push_back(*it);
       idmax = std::max(idmax, *it);
     }
@@ -424,8 +426,8 @@ namespace DELAUNAY
     E_Int T1[3] = {C1,C2,C4};
     E_Int T2[3] = {C2,C3,C4};
 
-    _data->connectM.pushBack (T1, T1+3);
-    _data->connectM.pushBack (T2, T2+3);
+    _data->connectM.pushBack(T1, T1+3);
+    _data->connectM.pushBack(T2, T2+3);
 
     _data->ancestors.resize(_data->pos->cols(), IDX_NONE);
     _data->ancestors[C1] = _data->ancestors[C2] = _data->ancestors[C4] = 0;
@@ -536,7 +538,6 @@ namespace DELAUNAY
     (const K_FLD::FloatArray& pos, K_FLD::IntArray& connect,
     K_FLD::IntArray& neighbors, int_vector_type& ancestors)
   {
-
     std::vector<K_MESH::NO_Edge> missing_edges;
     int_set_type pipe;
     int_pair_vector_type Xedges;

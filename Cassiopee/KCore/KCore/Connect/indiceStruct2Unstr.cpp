@@ -180,7 +180,7 @@ PyObject* K_KCORE::indiceStruct2Unstr2(PyObject* self, PyObject* args)
     PyErr_SetString(PyExc_TypeError,
                     "indiceStruct2Unstr2: 2nd arg must be unstructured.");
     if (res2 == 1) RELEASESHAREDS(unstrArray, f2);
-    for (unsigned int z = 0; z < structF.size(); z++)
+    for (size_t z = 0; z < structF.size(); z++)
       RELEASESHAREDS(objs[z], structF[z]); 
     return NULL;
   }
@@ -192,7 +192,7 @@ PyObject* K_KCORE::indiceStruct2Unstr2(PyObject* self, PyObject* args)
     PyErr_SetString(PyExc_TypeError,
                     "indiceStruct2Unstr2: 2nd arg must contain coordinates.");
     RELEASESHAREDU(unstrArray, f2, cn2);
-    for (unsigned int z = 0; z < structF.size(); z++)
+    for (size_t z = 0; z < structF.size(); z++)
       RELEASESHAREDS(objs[z], structF[z]); 
     return NULL;
   }
@@ -207,7 +207,7 @@ PyObject* K_KCORE::indiceStruct2Unstr2(PyObject* self, PyObject* args)
   PyObject* out = PyList_New(0);
   //npy_intp dim[1];
 
-  for (unsigned int z = 0; z < structF.size(); z++)
+  for (size_t z = 0; z < structF.size(); z++)
   {
     E_Int posx1 = K_ARRAY::isCoordinateXPresent(structVarString[z]);
     E_Int posy1 = K_ARRAY::isCoordinateYPresent(structVarString[z]);
@@ -245,7 +245,7 @@ PyObject* K_KCORE::indiceStruct2Unstr2(PyObject* self, PyObject* args)
   }
 
   RELEASESHAREDU(unstrArray, f2, cn2);
-  for (unsigned int z = 0; z < structF.size(); z++)
+  for (size_t z = 0; z < structF.size(); z++)
     RELEASESHAREDS(objs[z], structF[z]);
 
   return out;

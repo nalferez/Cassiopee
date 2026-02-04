@@ -49,7 +49,7 @@ namespace NUGA
       const E_Int* pN = PGs.get_facets_ptr(PGi);
       E_Int nb_edges = PGs.stride(PGi);
 
-      for (int i = 0; i < nb_edges; i++)
+      for (E_Int i = 0; i < nb_edges; i++)
         T6nodes[i] = pN[i];
  
       const E_Int* pNFils3 = PGs.get_facets_ptr(four_childrenPG[3]);
