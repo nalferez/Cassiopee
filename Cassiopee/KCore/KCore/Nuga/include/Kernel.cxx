@@ -85,11 +85,10 @@ Kernel<T>::~Kernel(void)
   if (_constrained_pred) delete _constrained_pred;
 }
 
-///
+/// delaunay insertion
 template <typename T>
 template <typename ConstraintType>
-E_Int
-Kernel<T>::insertNode(size_type N, const T& m, const ConstraintType& dummy)
+E_Int Kernel<T>::insertNode(size_type N, const T& m, const ConstraintType& dummy)
 {
 #ifdef E_TIME
   NUGA::chrono c;
@@ -128,8 +127,7 @@ Kernel<T>::insertNode(size_type N, const T& m, const ConstraintType& dummy)
 }
 
 template <typename T>
-void
-Kernel<T>::setConstraint(const NUGA::non_oriented_edge_set_type& hard_edges)
+void Kernel<T>::setConstraint(const NUGA::non_oriented_edge_set_type& hard_edges)
 {
   if (_constrained_pred) delete _constrained_pred;
   _constrained_pred = new constrained_predicate(hard_edges);
@@ -138,8 +136,7 @@ Kernel<T>::setConstraint(const NUGA::non_oriented_edge_set_type& hard_edges)
 ///
 template <typename T>
 template <typename ConstraintType>
-E_Int
-Kernel<T>::__getCavity
+E_Int Kernel<T>::__getCavity
 (size_type N, const T& m,
  const K_FLD::FloatArray& pos, const K_FLD::IntArray& neighbors,
  const int_vector_type& ancestors, int_set_type& cavity,
@@ -174,15 +171,13 @@ Kernel<T>::__getCavity
   }
 #endif
   
-  if (ret == 2)
-    return ret;
+  if (ret == 2) return ret;
 
   if (ret == -1) // Error
     return ret;;
 
   if ((_base.size() > 2) || (cavity.size() != _base.size()))
     ret = __fixCavity(N, pos, _data->connectM, neighbors, ancestors, _base, cavity, _sbound);
-
 
   if (ret == -1) // Error
     return ret;
@@ -222,8 +217,7 @@ Kernel<T>::__getCavity
 ///
 template <typename T>
 template <typename ConstraintType>
-E_Int
-Kernel<T>::__getInitialCavity
+E_Int Kernel<T>::__getInitialCavity
 (size_type N, const K_FLD::FloatArray& pos, const K_FLD::IntArray& connect,
  const K_FLD::IntArray& neighbors, const int_vector_type& ancestors, int_set_type& base,
  int_set_type& cavity, int_pair_set_type& cboundary)

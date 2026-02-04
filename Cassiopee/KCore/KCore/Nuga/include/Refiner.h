@@ -166,12 +166,13 @@ namespace DELAUNAY
   {
     size_type Ni, sz, nb_nodes;
     E_Float mBox[2], MBox[2];
-    E_Float coeff(0.5*sqrt(2.)/*fixme sqrt...*/), Ri;
+    E_Float coeff(0.5*sqrt(2.)), Ri;
     int_vector_type nodes;
     int_vector_type tmp(refine_nodes);
     refine_nodes.clear();
 
     sz = (size_type) tmp.size();
+    //refine_nodes.reserve(sz);
     //printf("filter sz=%d\n", sz); fflush(stdout);
 
     for (size_type i = 0; i < sz; ++i) // pour chaque point
@@ -232,13 +233,14 @@ namespace DELAUNAY
         filter_tree.insert(Ni);
       }
     }
+  
+    //refine_nodes.resize(refine_nodes.size());
   }
 
 /*
   ///
   template <>
-  void
-  Refiner<E_Float>::__compute_refine_points
+  void Refiner<E_Float>::__compute_refine_points
   (size_type Ni, size_type Nj, std::vector<std::pair<E_Int, size_type> >& length_to_points)
   {
   E_Float d;

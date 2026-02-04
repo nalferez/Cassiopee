@@ -444,7 +444,6 @@ PyObject* K_CONVERTER::identifyElements(PyObject* self, PyObject* args)
           for (E_Int n = 0; n < nf; n++)
           { 
             // Acces universel face elem[n]-1
-            std::cout << "elem[n]-1 = " << elem[n]-1 << std::endl;
             E_Int* face = cnl->getFace(elem[n]-1, nv, ngon, indPG);
             for (E_Int p = 0; p < nv; p++)
             {
