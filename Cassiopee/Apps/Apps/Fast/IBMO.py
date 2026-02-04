@@ -961,8 +961,8 @@ def prepare(t_case, t_out, tc_out, tblank=None, to=None,
     test.printMem(">>> Interpolating IBM [after rm XZones]")
 
     for zd_cart in Internal.getZones(tpc_cart):
-        zd = Internal.getNodeFromName1(tpc[2][1],zd_cart[0])
-        IBCDS = Internal.getNodesFromName(zd_cart,'IBCD_*')
+        zd = Internal.getNodeFromName1(tpc[2][1], zd_cart[0])
+        IBCDS = Internal.getNodesFromName(zd_cart, 'IBCD_*')
         zd[2]+=IBCDS
     del tpc_cart
 

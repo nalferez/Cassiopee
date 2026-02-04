@@ -1030,14 +1030,14 @@ def grow(t, vector):
     if len(vector) != 3: raise ValueError("grow: 3 variables are required.")
     nodes = Internal.getZones(tp)
     for z in nodes:
-        fa = C.getFields(Internal.__FlowSolutionNodes__, z, api=1)[0]
+        fa = C.getFields(Internal.__FlowSolutionNodes__, z, api=3)[0]
         if fa != []:
             a = Converter.extractVars(fa, vector)
         else:
             print("Warning: grow: variables not found in zone.")
             a = []
         if a != []:
-            nodes = C.getAllFields(z, 'nodes', api=1)[0]
+            nodes = C.getAllFields(z, 'nodes', api=3)[0]
             nodes = Generator.grow(nodes, a)
             C.setFields([nodes], z, 'nodes')
     tp = Internal.addOneLayer2BC(tp, 3)
@@ -1047,10 +1047,10 @@ def stack(t1, t2=None):
     """Stack two meshes (with same nixnj) into a single mesh.
     Usage: stack(a1, a2)"""
     if t2 is not None:
-        a2 = C.getAllFields(t2, 'nodes', api=1)[0]
-        return C.TZA1(t1, 'nodes', 'nodes', True, Generator.stack, a2)
+        a2 = C.getAllFields(t2, 'nodes', api=3)[0]
+        return C.TZA3(t1, 'nodes', 'nodes', True, Generator.stack, a2)
     else:
-        a1 = C.getAllFields(t1, 'nodes', api=1)
+        a1 = C.getAllFields(t1, 'nodes', api=3)
         b = Generator.stack(a1)
         return C.convertArrays2ZoneNode('stack', [b])
 

@@ -150,7 +150,7 @@ def computeExtraVariablesForLocalIBM(ts, dictReferenceQuantities, dimPb=3):
     zone_IBM = zones[-1] #last zone is IBM
     if zones:
         ref1 = Internal.getNodesFromName(ts, "ReferenceState")
-        if ref1!=[]: Internal._rmNodesByName(ts, "ReferenceState")
+        if ref1 != []: Internal._rmNodesByName(ts, "ReferenceState")
         ref = Internal.newReferenceState("ReferenceState", parent=ts)
         ref[2].append(["VelocityX",dictReferenceQuantities["velX_ref"]    , [],'DataArray_t'])
         ref[2].append(["VelocityY",dictReferenceQuantities["velY_ref"]    , [],'DataArray_t'])

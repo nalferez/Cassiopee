@@ -113,9 +113,9 @@ def extractIBMWallFields(tc, tb=None, coordRef='wall', famZones=[], IBCNames="IB
     dictOfFamilies={}
     if famZones != []:
         out = []
-        allIBCD = Internal.getNodesFromName(tc,IBCNames)
+        allIBCD = Internal.getNodesFromName(tc, IBCNames)
         for zsr in allIBCD:
-            fam = Internal.getNodeFromType(zsr,'FamilyName_t')
+            fam = Internal.getNodeFromType(zsr, 'FamilyName_t')
             if fam is not None:
                 famName = Internal.getValue(fam)
                 if famName in famZones:

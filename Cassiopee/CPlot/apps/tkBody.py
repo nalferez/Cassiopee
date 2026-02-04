@@ -33,7 +33,7 @@ def extractBodies():
         z = CTK.t[2][nob][2][noz]
         baseName = CTK.t[2][nob][0]; bodyName = pref+baseName
         CTK.t = C.addBase2PyTree(CTK.t, bodyName, cellDim=2)
-        nodes = Internal.getNodesFromName(CTK.t, bodyName)
+        nodes = Internal.getNodesFromName1(CTK.t, bodyName)
         p = Internal.getParentOfNode(CTK.t, nodes[0])
         walls = C.extractBCOfType(z, 'BCWall')
         walls += C.extractBCOfType(z, 'BCWallInviscid')
