@@ -779,9 +779,9 @@ pyTree creation and manipulation
 
     *Example of use:*
 
-    * `Fill empty BC (pyTree) <Examples/Converter/fillEmptyBCWith.py>`_:
+    * `Fill empty BC (pyTree) <Examples/Converter/fillEmptyBCWithPT.py>`_:
 
-    .. literalinclude:: ../build/Examples/Converter/fillEmptyBCWith.py    
+    .. literalinclude:: ../build/Examples/Converter/fillEmptyBCWithPT.py    
 
 ---------------------------------------------------------------------------
 
@@ -945,9 +945,9 @@ pyTree creation and manipulation
 
     *Example of use:*
 
-    * `Get empty BCs (pyTree) <Examples/Converter/getEmptyBC.py>`_:
+    * `Get empty BCs (pyTree) <Examples/Converter/getEmptyBCPT.py>`_:
 
-    .. literalinclude:: ../build/Examples/Converter/getEmptyBC.py
+    .. literalinclude:: ../build/Examples/Converter/getEmptyBCPT.py
 
 ---------------------------------------------------------------------------
 
