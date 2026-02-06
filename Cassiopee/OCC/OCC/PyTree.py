@@ -17,9 +17,10 @@ import numpy
 from OCC import readCAD, writeCAD, createEmptyCAD, \
     _translate, _rotate, _scale, _sewing, _splitFaces, \
     _mergeFaces, _trimFaces, _removeFaces, _fillHole, _addFillet, mergeCAD, \
-    printOCAF, getFaceNameInOCAF, getEdgeNameInOCAF, _splitEdge, \
+    _splitEdge, \
+    printOCAF, getFaceNameInOCAF, getEdgeNameInOCAF, \
     _addArc, _addCircle, _addEllipse, _addSuperEllipse, _addLine, _addSquare, \
-    _addSpline,_addBox, _addSphere, _addCylinder, _addSplineSurface, \
+    _addSpline, _addBox, _addSphere, _addCylinder, _addSplineSurface, \
     _addGordonSurface, _revolve, _sweep, _loft, _boolean
 
 #==============================================================================
@@ -491,9 +492,10 @@ def getAllPos(t):
 # IN: hmax: hmax
 # IN: hausd: hausd deflection
 # IN: faceList: si fourni, ne maille que ces faces
+# IN: aniso: si true, anisotropic mesher
 # OUT: meshed CAD with CAD links
 #=================================================
-def meshAll(hook, hmin=-1, hmax=-1., hausd=-1., faceList=None):
+def meshAll(hook, hmin=-1, hmax=-1., hausd=-1., faceList=None, aniso=False):
     """Get a first TRI meshed tree linked to CAD."""
 
     t = C.newPyTree(['EDGES', 'FACES'])
@@ -535,7 +537,7 @@ def meshAll(hook, hmin=-1, hmax=-1., hausd=-1., faceList=None):
     else:
         hList = [(hmin,hmax,hausd)]*len(faceList)
 
-    faces = OCC.meshAllFacesTri(hook, edges, True, faceList, hList)
+    faces = OCC.meshAllFacesTri(hook, edges, True, faceList, hList, True, aniso)
 
     for c, f in enumerate(faces):
         if f is None: continue # Failed face

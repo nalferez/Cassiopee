@@ -681,7 +681,7 @@ E_Int __getParamHminHmaxHausdF(const TopoDS_Edge& E, E_Float hmin, E_Float hmax,
       }
 #endif
 
-      hh = std::sqrt(8.*hausd*rho);
+      hh = 1.6*std::sqrt(8.*hausd*rho); // CBX
       hh = K_FUNC::E_min(hh, hmax);
       hh = K_FUNC::E_max(hh, hmin);
       //printf("rho=%g h=%g, h=%g\n", rho, std::sqrt(1.*hausd*rho), hh);
@@ -757,7 +757,9 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
   TopoDS_Shape* shape)
 {
   TopTools_IndexedDataMapOfShapeListOfShape edgeFaceMap;
-  TopExp::MapShapesAndAncestors(*shape, TopAbs_EDGE, TopAbs_FACE, edgeFaceMap);
+  TopExp::MapShapesAndAncestors(*shape, TopAbs_EDGE, TopAbs_FACE, edgeFaceMap);  
+  //TopTools_IndexedDataMapOfShapeListOfShape vertexToFaces;
+  //TopExp::MapShapesAndAncestors(*shape, TopAbs_VERTEX, TopAbs_FACE, vertexToFaces);
 
   BRepAdaptor_Curve C0(E);
   GeomAdaptor_Curve geomAdap(C0.Curve());
@@ -784,12 +786,19 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
   gp_Vec DU1, DV1, DU2, DV2, DUV;
   E_Float rho, hh, K1, K2, h;
 
-
   E_Float Ltot = 0.;
   E_Int N = 0;
   E_Int sizeCont = 5000;
   E_Float* hi = new E_Float [sizeCont]; // a dimensionner dynamiquement
   ues = u0; h = 0.;
+
+  // Find faces of E
+  const TopTools_ListOfShape& facesAtE = edgeFaceMap.FindFromKey(E);
+  // add faces that touch extremities
+  //TopoDS_Vertex v1, v2;
+  //TopExp::Vertices(E, v1, v2);
+  //const TopTools_ListOfShape& facesAtV1 = vertexToFaces.FindFromKey(v1);
+  //const TopTools_ListOfShape& facesAtV2 = vertexToFaces.FindFromKey(v2);
 
   while (Ltot < L)
   {
@@ -798,15 +807,11 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
 
     h = K_CONST::E_MAX_FLOAT;
     
-    // Find faces of E
-    const TopTools_ListOfShape& connectedFaces = edgeFaceMap.FindFromKey(E);
-    for (TopTools_ListIteratorOfListOfShape it(connectedFaces); it.More(); it.Next()) 
+    for (TopTools_ListIteratorOfListOfShape it(facesAtE); it.More(); it.Next()) 
     {
       const TopoDS_Face& F = TopoDS::Face(it.Value());
       Handle(Geom_Surface) surface = BRep_Tool::Surface(F);
-    
       Standard_Real BU1, BU2, BV1, BV2; surface->Bounds(BU1, BU2, BV1, BV2);
-
       // p curve on F
       Handle(Geom2d_Curve) pCurve = BRep_Tool::CurveOnSurface(E, F, pFirst, pEnd);
       
@@ -814,8 +819,8 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
       //printf("param=%g, %g %g %g\n", ues, point.X(), point.Y(), point.Z());
 
       pCurve->D0(ues, Puv);
-      u = Puv.X(); v = Puv.Y(); // u,v edge on surface
-      if (u <= BU1) u = BU1+1.e-1;
+      u = Puv.X(); v = Puv.Y(); // u,v of edge on surface
+      if (u <= BU1) u = BU1+1.e-1; // push in face
       if (u >= BU2) u = BU2-1.e-1;
       if (v <= BV1) v = BV1+1.e-1;
       if (v >= BV2) v = BV2-1.e-1;
@@ -930,12 +935,21 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
       }
 #endif
 
-      hh = std::sqrt(8.*hausd*rho);
+      hh = 1.6*std::sqrt(8.*hausd*rho); // CBX
       hh = K_FUNC::E_min(hh, hmax);
       hh = K_FUNC::E_max(hh, hmin);
       //printf("rho=%g h=%g, h=%g\n", rho, std::sqrt(1.*hausd*rho), hh); fflush(stdout);
       h = K_FUNC::E_min(h, hh);
     }
+    /*
+    if (L == 0) // add first vertex faces
+    {
+      gp_Pnt P = BRep_Tool::Pnt(V1);
+      Handle(Geom_Surface) surf = BRep_Tool::Surface(F);
+      GeomAPI_ProjectPointOnSurf proj(P, surf); 
+      proj.LowerDistanceParameters(u, v);
+    }*/
+
     hi[N] = h;
     Ltot += h; N += 1;
     if (N >= sizeCont)
@@ -955,6 +969,8 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
     hi[i] = 0.5*(hi[i+1]+hi[i]);
   }
   hi[N-1] = 0.5*(hi[N-2]+hi[N-1]);
+  Ltot = 0.;
+  for (E_Int i = 0; i < N; i++) Ltot += hi[i];
   */
 
   E_Float r = Ltot-L;
@@ -967,7 +983,7 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
   // scale hi to match full L
   E_Float s = L-Ltot;
   s = s/N; 
-  for (E_Int i = 0; i < N; i++) hi[i] = hi[i]+s;
+  for (E_Int i = 0; i < N; i++) hi[i] += s;
   
   // DBX
   //Ltot = 0.;

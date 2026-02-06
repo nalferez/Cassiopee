@@ -34,8 +34,9 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
   E_Int faceNo; // no de la face
   PyObject* arrayUV;
   E_Float hmin, hmax, hausd, grading;
-  if (!PYPARSETUPLE_(args, OO_ I_ RRRR_, 
-                    &hook, &arrayUV, &faceNo, &hmin, &hmax, &hausd, &grading)) return NULL;  
+  E_Int aniso;
+  if (!PYPARSETUPLE_(args, OO_ I_ RRRR_ I_, 
+                    &hook, &arrayUV, &faceNo, &hmin, &hmax, &hausd, &grading, &aniso)) return NULL;  
   void** packet = NULL;
 #if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
   packet = (void**) PyCObject_AsVoidPtr(hook);
@@ -105,8 +106,6 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
 
   DELAUNAY::SurfaceMesherMode mode;
 
-  E_Int aniso = false;
-
   if ( (hausd < 0 && hmax > 0) ||
        (hausd > 0 && std::abs(hmax-hmin) < 1.e-12) ) // iso hmax
   {
@@ -123,7 +122,7 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
     if (dx > 0.2) mode.growth_ratio = 1.1;
     //printf("trimesh uniform hmin=" SF_F_ " hmax=" SF_F_ " grading=" SF_F_ "\n", mode.hmin, mode.hmax, mode.growth_ratio);      
   }
-  else if (hausd > 0 && hmax > 0 && hmin >= 0 && aniso == true) // aniso mix
+  else if (hausd > 0 && hmax > 0 && hmin >= 0 && aniso == 1) // aniso mix
   {
     // mode pure hausd
     mode.metric_mode = mode.ANISO; //ISO_RHO impose la courbure minimum dans les deux directions

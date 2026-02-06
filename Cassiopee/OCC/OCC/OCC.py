@@ -370,7 +370,7 @@ def meshTRIH2__(hook, hmax=-1., hausd=-1, order=1, faceSubset=None, faceNo=None)
         #edges = reorderEdgesByFace__(edges)
         try:
             #edges doit contenir les coords + uv normalises pour entrer dans trimesh
-            a = occ.trimesh(hook, edges, i+1, hmax, hausd)
+            a = occ.trimesh(hook, edges, i+1, hmax, hausd, 0., 0)
             out.append(a)
             if faceNo is not None: faceNo.append(i+1)
         except Exception as e:
@@ -501,7 +501,7 @@ def ultimate(hook, hmax, hausd=-1, metric=True):
         # TRIMESH METRIC TRY
         SUCCESS = False
         if metric:
-            SUCCESS = meshFaceWithMetric(hook, i, edges, hmax, hausd, 1.1, mesh, FAILED1)
+            SUCCESS = meshFaceWithMetric(hook, i, edges, hmax, hausd, 1.1, False, mesh, FAILED1)
 
         if not SUCCESS: # TRIMESH sans metric
             edges = edgesSav
@@ -529,8 +529,9 @@ def ultimate(hook, hmax, hausd=-1, metric=True):
 # IN: edges structured one per wire
 # IN: hmax: hmin/hmax/hausd par face
 # IN: close: if True, close mesh
+# IN: aniso: if True, anisotropic mesher
 #===============================================================================
-def meshFaceWithMetric(hook, i, edges, hmin, hmax, hausd, close, mesh, FAILED):
+def meshFaceWithMetric(hook, i, edges, hmin, hmax, hausd, close, aniso, mesh, FAILED):
 
     # save edges
     edgesSav = []
@@ -562,7 +563,7 @@ def meshFaceWithMetric(hook, i, edges, hmin, hmax, hausd, close, mesh, FAILED):
     # Scale UV des edges
     _scaleUV([edges], vu='u', vv='v')
     try:
-        a = occ.trimesh(hook, edges, i, hmin, hmax, hausd, 1.1)
+        a = occ.trimesh(hook, edges, i, hmin, hmax, hausd, 1.1, aniso)
         _enforceEdgesInFace(a, edgesSav)
         if close:
             a = Generator.close(a, 1.e-10) # needed for periodic faces
@@ -666,8 +667,9 @@ def meshAllEdges(hook, hmin, hmax, hausd, N, edgeList=None):
 # IN: faceList: list of faces to mesh (start 1)
 # IN: hList: list of (hmin, hmax, hausd) for each face to mesh
 # IN: close: if true, close meshes
+# IN: aniso: if true, anisotropic mesher
 #==================================================================
-def meshAllFacesTri(hook, dedges, metric=True, faceList=[], hList=[], close=True):
+def meshAllFacesTri(hook, dedges, metric=True, faceList=[], hList=[], close=True, aniso=False):
     nbFaces = len(faceList)
     FAILED1 = []; FAILED2 = []; dfaces = []
     for c, i in enumerate(faceList):
@@ -690,7 +692,7 @@ def meshAllFacesTri(hook, dedges, metric=True, faceList=[], hList=[], close=True
         SUCCESS = False
         if metric:
             hsize = hList[c]
-            SUCCESS = meshFaceWithMetric(hook, i, edges, hsize[0], hsize[1], hsize[2], close, dfaces, FAILED1)
+            SUCCESS = meshFaceWithMetric(hook, i, edges, hsize[0], hsize[1], hsize[2], close, aniso, dfaces, FAILED1)
 
         if not SUCCESS: # TRIMESH sans metric
             edges = edgesSav
