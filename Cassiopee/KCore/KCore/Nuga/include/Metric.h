@@ -95,8 +95,8 @@ namespace DELAUNAY
     (K_FLD::FloatArray& pos, size_type Ni, size_type Nj, E_Float threshold,
      std::vector<std::pair<E_Float, size_type> >& length_to_points, std::vector<size_type>& tmpNodes);
     
-    void __compute_refine_points
-    (K_FLD::FloatArray& pos, size_type Ni, size_type Nj, E_Float threshold, std::vector<std::pair<E_Float, size_type> >& length_to_points, std::vector<size_type>& tmpNodes);
+    void __compute_refine_points(K_FLD::FloatArray& pos, size_type Ni, size_type Nj, E_Float threshold, 
+        std::vector<std::pair<E_Float, size_type> >& length_to_points, std::vector<size_type>& tmpNodes);
     
     void smoothing_loop(const std::set<K_MESH::NO_Edge>& edges, E_Float gr, E_Int itermax, E_Int N0 /* threshold for metric changes*/);
     void smoothing_loop(const K_FLD::IntArray& connectB, E_Float gr, E_Int itermax, E_Int N0 /* threshold for metric changes*/);

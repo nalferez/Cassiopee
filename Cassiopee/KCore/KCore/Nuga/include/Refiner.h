@@ -167,16 +167,19 @@ namespace DELAUNAY
     (MeshData& data, const int_set_type& box_nodes, 
     int_vector_type& refine_nodes, tree_type& filter_tree)
   {
-    size_type Ni, sz, nb_nodes;
-    E_Float mBox[2], MBox[2];
-    E_Float coeff(0.5*sqrt(2.)), Ri;
-    int_vector_type nodes;
-    int_vector_type tmp(refine_nodes);
+    E_Float coeff(0.5*sqrt(2.));
+    int_vector_type tmp(refine_nodes); // copie
     refine_nodes.clear();
 
-    sz = (size_type) tmp.size();
+    size_type sz = (size_type)tmp.size();
+    //refine_nodes.reserve(sz);
     //printf("filter sz=%d\n", sz); fflush(stdout);
 
+    size_type Ni, nb_nodes;
+    E_Float Ri;
+    E_Float mBox[2], MBox[2];
+    int_vector_type nodes; // vecteur local
+    
     for (size_type i = 0; i < sz; ++i) // pour chaque point
     {
       Ni = tmp[i];
@@ -233,6 +236,7 @@ namespace DELAUNAY
       {
         refine_nodes.push_back(Ni); // reserve + resize
         filter_tree.insert(Ni);
+
       }
     }
   
