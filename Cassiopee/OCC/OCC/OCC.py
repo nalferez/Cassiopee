@@ -26,8 +26,9 @@ __all__ = ['convertCAD2Arrays',
            'printOCAF', 'getFaceNameInOCAF', 'getEdgeNameInOCAF',
            '_splitEdge',
            '_addArc', '_addCircle', '_addEllipse',
-           '_addSuperEllipse', '_addLine', '_addSquare', '_addSpline',
-           '_addBox', '_addSphere', '_addCylinder',
+           '_addSuperEllipse', '_addLine', '_addSpline', 
+           '_addSquare', '_addSquare2', '_addBox', '_addBox2', 
+           '_addSphere', '_addCylinder',
            '_addSplineSurface', '_addGordonSurface',
            '_revolve', '_sweep', '_loft', '_boolean']
 
@@ -847,9 +848,14 @@ def _addLine(hook, P1, P2):
     occ.addLine(hook, P1, P2)
     return None
 
-def _addSquare(hook, P1, P2, P3, P4, makeFace=False):
+def _addSquare(hook, P0, width, height, makeFace=False):
     """Add a square to hook."""
-    occ.addSquare(hook, P1, P2, P3, P4, makeFace)
+    occ.addSquare(hook, P0, width, height, makeFace)
+    return None
+
+def _addSquare2(hook, P1, P2, P3, P4, makeFace=False):
+    """Add a square to hook."""
+    occ.addSquare2(hook, P1, P2, P3, P4, makeFace)
     return None
 
 def _addSpline(hook, Points, method, degree):
@@ -857,9 +863,14 @@ def _addSpline(hook, Points, method, degree):
     occ.addSpline(hook, Points, method, degree)
     return None
 
-def _addBox(hook, P1, P2, P3, P4, P5, P6, P7, P8):
+def _addBox(hook, P0, width, height, depth):
     """Add a box to hook."""
-    occ.addBox(hook, P1, P2, P3, P4, P5, P6, P7, P8)
+    occ.addBox(hook, P0, width, height, depth)
+    return None
+
+def _addBox2(hook, P1, P2, P3, P4, P5, P6, P7, P8):
+    """Add a box to hook."""
+    occ.addBox2(hook, P1, P2, P3, P4, P5, P6, P7, P8)
     return None
 
 def _addSphere(hook, C, R):

@@ -19,8 +19,9 @@ from OCC import readCAD, writeCAD, createEmptyCAD, \
     _mergeFaces, _trimFaces, _removeFaces, _fillHole, _addFillet, mergeCAD, \
     _splitEdge, \
     printOCAF, getFaceNameInOCAF, getEdgeNameInOCAF, \
-    _addArc, _addCircle, _addEllipse, _addSuperEllipse, _addLine, _addSquare, \
-    _addSpline, _addBox, _addSphere, _addCylinder, _addSplineSurface, \
+    _addArc, _addCircle, _addEllipse, _addSuperEllipse, _addLine, \
+    _addSquare, _addSquare2, _addBox, _addBox2, \
+    _addSpline, _addSphere, _addCylinder, _addSplineSurface, \
     _addGordonSurface, _revolve, _sweep, _loft, _boolean
 
 #==============================================================================

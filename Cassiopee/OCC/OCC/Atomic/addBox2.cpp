@@ -30,29 +30,31 @@
 #include "BRepBuilderAPI_MakeFace.hxx"
 
 //=====================================================================
-// Add a box to CAD hook from P0, width, height, depth
+// Add a box to CAD hook from points
 //=====================================================================
-PyObject* K_OCC::addBox(PyObject* self, PyObject* args)
+PyObject* K_OCC::addBox2(PyObject* self, PyObject* args)
 {
-  PyObject* hook;
-  E_Float x0, y0, z0, width, height, depth;
-  if (!PYPARSETUPLE_(args, O_ TRRR_ RRR_, 
+  PyObject* hook; 
+  E_Float x1, y1, z1, x2, y2, z2, x3, y3, z3, x4, y4, z4;
+  E_Float x5, y5, z5, x6, y6, z6, x7, y7, z7, x8, y8, z8;
+  if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ TRRR_ TRRR_ TRRR_ TRRR_ TRRR_ TRRR_, 
     &hook, 
-    &x0, &y0, &z0, &width, &height, &depth)) return NULL;
+    &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3, &x4, &y4, &z4,
+    &x5, &y5, &z5, &x6, &y6, &z6, &x7, &y7, &z7, &x8, &y8, &z8)) return NULL;
 
   GETSHAPE;
   GETMAPSURFACES;
   GETMAPEDGES;
 
   /* new square */
-  gp_Pnt p1(x0, y0, z0); // Bottom left
-  gp_Pnt p2(x0+width, y0, z0); // Bottom right
-  gp_Pnt p3(x0+width, y0+height, z0); // Top right
-  gp_Pnt p4(x0, y0+height, z0); // Top left
-  gp_Pnt p5(x0, y0, z0+depth); // Bottom left
-  gp_Pnt p6(x0+width, y0, z0+depth); // Bottom right
-  gp_Pnt p7(x0+width, y0+height, z0+depth); // Top right
-  gp_Pnt p8(x0, y0+height, z0+depth); // Top left
+  gp_Pnt p1(x1, y1, z1); // Bottom left
+  gp_Pnt p2(x2, y2, z2); // Bottom right
+  gp_Pnt p3(x3, y3, z3); // Top right
+  gp_Pnt p4(x4, y4, z4); // Top left
+  gp_Pnt p5(x5, y5, z5); // Bottom left
+  gp_Pnt p6(x6, y6, z6); // Bottom right
+  gp_Pnt p7(x7, y7, z7); // Top right
+  gp_Pnt p8(x8, y8, z8); // Top left
 
   TopoDS_Edge edge1 = BRepBuilderAPI_MakeEdge(p1, p2);
   TopoDS_Edge edge2 = BRepBuilderAPI_MakeEdge(p2, p3);
@@ -129,8 +131,8 @@ PyObject* K_OCC::addBox(PyObject* self, PyObject* args)
   delete shape;
   SETSHAPE(newshp);
 
-  printf("INFO: after addBox: Nb edges=%d\n", se->Extent());
-  printf("INFO: after addBox: Nb faces=%d\n", sf->Extent());
+  printf("INFO: after addBox2: Nb edges=%d\n", se->Extent());
+  printf("INFO: after addBox2: Nb faces=%d\n", sf->Extent());
   
   Py_INCREF(Py_None);
   return Py_None;

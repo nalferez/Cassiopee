@@ -44,7 +44,9 @@ namespace K_OCC
   PyObject* addSphere(PyObject* self, PyObject* args);
   PyObject* addCylinder(PyObject* self, PyObject* args);
   PyObject* addBox(PyObject* self, PyObject* args);
+  PyObject* addBox2(PyObject* self, PyObject* args);
   PyObject* addSquare(PyObject* self, PyObject* args);
+  PyObject* addSquare2(PyObject* self, PyObject* args);
   PyObject* addLine(PyObject* self, PyObject* args);
   PyObject* addCircle(PyObject* self, PyObject* args);
   PyObject* addEllipse(PyObject* self, PyObject* args);
