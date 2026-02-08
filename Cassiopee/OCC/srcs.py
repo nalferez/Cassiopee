@@ -85,7 +85,7 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
         'OCC/Atomic/fillHole.cpp',
         'OCC/Atomic/addFillet.cpp',
         'OCC/Atomic/offset.cpp',
-        
+
         'OCC/Atomic/loft.cpp',
         'OCC/Atomic/sweep.cpp',
         'OCC/Atomic/revolve.cpp',
