@@ -22,7 +22,7 @@ __all__ = ['convertCAD2Arrays',
            'getNbEdges', 'getNbFaces', 'getFileAndFormat', 'getFaceArea',
            '_translate', '_rotate', '_scale', '_sewing',
            '_splitFaces', '_mergeFaces', '_trimFaces', '_removeFaces',
-           '_fillHole', '_addFillet', 'mergeCAD',
+           '_fillHole', '_addFillet', '_offset', 'mergeCAD',
            'printOCAF', 'getFaceNameInOCAF', 'getEdgeNameInOCAF',
            '_splitEdge',
            '_addArc', '_addCircle', '_addEllipse',
@@ -959,6 +959,12 @@ def _sewing(hook, faceList=None, tol=1.e-6):
 def _addFillet(hook, edges, radius, new2OldEdgeMap=[], new2OldFaceMap=[]):
     """Add fillet on given edges."""
     occ.addFillet(hook, edges, radius, new2OldEdgeMap, new2OldFaceMap)
+    return None
+
+# offset surfce of fiven distance
+def _offset(hook, distance, faceList=None):
+    """Offset surface of given distance."""
+    occ.offset(hook, distance, faceList)
     return None
 
 # edgeMap and faceMap are new2old maps

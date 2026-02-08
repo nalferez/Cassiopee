@@ -16,7 +16,9 @@ import numpy
 
 from OCC import readCAD, writeCAD, createEmptyCAD, \
     _translate, _rotate, _scale, _sewing, _splitFaces, \
-    _mergeFaces, _trimFaces, _removeFaces, _fillHole, _addFillet, mergeCAD, \
+    _mergeFaces, _trimFaces, _removeFaces, _fillHole, \
+    _addFillet, _offset, \
+    mergeCAD, \
     _splitEdge, \
     printOCAF, getFaceNameInOCAF, getEdgeNameInOCAF, \
     _addArc, _addCircle, _addEllipse, _addSuperEllipse, _addLine, \

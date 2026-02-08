@@ -91,13 +91,16 @@ static PyMethodDef Pyocc [] =
 
   {"splitFaces", K_OCC::splitFaces, METH_VARARGS},
   {"splitEdge", K_OCC::splitEdge, METH_VARARGS},
-  {"fixShape", K_OCC::fixShape, METH_VARARGS},
-  {"sewing", K_OCC::sewing, METH_VARARGS},
-  {"removeFaces", K_OCC::removeFaces, METH_VARARGS},
-  {"fillHole", K_OCC::fillHole, METH_VARARGS},
-  {"addFillet", K_OCC::addFillet, METH_VARARGS},
   {"mergeFaces", K_OCC::mergeFaces, METH_VARARGS},
   {"mergeEdges", K_OCC::mergeEdges, METH_VARARGS},
+  {"removeFaces", K_OCC::removeFaces, METH_VARARGS},
+
+  {"fixShape", K_OCC::fixShape, METH_VARARGS},
+  {"sewing", K_OCC::sewing, METH_VARARGS},
+
+  {"fillHole", K_OCC::fillHole, METH_VARARGS},
+  {"addFillet", K_OCC::addFillet, METH_VARARGS},
+  {"offset", K_OCC::offset, METH_VARARGS},
   
   {"loft", K_OCC::loft, METH_VARARGS},
   {"sweep", K_OCC::sweep, METH_VARARGS},

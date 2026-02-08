@@ -90,13 +90,15 @@ namespace K_OCC
 
   PyObject* splitFaces(PyObject* self, PyObject* args);
   PyObject* splitEdge(PyObject* self, PyObject* args);
-  PyObject* fixShape(PyObject* self, PyObject* args);
-  PyObject* sewing(PyObject* self, PyObject* args);
-  PyObject* removeFaces(PyObject* self, PyObject* args);
-  PyObject* fillHole(PyObject* self, PyObject* args);
-  PyObject* addFillet(PyObject* self, PyObject* args);
   PyObject* mergeFaces(PyObject* self, PyObject* args);
   PyObject* mergeEdges(PyObject* self, PyObject* args);
+  PyObject* removeFaces(PyObject* self, PyObject* args);
+  
+  PyObject* fixShape(PyObject* self, PyObject* args);
+  PyObject* sewing(PyObject* self, PyObject* args);
+  PyObject* fillHole(PyObject* self, PyObject* args);
+  PyObject* addFillet(PyObject* self, PyObject* args);
+  PyObject* offset(PyObject* self, PyObject* args);
   
   PyObject* loft(PyObject* self, PyObject* args);
   PyObject* sweep(PyObject* self, PyObject* args);

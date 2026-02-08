@@ -76,14 +76,16 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
 
         'OCC/Atomic/splitFaces.cpp',
         'OCC/Atomic/splitEdge.cpp',
+        'OCC/Atomic/mergeFaces.cpp',
+        'OCC/Atomic/mergeEdges.cpp',
+
         'OCC/Atomic/fix.cpp',
         'OCC/Atomic/sewing.cpp',
         'OCC/Atomic/removeFaces.cpp',
         'OCC/Atomic/fillHole.cpp',
         'OCC/Atomic/addFillet.cpp',
-        'OCC/Atomic/mergeFaces.cpp',
-        'OCC/Atomic/mergeEdges.cpp',
-
+        'OCC/Atomic/offset.cpp',
+        
         'OCC/Atomic/loft.cpp',
         'OCC/Atomic/sweep.cpp',
         'OCC/Atomic/revolve.cpp',
