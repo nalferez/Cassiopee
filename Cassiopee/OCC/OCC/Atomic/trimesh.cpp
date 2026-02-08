@@ -170,12 +170,12 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
   err = mesher.run(data);
   if (err || (data.connectM.cols() == 0))
   {
-      // connectM doit etre la sortie
-      printf("error = " SF_D_ "\n", err);
-      printf("cols = " SF_D_ "\n", data.connectM.cols());
-      RELEASESHAREDB(ret, arrayUV, fi, ci);
-      PyErr_SetString(PyExc_TypeError, "trimesh: mesher has failed.");
-      return NULL;
+    // connectM doit etre la sortie
+    printf("error = " SF_D_ "\n", err);
+    printf("cols = " SF_D_ "\n", data.connectM.cols());
+    RELEASESHAREDB(ret, arrayUV, fi, ci);
+    PyErr_SetString(PyExc_TypeError, "trimesh: mesher has failed.");
+    return NULL;
   }
     
   // recupere la sortie

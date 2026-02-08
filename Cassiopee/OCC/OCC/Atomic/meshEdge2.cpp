@@ -815,11 +815,15 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
       // p curve on F
       Handle(Geom2d_Curve) pCurve = BRep_Tool::CurveOnSurface(E, F, pFirst, pEnd);
       
-      //C0.D0(ues, point);
-      //printf("param=%g, %g %g %g\n", ues, point.X(), point.Y(), point.Z());
-
       pCurve->D0(ues, Puv);
       u = Puv.X(); v = Puv.Y(); // u,v of edge on surface
+      
+      // DBX
+      //C0.D0(ues, point);
+      //printf("param=%g, X=%g Y=%g Z=%g\n", ues, point.X(), point.Y(), point.Z());
+      //printf("u=%g, v=%g\n", u, v);
+      // END DBX
+
       if (u <= BU1) u = BU1+1.e-1; // push in face
       if (u >= BU2) u = BU2-1.e-1;
       if (v <= BV1) v = BV1+1.e-1;
@@ -936,6 +940,9 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
 #endif
 
       hh = 1.6*std::sqrt(8.*hausd*rho); // CBX
+      //E_Float chordal_error = hausd/(hmax+hmin)*2;
+      //hh = std::sqrt(4.*chordal_error*(2.-chordal_error)*rho*rho); // CBX
+      
       hh = K_FUNC::E_min(hh, hmax);
       hh = K_FUNC::E_max(hh, hmin);
       //printf("rho=%g h=%g, h=%g\n", rho, std::sqrt(1.*hausd*rho), hh); fflush(stdout);

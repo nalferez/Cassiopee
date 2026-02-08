@@ -30,11 +30,11 @@
 #include "Nuga/include/MeshUtils1D.h"
 #include "Nuga/include/ngon_unit.h"
 #include "Nuga/include/diag.h"
+#include "Nuga/include/Edge.h"
 
 #ifdef DEBUG_METRIC
 #include "eberly_eigen.h"
 #endif
-
 
 namespace DELAUNAY 
 {
@@ -951,11 +951,9 @@ namespace DELAUNAY
 //      directional_metric_reduce(Nj, hjnew2, normed_dir); //orientation of NiNj does not matter
 //    else //isotropic reduction
     E_Float t = hjold2 / hjnew2;
-    {
-      _field[Nj][0] *= t;
-      _field[Nj][2] *= t;
-      _field[Nj][1] *= t;
-    }
+    _field[Nj][0] *= t;
+    _field[Nj][2] *= t;
+    _field[Nj][1] *= t;
   }
 
   template<> inline
@@ -1299,7 +1297,7 @@ namespace DELAUNAY
     {
       m = metric2(0,i);
       if ((m > 0.) && (m < NUGA::FLOAT_MAX))
-        metric1[i] = std::min(m, metric1[i]);
+        metric1[i] = K_FUNC::E_min(m, metric1[i]);
     }
   }
 

@@ -38,7 +38,7 @@ namespace DELAUNAY
       ANISO    ///< both local principal curvature radii are used to compute the metric.
     };
 
-    typedef  VarMetric<T>     parent_type;
+    typedef  VarMetric<T>  parent_type;
     typedef  NUGA::size_type  size_type;
 
   public:
@@ -55,7 +55,9 @@ namespace DELAUNAY
                E_Float chordal_error, E_Float hmin, E_Float hmax, E_Float gr)
       : parent_type (pos, hmin, hmax), _mode(mode), _surface(surface),
       _h0(NUGA::FLOAT_MAX), _chordal_error(chordal_error),
-      _alpha2(4. * chordal_error*(2. - chordal_error)), _gr(gr), _unbounded_h(false)  
+      _alpha2(4. * chordal_error*(2. - chordal_error)), 
+      //_alpha2(8.*chordal_error*chordal_error),
+      _gr(gr), _unbounded_h(false)  
     {}
     
     void set_pos2D(const K_FLD::FloatArray& pos2D){_pos2D = &pos2D;}
@@ -78,13 +80,13 @@ namespace DELAUNAY
     void __computeMetric(size_type N, K_FLD::FloatArray& Mout, E_Float hmax2);
 
   private:
-    GMmode             _mode;
+    GMmode _mode;
     const SurfaceType& _surface;
-    E_Float            _hmax2;
-    E_Float            _h0;
-    E_Float            _chordal_error;
-    E_Float            _alpha2;
-    E_Float            _gr;
+    E_Float _hmax2;
+    E_Float _h0;
+    E_Float _chordal_error;
+    E_Float _alpha2;
+    E_Float _gr;
     const K_FLD::FloatArray* _pos2D; //hack to avoid to pass a dummy argument for Metric::init_metric as pos2D is only required for GeomMetric
     
     //T _boundary_metric_max;
@@ -94,8 +96,7 @@ namespace DELAUNAY
 
   ///
   template <typename T, typename SurfaceType>
-  void
-  GeomMetric<T, SurfaceType>::init_metric
+  void GeomMetric<T, SurfaceType>::init_metric
   (const K_FLD::FloatArray& metric, K_FLD::FloatArray& pos3D, const K_FLD::IntArray& connectB,
    const std::vector<E_Int>& hard_nodes)
   {
