@@ -80,6 +80,7 @@ static PyMethodDef Pyocc [] =
   {"updateNcadidFromFcadid", K_OCC::updateNcadidFromFcadid, METH_VARARGS},
   {"getNodalParameters", K_OCC::getNodalParameters, METH_VARARGS},
   {"trimesh", K_OCC::trimesh, METH_VARARGS},
+  {"occmesh", K_OCC::occmesh, METH_VARARGS},
 
   {"meshOneEdge", K_OCC::meshOneEdge, METH_VARARGS},
   {"meshEdgesOfFace", K_OCC::meshEdgesOfFace, METH_VARARGS},

@@ -79,6 +79,7 @@ namespace K_OCC
   PyObject* updateNcadidFromFcadid(PyObject* self, PyObject* args);
   PyObject* getNodalParameters(PyObject* self, PyObject* args);
   PyObject* trimesh(PyObject* self, PyObject* args);
+  PyObject* occmesh(PyObject* self, PyObject* args);
 
   PyObject* meshOneEdge(PyObject* self, PyObject* args);
   PyObject* meshEdgesOfFace(PyObject* self, PyObject* args);
