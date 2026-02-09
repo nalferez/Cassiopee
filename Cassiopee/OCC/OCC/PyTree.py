@@ -614,7 +614,7 @@ def meshAllOCC(hook, hausd):
     _setCADcontainer(t, fileName, fileFmt, -1, -1, hausd)
 
     dedges, dfaces = OCC.meshAllOCC(hook, hausd)
-    
+
     # - Edges -
     b = Internal.getNodeFromName1(t, 'EDGES')
     for c, e in enumerate(dedges):
