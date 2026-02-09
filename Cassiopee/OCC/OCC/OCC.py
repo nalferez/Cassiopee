@@ -16,7 +16,8 @@ __all__ = ['convertCAD2Arrays',
            'meshSTRUCT', 'meshSTRUCT__', 'meshTRI', 'meshTRI__', 'meshTRIU__',
            'meshTRIHO', 'meshQUAD', 'meshQUAD__', 'meshQUADHO', 'meshQUADHO__',
            'ultimate', 'meshAllEdges', 'meshAllFacesTri', 'meshAllFacesStruct',
-           'meshAllFacesTri', 'meshFaceWithMetric', 'identifyTags__',
+           'meshAllFacesTri', 'meshFaceWithMetric', 'meshAllOCC',
+           'identifyTags__',
            '_projectOnEdges', '_projectOnFaces',
            'readCAD', 'writeCAD', 'createEmptyCAD',
            'getNbEdges', 'getNbFaces', 'getFileAndFormat', 'getFaceArea',
@@ -761,23 +762,14 @@ def meshAllFacesStruct(hook, dedges, faceList=[]):
 
     return dfaces, nloct, nofacet
 
-# project arrays on edges
-def _projectOnEdges(hook, a, edgeList=None):
-    """Project arrays on CAD."""
-    if isinstance(a[0], list):
-        for i in a: occ.projectOnEdges(hook, i, edgeList)
-    else:
-        occ.projectOnEdges(hook, a, edgeList)
-    return None
-
-# project arrays on faces
-def _projectOnFaces(hook, a, faceList=None):
-    """Project arrays on CAD."""
-    if isinstance(a[0], list):
-        for i in a: occ.projectOnFaces(hook, i, faceList)
-    else:
-        occ.projectOnFaces(hook, a, faceList)
-    return None
+#===============================================
+# mesh using OCC mesher (anistropic, only hausd)
+#===============================================
+def meshAllOCC(hook, hausd):
+    ret = occ.occmesh(hook, hausd)
+    dedges = ret[0]
+    dfaces = ret[1]
+    return dedges, dfaces
 
 #=============================================================================
 # CAD information
@@ -919,6 +911,7 @@ def readCAD(fileName, format='fmt_step'):
     h = occ.readCAD(fileName, format)
     return h
 
+# create empty CAD
 def createEmptyCAD(fileName="None", format='fmt_step'):
     """Create an empty CAD."""
     h = occ.createEmptyCAD(fileName, format)
@@ -1005,4 +998,22 @@ def _splitFaces(hook, area):
 def _splitEdge(hook, edgeNo, param=-999., P=(0,0,0)):
     """Split edge no at param or point P."""
     occ.splitEdge(hook, edgeNo, param, P)
+    return None
+
+# project arrays on edges
+def _projectOnEdges(hook, a, edgeList=None):
+    """Project arrays on CAD."""
+    if isinstance(a[0], list):
+        for i in a: occ.projectOnEdges(hook, i, edgeList)
+    else:
+        occ.projectOnEdges(hook, a, edgeList)
+    return None
+
+# project arrays on faces
+def _projectOnFaces(hook, a, faceList=None):
+    """Project arrays on CAD."""
+    if isinstance(a[0], list):
+        for i in a: occ.projectOnFaces(hook, i, faceList)
+    else:
+        occ.projectOnFaces(hook, a, faceList)
     return None

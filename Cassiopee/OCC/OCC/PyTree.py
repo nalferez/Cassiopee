@@ -605,6 +605,57 @@ def meshAllPara(hook, hmin=-1, hmax=-1., hausd=-1.):
     D2._addProcNode(t, Cmpi.rank)
     return t
 
+#=============================
+def meshAllOCC(hook, hausd):
+    t = C.newPyTree(['EDGES', 'FACES'])
+
+    # Add CAD top container containing the CAD file name
+    fileName, fileFmt = OCC.occ.getFileAndFormat(hook)
+    _setCADcontainer(t, fileName, fileFmt, -1, -1, hausd)
+
+    dedges, dfaces = OCC.meshAllOCC(hook, hausd)
+    
+    # - Edges -
+    b = Internal.getNodeFromName1(t, 'EDGES')
+    for c, e in enumerate(dedges):
+        z = Internal.createZoneNode('edge%03d'%(c+1), e, [],
+                                    Internal.__GridCoordinates__,
+                                    Internal.__FlowSolutionNodes__,
+                                    Internal.__FlowSolutionCenters__)
+        # Conserve hook, name, type et no de l'edge dans la CAD
+        r = Internal.createChild(z, "CAD", "UserDefinedData_t")
+        Internal._createChild(r, "name", "DataArray_t", value="edge%03d"%(c+1))
+        Internal._createChild(r, "type", "DataArray_t", value="edge")
+        Internal._createChild(r, "no", "DataArray_t", value=(c+1))
+        #Internal._createChild(r, "hook", "UserDefinedData_t", value=hook)
+        b[2].append(z)
+
+    # - Faces -
+    b = Internal.getNodeFromName1(t, 'FACES')
+    for c, f in enumerate(dfaces):
+        if f is None: continue # Failed face
+        noface = c+1
+        z = Internal.createZoneNode('face%03d'%(noface), f, [],
+                                    Internal.__GridCoordinates__,
+                                    Internal.__FlowSolutionNodes__,
+                                    Internal.__FlowSolutionCenters__)
+        edgeNo = OCC.occ.getEdgeNoByFace(hook, noface)
+        # conserve hook, name, type
+        r = Internal.createChild(z, "CAD", "UserDefinedData_t")
+        Internal._createChild(r, "name", "DataArray_t", value="face%03d"%(noface))
+        Internal._createChild(r, "type", "DataArray_t", value="face")
+        Internal._createChild(r, "no", "DataArray_t", value=noface)
+        Internal._createChild(r, "edgeList", "DataArray_t", value=edgeNo)
+        Internal._createChild(r, "hsize", "DataArray_t", value=-1)
+        #Internal._createChild(r, "hook", "UserDefinedData_t", value=hook)
+        b[2].append(z)
+
+    _updateEdgesFaceList__(t)
+    _addOCAFCompoundNames(hook, t)
+    _setLonelyEdgesColor(t)
+
+    return t
+
 #================================================
 # remesh faces from an external modified edges
 # edges is a list of externally remeshed edges
