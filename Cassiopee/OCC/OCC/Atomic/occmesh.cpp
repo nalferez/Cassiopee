@@ -42,7 +42,7 @@ PyObject* K_OCC::occmesh(PyObject* self, PyObject* args)
   GETSHAPE;
   
   // Triangulate shape
-  E_Float angularDeflection = 0.5; // en degres
+  E_Float angularDeflection = 0.5; // en radians
   Standard_Boolean relative = Standard_False;
   if (hausd < 0) { relative = Standard_True; hausd = -hausd; }
   BRepMesh_IncrementalMesh Mesh(*shape, hausd, relative, angularDeflection, Standard_True);
@@ -52,7 +52,6 @@ PyObject* K_OCC::occmesh(PyObject* self, PyObject* args)
   // Recupere les faces
   //===================
   PyObject* dfaces = PyList_New(0);
-  E_Int cNodes = 0; E_Int cTris = 0;
   for (TopExp_Explorer exp(*shape, TopAbs_FACE); exp.More(); exp.Next())
   {
     TopoDS_Face face = TopoDS::Face(exp.Current());
@@ -115,8 +114,8 @@ PyObject* K_OCC::occmesh(PyObject* self, PyObject* args)
 #endif
       tril.Get(i1, i2, i3);
       (*cn)(i-1,1) = i1;
-      (*cn)(i-1,2) = i2+cNodes;
-      (*cn)(i-1,3) = i3+cNodes;
+      (*cn)(i-1,2) = i2;
+      (*cn)(i-1,3) = i3;
       //if (i > nbTris) printf("danger nbTris %d %d\n", i, nbNodes);
       //if (i1 > nbNodes) printf("danger1 %d %d\n",i1,nbNodes);
       //if (i2 > nbNodes) printf("danger2 %d %d\n",i2,nbNodes);

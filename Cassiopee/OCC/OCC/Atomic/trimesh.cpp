@@ -71,6 +71,20 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
   for (E_Int i = 0; i < n; i++) pos3D(1,i) = (*fi)(i,2);
   for (E_Int i = 0; i < n; i++) pos3D(2,i) = (*fi)(i,3);
     
+  // add BBox for relative chord error
+  E_Float xmin, xmax, ymin, ymax, zmin, zmax;
+  for (E_Int i = 0; i < n; i++)
+  {
+    xmin = K_FUNC::E_min(xmin, pos3D(0,i));
+    xmax = K_FUNC::E_max(xmax, pos3D(0,i));
+    ymin = K_FUNC::E_min(ymin, pos3D(1,i));
+    ymax = K_FUNC::E_max(ymax, pos3D(1,i));
+    zmin = K_FUNC::E_min(zmin, pos3D(2,i));
+    zmax = K_FUNC::E_max(zmax, pos3D(2,i));
+  }
+  E_Float L = K_FUNC::E_max(xmax-xmin, ymax-ymin);
+  L = K_FUNC::E_max(L, zmax-zmin);
+
   K_FLD::FloatArray UVcontour(2, n);
   for (E_Int i = 0; i < n; i++) UVcontour(0,i) = (*fi)(i,4);
   for (E_Int i = 0; i < n; i++) UVcontour(1,i) = (*fi)(i,5);
@@ -128,7 +142,7 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
     mode.metric_mode = mode.ANISO; //ISO_RHO impose la courbure minimum dans les deux directions
     mode.hmax = hmax; // h moyen
     mode.hmin = hmin; // h moyen
-    mode.chordal_error = hausd; // chordal error set
+    mode.chordal_error = hausd/L; // chordal error set
     mode.growth_ratio = grading; // grading forced
     mode.nb_smooth_iter = 2; // iter de lissage pour assurer le grading
     mode.symmetrize = true;
@@ -140,7 +154,7 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
     mode.hmax = hmax; // h max
     mode.hmin = hmin; // h min
     //mode.hmin = K_CONST::E_MAX_FLOAT; // hmin as in landier
-    mode.chordal_error = hausd; // chordal error set
+    mode.chordal_error = hausd/L; // chordal error set
     mode.growth_ratio = grading; // grading ne sert pas si pas de lissage
     mode.nb_smooth_iter = 0; // iter de lissage de la metrique
     mode.symmetrize = false;

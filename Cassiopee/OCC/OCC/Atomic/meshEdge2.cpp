@@ -537,7 +537,7 @@ E_Int __getParamHminHmaxHausdF(const TopoDS_Edge& E, E_Float hmin, E_Float hmax,
   
   gp_Pnt point;
   gp_Vec DU1, DV1, DU2, DV2, DUV;
-  E_Float rho, hh, K1, K2;
+  E_Float rho, hh, K1, K2, delta;
 
   E_Int npts = 2;
   std::vector<E_Float> Us(npts);
@@ -667,8 +667,10 @@ E_Int __getParamHminHmaxHausdF(const TopoDS_Edge& E, E_Float hmin, E_Float hmax,
         //std::cout << "OCC: mean: " << meanCurvature << std::endl;
 
         // Principal curvatures
-        K1 = meanCurvature + sqrt(meanCurvature * meanCurvature - gaussianCurvature);
-        K2 = meanCurvature - sqrt(meanCurvature * meanCurvature - gaussianCurvature);
+        delta = meanCurvature * meanCurvature - gaussianCurvature;
+        delta = K_FUNC::E_max(delta, 0.);
+        K1 = meanCurvature + sqrt(delta);
+        K2 = meanCurvature - sqrt(delta);
         //std::cout << "OCC: k1: " << K1 << " k2: " <<K2 << std::endl;
         rho = K_FUNC::E_max(std::abs(K1), std::abs(K2));
         if (rho > 1.e-12) rho = 1./rho;
@@ -775,7 +777,7 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
 
   E_Float L = (E_Float) GCPnts_AbscissaPoint::Length(geomAdap, u0, u1);
   L = K_FUNC::E_max(L, 1.e-12);
-
+  
   gp_Pnt2d Puv;
   E_Float u,v, ues;
   Standard_Real aFirst=C0.FirstParameter(), aEnd=C0.LastParameter();
@@ -784,7 +786,7 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
   
   gp_Pnt point;
   gp_Vec DU1, DV1, DU2, DV2, DUV;
-  E_Float rho, hh, K1, K2, h;
+  E_Float rho, hh, K1, K2, h, delta;
 
   E_Float Ltot = 0.;
   E_Int N = 0;
@@ -802,6 +804,7 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
 
   while (Ltot < L)
   {
+    // on avance de h sur l'edge
     GCPnts_AbscissaPoint Pt(1.e-10, geomAdap, h, ues);
     ues = Pt.Parameter();
 
@@ -925,8 +928,10 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
         //std::cout << "OCC: mean: " << meanCurvature << std::endl;
 
         // Principal curvatures
-        K1 = meanCurvature + sqrt(meanCurvature * meanCurvature - gaussianCurvature);
-        K2 = meanCurvature - sqrt(meanCurvature * meanCurvature - gaussianCurvature);
+        delta = meanCurvature * meanCurvature - gaussianCurvature;
+        delta = K_FUNC::E_max(delta, 0.);
+        K1 = meanCurvature + sqrt(delta);
+        K2 = meanCurvature - sqrt(delta);
         //std::cout << "OCC: k1: " << K1 << " k2: " <<K2 << std::endl;
         rho = K_FUNC::E_max(std::abs(K1), std::abs(K2));
         if (rho > 1.e-12) rho = 1./rho;
@@ -945,7 +950,7 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
       
       hh = K_FUNC::E_min(hh, hmax);
       hh = K_FUNC::E_max(hh, hmin);
-      //printf("rho=%g h=%g, h=%g\n", rho, std::sqrt(1.*hausd*rho), hh); fflush(stdout);
+      //printf("rho=%g h=%g, hh=%g\n", rho, std::sqrt(8.*hausd*rho), hh); fflush(stdout);
       h = K_FUNC::E_min(h, hh);
     }
     /*
@@ -981,6 +986,7 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
   */
 
   E_Float r = Ltot-L;
+  //printf("residual=%g\n", r);
   if (r > 0.5*hi[N-1] && N >= 3) { N = N-1; Ltot = Ltot - hi[N]; }
   
   //printf("hi = ");

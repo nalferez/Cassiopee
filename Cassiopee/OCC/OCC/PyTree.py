@@ -1009,6 +1009,7 @@ def _projectOnEdges(hook, t, edgeList=None):
     return None
 
 def _meshDeviation__(z, zc, F, hook, eList, no):
+    if C.getNPts(zc) == 0: return None
     xp = Internal.getNodeFromName2(zc, 'CoordinateX')
     yp = Internal.getNodeFromName2(zc, 'CoordinateY')
     zp = Internal.getNodeFromName2(zc, 'CoordinateZ')
@@ -1016,7 +1017,8 @@ def _meshDeviation__(z, zc, F, hook, eList, no):
     F(hook, zc, eList)
     diff = (xp[1]-xp0)*(xp[1]-xp0)+(yp[1]-yp0)*(yp[1]-yp0)+(zp[1]-zp0)*(zp[1]-zp0)
     diff = numpy.sqrt(diff)
-    print("INFO: meshDeviation: %d: %g"%(no, numpy.max(diff)))
+    maxdev = numpy.max(diff)
+    print("INFO: meshDeviation: %d: %g"%(no, maxdev))
     if z[1][0,0] == zc[1][0,0]:
         C._initVars(z, 'nodes:deviation', 0.)
         FS = Internal.getNodeFromName1(z, Internal.__FlowSolutionNodes__)
@@ -1041,20 +1043,20 @@ def _meshDeviation(hook, t, loc='nodes'):
 
 def _meshDeviation1(hook, t, loc='nodes'):
     """Measure deviation from mesh to CAD."""
-    EDGES = Internal.getNodeFromName1(t, 'EDGES')
-    zones = Internal.getZones(EDGES)
-    for z in zones:
-        # no de l'edge
-        try:
-            no = getNo(z)
-            edgeList = [no]
-        except: edgeList = None
-        if loc == "centers":
-            # recupere le maillage en centre
-            zc = C.node2Center(z)
-            _meshDeviation__(z, zc, _projectOnEdges, hook, edgeList, no)
-        else: # nodes
-            _meshDeviation__(z, z, _projectOnEdges, hook, edgeList, no)
+    #EDGES = Internal.getNodeFromName1(t, 'EDGES')
+    #zones = Internal.getZones(EDGES)
+    #for z in zones:
+    #    # no de l'edge
+    #    try:
+    #        no = getNo(z)
+    #        edgeList = [no]
+    #    except: edgeList = None
+    #    if loc == "centers":
+    #        # recupere le maillage en centre
+    #        zc = C.node2Center(z)
+    #        _meshDeviation__(z, zc, _projectOnEdges, hook, edgeList, no)
+    #    else: # nodes
+    #        _meshDeviation__(z, z, _projectOnEdges, hook, edgeList, no)
     FACES = Internal.getNodeFromName1(t, 'FACES')
     zones = Internal.getZones(FACES)
     for z in zones:
