@@ -656,7 +656,7 @@ def meshAllEdges(hook, hmin, hmax, hausd, N, edgeList=None):
     for i in edgeList:
         e = occ.meshOneEdge(hook, i, hmin, hmax, hausd, N, None)
         dedges.append(e)
-    dedges = Generator.zip(dedges, tol=hmax/100.) # safe and necessary for corner/seam points
+    dedges = Generator.zip(dedges, tol=hmin/100.) # safe and necessary for corner/seam points
     return dedges
 
 #=================================================================

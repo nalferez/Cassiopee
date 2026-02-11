@@ -142,7 +142,8 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
     mode.metric_mode = mode.ANISO; //ISO_RHO impose la courbure minimum dans les deux directions
     mode.hmax = hmax; // h moyen
     mode.hmin = hmin; // h moyen
-    mode.chordal_error = hausd/L; // chordal error set
+    //mode.chordal_error = hausd/L; // chordal error set
+    mode.chordal_error = hausd; // chordal error set
     mode.growth_ratio = grading; // grading forced
     mode.nb_smooth_iter = 2; // iter de lissage pour assurer le grading
     mode.symmetrize = true;
@@ -154,7 +155,8 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
     mode.hmax = hmax; // h max
     mode.hmin = hmin; // h min
     //mode.hmin = K_CONST::E_MAX_FLOAT; // hmin as in landier
-    mode.chordal_error = hausd/L; // chordal error set
+    //mode.chordal_error = hausd/L; // chordal error set
+    mode.chordal_error = hausd; // chordal error set
     mode.growth_ratio = grading; // grading ne sert pas si pas de lissage
     mode.nb_smooth_iter = 0; // iter de lissage de la metrique
     mode.symmetrize = false;
