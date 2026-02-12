@@ -19,7 +19,7 @@ __all__ = ['convertCAD2Arrays',
            'meshAllFacesTri', 'meshFaceWithMetric', 'meshAllOCC',
            'identifyTags__',
            'readCAD', 'writeCAD', 'createEmptyCAD', 'freeHook',
-           'getNbEdges', 'getNbFaces', 'getFileAndFormat', 
+           'getNbEdges', 'getNbFaces', 'getFileAndFormat',
            'printOCAF', 'getFaceNameInOCAF', 'getEdgeNameInOCAF',
            'getFaceArea', 'getBoundingBox',
            '_translate', '_rotate', '_scale', '_sewing',
@@ -28,7 +28,7 @@ __all__ = ['convertCAD2Arrays',
            '_splitEdge',
            '_addArc', '_addCircle', '_addEllipse',
            '_addSuperEllipse', '_addLine', '_addSpline',
-           '_addSquare', '_addSquare2', 
+           '_addSquare', '_addSquare2',
            '_addBox', '_addBox2', '_addSphere', '_addCylinder',
            '_addSplineSurface', '_addGordonSurface', '_addDomain',
            '_projectOnEdges', '_projectOnFaces',
@@ -894,9 +894,9 @@ def _addGordonSurface(hook, ucurves, vcurves):
 def _addDomain(hook, dfar=10., type="box", plane=None):
     """Add domain to hook."""
     # dfar
-    if isinstance(dfar, list) and len(dfar) == 3: 
+    if isinstance(dfar, list) and len(dfar) == 3:
         dfarx = dfar[0]; dfary = dfar[1]; dfarz = dfar[2]
-    elif isinstance(dfar, tuple) and len(dfar) == 3: 
+    elif isinstance(dfar, tuple) and len(dfar) == 3:
         dfarx = dfar[0]; dfary = dfar[1]; dfarz = dfar[2]
     else:
         dfarx = dfar; dfary = dfar; dfarz = dfar

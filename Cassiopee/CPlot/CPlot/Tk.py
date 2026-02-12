@@ -630,8 +630,8 @@ def addFile():
 def saveFile():
     global FILE
     import tkinter.filedialog as tkFileDialog
-    ret = tkFileDialog.asksaveasfilename(filetypes=fileTypes, 
-                                         initialfile=FILE, 
+    ret = tkFileDialog.asksaveasfilename(filetypes=fileTypes,
+                                         initialfile=FILE,
                                          initialdir=os.getcwd())
     if ret == '' or ret is None or ret == (): # user cancel
         return
@@ -653,7 +653,7 @@ def quickSaveFile(event=None):
     import tkinter.filedialog as tkFileDialog
     if FILE == '':
         ret = tkFileDialog.asksaveasfilename(filetypes=fileTypes,
-                                             initialfile=FILE, 
+                                             initialfile=FILE,
                                              initialdir=os.getcwd())
         if ret == '' or ret is None or ret == (): # user cancel
             return
@@ -747,7 +747,7 @@ def saveSelZones2File():
         TXT.insert('START', 'Error: ', 'Error'); return
     import tkinter.filedialog as tkFileDialog
     ret = tkFileDialog.asksaveasfilename(filetypes=fileTypes,
-                                         initialfile='selection.cgns', 
+                                         initialfile='selection.cgns',
                                          initialdir=os.getcwd())
     if ret == '' or ret is None or ret == (): # user cancel
         return

@@ -746,7 +746,7 @@ def openDocFile(event=None):
     initFile = docData['docWidget'].get("1.0", TK.END)
     initFile = ''
     file = tkFileDialog.asksaveasfilename(
-        filetypes=[('Open document', '*.odt'), ('All files', '*.*')], 
+        filetypes=[('Open document', '*.odt'), ('All files', '*.*')],
         initialfile=initFile,
         initialdir=os.getcwd())
     if (file == '' or file is None or file == ()): # user cancel
