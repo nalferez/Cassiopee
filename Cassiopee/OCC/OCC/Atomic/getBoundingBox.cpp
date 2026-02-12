@@ -19,59 +19,61 @@
 
 #include "occ.h"
 
-#include "TColStd_HSequenceOfTransient.hxx"
 #include "TopoDS.hxx"
 #include "TopTools_IndexedMapOfShape.hxx"
 #include "TopExp.hxx"
 #include "TopExp_Explorer.hxx"
-
-#include "ShapeAnalysis.hxx"
-
-#include "GProp_GProps.hxx"
-#include "BRepGProp.hxx"
+#include "Bnd_Box.hxx"
+#include "BRepBndLib.hxx"
+#include "BRep_Builder.hxx"
 
 // ============================================================================
-/* Return the face area of given face */
+/* Return the bounding box of given face */
 // ============================================================================
-PyObject* K_OCC::getFaceArea(PyObject* self, PyObject* args)
+PyObject* K_OCC::getBoundingBox(PyObject* self, PyObject* args)
 {
   PyObject* hook; PyObject* listFaces;
   if (!PYPARSETUPLE_(args, O_ O_, &hook, &listFaces)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETSHAPE;
+  GETMAPSURFACES;
 
-  //TopoDS_Shape* shp = (TopoDS_Shape*) packet[0];
-  TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
-  //TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
-  TopExp_Explorer expl;
+  E_Float xmin = E_MAXFLOAT;
+  E_Float ymin = E_MAXFLOAT;
+  E_Float zmin = E_MAXFLOAT;
+  E_Float xmax = -E_MAXFLOAT;
+  E_Float ymax = -E_MAXFLOAT;
+  E_Float zmax = -E_MAXFLOAT;
 
-  E_Float area = 0.;
+  // By face
   if (listFaces == Py_None) // all faces of topshape
   {
-    for (E_Int i=1; i <= surfaces.Extent(); i++)
-    {
-      GProp_GProps props;
-      BRepGProp::SurfaceProperties(surfaces(i), props);
-      area += props.Mass();
-    }
+    Bnd_Box box; 
+    BRepBndLib::Add(*shape, box); 
+    // compute bounding box 
+    box.SetGap(0.0);
+    box.Get(xmin, ymin, zmin, xmax, ymax, zmax);
   }
   else
   {
+    // make compound
     E_Int nfaces = PyList_Size(listFaces);
+    BRep_Builder builder;
+    TopoDS_Compound shc;
+    builder.MakeCompound(shc);
+    
     for (E_Int no = 0; no < nfaces; no++)
     {
       PyObject* noFaceO = PyList_GetItem(listFaces, no);
       E_Int noFace = PyInt_AsLong(noFaceO);
-
-      GProp_GProps props;
-      BRepGProp::SurfaceProperties(surfaces(noFace), props);
-      area += props.Mass();
+      const TopoDS_Face& F = TopoDS::Face(surfaces(noFace));
+      builder.Add(shc, F);
     }
+    Bnd_Box box; 
+    BRepBndLib::Add(shc, box); 
+    // compute bounding box 
+    box.SetGap(0.0);
+    box.Get(xmin, ymin, zmin, xmax, ymax, zmax);
   }
-  return Py_BuildValue("d", area);
+  return Py_BuildValue("dddddd", xmin,ymin,zmin,xmax,ymax,zmax);
 } 

@@ -18,19 +18,20 @@ __all__ = ['convertCAD2Arrays',
            'ultimate', 'meshAllEdges', 'meshAllFacesTri', 'meshAllFacesStruct',
            'meshAllFacesTri', 'meshFaceWithMetric', 'meshAllOCC',
            'identifyTags__',
-           '_projectOnEdges', '_projectOnFaces',
-           'readCAD', 'writeCAD', 'createEmptyCAD',
-           'getNbEdges', 'getNbFaces', 'getFileAndFormat', 'getFaceArea',
+           'readCAD', 'writeCAD', 'createEmptyCAD', 'freeHook',
+           'getNbEdges', 'getNbFaces', 'getFileAndFormat', 
+           'printOCAF', 'getFaceNameInOCAF', 'getEdgeNameInOCAF',
+           'getFaceArea', 'getBoundingBox',
            '_translate', '_rotate', '_scale', '_sewing',
            '_splitFaces', '_mergeFaces', '_trimFaces', '_removeFaces',
            '_fillHole', '_addFillet', '_offset', 'mergeCAD',
-           'printOCAF', 'getFaceNameInOCAF', 'getEdgeNameInOCAF',
            '_splitEdge',
            '_addArc', '_addCircle', '_addEllipse',
            '_addSuperEllipse', '_addLine', '_addSpline',
-           '_addSquare', '_addSquare2', '_addBox', '_addBox2',
-           '_addSphere', '_addCylinder',
-           '_addSplineSurface', '_addGordonSurface',
+           '_addSquare', '_addSquare2', 
+           '_addBox', '_addBox2', '_addSphere', '_addCylinder',
+           '_addSplineSurface', '_addGordonSurface', '_addDomain',
+           '_projectOnEdges', '_projectOnFaces',
            '_revolve', '_sweep', '_loft', '_boolean']
 
 # algo=0: mailleur open cascade (chordal_error)
@@ -795,6 +796,11 @@ def getFaceArea(hook, faceList=None):
     """Return the area of given faces."""
     return occ.getFaceArea(hook, faceList)
 
+# Return the bounding box of specified faces
+def getBoundingBox(hook, faceList=None):
+    """Return the bounding box of given faces."""
+    return occ.getBoundingBox(hook, faceList)
+
 # identify tag component
 def identifyTags__(a):
     return occ.identifyTags(a)
@@ -885,6 +891,47 @@ def _addGordonSurface(hook, ucurves, vcurves):
     occ.addGordonSurface(hook, ucurves, vcurves)
     return None
 
+def _addDomain(hook, dfar=10., type="box", plane=None):
+    """Add domain to hook."""
+    # dfar
+    if isinstance(dfar, list) and len(dfar) == 3: 
+        dfarx = dfar[0]; dfary = dfar[1]; dfarz = dfar[2]
+    elif isinstance(dfar, tuple) and len(dfar) == 3: 
+        dfarx = dfar[0]; dfary = dfar[1]; dfarz = dfar[2]
+    else:
+        dfarx = dfar; dfary = dfar; dfarz = dfar
+    # BBox on hook
+    bb = getBoundingBox(hook)
+    if type == "sphere":
+        P0 = ((bb[3]+bb[0])*0.5, (bb[4]+bb[1])*0.5, (bb[5]+bb[2])*0.5)
+        R = max(dfarx, dfary, dfarz)
+        _addSphere(hook, P0, R)
+    elif type == "box":
+        P0 = (bb[0]-dfarx,bb[1]-dfary,bb[2]-dfarz)
+        width = bb[3]-bb[0]+2*dfarx
+        height = bb[4]-bb[1]+2*dfary
+        depth = bb[5]-bb[2]+2*dfarz
+        _addBox(hook, P0, width, height, depth)
+    elif type == "half-sphere":
+        if plane is None:
+            raise ValueError('addDomain: requires plane for half-sphere.')
+        raise NotImplementedError('addDomain: not implemented for half-sphere.')
+        P0 = [(bb[3]+bb[0])*0.5, (bb[4]+bb[1])*0.5, (bb[5]+bb[2])*0.5]
+        R = max(dfarx, dfary, dfarz)
+        # xmin plane forced
+        nfaces = getNbFaces(hook)
+        P0[0] = bb[0]
+        hook2 = createEmptyCAD()
+        _addSphere(hook2, P0, R)
+        _addSquare2(hook2, (bb[0],P0[1]-R,P0[2]-R), (bb[0],P0[1]+R,P0[2]-R), (bb[0],P0[1]+R,P0[2]+R), (bb[0],P0[1]-R,P0[2]+R), makeFace=True)
+        _trimFaces(hook2, [1], [2], mode=1, algo=1)
+        #_trimFaces(hook, [nfaces+1], [nfaces+2], mode=2, algo=1)
+        #_removeFaces(hook, [13,12])
+    elif type == "half-box":
+        if plane is None:
+            raise ValueError('addDomain: requires plane for half-box.')
+        raise NotImplementedError('addDomain: not implemented for half-box.')
+
 def _revolve(hook, edges, C, axis, angle):
     """Revolve edges to create surface."""
     occ.revolve(hook, edges, C, axis, angle)
@@ -921,6 +968,11 @@ def createEmptyCAD(fileName="None", format='fmt_step'):
 def writeCAD(hook, fileName, format='fmt_step'):
     """Write CAD file."""
     occ.writeCAD(hook, fileName, format)
+    return None
+
+def freeHook(hook):
+    """Free hook."""
+    occ.freeHook(hook)
     return None
 
 # Translate
@@ -984,9 +1036,13 @@ def mergeCAD(hooks):
     return occ.mergeCAD(hooks)
 
 # trim two set of surfaces
-def _trimFaces(hook, faceList1, faceList2):
+# trim two set of surfaces
+# if mode=0, faces2 cut faces1
+# if mode=1, faces1 cut faces2
+# if mode=2, both cut
+def _trimFaces(hook, faces1, faces2, mode=2, algo=0):
     """Trim a set of faces with another set of faces."""
-    occ.trimFaces(hook, faceList1, faceList2)
+    occ.trimFaces(hook, faces1, faces2, mode, algo)
     return None
 
 # split all faces to be less than area

@@ -14,17 +14,18 @@ except ImportError:
 __version__ = OCC.__version__
 import numpy
 
-from OCC import readCAD, writeCAD, createEmptyCAD, \
+from OCC import readCAD, writeCAD, createEmptyCAD, freeHook, \
+    getNbEdges, getNbFaces, getFileAndFormat, \
+    printOCAF, getFaceNameInOCAF, getEdgeNameInOCAF, \
+    getFaceArea, getBoundingBox, \
     _translate, _rotate, _scale, _sewing, _splitFaces, \
     _mergeFaces, _trimFaces, _removeFaces, _fillHole, \
-    _addFillet, _offset, \
-    mergeCAD, \
-    _splitEdge, \
-    printOCAF, getFaceNameInOCAF, getEdgeNameInOCAF, \
+    _addFillet, _offset, mergeCAD, _splitEdge, \
     _addArc, _addCircle, _addEllipse, _addSuperEllipse, _addLine, \
     _addSquare, _addSquare2, _addBox, _addBox2, \
     _addSpline, _addSphere, _addCylinder, _addSplineSurface, \
-    _addGordonSurface, _revolve, _sweep, _loft, _boolean
+    _addGordonSurface, _addDomain, \
+    _revolve, _sweep, _loft, _boolean
 
 #==============================================================================
 # -- convertCAD2PyTree --
@@ -1378,104 +1379,6 @@ def orderEdgeList(edges, tol=1.e-10):
 #=============================================================================
 # CAD fixing
 #=============================================================================
-def readCAD(fileName, format='fmt_step'):
-    """Read CAD file and return CAD hook."""
-    h = OCC.occ.readCAD(fileName, format)
-    return h
-
-def writeCAD(hook, fileName, format='fmt_step'):
-    """Write CAD file."""
-    OCC.occ.writeCAD(hook, fileName, format)
-    return None
-
-def freeHook(hook):
-    """Free hook."""
-    OCC.occ.freeHook(hook)
-    return None
-
-# Return the number of edges in CAD hook
-def getNbEdges(hook):
-    """Return the number of edges in CAD hook."""
-    return OCC.occ.getNbEdges(hook)
-
-# Return the number of faces in CAD hook
-def getNbFaces(hook):
-    """Return the number of faces in CAD hook."""
-    return OCC.occ.getNbFaces(hook)
-
-# Return the file and format used to load CAD in hook
-def getFileAndFormat(hook):
-    """Return file and format of associated CAD file."""
-    return OCC.occ.getFileAndFormat(hook)
-
-# Return the area of specified faces
-def getFaceArea(hook, faceList=None):
-    """Return the area of given faces."""
-    return OCC.occ.getFaceArea(hook, faceList)
-
-# Translate
-def _translate(hook, vector, faceList=None):
-    """Translate all or given faces."""
-    OCC.occ.translate(hook, vector, faceList)
-    return None
-
-# Rotate
-def _rotate(hook, Xc, axis, angle, faceList=None):
-    """Rotate all or given faces."""
-    OCC.occ.rotate(hook, Xc, axis, angle, faceList)
-    return None
-
-# Scale
-def _scale(hook, factor, X, faceList=None):
-    """Scale all or given faces."""
-    OCC.occ.scale(hook, factor, X, faceList)
-    return None
-
-# sew a set of faces
-# faces: face list numbers
-def _sewing(hook, faceList=None, tol=1.e-6):
-    """Sew some faces (suppress redundant edges)."""
-    OCC.occ.sewing(hook, faceList, tol)
-    return None
-
-# add fillet from edges with given radius
-def _addFillet(hook, edges, radius, new2OldEdgeMap=[], new2OldFaceMap=[]):
-    OCC.occ.addFillet(hook, edges, radius, new2OldEdgeMap, new2OldFaceMap)
-    return None
-
-# edgeMap and faceMap are new2old maps
-def _removeFaces(hook, faceList, new2OldEdgeMap=[], new2OldFaceMap=[]):
-    """Remove given faces."""
-    OCC.occ.removeFaces(hook, faceList, new2OldEdgeMap, new2OldFaceMap)
-    return None
-
-# fill hole from edges
-# edges: edge list numbers (must be ordered)
-def _fillHole(hook, edges, faces=None, continuity=0):
-    """Fill hole defined by close loop of edges."""
-    OCC.occ.fillHole(hook, edges, faces, continuity)
-    return None
-
-# trim two set of surfaces
-# if mode=0, faces2 cut faces1
-# if mode=1, faces1 cut faces2
-# if mode=2, both cut
-def _trimFaces(hook, faces1, faces2, mode=2, algo=0):
-    """Trim a set of faces with another set of faces."""
-    OCC.occ.trimFaces(hook, faces1, faces2, mode, algo)
-    return None
-
-# split faces
-def _splitFaces(hook, area):
-    """Split all faces to be less than area."""
-    OCC.occ.splitFaces(hook, area)
-    return None
-
-# merge faces
-def _mergeFaces(hook, faceList=None):
-    """Merge some faces."""
-    OCC.occ.mergeFaces(hook, faceList)
-    return None
 
 # IN: new2old: new2old map
 # IN: Nold: size of old entities
@@ -1678,16 +1581,3 @@ def isWatertight(component, leaks=[]):
     except: pass
     if len(leaks) != 0: return False
     else: return True
-
-# print OCAF document
-def printOCAF(h):
-    """Print OCAF document."""
-    OCC.occ.printOCAF(h)
-
-def getFaceNameInOCAF(h):
-    """Return face names in OCAF."""
-    return OCC.occ.getFaceNameInOCAF2(h)
-
-def getEdgeNameInOCAF(h):
-    """Return edge names in OCAF."""
-    return OCC.occ.getEdgeNameInOCAF2(h)
