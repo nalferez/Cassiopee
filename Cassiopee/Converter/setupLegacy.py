@@ -11,17 +11,22 @@ import os
 # KCore library
 #=============================================================================
 
-# Write setup.cfg file
 import KCore.Dist as Dist
+
+# Compiler settings must be set in installBase.py / installBaseUser.py
+f77compiler = Dist.getFromConfigDict("f77compiler", "gfortran")
+additionalIncludePaths = Dist.getFromConfigDict("additionalIncludePaths", [])
+additionalLibPaths = Dist.getFromConfigDict("additionalLibPaths", [])
+additionalLibs = Dist.getFromConfigDict("additionalLibs", [])
+
+# Write setup.cfg file
 Dist.writeSetupCfg()
 
 # Test if numpy exists =======================================================
 (numpyVersion, numpyIncDir, numpyLibDir) = Dist.checkNumpy()
 
 # Test if kcore exists =======================================================
-(kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkKCore()
-
-from KCore.config import *
+(kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkModuleCassiopee("KCore")
 
 # Test if libhdf5 exists ======================================================
 (hdf, hdfIncDir, hdfLibDir, hdflibs) = Dist.checkHdf(additionalLibPaths,
@@ -38,7 +43,7 @@ from KCore.config import *
                                                         additionalIncludePaths)
 
 # Compilation des fortrans ====================================================
-if f77compiler == "None":
+if f77compiler is None:
     print("Error: a fortran 77 compiler is required for compiling Converter.")
 args = Dist.getForArgs(); opt = ''
 for c, v in enumerate(args): opt += 'FOPT'+str(c)+'='+v+' '
@@ -66,9 +71,9 @@ if mpi4py:
 if hdf: libraries += hdflibs
 if png: libraries.append('png')
 if mpi: libraries += mpiLibs
-(ok, libs, paths) = Dist.checkFortranLibs([], additionalLibPaths)
+(ok, libs, paths) = Dist.checkFortranLibs()
 libraryDirs += paths; libraries += libs
-(ok, libs, paths) = Dist.checkCppLibs([], additionalLibPaths)
+(ok, libs, paths) = Dist.checkCppLibs()
 libraryDirs += paths; libraries += libs
 
 ADDITIONALCPPFLAGS = ['-DUSE_C_REGEX'] # for old gcc < 5.0
@@ -99,6 +104,7 @@ setup(
     version="4.1",
     description="Converter for *Cassiopee* modules.",
     author="ONERA",
+    url="https://onera.github.io/Cassiopee/",
     package_dir={"":"."},
     packages=['Converter'],
     ext_modules=listExtensions

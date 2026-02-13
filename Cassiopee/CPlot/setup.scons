@@ -8,11 +8,13 @@ import KCore.Dist as Dist
 # GL
 # optional: OSMesa
 #==============================================================================
-from KCore.config import *
 
 # Get prefix from command line
 prefix = ARGUMENTS.get('prefix', '')
 installPath = Dist.getInstallPath(prefix)
+additionalIncludePaths = Dist.getFromConfigDict("additionalIncludePaths", [])
+additionalLibPaths = Dist.getFromConfigDict("additionalLibPaths", [])
+additionalLibs = Dist.getFromConfigDict("additionalLibs", [])
 
 # Get compilers from Distutils ================================================
 (cc, cxx, opt, basecflags, ccshared, ldshared, so_ext) = Dist.getDistUtilsCompilers()
@@ -24,14 +26,14 @@ installPath = Dist.getInstallPath(prefix)
 (numpyVersion, numpyIncDir, numpyLibDir) = Dist.checkNumpy()
 
 # Test if kcore exists =======================================================
-(kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkKCore()
+(kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkModuleCassiopee("KCore")
 
 libraries = ["kcore"]
 
 # Setting libraryDirs and libraries ===========================================
 libraryDirs = ['..', '.', pythonLibDir, kcoreLibDir, '/usr/X11R6/lib64']
 includeDirs = [pythonIncDir, numpyIncDir, kcoreIncDir, kcoreLibDir+'/../include']
-(ok, libs, paths) = Dist.checkCppLibs([], additionalLibPaths)
+(ok, libs, paths) = Dist.checkCppLibs()
 libraryDirs += paths; libraries += libs
 
 # Test if MPEG exists =========================================================

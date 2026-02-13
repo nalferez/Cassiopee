@@ -16,25 +16,31 @@ import os
 # set UseOSMesa to True (requires mesa)
 UseOSMesa = KCore.config.CPlotOffScreen
 
-# Write setup.cfg
 import KCore.Dist as Dist
+
+# Compiler settings must be set in installBase.py / installBaseUser.py
+f77compiler = Dist.getFromConfigDict("f77compiler", "gfortran")
+additionalIncludePaths = Dist.getFromConfigDict("additionalIncludePaths", [])
+additionalLibPaths = Dist.getFromConfigDict("additionalLibPaths", [])
+additionalLibs = Dist.getFromConfigDict("additionalLibs", [])
+
+# Write setup.cfg file
 Dist.writeSetupCfg()
 
 # Test if numpy exists =======================================================
 (numpyVersion, numpyIncDir, numpyLibDir) = Dist.checkNumpy()
 
 # Test if kcore exists =======================================================
-(kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkKCore()
+(kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkModuleCassiopee("KCore")
 
 libraries = ["GLU", "kcore", "Xi", "Xmu", "rt"]
-from KCore.config import *
 if not UseOSMesa: libraries += ["GL"]
 
 #libraryDirs = [kcoreLibDir]
 libraryDirs = [kcoreLibDir, '/usr/X11R6/lib64']
 includeDirs = [numpyIncDir, kcoreIncDir]
 
-(ok, libs, paths) = Dist.checkCppLibs([], additionalLibPaths)
+(ok, libs, paths) = Dist.checkCppLibs()
 libraryDirs += paths; libraries += libs
 
 # Test if PNG exists =========================================================
@@ -91,6 +97,7 @@ setup(
     version="4.1",
     description="A plotter for *Cassiopee* Modules.",
     author="ONERA",
+    url="https://onera.github.io/Cassiopee/",
     package_dir={"":"."},
     packages=['CPlot'],
     ext_modules=extensions

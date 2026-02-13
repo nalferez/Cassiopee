@@ -11,19 +11,25 @@ import os
 # KCore
 #=============================================================================
 
-# Write setup.cfg
 import KCore.Dist as Dist
+
+# Compiler settings must be set in installBase.py / installBaseUser.py
+f77compiler = Dist.getFromConfigDict("f77compiler", "gfortran")
+additionalIncludePaths = Dist.getFromConfigDict("additionalIncludePaths", [])
+additionalLibPaths = Dist.getFromConfigDict("additionalLibPaths", [])
+additionalLibs = Dist.getFromConfigDict("additionalLibs", [])
+
+# Write setup.cfg file
 Dist.writeSetupCfg()
 
 # Test if numpy exists =======================================================
 (numpyVersion, numpyIncDir, numpyLibDir) = Dist.checkNumpy()
 
 # Test if kcore exists =======================================================
-(kcoreVersion, kcoreIncDir, kcoreLib) = Dist.checkKCore()
+(kcoreVersion, kcoreIncDir, kcoreLib) = Dist.checkModuleCassiopee("KCore")
 
 # Compilation des fortrans ===================================================
-from KCore.config import *
-if f77compiler == "None":
+if f77compiler is None:
     print("Error: a fortran 77 compiler is required for compiling Transform.")
 args = Dist.getForArgs(); opt = ''
 for c, v in enumerate(args): opt += 'FOPT'+str(c)+'='+v+' '
@@ -34,9 +40,9 @@ if prod is None: prod = 'xx'
 # Setting libraryDirs and libraries ===========================================
 libraryDirs = ["build/"+prod, kcoreLib]
 libraries = ["TransformF", "kcore"]
-(ok, libs, paths) = Dist.checkFortranLibs([], additionalLibPaths)
+(ok, libs, paths) = Dist.checkFortranLibs()
 libraryDirs += paths; libraries += libs
-(ok, libs, paths) = Dist.checkCppLibs([], additionalLibPaths)
+(ok, libs, paths) = Dist.checkCppLibs()
 libraryDirs += paths; libraries += libs
 
 # setup =======================================================================
@@ -46,6 +52,7 @@ setup(
     version="4.1",
     description="Transformations of arrays/pyTrees for *Cassiopee* modules.",
     author="ONERA",
+    url="https://onera.github.io/Cassiopee/",
     package_dir={"":"."},
     packages=['Transform'],
     ext_modules=[Extension('Transform.transform',

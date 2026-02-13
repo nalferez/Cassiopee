@@ -8,21 +8,27 @@ from setuptools import setup, Extension
 # KCore
 #=============================================================================
 
-# Write setup.cfg
 import KCore.Dist as Dist
+
+# Compiler settings must be set in installBase.py / installBaseUser.py
+additionalIncludePaths = Dist.getFromConfigDict("additionalIncludePaths", [])
+additionalLibPaths = Dist.getFromConfigDict("additionalLibPaths", [])
+additionalLibs = Dist.getFromConfigDict("additionalLibs", [])
+includeDirs = Dist.getFromConfigDict("includeDirs", [])
+
+# Write setup.cfg file
 Dist.writeSetupCfg()
 
 # Test if numpy exists =======================================================
 (numpyVersion, numpyIncDir, numpyLibDir) = Dist.checkNumpy()
 
 # Test if kcore exists =======================================================
-(kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkKCore()
+(kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkModuleCassiopee("KCore")
 
 # Setting libraryDirs and libraries ===========================================
 libraryDirs = [kcoreLibDir]
 libraries = ["kcore"]
-from KCore.config import *
-(ok, libs, paths) = Dist.checkCppLibs([], additionalLibPaths)
+(ok, libs, paths) = Dist.checkCppLibs()
 libraryDirs += paths; libraries += libs
 
 includeDirs = [numpyIncDir, kcoreIncDir]
@@ -59,6 +65,7 @@ setup(
     version="4.1",
     description="Compress CFD solutions.",
     author="ONERA",
+    url="https://onera.github.io/Cassiopee/",
     package_dir={"":"."},
     #packages=['Compressor', 'Compressor.zfp', 'Compressor.sz'],
     packages=['Compressor'],
