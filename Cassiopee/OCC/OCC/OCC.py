@@ -918,23 +918,45 @@ def _addDomain(hook, dfar=10., type="box", plane=None):
     elif type == "half-sphere":
         if plane is None:
             raise ValueError('addDomain: requires plane for half-sphere.')
+        
         P0 = [(bb[3]+bb[0])*0.5, (bb[4]+bb[1])*0.5, (bb[5]+bb[2])*0.5]
         R = max(dfarx, dfary, dfarz)
-        # xmin plane forced here (to be generalized)
-        P0[0] = bb[0]
-        _translate(hook, (-1.e-5,0,0))
-        hook2 = createEmptyCAD()
-        _addSphere(hook2, P0, R)
-        _addSquare2(hook2, (bb[0],P0[1]-R,P0[2]-R), (bb[0],P0[1]+R,P0[2]-R), (bb[0],P0[1]+R,P0[2]+R), (bb[0],P0[1]-R,P0[2]+R), makeFace=True)
-        _trimFaces(hook2, [1], [2], mode=2, algo=1)
-        _removeFaces(hook2, [2,4,5,7,8])
-        _mergeFaces(hook2, [1,2]) # two faces left
-        _mergeCAD([hook, hook2])
-        freeHook(hook2)
-        nf = getNbFaces(hook)
-        _trimFaces(hook, [i for i in range(1,nf-1)], [nf-1], mode=1, algo=1)
-        nf = getNbFaces(hook)
-        _removeFaces(hook, [nf])
+        if plane == 'xmin':
+            P0[0] = bb[0]
+            _translate(hook, (-1.e-8,0,0))
+            hook2 = createEmptyCAD()
+            _addSphere(hook2, P0, R)
+            _addSquare2(hook2, (bb[0],P0[1]-R,P0[2]-R), (bb[0],P0[1]+R,P0[2]-R), (bb[0],P0[1]+R,P0[2]+R), (bb[0],P0[1]-R,P0[2]+R), makeFace=True)
+            _trimFaces(hook2, [1], [2], mode=2, algo=1)
+            _removeFaces(hook2, [2,4,5,7,8])
+            _sewing(hook2, tol=1.e-7)
+            _mergeFaces(hook2, [1,2]) # two faces left
+            _mergeCAD([hook, hook2])
+            freeHook(hook2)
+            nf = getNbFaces(hook)
+            _trimFaces(hook, [i for i in range(1,nf-1)], [nf-1], mode=1, algo=1)
+            nf = getNbFaces(hook)
+            _removeFaces(hook, [nf])
+            _sewing(hook, tol=1.e-7)
+        elif plane == 'ymin':
+            P0[1] = bb[1]
+            _translate(hook, (0,-1.e-8,0))
+            hook2 = createEmptyCAD()
+            _addSphere(hook2, P0, R)
+            _addSquare2(hook2, (P0[0]-R,bb[1],P0[2]-R), (P0[0]+R,bb[1],P0[2]-R), (P0[0]+R,bb[1],P0[2]+R), (P0[0]-R,bb[1],P0[2]+R), makeFace=True)
+            _trimFaces(hook2, [1], [2], mode=2, algo=1)
+            _removeFaces(hook2, [2,3,4,6,7])
+            _sewing(hook2, tol=1.e-7)
+            writeCAD(hook2, 'temp.step')
+            _mergeCAD([hook, hook2])
+            freeHook(hook2)
+            nf = getNbFaces(hook)
+            _trimFaces(hook, [i for i in range(1,nf-1)], [nf], mode=1, algo=1)
+            nf = getNbFaces(hook)
+            _removeFaces(hook, [nf])
+            _sewing(hook, tol=1.e-7)
+        else:
+            raise ValueError('addDomain: unknown plane type.')
 
     elif type == "half-box":
         if plane is None:

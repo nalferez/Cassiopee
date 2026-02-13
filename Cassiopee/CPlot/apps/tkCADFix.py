@@ -21,9 +21,9 @@ def readCAD(event=None):
         OCC.freeHook(hook)
         # free the previous hook
         edges = Internal.getNodeFromName1(CTK.t, 'EDGES')
-        edges[2] = []
+        if edges is not None: edges[2] = []
         faces = Internal.getNodeFromName1(CTK.t, 'FACES')
-        faces[2] = []
+        if faces is not None: faces[2] = []
     CTK.CADHOOK = OCC.readCAD(fileName, fileFmt)
     # Previous hmax, hausd?
     [hmin, hmax, hausd] = OCC.getCADcontainer(CTK.t)
@@ -75,9 +75,9 @@ def sewCAD(event=None):
 
     # remesh CAD and redisplay
     edges = Internal.getNodeFromName1(CTK.t, 'EDGES')
-    edges[2] = []
+    if edges is not None: edges[2] = []
     faces = Internal.getNodeFromName1(CTK.t, 'FACES')
-    faces[2] = []
+    if faces is not None: faces[2] = []
     OCC._meshAllEdges(CTK.CADHOOK, CTK.t, hmin=hmin, hmax=hmax, hausd=hausd) # loose manual remeshing
     OCC._meshAllFacesTri(CTK.CADHOOK, CTK.t, hmin=hmin, hmax=hmax, hausd=hausd)
 
@@ -129,9 +129,9 @@ def filletCAD(event=None):
 
     # remesh CAD and redisplay
     edges = Internal.getNodeFromName1(CTK.t, 'EDGES')
-    edges[2] = []
+    if edges is not None: edges[2] = []
     faces = Internal.getNodeFromName1(CTK.t, 'FACES')
-    faces[2] = []
+    if faces is not None: faces[2] = []
     OCC._meshAllEdges(CTK.CADHOOK, CTK.t, hmin=hmin, hmax=hmax, hausd=hausd) # loose manual remeshing...
     OCC._meshAllFacesTri(CTK.CADHOOK, CTK.t, hmin=hmin, hmax=hmax, hausd=hausd)
     CTK.setCursor(0, WIDGETS['frame'])
@@ -167,16 +167,6 @@ def removeFaces(event=None):
 
     CTK.setCursor(2, WIDGETS['frame'])
     CTK.setCursor(2, WIDGETS['removeFacesButton'])
-
-    # old style (full remesh)
-    #edgeMap = []; faceMap = []
-    #OCC._removeFaces(hook, faces, edgeMap, faceMap)
-    #edges = Internal.getNodeFromName1(CTK.t, 'EDGES')
-    #edges[2] = []
-    #faces = Internal.getNodeFromName1(CTK.t, 'FACES')
-    #faces[2] = []
-    #OCC._meshAllEdges(hook, CTK.t, hmax=hmax, hausd=hausd)
-    #OCC._meshAllFacesTri(hook, CTK.t, hmax=hmax, hausd=hausd)
 
     # new style (no remesh)
     nbEdges = OCC.getNbEdges(CTK.CADHOOK)
@@ -276,9 +266,9 @@ def fillHole(event=None):
 
     # remesh CAD and redisplay
     edges = Internal.getNodeFromName1(CTK.t, 'EDGES')
-    edges[2] = []
+    if edges is not None: edges[2] = []
     faces = Internal.getNodeFromName1(CTK.t, 'FACES')
-    faces[2] = []
+    if faces is not None: faces[2] = []
     OCC._meshAllEdges(CTK.CADHOOK, CTK.t, hmin=hmin, hmax=hmax, hausd=hausd) # loose manual remeshing...
     OCC._meshAllFacesTri(CTK.CADHOOK, CTK.t, hmin=hmin, hmax=hmax, hausd=hausd)
     CTK.setCursor(0, WIDGETS['frame'])
@@ -359,9 +349,9 @@ def trimFaces(event=None):
 
     # remesh CAD and redisplay
     edges = Internal.getNodeFromName1(CTK.t, 'EDGES')
-    edges[2] = []
+    if edges is not None: edges[2] = []
     faces = Internal.getNodeFromName1(CTK.t, 'FACES')
-    faces[2] = []
+    if faces is not None: faces[2] = []
     OCC._meshAllEdges(CTK.CADHOOK, CTK.t, hmin=hmin, hmax=hmax, hausd=hausd) # loose manual remeshing...
     OCC._meshAllFacesTri(CTK.CADHOOK, CTK.t, hmin=hmin, hmax=hmax, hausd=hausd)
 
@@ -442,6 +432,29 @@ def checkWatertight(event=None):
     else: CTK.TXT.insert('START', 'CAD is not watertight with tol %g.\n'%tol)
 
 #==============================================================================
+def addDomain(event=None):
+    import OCC.PyTree as OCC
+    if CTK.t == []: return
+    if CTK.CADHOOK is None: return
+    [hmin, hmax, hausd] = OCC.getCADcontainer(CTK.t)
+    
+    dfar = CTK.varsFromWidget(VARS[8].get(), type=1)[0]
+    type = VARS[7].get()
+    OCC._addDomain(CTK.CADHOOK, type=type, dfar=dfar)
+
+    edges = Internal.getNodeFromName1(CTK.t, 'EDGES')
+    if edges is not None: edges[2] = []
+    faces = Internal.getNodeFromName1(CTK.t, 'FACES')
+    if faces is not None: faces[2] = []
+    OCC._meshAllEdges(CTK.CADHOOK, CTK.t, hmin=hmin, hmax=hmax, hausd=hausd) # loose manual remeshing
+    OCC._meshAllFacesTri(CTK.CADHOOK, CTK.t, hmin=hmin, hmax=hmax, hausd=hausd)
+
+    (CTK.Nb, CTK.Nz) = CPlot.updateCPlotNumbering(CTK.t)
+    CTK.TKTREE.updateApp()
+    CTK.display(CTK.t)
+    CTK.TXT.insert('START', 'Domain is added.\n')
+
+#==============================================================================
 # Create app widgets
 #==============================================================================
 def createApp(win):
@@ -492,6 +505,10 @@ def createApp(win):
     V = TK.StringVar(win); V.set(''); VARS.append(V)
     # -6- Number of components
     V = TK.StringVar(win); V.set('Components: 0'); VARS.append(V)
+    # -7- addDomain type
+    V = TK.StringVar(win); V.set('sphere'); VARS.append(V)
+    # -8- addDomain data
+    V = TK.StringVar(win); V.set('10.'); VARS.append(V)
 
     # CAD file name
     B = TTK.Entry(Frame, textvariable=VARS[0], background='White', width=15)
@@ -571,6 +588,16 @@ def createApp(win):
                    image=iconics.PHOTO[8], padx=0, pady=0)
     BB = CTK.infoBulle(parent=B, text='Set the faces for first compound.')
     B.grid(row=7, column=1, columnspan=1, sticky=TK.EW)
+
+    # addDomain
+    B = TTK.OptionMenu(Frame, VARS[7], 'sphere', 'box')
+    BB = CTK.infoBulle(parent=B, text='Add domain.')
+    B.grid(row=8, column=0, columnspan=1, sticky=TK.EW)
+
+    B = TTK.Entry(Frame, textvariable=VARS[8], background='White', width=10)
+    B.grid(row=8, column=1, sticky=TK.EW)
+    BB = CTK.infoBulle(parent=B, text='Domain data.')
+    B.bind('<Return>', addDomain)
 
 #==============================================================================
 # Called to display widgets

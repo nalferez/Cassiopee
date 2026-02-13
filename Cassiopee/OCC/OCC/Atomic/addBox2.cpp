@@ -28,6 +28,7 @@
 #include "BRepBuilderAPI_MakeEdge.hxx"
 #include "BRepBuilderAPI_MakeWire.hxx"
 #include "BRepBuilderAPI_MakeFace.hxx"
+#include "BRepBuilderAPI_Sewing.hxx"
 
 //=====================================================================
 // Add a box to CAD hook from points
@@ -126,7 +127,12 @@ PyObject* K_OCC::addBox2(PyObject* self, PyObject* args)
   builder.Add(compound, face5);
   builder.Add(compound, face6);
 
-  TopoDS_Shape* newshp = new TopoDS_Shape(compound);
+  BRepBuilderAPI_Sewing sewingTool;
+  sewingTool.Add(compound);
+  sewingTool.Perform();
+  TopoDS_Shape sewedShape = sewingTool.SewedShape();
+
+  TopoDS_Shape* newshp = new TopoDS_Shape(sewedShape);
     
   delete shape;
   SETSHAPE(newshp);

@@ -449,27 +449,25 @@ E_Int
 
 ///
 template <typename T>
-void
-  Kernel<T>::__getSortedBoundary
+void Kernel<T>::__getSortedBoundary
 (const K_FLD::IntArray& connectM, const K_FLD::IntArray& neighbors, size_type Ki, size_type b0,
  const int_set_type& cavity, int_pair_set_type& cboundary, int_set_type& visitedK, int_pair_vector_type& sorted_boundary)
 {
-  size_type                       Nj, Kj, b, b1;
-  int_pair_type                   Bi;
-  K_FLD::IntArray::const_iterator  pKi, pKj;
+  size_type Nj, Kj, b, b1;
+  int_pair_type Bi;
+  K_FLD::IntArray::const_iterator pKi, pKj;
 
-  if (cboundary.empty())
-    return;
+  if (cboundary.empty()) return;
 
   visitedK.insert(Ki);
 
   for (size_type i = 0; i < element_type::NB_NODES; ++i)
   {
-    b         = (b0+i) % element_type::NB_NODES;
-    Bi.first  = Ki;
+    b = (b0+i) % element_type::NB_NODES;
+    Bi.first = Ki;
     Bi.second = b;
 
-    Kj  = neighbors (b, Ki);
+    Kj = neighbors (b, Ki);
 
 #ifdef E_DEBUG
     if (Ki != IDX_NONE)
@@ -490,8 +488,8 @@ void
 
     pKi = connectM.col(Ki);
     pKj = connectM.col(Kj);
-    Nj  = *(pKi + (b+2)% element_type::NB_NODES);
-    b1  = element_type::getLocalNodeId (pKj, Nj);
+    Nj = *(pKi + (b+2)% element_type::NB_NODES);
+    b1 = element_type::getLocalNodeId (pKj, Nj);
 
     __getSortedBoundary(connectM, neighbors, Kj, b1, cavity, cboundary, visitedK, sorted_boundary);
   }
@@ -499,21 +497,20 @@ void
 
 ///
 template <typename T>
-E_Int
-  Kernel<T>::__getSortedBoundary2
+E_Int Kernel<T>::__getSortedBoundary2
 (const K_FLD::IntArray& connect, int_pair_set_type& in, int_pair_vector_type& out)
 {
-  size_type sz(in.size());
-  if (sz == 0)
-    return 1;
+  size_type sz = in.size();
+  if (sz == 0) return 1;
   
   out.resize(sz);
   _node_to_rightS.clear();
-  size_type S,b,Ni;
+
+  size_type S, b, Ni;
   for (int_pair_set_type::iterator it = in.begin(); it != in.end(); ++it)
   {
-    S = it->first;
-    b = it->second;
+    S = it->first; // element
+    b = it->second; // no dans l'element
     Ni = connect((b+1)%3, S);
     _node_to_rightS[Ni] = it;
   }
@@ -525,81 +522,13 @@ E_Int
     S = out[i].first;
     b = out[i].second;
     Ni = connect((b+2)%3, S);
+    // CBX: BUG: it fails to find Ni in map for some rare cases
+    //if (_node_to_rightS.count(Ni) == 0)
+    //{ printf("Ni=%d -> S=%d, b=%d, sz=%d\n", Ni, S, b, sz); }
     out[i+1] = *_node_to_rightS[Ni];
   }
   return 0;
 }
-
-/* vtune reports the uncommented is better but not very obvious looking at CPU...
-///
-template <typename T>
-E_Int
-  Kernel<T>::__ensureEmptyCavity
-(const K_FLD::IntArray& connectM, const K_FLD::IntArray& neighbors, const int_vector_type& ancestors, const int_set_type& base,
- int_set_type& cavity, int_pair_set_type& cboundary)
-{
-  K_FLD::IntArray::const_iterator pK;
-  int_pair_set_type::const_iterator it(cboundary.begin()), itEnd(cboundary.end());
-  int_set_type::const_iterator itC(cavity.begin()), itCend(cavity.end());
-
-  inodes.clear();
-
-  // Store the cavity nodes.
-  for (; itC != itCend; ++itC)
-  {
-    pK = connectM.col(*itC);
-    inodes.insert (*pK);
-    inodes.insert (*(pK + 1));
-    inodes.insert (*(pK + 2));
-  }
-
-  // Store the boundary nodes.
-  for (; it != itEnd; ++it)
-  {
-    const int_pair_type & Bi = *it;
-    const size_type& K = Bi.first;
-    const size_type& b = Bi.second;
-    pK = connectM.col(K);
-
-    inodes.erase (*(pK + (b+1) % element_type::NB_NODES));
-    //inodes.erase (*(pK + (b+2) % element_type::NB_NODES));
-  }
-
-  if (inodes.empty())
-    return 0;
-  
-  int_set_type removable = cavity;
-  for (int_set_type::const_iterator itB = base.begin(); itB != base.end(); ++itB)
-    removable.erase(*itB);
-  
-  while (!inodes.empty())
-  {
-    Ancs.clear();
-    _tool->getAncestors (*inodes.begin(), ancestors, neighbors, std::back_inserter(Ancs));
-
-    elements.clear();
-    std::sort(ALL(Ancs));
-    std::set_intersection (ALL(Ancs), ALL(removable), std::back_inserter(elements));
-
-    if (elements.empty())
-      return -1;
-    
-    const size_type& K = *elements.begin();
-    pK = connectM.col(K);
-
-    cavity.erase (K);
-    removable.erase(K);
-
-    for (size_type i = 0; i < element_type::NB_NODES; ++i)
-    {
-      inodes.erase(*(pK+i));
-      int_pair_type B(K,i);
-      if (!cboundary.insert(B).second) // if already in
-        cboundary.erase(B);
-    }
-  }
-  return 0;
-}*/
 
 ///
 template <typename T>
