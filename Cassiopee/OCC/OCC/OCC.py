@@ -918,7 +918,7 @@ def _addDomain(hook, dfar=10., type="box", plane=None):
     elif type == "half-sphere":
         if plane is None:
             raise ValueError('addDomain: requires plane for half-sphere.')
-        
+
         P0 = [(bb[3]+bb[0])*0.5, (bb[4]+bb[1])*0.5, (bb[5]+bb[2])*0.5]
         R = max(dfarx, dfary, dfarz)
         if plane == 'xmin':

@@ -437,7 +437,7 @@ def addDomain(event=None):
     if CTK.t == []: return
     if CTK.CADHOOK is None: return
     [hmin, hmax, hausd] = OCC.getCADcontainer(CTK.t)
-    
+
     dfar = CTK.varsFromWidget(VARS[8].get(), type=1)[0]
     type = VARS[7].get()
     OCC._addDomain(CTK.CADHOOK, type=type, dfar=dfar)
