@@ -67,7 +67,7 @@ def sewCAD(event=None):
             no = Internal.getValue(no)
             faces.append(no)
     if faces == []: faces = None
-    
+
     CTK.setCursor(2, WIDGETS['frame'])
     CTK.setCursor(2, WIDGETS['sewingButton'])
 
