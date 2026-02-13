@@ -32,6 +32,7 @@ namespace K_OCC
   PyObject* writeCAD(PyObject* self, PyObject* args);
   PyObject* createEmptyCAD(PyObject* self, PyObject* args);
   PyObject* mergeCAD(PyObject* self, PyObject* args);
+  PyObject* _mergeCAD(PyObject* self, PyObject* args);
   PyObject* freeHook(PyObject* self, PyObject* args);
 
   PyObject* printOCAF(PyObject* self, PyObject* args);

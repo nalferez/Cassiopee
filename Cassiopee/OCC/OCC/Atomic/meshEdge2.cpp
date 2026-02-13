@@ -104,7 +104,6 @@ E_Int __getParamHmax(const TopoDS_Edge& E, E_Float hmax, E_Int& nbPoints, E_Floa
   //printf("uemax= ");
   //for (E_Int i = 0; i < nbPoints; i++) printf("%g ", ue[i]);
   //printf("\n");
-
   return 0;
 }
 
@@ -367,7 +366,7 @@ E_Int __getParamHminHmaxHausdE(const TopoDS_Edge& E, E_Float hmin, E_Float hmax,
   {
     delete [] uel[i];
   }
-  return 1;
+  return 0;
 }
 
 // get curvature on surface at uv
@@ -615,7 +614,7 @@ E_Int __getParamHminHmaxHausdE4(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
   delete [] hi;
   nbPoints = N+1;
 
-  return 1;
+  return 0;
 }
 
 // ===============================================================================
@@ -758,7 +757,7 @@ E_Int __getParamHminHmaxHausdF(const TopoDS_Edge& E, E_Float hmin, E_Float hmax,
     delete [] uel[i];
   }
 
-  return 1;
+  return 0;
 }
 
 // ===============================================================================
@@ -895,16 +894,6 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
     }
   }
 
-  // smooth hi
-  /*
-  for (E_Int i = 0; i < N-1; i++)
-  {
-    hi[i] = 0.5*(hi[i+1]+hi[i]);
-  }
-  hi[N-1] = 0.5*(hi[N-2]+hi[N-1]);
-  Ltot = 0.;
-  for (E_Int i = 0; i < N; i++) Ltot += hi[i];
-  */
 
   if (N == 1)
   {
@@ -923,15 +912,27 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
   //printf("\n");
 
   // scale hi to match full L
-  E_Float s = L-Ltot;
-  s = s/N;
-  for (E_Int i = 0; i < N; i++) hi[i] += s;
-  
+  E_Float s;
+  if (Ltot > 0) s = L/Ltot;
+  else s = 1.; // must not be possible (degenerated)
+  for (E_Int i = 0; i < N; i++) hi[i] *= s;
+
   // DBX
   //Ltot = 0.;
   //for (E_Int i = 0; i < N; i++) Ltot += hi[i];
   //printf("Ltot=%g %g\n", Ltot, L);
   // ENDDBX
+
+  // smooth hi
+  /*
+  for (E_Int i = 0; i < N-1; i++)
+  {
+    hi[i] = 0.5*(hi[i+1]+hi[i]);
+  }
+  hi[N-1] = 0.5*(hi[N-2]+hi[N-1]);
+  Ltot = 0.;
+  for (E_Int i = 0; i < N; i++) Ltot += hi[i];
+  */
 
   // Get ue
   ue = new E_Float [N+1];
@@ -945,14 +946,28 @@ E_Int __getParamHminHmaxHausdF5(const TopoDS_Edge& E, E_Float hmin, E_Float hmax
   }
   ue[N] = u1; // forced
 
-  //printf("N= %d // U0=%g U1=%g\n", N+1, u0, u1);
-  //printf("ue5= ");
-  //for (E_Int i = 0; i <= N; i++) printf("%g ", ue[i]);
-  //printf("\n");
+  // check if ue is growing
+  /*
+  E_Bool growing = true;
+  for (E_Int i = 0; i < N; i++)
+  {
+    if (ue[i] >= ue[i+1]) growing = false;
+  }
+
+  if (growing == false)
+  {
+    printf("N= %d // U0=%g U1=%g\n", N+1, u0, u1);
+    printf("ue5= ");
+    for (E_Int i = 0; i <= N; i++) printf("%g ", ue[i]);
+    printf("\n");
+    printf("h5= ");
+    for (E_Int i = 0; i < N; i++) printf("%g ", hi[i]);
+    printf("\n");
+  }*/
 
   delete [] hi;
   nbPoints = N+1;
-  return 1;
+  return 0;
 }
 
 // ============================================================================

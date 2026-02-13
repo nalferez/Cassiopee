@@ -33,6 +33,7 @@ static PyMethodDef Pyocc [] =
   {"writeCAD", K_OCC::writeCAD, METH_VARARGS},
   {"createEmptyCAD", K_OCC::createEmptyCAD, METH_VARARGS},
   {"mergeCAD", K_OCC::mergeCAD, METH_VARARGS},
+  {"_mergeCAD", K_OCC::_mergeCAD, METH_VARARGS},
   {"freeHook", K_OCC::freeHook, METH_VARARGS},
   
   {"printOCAF", K_OCC::printOCAF, METH_VARARGS},

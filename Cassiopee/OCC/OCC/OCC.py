@@ -24,7 +24,7 @@ __all__ = ['convertCAD2Arrays',
            'getFaceArea', 'getBoundingBox',
            '_translate', '_rotate', '_scale', '_sewing',
            '_splitFaces', '_mergeFaces', '_trimFaces', '_removeFaces',
-           '_fillHole', '_addFillet', '_offset', 'mergeCAD',
+           '_fillHole', '_addFillet', '_offset', 'mergeCAD', '_mergeCAD',
            '_splitEdge',
            '_addArc', '_addCircle', '_addEllipse',
            '_addSuperEllipse', '_addLine', '_addSpline',
@@ -577,6 +577,7 @@ def meshFaceWithMetric(hook, i, edges, hmin, hmax, hausd, close, aniso, mesh, FA
         SUCCESS = True
     except Exception as e:
         SUCCESS = False
+        #edges = switch2UV(edges)
         Converter.convertArrays2File(edges, '%03d_edgeUV.plt'%i) # pas vraiment UV
         FAILED.append(i)
 
@@ -699,7 +700,9 @@ def meshAllFacesTri(hook, dedges, metric=True, faceList=[], hList=[], close=True
 
         if not SUCCESS: # TRIMESH sans metric
             edges = edgesSav
-            SUCCESS = meshFaceInUV(hook, i, edges, 1., close, dfaces, FAILED2)
+            if abs(hsize[1]-hsize[0]) < 1.e-6: grading = 1.
+            else: grading = 1.2
+            SUCCESS = meshFaceInUV(hook, i, edges, grading, close, dfaces, FAILED2)
 
         if not SUCCESS: # pointed hat
             edges = edgesSav
@@ -915,18 +918,24 @@ def _addDomain(hook, dfar=10., type="box", plane=None):
     elif type == "half-sphere":
         if plane is None:
             raise ValueError('addDomain: requires plane for half-sphere.')
-        raise NotImplementedError('addDomain: not implemented for half-sphere.')
         P0 = [(bb[3]+bb[0])*0.5, (bb[4]+bb[1])*0.5, (bb[5]+bb[2])*0.5]
         R = max(dfarx, dfary, dfarz)
-        # xmin plane forced
-        nfaces = getNbFaces(hook)
+        # xmin plane forced here (to be generalized)
         P0[0] = bb[0]
+        _translate(hook, (-1.e-5,0,0))
         hook2 = createEmptyCAD()
         _addSphere(hook2, P0, R)
         _addSquare2(hook2, (bb[0],P0[1]-R,P0[2]-R), (bb[0],P0[1]+R,P0[2]-R), (bb[0],P0[1]+R,P0[2]+R), (bb[0],P0[1]-R,P0[2]+R), makeFace=True)
-        _trimFaces(hook2, [1], [2], mode=1, algo=1)
-        #_trimFaces(hook, [nfaces+1], [nfaces+2], mode=2, algo=1)
-        #_removeFaces(hook, [13,12])
+        _trimFaces(hook2, [1], [2], mode=2, algo=1)
+        _removeFaces(hook2, [2,4,5,7,8])
+        _mergeFaces(hook2, [1,2]) # two faces left
+        _mergeCAD([hook, hook2])
+        freeHook(hook2)
+        nf = getNbFaces(hook)
+        _trimFaces(hook, [i for i in range(1,nf-1)], [nf-1], mode=1, algo=1)
+        nf = getNbFaces(hook)
+        _removeFaces(hook, [nf])
+
     elif type == "half-box":
         if plane is None:
             raise ValueError('addDomain: requires plane for half-box.')
@@ -1034,6 +1043,11 @@ def _mergeFaces(hook, faceList=None):
 def mergeCAD(hooks):
     """Merge CAD hooks in one new hook."""
     return occ.mergeCAD(hooks)
+
+def _mergeCAD(hooks):
+    """Merge CAD hooks in first hook."""
+    occ._mergeCAD(hooks)
+    return None
 
 # trim two set of surfaces
 # trim two set of surfaces
