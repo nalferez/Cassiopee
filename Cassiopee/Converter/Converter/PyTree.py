@@ -5205,7 +5205,7 @@ def getBC2__(zbc, z, T, res, extrapFlow=True):
                             Internal._rmNodesFromType(zp, "Family_t")
                             Internal._rmNodesFromType(zp, "FamilyName_t")
                             Internal._rmNodesFromName(zp, "ParentElement*")
-                            _deleteFlowSolutions__(zp, loc='centers') # sadly 
+                            _deleteFlowSolutions__(zp, loc='centers') # sadly
                             zp = T.subzone(zp, facelist, type='elements')
                             zp[0] = z[0]+Internal.SEP1+zbc[0]
                             _keepBCDataSet(zp, z, zbc, extrapFlow=extrapFlow)
