@@ -695,9 +695,9 @@ def _remeshTreeFromEdges(hook, t, edges):
         for e in edgeList:
             ze = be[2][pose[e]]
             fedges.append(ze)
-        a = G.getMaxLength(fedges)
-        hmine = C.getMinValue(a, 'centers:MaxLength')
-        hmaxe = C.getMaxValue(a, 'centers:MaxLength')
+        a = G.getEdgeLength(fedges, type=0)
+        hmine = C.getMinValue(a, 'centers:EdgeLength')
+        hmaxe = C.getMaxValue(a, 'centers:EdgeLength')
         hausde = hsize[2]
         #print("hsize=",hmine,hmaxe,hausde)
         hsize = ( min(hmine, hsize[0]), max(hmaxe, hsize[1]), min(hausde, hsize[2]) )

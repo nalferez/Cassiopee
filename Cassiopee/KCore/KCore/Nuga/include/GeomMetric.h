@@ -327,8 +327,6 @@ namespace DELAUNAY
     if (locally_iso)
     {
       E_Float R2 = E/L; // pourquoi cette valeur ? 
-      //R2 *= R2;
-      //E_Float h2 = K_FUNC::E_min(hmax2, _alpha2*R2); // alpha2 prend en compte hausd
       E_Float h2 = K_FUNC::E_min(hmax2, (2.*K_FUNC::E_abs(R2)-_chordal_error)*4.*_chordal_error); // alpha2 prend en compte hausd
       //printf("in: rho=%g, hmin=%g, hmax=%g\n", R2, sqrt(hmin2), sqrt(hmax2));
       h2 = K_FUNC::E_max(h2, hmin2);
@@ -381,7 +379,6 @@ namespace DELAUNAY
 
     if (_mode == ISO_RHO) // use min curvature in all directions + impose hmin
     {
-      //E_Float h2 = K_FUNC::E_min(hmax2, _alpha2*rho1_2);
       E_Float h2 = K_FUNC::E_min(hmax2, (2.*K_FUNC::E_abs(rho1)-_chordal_error)*4.*_chordal_error);
       
       h2 = K_FUNC::E_max(h2, hmin2);
@@ -408,11 +405,6 @@ namespace DELAUNAY
 
     E_Float rho2_2 = rho2 * rho2; // plus grand rayon de courbure
 
-    //rho1_2 = K_FUNC::E_min(hmax2/_alpha2, rho1_2); // impose hmax et hmin
-    //rho2_2 = K_FUNC::E_min(hmax2/_alpha2, rho2_2);
-    //rho1_2 = K_FUNC::E_max(hmin2/_alpha2, rho1_2); //fixme
-    //rho2_2 = K_FUNC::E_max(hmin2/_alpha2, rho2_2); //fixme
-
     E_Float rhol = (hmax2+4.*_chordal_error*_chordal_error)/(8.*_chordal_error);
     rho1_2 = K_FUNC::E_min(rhol*rhol, rho1_2);
     rho2_2 = K_FUNC::E_min(rhol*rhol, rho2_2);
@@ -423,8 +415,6 @@ namespace DELAUNAY
     E_Float q = 1. - sqrt(rho1_2/rho2_2);
     E_Float rho2_2c = rho2_2*(1.-q*q); // reduce the largest according to q
 
-    //E_Float h1_2 = _alpha2*rho1_2;
-    //E_Float h2_2 = _alpha2*rho2_2c;
     E_Float h1_2 = (2.*rho1-_chordal_error)*4.*_chordal_error;
     E_Float h2_2 = (2.*sqrt(rho2_2c)-_chordal_error)*4.*_chordal_error;
 
