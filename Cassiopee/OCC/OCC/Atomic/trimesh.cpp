@@ -187,8 +187,8 @@ PyObject* K_OCC::trimesh(PyObject* self, PyObject* args)
   if (err || (data.connectM.cols() == 0))
   {
     // connectM doit etre la sortie
-    printf("error = " SF_D_ "\n", err);
-    printf("cols = " SF_D_ "\n", data.connectM.cols());
+    printf("Error: trimesh: error code = " SF_D_ "\n", err);
+    printf("Error: trimesh: cols = " SF_D_ "\n", data.connectM.cols());
     RELEASESHAREDB(ret, arrayUV, fi, ci);
     PyErr_SetString(PyExc_TypeError, "trimesh: mesher has failed.");
     return NULL;

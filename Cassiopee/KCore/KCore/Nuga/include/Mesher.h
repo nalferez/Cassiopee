@@ -267,7 +267,7 @@ namespace DELAUNAY
 
     if (_err)
     {
-      if (!mode.silent_errors) std::cout << "Warning: mesher: error triangulating." << std::endl;
+      std::cout << "Error: mesher: error triangulating." << std::endl;
 #ifdef DEBUG_MESHER
       medith::write("err_tria.mesh", *_data->pos, *_data->connectB, "BAR");
 #endif
@@ -285,7 +285,7 @@ namespace DELAUNAY
     _err = restoreBoundaries(*data.pos, data.connectM, data.neighbors, data.ancestors);
     if (_err)
     {
-      if (!mode.silent_errors) std::cout << "Warning: mesher: error restoring boundaries." << std::endl;
+      std::cout << "Error: mesher: error restoring boundaries." << std::endl;
       return _err;
     }
 
@@ -307,13 +307,12 @@ namespace DELAUNAY
     _err = setColors(data.pos->cols()-1, data); //fixme : Nbox
     if (_err)
     {
-      if (!mode.silent_errors) std::cout << "Warning: mesher: error setting colors." << std::endl;
+      std::cout << "Error: mesher: error setting colors." << std::endl;
       return _err;
     }
 
 #ifdef DEBUG_MESHER
-    //if (dbg_flag)
-      medith::write("triangulationC_color",*_data->pos, _data->connectM, "TRI", &_data->mask, &data.colors);
+    medith::write("triangulationC_color",*_data->pos, _data->connectM, "TRI", &_data->mask, &data.colors);
 #endif
     
     if (mode.mesh_mode == MesherMode::REFINE_MODE)
@@ -325,7 +324,11 @@ namespace DELAUNAY
 
       // Refine
       _err = refine();
-      if (_err) return _err;
+      if (_err)
+      { 
+        std::cout << "Error: mesher: error in refine." << std::endl;
+        return _err;  
+      }
     }
 
 #ifdef E_TIME
@@ -341,7 +344,7 @@ namespace DELAUNAY
     c.start();
 #endif
 
-    if (_err && !mode.silent_errors) std::cout << "Warning: mesher: error finalizing." << std::endl;
+    if (_err) std::cout << "Error: mesher: error finalizing." << std::endl;
     
     return _err;
   }

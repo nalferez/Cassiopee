@@ -95,7 +95,7 @@ E_Int Kernel<T>::insertNode(size_type N, const T& m, const ConstraintType& dummy
   c.start();
 #endif
 
-  //
+  // get cavity containg node
   E_Int ret = __getCavity<ConstraintType> (N, m, *_data->pos, _data->neighbors, _data->ancestors, _cavity, _cboundary);
 
   if (ret == -1 || ret == 2)
@@ -106,7 +106,7 @@ E_Int Kernel<T>::insertNode(size_type N, const T& m, const ConstraintType& dummy
   c.start();
 #endif
 
-  //
+  // remesh cavity
   ret = __remeshCavity (N, _data->connectM, _data->neighbors, _data->ancestors, _cavity, _cboundary);
   if (ret)
     return ret;
@@ -202,9 +202,12 @@ E_Int Kernel<T>::__getCavity
 #endif
 
   cboundary.clear();
-  //_visited.clear();
-  //__getSortedBoundary(_data->connectM, neighbors, *_base.begin(), 0, cavity, _sbound, _visited, cboundary);
   ret = __getSortedBoundary2(_data->connectM, _sbound, cboundary);
+  if (ret > 0) // previous fail
+  {
+    _visited.clear();
+    __getSortedBoundary(_data->connectM, neighbors, *_base.begin(), 0, cavity, _sbound, _visited, cboundary);
+  }
   _sbound.clear();
 
 #ifdef E_TIME
@@ -234,12 +237,11 @@ E_Int Kernel<T>::__getInitialCavity
   c.start();
 #endif
 
-  E_Int ret = _tool->getContainingElements (pos.col(N), pos, connect, neighbors, ancestors, _data->mask,
+  E_Int ret = _tool->getContainingElements(pos.col(N), pos, connect, neighbors, ancestors, _data->mask,
                                            _tool->getTree(), std::back_inserter(ba), Nmatch);
 
   size_type sz = (size_type)ba.size();
-  for (size_type i = 0; i < sz; ++i)//fixme
-    base.insert(ba[i]);
+  for (size_type i = 0; i < sz; ++i) base.insert(ba[i]);
 
 #ifdef E_TIME
   _base_time += c.elapsed();
@@ -262,13 +264,13 @@ E_Int Kernel<T>::__getInitialCavity
   
   if (ret == 2)
   {  
-  K_FLD::IntArray cc;
-  for (int_set_type::iterator i = base.begin(); i != base.end(); ++i)
-  {
-  const E_Int* p = connect.col(*i);
-  cc.pushBack(p,p+3);
-  }
-  medith::write("base.mesh", pos, cc);
+    K_FLD::IntArray cc;
+    for (int_set_type::iterator i = base.begin(); i != base.end(); ++i)
+    {
+      const E_Int* p = connect.col(*i);
+      cc.pushBack(p,p+3);
+    }
+    medith::write("base.mesh", pos, cc);
   }
 #endif
 
@@ -298,8 +300,7 @@ E_Int Kernel<T>::__getInitialCavity
 /// Default implementation : constrained iso/aniso
 template <typename T>
 template <typename ConstraintType>
-void
-Kernel<T>::__appendCavity
+void Kernel<T>::__appendCavity
 (const K_FLD::IntArray& neighbors, const int_set_type& base,
  int_set_type& cavity, int_pair_set_type& cboundary)
 {
@@ -317,8 +318,7 @@ Kernel<T>::__appendCavity
 // Specialization : unconstrained iso.
 template <> 
 template <> inline
-void
-Kernel<E_Float>::__appendCavity<UNCONSTRAINED>
+void Kernel<E_Float>::__appendCavity<UNCONSTRAINED>
 (const K_FLD::IntArray& neighbors, const int_set_type& base,
  int_set_type& cavity, int_pair_set_type& cboundary)
 {
@@ -335,8 +335,7 @@ Kernel<E_Float>::__appendCavity<UNCONSTRAINED>
 // Specialization unconstrained aniso.
 template <> 
 template <> inline
-void
-Kernel<Aniso2D>::__appendCavity<UNCONSTRAINED>
+void Kernel<Aniso2D>::__appendCavity<UNCONSTRAINED>
 (const K_FLD::IntArray& neighbors, const int_set_type& base,
  int_set_type& cavity, int_pair_set_type& cboundary)
 {
@@ -350,21 +349,20 @@ Kernel<Aniso2D>::__appendCavity<UNCONSTRAINED>
   __getBoundary(cavity, neighbors, cboundary);
 }
 
-///
+// remesh cavity
 template <typename T>
-E_Int
-  Kernel<T>::__remeshCavity
+E_Int Kernel<T>::__remeshCavity
 (size_type N, K_FLD::IntArray & connect, K_FLD::IntArray& neighbors,
  int_vector_type& ancestors, const int_set_type& cavity,
  const int_pair_vector_type& cboundary)
 {
   // Fast return.
-  if (cavity.empty())       return -1; // Error
-  if (cboundary.empty())    return -1; // Error
+  if (cavity.empty()) return -1; // Error
+  if (cboundary.empty()) return -1; // Error
 
   size_type K0, Kprev(IDX_NONE), K1(connect.cols()), Kstart(connect.cols()), Kadj,j,jadj;
   K_FLD::IntArray::const_iterator pK0;
-  size_type                   newN[] = {IDX_NONE, IDX_NONE, IDX_NONE};
+  size_type newN[] = {IDX_NONE, IDX_NONE, IDX_NONE};
 
   int_pair_type Bi;
   size_type triangle[3], N0, N1;
@@ -374,8 +372,7 @@ E_Int
   bool set_color = !_data->colors.empty();
 
   size_type color = -1;
-  if (set_color)
-    color = _data->colors[*cavity.begin()];
+  if (set_color) color = _data->colors[*cavity.begin()];
 
   size_type bsize = (size_type)cboundary.size();
   for (size_type i = 0; i < bsize; ++i)
@@ -389,8 +386,7 @@ E_Int
     N1 = triangle[1] = *(pK0 + (j+2) % element_type::NB_NODES);
 
     connect.pushBack (triangle, triangle + 3);
-    if (color != -1)
-      _data->colors.push_back(color);
+    if (color != -1) _data->colors.push_back(color);
 
     Kadj = neighbors(j, K0);
     neighbors.pushBack (newN, newN + 3);
@@ -422,8 +418,7 @@ E_Int
 
 ///
 template <typename T>
-void
-  Kernel<T>::__invalidCavityElements
+void Kernel<T>::__invalidCavityElements
 (const int_set_type& cavity, const K_FLD::IntArray& connect,
  bool_vector_type& mask)
 {
@@ -435,8 +430,7 @@ void
 
 ///
 template <typename T>
-E_Int
-  Kernel<T>::__fixCavity
+E_Int Kernel<T>::__fixCavity
 (size_type N, const K_FLD::FloatArray& pos, const K_FLD::IntArray& connectM, const K_FLD::IntArray& neighbors,
  const int_vector_type& ancestors, const int_set_type& base, int_set_type& cavity,
  int_pair_set_type& cboundary)
@@ -467,13 +461,11 @@ void Kernel<T>::__getSortedBoundary
     Bi.first = Ki;
     Bi.second = b;
 
-    Kj = neighbors (b, Ki);
+    Kj = neighbors(b, Ki);
 
 #ifdef E_DEBUG
-    if (Ki != IDX_NONE)
-      pKi = connectM.col(Ki);
-    if (Kj != IDX_NONE)
-      pKj = connectM.col(Kj);
+    if (Ki != IDX_NONE) pKi = connectM.col(Ki);
+    if (Kj != IDX_NONE) pKj = connectM.col(Kj);
 #endif
 
     if (IS_IN(cboundary, Bi) || (Kj == IDX_NONE))//fixme : est-ce que la seconde condition est necessaire ?
@@ -489,7 +481,7 @@ void Kernel<T>::__getSortedBoundary
     pKi = connectM.col(Ki);
     pKj = connectM.col(Kj);
     Nj = *(pKi + (b+2)% element_type::NB_NODES);
-    b1 = element_type::getLocalNodeId (pKj, Nj);
+    b1 = element_type::getLocalNodeId(pKj, Nj);
 
     __getSortedBoundary(connectM, neighbors, Kj, b1, cavity, cboundary, visitedK, sorted_boundary);
   }
@@ -522,9 +514,10 @@ E_Int Kernel<T>::__getSortedBoundary2
     S = out[i].first;
     b = out[i].second;
     Ni = connect((b+2)%3, S);
-    // CBX: BUG: it fails to find Ni in map for some rare cases
+    // CBX: BUG: it fails to find Ni in map for some rare cases but why?
     //if (_node_to_rightS.count(Ni) == 0)
     //{ printf("Ni=%d -> S=%d, b=%d, sz=%d\n", Ni, S, b, sz); }
+    if (_node_to_rightS.count(Ni) == 0) return 1;
     out[i+1] = *_node_to_rightS[Ni];
   }
   return 0;
@@ -532,8 +525,7 @@ E_Int Kernel<T>::__getSortedBoundary2
 
 ///
 template <typename T>
-E_Int
-  Kernel<T>::__ensureEmptyCavity
+E_Int Kernel<T>::__ensureEmptyCavity
 (const K_FLD::IntArray& connectM, const K_FLD::IntArray& neighbors, const int_vector_type& ancestors, const int_set_type& base,
  int_set_type& cavity, int_pair_set_type& cboundary)
 {
@@ -580,8 +572,7 @@ E_Int
     std::sort(ALL(Ancs));
     std::set_intersection (ALL(Ancs), ALL(removable), std::back_inserter(elements));
 
-    if (elements.empty())
-      return -1;
+    if (elements.empty()) return -1;
     
     const size_type& K = *elements.begin();
     pK = connectM.col(K);
@@ -602,8 +593,7 @@ E_Int
 
 ///
 template <typename T>
-E_Int
-  Kernel<T>::__ensureStarShape
+E_Int Kernel<T>::__ensureStarShape
 (size_type N, const K_FLD::FloatArray& pos, const K_FLD::IntArray& connectM, 
  const K_FLD::IntArray& neighbors, const int_set_type& base,
  int_set_type& cavity, int_pair_set_type& cboundary)
@@ -632,8 +622,7 @@ E_Int
 
       q = K_MESH::Triangle::qualityG<2>(pos.col(N), pos.col(Ni), pos.col(Nj));
 
-      if (q > tolerance)
-        continue;
+      if (q > tolerance) continue;
 
       cavity.erase(S);
       carry_on = true;
@@ -649,8 +638,7 @@ E_Int
   
 ///
 template <typename T>
-void
-  Kernel<T>::__getBoundary
+void Kernel<T>::__getBoundary
 (int_set_type& cavity, const K_FLD::IntArray& neighbors, int_pair_set_type& cboundary)
 {
   cboundary.clear();
@@ -665,7 +653,6 @@ void
     }
   }
 }
-
 
 
 }
