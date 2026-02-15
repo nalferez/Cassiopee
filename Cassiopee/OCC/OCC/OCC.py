@@ -20,7 +20,7 @@ __all__ = ['convertCAD2Arrays',
            'identifyTags__',
            'readCAD', 'writeCAD', 'createEmptyCAD', 'freeHook',
            'getNbEdges', 'getNbFaces', 'getFileAndFormat',
-           'printOCAF', 'getFaceNameInOCAF', 'getEdgeNameInOCAF',
+           'printOCAF', 'getFaceNameInOCAF', 'getEdgeNameInOCAF', '_setFaceNameInOCAF',
            'getFaceArea', 'getBoundingBox',
            '_translate', '_rotate', '_scale', '_sewing',
            '_splitFaces', '_mergeFaces', '_trimFaces', '_removeFaces',
@@ -821,6 +821,10 @@ def getEdgeNameInOCAF(hook):
     """Return edge names in OCAF."""
     return occ.getEdgeNameInOCAF2(hook)
 
+def _setFaceNameInOCAF(hook, listFaces, name):
+    """Set face name in OCAF."""
+    return occ.setFaceNameInOCAF(hook, listFaces, name)
+
 #=============================================================================
 # CAD modeling
 #=============================================================================
@@ -905,6 +909,9 @@ def _addDomain(hook, dfar=10., type="box", plane=None):
         dfarx = dfar; dfary = dfar; dfarz = dfar
     # BBox on hook
     bb = getBoundingBox(hook)
+    # starting number of faces
+    #nf1 = getNbFaces(hook)
+    # add
     if type == "sphere":
         P0 = ((bb[3]+bb[0])*0.5, (bb[4]+bb[1])*0.5, (bb[5]+bb[2])*0.5)
         R = max(dfarx, dfary, dfarz)
@@ -957,11 +964,14 @@ def _addDomain(hook, dfar=10., type="box", plane=None):
             _sewing(hook, tol=1.e-7)
         else:
             raise ValueError('addDomain: unknown plane type.')
-
     elif type == "half-box":
         if plane is None:
             raise ValueError('addDomain: requires plane for half-box.')
         raise NotImplementedError('addDomain: not implemented for half-box.')
+    # tag as exterior
+    #nf2 = getNbFaces(hook)
+    #_setFaceNameInOCAF(hook, [i for i in range(nf1+1,nf2+1)], 'exterior')
+    return None
 
 def _revolve(hook, edges, C, axis, angle):
     """Revolve edges to create surface."""
