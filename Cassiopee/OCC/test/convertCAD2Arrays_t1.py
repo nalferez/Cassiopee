@@ -7,9 +7,6 @@ test.testA(A, 1)
 
 A = OCC.convertCAD2Arrays("hammer.iges", h=130., chordal_err=1., algo=1)
 test.testA(A, 2)
-import Converter as C
-C.convertArrays2File(A, 'out.plt')
 
 A = OCC.convertCAD2Arrays("hammer.iges", h=0., chordal_err=1., algo=2)
 test.testA(A, 3)
-C.convertArrays2File(A, 'out2.plt')

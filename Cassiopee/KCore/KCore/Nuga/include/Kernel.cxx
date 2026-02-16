@@ -203,9 +203,10 @@ E_Int Kernel<T>::__getCavity
 
   cboundary.clear();
   ret = __getSortedBoundary2(_data->connectM, _sbound, cboundary);
-  if (ret > 0) // previous fail
+  if (ret == 2) // getSortedBoundary2 fails
   {
     _visited.clear();
+    cboundary.clear();
     __getSortedBoundary(_data->connectM, neighbors, *_base.begin(), 0, cavity, _sbound, _visited, cboundary);
   }
   _sbound.clear();
@@ -427,7 +428,6 @@ void Kernel<T>::__invalidCavityElements
     mask[*i] = false;
 }
 
-
 ///
 template <typename T>
 E_Int Kernel<T>::__fixCavity
@@ -517,7 +517,7 @@ E_Int Kernel<T>::__getSortedBoundary2
     // CBX: BUG: it fails to find Ni in map for some rare cases but why?
     //if (_node_to_rightS.count(Ni) == 0)
     //{ printf("Ni=%d -> S=%d, b=%d, sz=%d\n", Ni, S, b, sz); }
-    if (_node_to_rightS.count(Ni) == 0) return 1;
+    if (_node_to_rightS.count(Ni) == 0) return 2;
     out[i+1] = *_node_to_rightS[Ni];
   }
   return 0;

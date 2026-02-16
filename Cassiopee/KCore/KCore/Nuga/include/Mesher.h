@@ -267,7 +267,7 @@ namespace DELAUNAY
 
     if (_err)
     {
-      std::cout << "Error: mesher: error triangulating." << std::endl;
+      if (!mode.silent_errors) std::cout << "Error: mesher: error triangulating." << std::endl;
 #ifdef DEBUG_MESHER
       medith::write("err_tria.mesh", *_data->pos, *_data->connectB, "BAR");
 #endif
@@ -285,7 +285,7 @@ namespace DELAUNAY
     _err = restoreBoundaries(*data.pos, data.connectM, data.neighbors, data.ancestors);
     if (_err)
     {
-      std::cout << "Error: mesher: error restoring boundaries." << std::endl;
+      if (!mode.silent_errors) std::cout << "Error: mesher: error restoring boundaries." << std::endl;
       return _err;
     }
 
@@ -307,7 +307,7 @@ namespace DELAUNAY
     _err = setColors(data.pos->cols()-1, data); //fixme : Nbox
     if (_err)
     {
-      std::cout << "Error: mesher: error setting colors." << std::endl;
+      if (!mode.silent_errors) std::cout << "Error: mesher: error setting colors." << std::endl;
       return _err;
     }
 
