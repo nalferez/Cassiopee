@@ -74,7 +74,8 @@ for c, e  in enumerate(ext):
 #C.convertPyTree2File(m, 'mesh.cgns')
 
 import KCore.Dist as Dist
-from KCore.config import *
+additionalLibPaths = Dist.getAdditionalLibPaths()
+additionalIncludePaths = Dist.getAdditionalIncludePaths()
 (netcdf, netcdfIncDir, netcdfLibDir, netcdflibs) = Dist.checkNetcdf(additionalLibPaths,
                                                                     additionalIncludePaths)
 

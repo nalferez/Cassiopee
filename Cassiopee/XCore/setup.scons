@@ -11,9 +11,9 @@ import KCore.Dist as Dist
 prefix = ARGUMENTS.get('prefix', '')
 installPath = Dist.getInstallPath(prefix)
 Cppcompiler = Dist.getFromConfigDict("Cppcompiler", None)
-additionalLibs = Dist.getFromConfigDict("additionalLibs", [])
-additionalLibPaths = Dist.getFromConfigDict("additionalLibPaths", [])
-additionalIncludePaths = Dist.getFromConfigDict("additionalIncludePaths", [])
+additionalLibs = Dist.getAdditionalLibs()
+additionalLibPaths = Dist.getAdditionalLibPaths()
+additionalIncludePaths = Dist.getAdditionalIncludePaths()
 
 # Get compilers from Distutils ================================================
 (cc, cxx, opt, basecflags, ccshared, ldshared, so_ext) = Dist.getDistUtilsCompilers()

@@ -21,9 +21,9 @@ def loadModuleFromPath(modname):
 Dist = loadModuleFromPath('../KCore/Dist')
 installBase = loadModuleFromPath('../KCore/installBase')
 Dist.setConfigDict(installBase.installDict)
-additionalLibPaths = Dist.getFromConfigDict("additionalLibPaths", [])
-additionalIncludePaths = Dist.getFromConfigDict("additionalIncludePaths", [])
-additionalLibs = Dist.getFromConfigDict("additionalLibs", [])
+additionalLibPaths = Dist.getAdditionalLibPaths()
+additionalIncludePaths = Dist.getAdditionalIncludePaths()
+additionalLibs = Dist.getAdditionalLibs()
 
 # Write setup.cfg file
 Dist.writeSetupCfg()

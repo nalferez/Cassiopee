@@ -170,8 +170,8 @@ def getDataFolderName(name='Data'):
 # Check all (python, numpy, C++, fortran, hdf, mpi, mpi4py, png, osmesa, mpeg)
 #==============================================================================
 def checkAll(summary=True):
-    additionalLibPaths = getFromConfigDict("additionalLibPaths", [])
-    additionalIncludePaths = getFromConfigDict("additionalIncludePaths", [])
+    additionalLibPaths = getAdditionalLibPaths()
+    additionalIncludePaths = getAdditionalIncludePaths()
     useCuda = getFromConfigDict("useCuda", False)
 
     out = []
@@ -183,7 +183,7 @@ def checkAll(summary=True):
         (numpyVersion, numpyIncDir, numpyLibDir) = checkNumpy()
         out += ['Numpy: %s'%numpyVersion]
     except: out += ['Numpy: is missing or numpy includes are missing.']
-    (ok, CppLibs, CppLibPaths) = checkCppLibs(additionalLibPaths, additionalIncludePaths)
+    (ok, CppLibs, CppLibPaths) = checkCppLibs()
     if ok: out += ['C++: OK (%s, %s).'%(CppLibs, CppLibPaths)]
     else: out += ['C++: Fail.']
     (ok, FLibs, FLibPaths) = checkFortranLibs()
@@ -701,6 +701,7 @@ def getSimd():
 # Se base sur les options precedentes qui doivent contenir -DSIMD
 def getSimdOptions():
     Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    if Cppcompiler is None: return []
     options = getCppAdditionalOptions()
     simd = ''
     for i in options:
@@ -720,7 +721,6 @@ def getSimdOptions():
         elif simd == 'AVX512'  : opts += ['-mavx512f']
         elif simd == 'MIC'     : opts += ['-mavx512er']
         elif simd == 'AVX2P512': opts += ['-mavx512f']
-    #print('simd', opts)
     return opts
 
 # Retourne True si opt est une option Simd
@@ -861,16 +861,29 @@ def sortFileListByUse(files):
 # Retourne les options additionelles des compilos definies dans config
 #==============================================================================
 def getCppAdditionalOptions():
-    return getFromConfigDict("CppAdditionalOptions", [])
+    return getFromConfigDict("CppAdditionalOptions", []).copy()
 
 def getf77AdditionalOptions():
-    return getFromConfigDict("f77AdditionalOptions", [])
+    return getFromConfigDict("f77AdditionalOptions", []).copy()
+
+def getAdditionalLibs():
+    return getFromConfigDict("additionalLibs", []).copy()
+
+def getAdditionalLibPaths():
+    return getFromConfigDict("additionalLibPaths", []).copy()
+
+def getAdditionalIncludePaths():
+    return getFromConfigDict("additionalIncludePaths", []).copy()
+
+def getNvccAdditionalOptions():
+    return getFromConfigDict("NvccAdditionalOptions", []).copy()
 
 #==============================================================================
 # Retourne les arguments pour le compilateur C (utilise aussi pour Cpp)
 #==============================================================================
 def getCArgs():
     Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    if Cppcompiler is None: return []
     useOMP = getFromConfigDict("useOMP", True)
     useStatic = getFromConfigDict("useStatic", False)
     useCuda = getFromConfigDict("useCuda", False)
@@ -880,7 +893,6 @@ def getCArgs():
     compiler = Cppcompiler.split('/')
     l = len(compiler)-1
     Cppcompiler = compiler[l]
-    if Cppcompiler is None: return []
     options = getCppAdditionalOptions()
     if EDOUBLEINT: options += ['-DE_DOUBLEINT']
     if GDOUBLEINT: options += ['-DG_DOUBLEINT']
@@ -1003,8 +1015,7 @@ def getCppArgs():
 # Retourne les arguments pour le compilateur Cuda
 #==============================================================================
 def getCudaArgs():
-    NvccAdditionalOptions = getFromConfigDict("NvccAdditionalOptions", [])
-    options = NvccAdditionalOptions
+    options = getNvccAdditionalOptions()
     if DEBUG: options += ['-g', '-O0']
     else: options += ['-DNDEBUG', '-O2']
     return options
@@ -1786,8 +1797,8 @@ def checkMpi4py(additionalLibPaths=[], additionalIncludePaths=[]):
 #             executable nvcc)
 #=============================================================================
 def checkCuda():
-    additionalIncludePaths = getFromConfigDict("additionalIncludePaths", [])
-    additionalLibPaths = getFromConfigDict("additionalLibPaths", [])
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     useCuda = getFromConfigDict("useCuda", False)
 
     # Check if the user want cuda supported
@@ -1882,8 +1893,8 @@ def checkParadigma(additionalLibPaths=[], additionalIncludePaths=[]):
 #=============================================================================
 def checkBlas():
     Cppcompiler = getFromConfigDict("Cppcompiler", None)
-    additionalLibPaths = getFromConfigDict("additionalLibPaths", [])
-    additionalIncludePaths = getFromConfigDict("additionalIncludePaths", [])
+    additionalLibPaths = getAdditionalLibPaths()
+    additionalIncludePaths = getAdditionalIncludePaths()
 
     if Cppcompiler == 'icc' or Cppcompiler == 'icpc' or Cppcompiler == 'icx': # intel - cherche dans MKL
         libPrefix = 'libmkl_'; includePrefix = 'mkl_'; compOpt = '-mkl'
@@ -1939,8 +1950,8 @@ def checkBlas():
 #=============================================================================
 def checkLapack():
     Cppcompiler = getFromConfigDict("Cppcompiler", None)
-    additionalLibPaths = getFromConfigDict("additionalLibPaths", [])
-    additionalIncludePaths = getFromConfigDict("additionalIncludePaths", [])
+    additionalLibPaths = getAdditionalLibPaths()
+    additionalIncludePaths = getAdditionalIncludePaths()
 
     if Cppcompiler == 'icc' or Cppcompiler == 'icpc' or Cppcompiler == 'icx': # intel - cherche dans MKL
         libPrefix = 'libmkl_'; includePrefix = 'mkl_'; compOpt = '-mkl'
@@ -2017,8 +2028,8 @@ def cythonize(src):
 # Retourne (True, [librairies utiles pour le fortran], [paths des librairies])
 #=============================================================================
 def checkFortranLibs():
-    additionalLibs = getFromConfigDict("additionalLibs", [])
-    additionalLibPaths = getFromConfigDict("additionalLibPaths", [])
+    additionalLibs = getAdditionalLibs()
+    additionalLibPaths = getAdditionalLibPaths()
     f77compiler = getFromConfigDict("f77compiler", "gfortran")
     useOMP = getFromConfigDict("useOMP", True)
 
@@ -2176,8 +2187,8 @@ def checkFortranLibs():
 # Retourne (True, [librairies utiles a cpp], [paths des librairies])
 #=============================================================================
 def checkCppLibs():
-    additionalLibs = getFromConfigDict("additionalLibs", [])
-    additionalLibPaths = getFromConfigDict("additionalLibPaths", [])
+    additionalLibs = getAdditionalLibs()
+    additionalLibPaths = getAdditionalLibPaths()
     Cppcompiler = getFromConfigDict("Cppcompiler", "gcc")
     useOMP = getFromConfigDict("useOMP", True)
 
@@ -2495,8 +2506,8 @@ def writeBuildInfo():
     p = open("buildInfo.py", 'w')
     if p is None:
         raise SystemError("Error: can not open file buildInfo.py for writing.")
-    additionalIncludePaths = getFromConfigDict("additionalIncludePaths", [])
-    additionalLibPaths = getFromConfigDict("additionalLibPaths", [])
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
 
     dict = {}
     # Date

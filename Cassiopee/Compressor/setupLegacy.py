@@ -11,9 +11,9 @@ from setuptools import setup, Extension
 import KCore.Dist as Dist
 
 # Compiler settings must be set in installBase.py / installBaseUser.py
-additionalIncludePaths = Dist.getFromConfigDict("additionalIncludePaths", [])
-additionalLibPaths = Dist.getFromConfigDict("additionalLibPaths", [])
-additionalLibs = Dist.getFromConfigDict("additionalLibs", [])
+additionalIncludePaths = Dist.getAdditionalIncludePaths()
+additionalLibPaths = Dist.getAdditionalLibPaths()
+additionalLibs = Dist.getAdditionalLibs()
 includeDirs = Dist.getFromConfigDict("includeDirs", [])
 
 # Write setup.cfg file

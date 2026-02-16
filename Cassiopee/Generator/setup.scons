@@ -14,9 +14,9 @@ prefix = ARGUMENTS.get('prefix', '')
 installPath = Dist.getInstallPath(prefix)
 Cppcompiler = Dist.getFromConfigDict("Cppcompiler", None)
 f77compiler = Dist.getFromConfigDict("f77compiler", "gfortran")
-additionalIncludePaths = Dist.getFromConfigDict("additionalIncludePaths", [])
-additionalLibPaths = Dist.getFromConfigDict("additionalLibPaths", [])
-additionalLibs = Dist.getFromConfigDict("additionalLibs", [])
+additionalIncludePaths = Dist.getAdditionalIncludePaths()
+additionalLibPaths = Dist.getAdditionalLibPaths()
+additionalLibs = Dist.getAdditionalLibs()
 
 # Get compilers from Distutils ================================================
 (cc, cxx, opt, basecflags, ccshared, ldshared, so_ext) = Dist.getDistUtilsCompilers()
