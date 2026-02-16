@@ -159,6 +159,7 @@ SHELL ["/bin/bash", "-c"]
 RUN . /etc/cassiopee-machine.env && echo "Using MACHINE=${MACHINE}" \
     && . $CASSIOPEE/Cassiopee/Envs/sh_Cassiopee_r8 \
     && export PRODMODE=3 \
+    && export OMP_NUM_THREADS=2 \
     && cd $CASSIOPEE/Cassiopee \
     && ./install
 
