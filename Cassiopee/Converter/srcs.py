@@ -2,10 +2,10 @@ EXPRESSION = True
 
 try:
     import KCore.Dist as Dist
-    from KCore.config import *
+    additionalLibPaths = Dist.getAdditionalLibPaths()
+    additionalIncludePaths = Dist.getAdditionalIncludePaths()
     hdf, hdfIncDir, hdfLibDir, hdflibs = Dist.checkHdf(additionalLibPaths, additionalIncludePaths)
     netcdf, netcdfIncDir, netcdfLibDir, netcdflibs = Dist.checkNetcdf(additionalLibPaths, additionalIncludePaths)
-
 except ModuleNotFoundError:
     hdf = True; netcdf = True
 

@@ -20,9 +20,9 @@ import KCore.Dist as Dist
 
 # Compiler settings must be set in installBase.py / installBaseUser.py
 f77compiler = Dist.getFromConfigDict("f77compiler", "gfortran")
-additionalIncludePaths = Dist.getFromConfigDict("additionalIncludePaths", [])
-additionalLibPaths = Dist.getFromConfigDict("additionalLibPaths", [])
-additionalLibs = Dist.getFromConfigDict("additionalLibs", [])
+additionalIncludePaths = Dist.getAdditionalIncludePaths()
+additionalLibPaths = Dist.getAdditionalLibPaths()
+additionalLibs = Dist.getAdditionalLibs()
 
 # Write setup.cfg file
 Dist.writeSetupCfg()
