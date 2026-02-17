@@ -223,7 +223,8 @@ elif [ "$MAC" = "visung_gcc" ]; then
     module load socle-cfd/7.0-gnu850-ompi502
     module load emacs/27.2-gnu831
     export PYTHONEXE=python3
-    export OMP_NUM_THREADS=72
+    export OMP_NUM_THREADS=36
+    export OMP_PLACES=cores
     export PRODMODE=1
 
 elif [ "$MAC" = "visung" ]; then
@@ -236,7 +237,8 @@ elif [ "$MAC" = "visung" ]; then
     module load emacs/27.2-gnu831
     module load socle-cfd/6.0-intel2220-impi
     export PYTHONEXE=python3
-    export OMP_NUM_THREADS=72
+    export OMP_NUM_THREADS=36
+    export OMP_PLACES=cores
     export PRODMODE=1
     export I_MPI_FABRICS=shm
 

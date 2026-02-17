@@ -1,6 +1,5 @@
 #from distutils.core import setup, Extension
 from setuptools import setup, Extension
-import KCore.config
 import os
 
 #=============================================================================
@@ -12,11 +11,8 @@ import os
 # optional: PNG, MPEG, OSMesa
 #=============================================================================
 
-# If you want to use CPlot as a offscreen plotter (as on clusters)
-# set UseOSMesa to True (requires mesa)
-UseOSMesa = KCore.config.CPlotOffScreen
-
 import KCore.Dist as Dist
+UseOSMesa = True
 
 # Compiler settings must be set in installBase.py / installBaseUser.py
 f77compiler = Dist.getf77Compiler()

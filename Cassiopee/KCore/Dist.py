@@ -1260,10 +1260,9 @@ def checkModuleFast(modname):
         import importlib
         module = importlib.import_module(modname)
         import FastC.installPath
-        import KCore.installPath
         modIncDir = FastC.installPath.includePath
         modIncDir = os.path.dirname(modIncDir)
-        modIncDir = os.path.join(modIncDir, modname, modname)
+        modIncDir = os.path.join(modIncDir, modname)
         modLibDir = FastC.installPath.libPath
         version = getattr(module, "__version__", None)
         return version, modIncDir, modLibDir

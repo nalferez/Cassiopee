@@ -62,7 +62,7 @@ if [ $PRODMODE -ge 0 ]; then
     rm -f build/lib.*/OCC/occ.*
     rm -f build/lib.*/OCC/occ-*.*
     if [ $PRODMODE -eq 0 ]; then # setup
-        python setup.py install --prefix="$INSTALLPATH"
+        python setup.py install --no-build-isolation --prefix="$INSTALLPATH"
         [ $? != 0 ] && exit 1;
     elif [ $PRODMODE -eq 1 ]; then # pip
         python -m pip install --ignore-installed --upgrade --prefix="$INSTALLPATH" .

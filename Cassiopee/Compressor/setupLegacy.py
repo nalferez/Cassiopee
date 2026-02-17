@@ -14,7 +14,6 @@ import KCore.Dist as Dist
 additionalIncludePaths = Dist.getAdditionalIncludePaths()
 additionalLibPaths = Dist.getAdditionalLibPaths()
 additionalLibs = Dist.getAdditionalLibs()
-includeDirs = Dist.getFromConfigDict("includeDirs", [])
 
 # Write setup.cfg file
 Dist.writeSetupCfg()
