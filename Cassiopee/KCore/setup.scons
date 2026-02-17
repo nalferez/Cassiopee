@@ -10,7 +10,7 @@ import Dist
 # Get prefix from command line
 prefix = ARGUMENTS.get('prefix', '')
 installPath = Dist.getInstallPath(prefix)
-f77compiler = Dist.getFromConfigDict("f77compiler", "gfortran")
+f77compiler = Dist.getf77Compiler()
 additionalIncludePaths = Dist.getAdditionalIncludePaths()
 additionalLibPaths = Dist.getAdditionalLibPaths()
 additionalLibs = Dist.getAdditionalLibs()

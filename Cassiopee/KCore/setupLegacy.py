@@ -12,7 +12,7 @@ import os
 import Dist
 
 # Compiler settings must be set in installBase.py / installBaseUser.py
-f77compiler = Dist.getFromConfigDict("f77compiler", "gfortran")
+f77compiler = Dist.getf77Compiler()
 additionalIncludePaths = Dist.getAdditionalIncludePaths()
 additionalLibPaths = Dist.getAdditionalLibPaths()
 additionalLibs = Dist.getAdditionalLibs()

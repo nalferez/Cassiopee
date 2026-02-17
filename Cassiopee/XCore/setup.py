@@ -44,10 +44,8 @@ Dist.writeSetupCfg()
 (ok, fortranLibs, fortranLibDir) = Dist.checkFortranLibs()
 
 # Test if libmpi exists ======================================================
-(mpi, mpiIncDir, mpiLibDir, mpiLibs) = Dist.checkMpi(additionalLibPaths,
-                                                     additionalIncludePaths)
-(mpi4py, mpi4pyIncDir, mpi4pyLibDir) = Dist.checkMpi4py(additionalLibPaths,
-                                                        additionalIncludePaths)
+(mpi, mpiIncDir, mpiLibDir, mpiLibs) = Dist.checkMpi()
+(mpi4py, mpi4pyIncDir, mpi4pyLibDir) = Dist.checkMpi4py()
 
 prod = os.getenv("ELSAPROD") or "xx"
 
@@ -98,7 +96,7 @@ listExtensions.append(
               ) )
 
 listExtensionsPyx = []
-cython = Dist.checkCython(additionalLibPaths, additionalIncludePaths)
+cython = Dist.checkCython()
 
 if cython and mpi and mpi4py:
     if srcs.PARADIGMA == 2:

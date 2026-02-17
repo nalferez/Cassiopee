@@ -10,7 +10,7 @@ import KCore.Dist as Dist
 # Get prefix from command line
 prefix = ARGUMENTS.get('prefix', '')
 installPath = Dist.getInstallPath(prefix)
-Cppcompiler = Dist.getFromConfigDict("Cppcompiler", None)
+Cppcompiler = Dist.getCppCompiler()
 additionalLibs = Dist.getAdditionalLibs()
 additionalLibPaths = Dist.getAdditionalLibPaths()
 additionalIncludePaths = Dist.getAdditionalIncludePaths()
@@ -28,10 +28,8 @@ additionalIncludePaths = Dist.getAdditionalIncludePaths()
 (kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkModuleCassiopee("KCore")
 
 # Test if libmpi exists ======================================================
-(mpi, mpiIncDir, mpiLibDir, mpiLibs) = Dist.checkMpi(additionalLibPaths,
-                                                     additionalIncludePaths)
-(mpi4py, mpi4pyIncDir, mpi4pyLibDir) = Dist.checkMpi4py(additionalLibPaths,
-                                                        additionalIncludePaths)
+(mpi, mpiIncDir, mpiLibDir, mpiLibs) = Dist.checkMpi()
+(mpi4py, mpi4pyIncDir, mpi4pyLibDir) = Dist.checkMpi4py()
 
 # Setting libraryDirs and libraries ===========================================
 libraryDirs = ['..', '.', pythonLibDir, kcoreLibDir]

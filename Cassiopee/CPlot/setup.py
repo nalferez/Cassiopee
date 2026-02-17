@@ -48,8 +48,7 @@ libraryDirs += paths; libraries += libs
 # Test if MPEG exists =========================================================
 srcs = loadModuleFromPath('srcs')
 if srcs.MPEG:
-    (mpeg, mpegIncDir, mpegLib) = Dist.checkMpeg(additionalLibPaths,
-                                                 additionalIncludePaths)
+    (mpeg, mpegIncDir, mpegLib) = Dist.checkMpeg()
     if mpeg:
         libraries += ["avcodec", "avutil"]
         libraryDirs += [mpegLib]
@@ -59,13 +58,11 @@ libraryDirs += [kcoreLibDir]
 libraries += ["kcore"]
 
 # Test if libmpi exists ======================================================
-(mpi, mpiIncDir, mpiLibDir, mpiLibs) = Dist.checkMpi(additionalLibPaths,
-                                                     additionalIncludePaths)
+(mpi, mpiIncDir, mpiLibDir, mpiLibs) = Dist.checkMpi()
 
 
 # Test if GL exists ==========================================================
-#(isGL, GLIncDir, GLLibDir) = Dist.checkGL(additionalLibPaths,
-#                                          additionalIncludePaths)
+#(isGL, GLIncDir, GLLibDir) = Dist.checkGL()
 isGL = True; GLIncDir = []; GLLibDir = []
 
 mySystem = Dist.getSystem()
@@ -83,8 +80,7 @@ else:
     libGL = ['GL', 'GLU']
 
 # Test if OSMesa exists =======================================================
-(OSMesa, OSMesaIncDir, OSMesaLibDir, OSMesaLibname) = Dist.checkOSMesa(additionalLibPaths,
-                                                                       additionalIncludePaths)
+(OSMesa, OSMesaIncDir, OSMesaLibDir, OSMesaLibname) = Dist.checkOSMesa()
 
 # Extensions =================================================================
 EXTRA = ['-D__SHADERS__']

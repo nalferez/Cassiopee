@@ -4,8 +4,8 @@ try:
     import KCore.Dist as Dist
     additionalLibPaths = Dist.getAdditionalLibPaths()
     additionalIncludePaths = Dist.getAdditionalIncludePaths()
-    hdf, hdfIncDir, hdfLibDir, hdflibs = Dist.checkHdf(additionalLibPaths, additionalIncludePaths)
-    netcdf, netcdfIncDir, netcdfLibDir, netcdflibs = Dist.checkNetcdf(additionalLibPaths, additionalIncludePaths)
+    hdf, hdfIncDir, hdfLibDir, hdflibs = Dist.checkHdf()
+    netcdf, netcdfIncDir, netcdfLibDir, netcdflibs = Dist.checkNetcdf()
 except ModuleNotFoundError:
     hdf = True; netcdf = True
 

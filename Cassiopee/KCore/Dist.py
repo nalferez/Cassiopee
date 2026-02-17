@@ -189,22 +189,22 @@ def checkAll(summary=True):
     (ok, FLibs, FLibPaths) = checkFortranLibs()
     if ok: out += ['f77: OK (%s, %s).'%(FLibs, FLibPaths)]
     else: out += ['f77: Fail.']
-    (ok, hdfIncDir, hdfLibDir, hdflibs) = checkHdf(additionalLibPaths, additionalIncludePaths)
+    (ok, hdfIncDir, hdfLibDir, hdflibs) = checkHdf()
     if ok: out += ['hdf: OK (%s, %s).'%(hdfIncDir, hdfLibDir)]
     else: out += ['hdf: missing (%s, %s).'%(hdfIncDir, hdfLibDir)]
-    (ok, pngIncDir, pngLibDir) = checkPng(additionalLibPaths, additionalIncludePaths)
+    (ok, pngIncDir, pngLibDir) = checkPng()
     if ok: out += ['png: OK (%s, %s).'%(pngIncDir, pngLibDir)]
     else: out += ['png: missing (%s, %s).'%(pngIncDir, pngLibDir)]
     (ok, osmesaIncDir, osmesaLibDir, libname) = checkOSMesa(additionalLibPaths, additionalIncludePaths)
     if ok: out += ['osmesa: OK (%s, %s).'%(osmesaIncDir, osmesaLibDir)]
     else: out += ['osmesa: missing (%s, %s).'%(osmesaIncDir, osmesaLibDir)]
-    (ok, mpegIncDir, mpegLibDir) = checkMpeg(additionalLibPaths, additionalIncludePaths)
+    (ok, mpegIncDir, mpegLibDir) = checkMpeg()
     if ok: out += ['mpeg: OK (%s, %s).'%(mpegIncDir, mpegLibDir)]
     else: out += ['mpeg: missing (%s, %s).'%(mpegIncDir, mpegLibDir)]
-    (ok, mpiIncDir, mpiLibDir, mpiLibs) = checkMpi(additionalLibPaths, additionalIncludePaths)
+    (ok, mpiIncDir, mpiLibDir, mpiLibs) = checkMpi()
     if ok: out += ['mpi: OK (%s, %s).'%(mpiIncDir, mpiLibDir)]
     else: out += ['mpi: missing (%s %s).'%(mpiIncDir, mpiLibDir)]
-    (ok, mpi4pyIncDir, mpi4pyLibDir) = checkMpi4py(additionalLibPaths, additionalIncludePaths)
+    (ok, mpi4pyIncDir, mpi4pyLibDir) = checkMpi4py()
     if ok: out += ['mpi4py: OK (%s).'%(mpi4pyIncDir)]
     else: out += ['mpi4py: missing (%s).'%(mpi4pyIncDir)]
 
@@ -466,7 +466,7 @@ def writeEnvs():
 # setup.cfg est utilise par setup de python pour choisir le compilo.
 #==============================================================================
 def writeSetupCfg():
-    Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    Cppcompiler = getCppCompiler()
     mySystem = getSystem()
 
     # Windows + mingw
@@ -525,7 +525,7 @@ def writeSetupCfg():
 # ou dans installBase.py / installBaseUser.py
 #==============================================================================
 def getDistUtilsCompilers():
-    Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    Cppcompiler = getCppCompiler()
 
     vars = sysconfig.get_config_vars('CC', 'CXX', 'OPT',
                                      'BASECFLAGS', 'CCSHARED',
@@ -583,7 +583,7 @@ def getDistUtilsCompilers():
 # Retourne le pre-processeur utilise pour les fichiers fortrans
 #==============================================================================
 def getPP():
-    Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    Cppcompiler = getCppCompiler()
     sizes = '-DREAL_E="REAL*8"'
     if EDOUBLEINT: sizes += ' -DINTEGER_E="INTEGER*8"'
     else: sizes += ' -DINTEGER_E="INTEGER*4"'
@@ -600,7 +600,7 @@ def getPP():
 # Retourne l'achiveur pour faire les librairies statiques
 #==============================================================================
 def getAR():
-    Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    Cppcompiler = getCppCompiler()
     if Cppcompiler == "icl.exe": return 'ar.exe '
     elif Cppcompiler == "x86_64-w64-mingw32-gcc":
         return 'x86_64-w64-mingw32-ar'
@@ -668,11 +668,11 @@ def getVersion(compiler):
     return (major, minor)
 
 def getCppVersion():
-    Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    Cppcompiler = getCppCompiler()
     return getVersion(Cppcompiler)
 
 def getForVersion():
-    f77compiler = getFromConfigDict("f77compiler", "gfortran")
+    f77compiler = getf77Compiler()
     return getVersion(f77compiler)
 
 #=============================================================================
@@ -700,7 +700,7 @@ def getSimd():
 # Retourne les options SIMD pour les compilateurs
 # Se base sur les options precedentes qui doivent contenir -DSIMD
 def getSimdOptions():
-    Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    Cppcompiler = getCppCompiler()
     if Cppcompiler is None: return []
     options = getCppAdditionalOptions()
     simd = ''
@@ -863,8 +863,14 @@ def sortFileListByUse(files):
 def getCppAdditionalOptions():
     return getFromConfigDict("CppAdditionalOptions", []).copy()
 
+def getCppCompiler():
+    return getFromConfigDict("Cppcompiler", None)
+
 def getf77AdditionalOptions():
     return getFromConfigDict("f77AdditionalOptions", []).copy()
+
+def getf77Compiler():
+    return getFromConfigDict("f77compiler", None)
 
 def getAdditionalLibs():
     return getFromConfigDict("additionalLibs", []).copy()
@@ -882,7 +888,7 @@ def getNvccAdditionalOptions():
 # Retourne les arguments pour le compilateur C (utilise aussi pour Cpp)
 #==============================================================================
 def getCArgs():
-    Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    Cppcompiler = getCppCompiler()
     if Cppcompiler is None: return []
     useOMP = getFromConfigDict("useOMP", True)
     useStatic = getFromConfigDict("useStatic", False)
@@ -1006,7 +1012,7 @@ def getCArgs():
 # Options pour le compilateur C++
 def getCppArgs():
     opt = getCArgs()
-    Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    Cppcompiler = getCppCompiler()
     if Cppcompiler == "icl.exe": opt += ["/std=c++11"]
     else: opt += ["-std=c++11"]
     return opt
@@ -1024,7 +1030,7 @@ def getCudaArgs():
 # Retourne les arguments pour le compilateur Fortran
 #==============================================================================
 def getForArgs():
-    f77compiler = getFromConfigDict("f77compiler", "gfortran")
+    f77compiler = getf77Compiler()
     useOMP = getFromConfigDict("useOMP", True)
     useStatic = getFromConfigDict("useStatic", False)
     simdOptions = getSimdOptions()
@@ -1144,7 +1150,7 @@ def getForArgs():
 # Retourne les arguments pour le linker
 #==============================================================================
 def getLinkArgs():
-    Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    Cppcompiler = getCppCompiler()
     useOMP = getFromConfigDict("useOMP", True)
     useStatic = getFromConfigDict("useStatic", False)
     useCuda = getFromConfigDict("useCuda", False)
@@ -1386,7 +1392,9 @@ def checkElsa():
 # Check for GL (libGL)
 # additionalPaths: chemins d'installation non standards: ['/home/toto',...]
 #=============================================================================
-def checkGL(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkGL():
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     l = checkLibFile__('libGL.so', additionalLibPaths)
     if l is None:
         l = checkLibFile__('libGL.a', additionalLibPaths)
@@ -1402,7 +1410,9 @@ def checkGL(additionalLibPaths=[], additionalIncludePaths=[]):
 # Check for Glut (libglut)
 # additionalPaths: chemins d'installation non standards: ['/home/toto',...]
 #=============================================================================
-def checkGlut(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkGlut():
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     l = checkLibFile__('libglut.so', additionalLibPaths)
     if l is None:
         l = checkLibFile__('libglut.a', additionalLibPaths)
@@ -1421,7 +1431,9 @@ def checkGlut(additionalLibPaths=[], additionalIncludePaths=[]):
 # additionalPaths: chemins d'installation non standards: ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkGlew(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkGlew():
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     l = checkLibFile__('libGLEW.so', additionalLibPaths)
     if l is None:
         l = checkLibFile__('libGLEW.a', additionalLibPaths)
@@ -1441,7 +1453,9 @@ def checkGlew(additionalLibPaths=[], additionalIncludePaths=[]):
 # additionalPaths: chemins d'installation non standards: ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkOSMesa(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkOSMesa():
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     libname = 'OSMesa'
     l = checkLibFile__('libOSMesa.so', additionalLibPaths)
     if l is None:
@@ -1472,7 +1486,9 @@ def checkOSMesa(additionalLibPaths=[], additionalIncludePaths=[]):
 # additionalPaths: chemins d'installation non standards: ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkAdolc(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkAdolc():
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     libname = 'adolc'
     l = checkLibFile__('libadolc.so', additionalLibPaths)
     if l is None:
@@ -1499,9 +1515,11 @@ def checkAdolc(additionalLibPaths=[], additionalIncludePaths=[]):
 # additionalPaths: chemins d'installation non standards: ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkOCC(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkOCC():
     #print("INFO: dependance to OCC/OCE STUBED.")
     #return (False, None, None)
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     l = checkLibFile__('libTKernel.so', additionalLibPaths)
     if l is None:
         l = checkLibFile__('libTKernel.a', additionalLibPaths)
@@ -1592,9 +1610,11 @@ def getOCCModules():
 # additionalPaths: chemins d'installation non standards: ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkPng(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkPng():
     #print("INFO: dependance to PNG STUBED.")
     #return (False, None, None)
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     l = checkLibFile__('libpng.so', additionalLibPaths)
     if l is None:
         l = checkLibFile__('libpng.a', additionalLibPaths)
@@ -1619,7 +1639,9 @@ def checkPng(additionalLibPaths=[], additionalIncludePaths=[]):
 # additionalPaths: chemins d'installation non standards: ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkMpeg(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkMpeg():
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     l = checkLibFile__('libavcodec.so', additionalLibPaths)
     if l is None:
         l = checkLibFile__('libavcodec.a', additionalLibPaths)
@@ -1648,7 +1670,9 @@ def checkMpeg(additionalLibPaths=[], additionalIncludePaths=[]):
 # additionalPaths: chemins d'installation non standards: ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkAdf(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkAdf():
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     l = checkLibFile__('libcgns.so', additionalLibPaths)
     if l is None:
         l = checkLibFile__('libcgns.a', additionalLibPaths)
@@ -1666,7 +1690,9 @@ def checkAdf(additionalLibPaths=[], additionalIncludePaths=[]):
 # Retourne: (True/False, chemin des includes, chemin de la librairie,
 # liste des noms des libs)
 #=============================================================================
-def checkHdf(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkHdf():
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     libnames = []
     l = checkLibFile__('libhdf5.so', additionalLibPaths)
     if l is not None: libnames.append('hdf5')
@@ -1699,7 +1725,9 @@ def checkHdf(additionalLibPaths=[], additionalIncludePaths=[]):
 # Retourne: (True/False, chemin des includes, chemin de la librairie,
 # liste des noms des libs)
 #=============================================================================
-def checkNetcdf(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkNetcdf():
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     libnames = []
     l = checkLibFile__('libnetcdf.so', additionalLibPaths)
     if l is not None: libnames.append('netcdf')
@@ -1725,9 +1753,11 @@ def checkNetcdf(additionalLibPaths=[], additionalIncludePaths=[]):
 # additionalPaths: chemins d'installation non standards : ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie, nom des libs)
 #=============================================================================
-def checkMpi(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkMpi():
     #print("INFO: dependance to MPI STUBED.")
     #return (False, None, None, None)
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     libnames = []
     l = checkLibFile__('libmpi.so', additionalLibPaths)
     if l is not None: libnames.append('mpi')
@@ -1765,9 +1795,11 @@ def checkMpi(additionalLibPaths=[], additionalIncludePaths=[]):
 # additionalPaths: chemins d'installation non standards : ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkMpi4py(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkMpi4py():
     #print("INFO: dependance to MPI STUBED.")
     #return (False, None, None, None)
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     try: import mpi4py
     except:
         print('Info: mpi4py or mpi4py.MPI.h was not found on your system. No Mpi support.')
@@ -1858,7 +1890,9 @@ def checkCuda():
 # additionalPaths: chemins d'installation non standards : ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkPyParadigma(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkPyParadigma():
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     try: import XCore.Pypdm
     except:
         print('Info: python module for paradigma was not found on your system.')
@@ -1873,7 +1907,9 @@ def checkPyParadigma(additionalLibPaths=[], additionalIncludePaths=[]):
 # additionalPaths: chemins d'installation non standards : ['/home/toto',...]
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkParadigma(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkParadigma():
+    additionalIncludePaths = getAdditionalIncludePaths()
+    additionalLibPaths = getAdditionalLibPaths()
     l = checkLibFile__('lipdm.so', additionalLibPaths)
     if l is None:
         l = checkLibFile__('libpdm.a', additionalLibPaths)
@@ -1892,7 +1928,7 @@ def checkParadigma(additionalLibPaths=[], additionalIncludePaths=[]):
 # option de compile, nom de la librarie)
 #=============================================================================
 def checkBlas():
-    Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    Cppcompiler = getCppCompiler()
     additionalLibPaths = getAdditionalLibPaths()
     additionalIncludePaths = getAdditionalIncludePaths()
 
@@ -1949,7 +1985,7 @@ def checkBlas():
 # option de compile, nom de la librarie)
 #=============================================================================
 def checkLapack():
-    Cppcompiler = getFromConfigDict("Cppcompiler", None)
+    Cppcompiler = getCppCompiler()
     additionalLibPaths = getAdditionalLibPaths()
     additionalIncludePaths = getAdditionalIncludePaths()
 
@@ -2004,7 +2040,7 @@ def checkLapack():
 # Check for Cython
 # Retourne: (True/False, chemin des includes, chemin de la librairie)
 #=============================================================================
-def checkCython(additionalLibPaths=[], additionalIncludePaths=[]):
+def checkCython():
     try:
         import Cython.Compiler.Main as cython_compiler
         try:
@@ -2030,7 +2066,7 @@ def cythonize(src):
 def checkFortranLibs():
     additionalLibs = getAdditionalLibs()
     additionalLibPaths = getAdditionalLibPaths()
-    f77compiler = getFromConfigDict("f77compiler", "gfortran")
+    f77compiler = getf77Compiler()
     useOMP = getFromConfigDict("useOMP", True)
 
     ret = True; libs = []; paths = []
@@ -2189,7 +2225,7 @@ def checkFortranLibs():
 def checkCppLibs():
     additionalLibs = getAdditionalLibs()
     additionalLibPaths = getAdditionalLibPaths()
-    Cppcompiler = getFromConfigDict("Cppcompiler", "gcc")
+    Cppcompiler = getCppCompiler()
     useOMP = getFromConfigDict("useOMP", True)
 
     ret = True; libs = []; paths = []
@@ -2506,8 +2542,6 @@ def writeBuildInfo():
     p = open("buildInfo.py", 'w')
     if p is None:
         raise SystemError("Error: can not open file buildInfo.py for writing.")
-    additionalIncludePaths = getAdditionalIncludePaths()
-    additionalLibPaths = getAdditionalLibPaths()
 
     dict = {}
     # Date
@@ -2525,33 +2559,23 @@ def writeBuildInfo():
     if numpyVersion != False: dict['numpy'] = numpyVersion
     else: dict['numpy'] = "None"
 
-    # Check png
-    #(png, pngIncDir, pngLib) = checkPng(additionalLibPaths,
-    #                                    additionalIncludePaths)
-    #if png: dict['png'] = pngLib
-    #else: dict['png'] = "None"
-
     # Check ffmpeg
-    (mpeg, mpegIncDir, mpegLib) = checkMpeg(additionalLibPaths,
-                                            additionalIncludePaths)
+    (mpeg, mpegIncDir, mpegLib) = checkMpeg()
     if mpeg: dict['mpeg'] = mpegLib
     else: dict['mpeg'] = "None"
 
     # Check hdf5
-    (hdf, hdfIncDir, hdfLib, hdflibnames) = checkHdf(additionalLibPaths,
-                                                     additionalIncludePaths)
+    (hdf, hdfIncDir, hdfLib, hdflibnames) = checkHdf()
     if hdf: dict['hdf'] = hdfLib
     else: dict['hdf'] = "None"
 
     # Check netcdf
-    (netcdf, netcdfIncDir, netcdfLib, netcdflibnames) = checkNetcdf(additionalLibPaths,
-                                                                    additionalIncludePaths)
+    (netcdf, netcdfIncDir, netcdfLib, netcdflibnames) = checkNetcdf()
     if netcdf: dict['netcdf'] = netcdfLib
     else: dict['netcdf'] = "None"
 
     # Check mpi
-    (mpi, mpiIncDir, mpiLib, mpiLibs) = checkMpi(additionalLibPaths,
-                                                 additionalIncludePaths)
+    (mpi, mpiIncDir, mpiLib, mpiLibs) = checkMpi()
     if mpi: dict['mpi'] = mpiLib
     else: dict['mpi'] = "None"
 

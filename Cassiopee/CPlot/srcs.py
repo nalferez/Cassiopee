@@ -4,8 +4,7 @@ additionalIncludePaths = Dist.getAdditionalIncludePaths()
 
 MPEG = False
 if MPEG:
-    (mpeg, mpegIncDir, mpegLib) = Dist.checkMpeg(additionalLibPaths,
-                                                 additionalIncludePaths)
+    (mpeg, mpegIncDir, mpegLib) = Dist.checkMpeg()
 else: mpeg = False
 
 # Choix des SHADERS (2 ou 4) pour GL et OSMESA

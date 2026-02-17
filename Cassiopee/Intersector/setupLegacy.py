@@ -14,7 +14,7 @@ import os
 import KCore.Dist as Dist
 
 # Compiler settings must be set in installBase.py / installBaseUser.py
-f77compiler = Dist.getFromConfigDict("f77compiler", "gfortran")
+f77compiler = Dist.getf77Compiler()
 additionalIncludePaths = Dist.getAdditionalIncludePaths()
 additionalLibPaths = Dist.getAdditionalLibPaths()
 additionalLibs = Dist.getAdditionalLibs()
@@ -30,10 +30,8 @@ Dist.writeSetupCfg()
 (kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkModuleCassiopee("KCore")
 
 # Test if libmpi exists ======================================================
-(mpi, mpiIncDir, mpiLibDir, mpiLibs) = Dist.checkMpi(additionalLibPaths,
-                                                     additionalIncludePaths)
-(mpi4py, mpi4pyIncDir, mpi4pyLibDir) = Dist.checkMpi4py(additionalLibPaths,
-                                                        additionalIncludePaths)
+(mpi, mpiIncDir, mpiLibDir, mpiLibs) = Dist.checkMpi()
+(mpi4py, mpi4pyIncDir, mpi4pyLibDir) = Dist.checkMpi4py()
 
 # Compilation des fortrans ===================================================
 if f77compiler is None:
@@ -41,8 +39,7 @@ if f77compiler is None:
 args = Dist.getForArgs(); opt = ''
 for c, v in enumerate(args): opt += 'FOPT'+str(c)+'='+v+' '
 os.system("make -e FC="+f77compiler+" WDIR=Intersector/Fortran "+opt)
-prod = os.getenv("ELSAPROD")
-if prod is None: prod = 'xx'
+prod = os.getenv("ELSAPROD") or 'xx'
 
 # Setting libraryDirs and libraries ===========================================
 libraryDirs = ["build/"+prod, kcoreLibDir]

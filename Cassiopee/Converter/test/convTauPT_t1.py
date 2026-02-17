@@ -76,8 +76,7 @@ for c, e  in enumerate(ext):
 import KCore.Dist as Dist
 additionalLibPaths = Dist.getAdditionalLibPaths()
 additionalIncludePaths = Dist.getAdditionalIncludePaths()
-(netcdf, netcdfIncDir, netcdfLibDir, netcdflibs) = Dist.checkNetcdf(additionalLibPaths,
-                                                                    additionalIncludePaths)
+(netcdf, netcdfIncDir, netcdfLibDir, netcdflibs) = Dist.checkNetcdf()
 
 if netcdf:
     C.convertPyTree2File(m, LOCAL+'/out.grid')

@@ -6,9 +6,7 @@ import Converter.Mpi as Cmpi
 import KCore.test as test
 
 import KCore.Dist as Dist
-additionalLibPaths = Dist.getAdditionalLibPaths()
-additionalIncludePaths = Dist.getAdditionalIncludePaths()
-(osmesa, osmesaIncDir, osmesaLibDir, osmesalibs) = Dist.checkOSMesa(additionalLibPaths, additionalIncludePaths)
+(osmesa, osmesaIncDir, osmesaLibDir, osmesalibs) = Dist.checkOSMesa()
 if not osmesa:
     import sys; sys.exit()
 

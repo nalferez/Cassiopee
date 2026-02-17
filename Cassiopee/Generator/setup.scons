@@ -12,8 +12,8 @@ import KCore.Dist as Dist
 # Get prefix from command line
 prefix = ARGUMENTS.get('prefix', '')
 installPath = Dist.getInstallPath(prefix)
-Cppcompiler = Dist.getFromConfigDict("Cppcompiler", None)
-f77compiler = Dist.getFromConfigDict("f77compiler", "gfortran")
+Cppcompiler = Dist.getCppCompiler()
+f77compiler = Dist.getf77Compiler()
 additionalIncludePaths = Dist.getAdditionalIncludePaths()
 additionalLibPaths = Dist.getAdditionalLibPaths()
 additionalLibs = Dist.getAdditionalLibs()

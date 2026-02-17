@@ -35,8 +35,7 @@ Dist.writeSetupCfg()
 (kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkModuleCassiopee("KCore")
 
 # Test if open-cascade is already installed ==================================
-(OCCPresent, OCCIncDir, OCCLibDir) = Dist.checkOCC(additionalLibPaths,
-                                                   additionalIncludePaths)
+(OCCPresent, OCCIncDir, OCCLibDir) = Dist.checkOCC()
 
 srcs = loadModuleFromPath('srcs')
 if srcs.TIGL and not OCCPresent:

@@ -37,8 +37,7 @@ Dist.writeSetupCfg()
 (generatorVersion, generatorIncDir, generatorLibDir) = Dist.checkModuleCassiopee("Generator")
 
 # Test if open-cascade is already installed ==================================
-(OCCPresent, OCCIncDir, OCCLibDir) = Dist.checkOCC(additionalLibPaths,
-                                                   additionalIncludePaths)
+(OCCPresent, OCCIncDir, OCCLibDir) = Dist.checkOCC()
 
 if not OCCPresent:
     print("Warning: open cascade not found on your system. OCC not installed.")

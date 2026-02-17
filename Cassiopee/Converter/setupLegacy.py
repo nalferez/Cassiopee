@@ -14,7 +14,7 @@ import os
 import KCore.Dist as Dist
 
 # Compiler settings must be set in installBase.py / installBaseUser.py
-f77compiler = Dist.getFromConfigDict("f77compiler", "gfortran")
+f77compiler = Dist.getf77Compiler()
 additionalIncludePaths = Dist.getAdditionalIncludePaths()
 additionalLibPaths = Dist.getAdditionalLibPaths()
 additionalLibs = Dist.getAdditionalLibs()
@@ -29,18 +29,14 @@ Dist.writeSetupCfg()
 (kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkModuleCassiopee("KCore")
 
 # Test if libhdf5 exists ======================================================
-(hdf, hdfIncDir, hdfLibDir, hdflibs) = Dist.checkHdf(additionalLibPaths,
-                                                     additionalIncludePaths)
+(hdf, hdfIncDir, hdfLibDir, hdflibs) = Dist.checkHdf()
 
 # Test if libpng exists ======================================================
-(png, pngIncDir, pngLibDir) = Dist.checkPng(additionalLibPaths,
-                                            additionalIncludePaths)
+(png, pngIncDir, pngLibDir) = Dist.checkPng()
 
 # Test if libmpi exists ======================================================
-(mpi, mpiIncDir, mpiLibDir, mpiLibs) = Dist.checkMpi(additionalLibPaths,
-                                                     additionalIncludePaths)
-(mpi4py, mpi4pyIncDir, mpi4pyLibDir) = Dist.checkMpi4py(additionalLibPaths,
-                                                        additionalIncludePaths)
+(mpi, mpiIncDir, mpiLibDir, mpiLibs) = Dist.checkMpi()
+(mpi4py, mpi4pyIncDir, mpi4pyLibDir) = Dist.checkMpi4py()
 
 # Compilation des fortrans ====================================================
 if f77compiler is None:

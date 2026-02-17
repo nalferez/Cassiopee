@@ -19,7 +19,7 @@ UseOSMesa = KCore.config.CPlotOffScreen
 import KCore.Dist as Dist
 
 # Compiler settings must be set in installBase.py / installBaseUser.py
-f77compiler = Dist.getFromConfigDict("f77compiler", "gfortran")
+f77compiler = Dist.getf77Compiler()
 additionalIncludePaths = Dist.getAdditionalIncludePaths()
 additionalLibPaths = Dist.getAdditionalLibPaths()
 additionalLibs = Dist.getAdditionalLibs()
@@ -44,16 +44,14 @@ includeDirs = [numpyIncDir, kcoreIncDir]
 libraryDirs += paths; libraries += libs
 
 # Test if PNG exists =========================================================
-(png, pngIncDir, pngLib) = Dist.checkPng(additionalLibPaths,
-                                         additionalIncludePaths)
+(png, pngIncDir, pngLib) = Dist.checkPng()
 if png:
     libraries += ["png"]
     libraryDirs += [pngLib]
     includeDirs += [pngIncDir]
 
 # Test if MPEG exists =========================================================
-(mpeg, mpegIncDir, mpegLib) = Dist.checkMpeg(additionalLibPaths,
-                                             additionalIncludePaths)
+(mpeg, mpegIncDir, mpegLib) = Dist.checkMpeg()
 if mpeg:
     libraries += ["avcodec"]
     libraryDirs += [mpegLib]
@@ -62,8 +60,7 @@ if mpeg:
 # Test if OSMesa exists =======================================================
 # Put this to True for using CPlot in batch mode
 if UseOSMesa:
-    (OSMesa, OSMesaIncDir, OSMesaLib) = Dist.checkOSMesa(additionalLibPaths,
-                                                         additionalIncludePaths)
+    (OSMesa, OSMesaIncDir, OSMesaLib) = Dist.checkOSMesa()
     if OSMesa:
         libraries += ["OSMesa"]
         libraryDirs += [OSMesaLib]
