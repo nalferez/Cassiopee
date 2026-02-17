@@ -36,8 +36,7 @@ Dist.writeSetupCfg()
 #for c in range(len(args)):
 #    opt += 'FOPT'+str(c)+'='+args[c]+' '
 #os.system("make -e FC="+f77compiler+" WDIR=Template/Fortran "+opt)
-prod = os.getenv("ELSAPROD")
-if prod is None: prod = 'xx'
+prod = os.getenv("ELSAPROD") or 'xx'
 
 # Setting libraryDirs, include dirs and libraries =============================
 libraryDirs = ["build/"+prod, kcoreLibDir]

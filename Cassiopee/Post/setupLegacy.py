@@ -38,8 +38,7 @@ os.system("make -e FC="+f77compiler+" F90=true WDIR=Post/Fortran "+opt)
 os.system("make -e FC="+f77compiler+" F90=true WDIR=Post/zipper "+opt)
 if f90compiler is not None and os.access('Post/usurp', os.F_OK):
     os.system("(cd Post/usurp; make -e FC="+f77compiler+" F90="+f90compiler+" "+opt+")")
-prod = os.getenv("ELSAPROD")
-if prod is None: prod = 'xx'
+prod = os.getenv("ELSAPROD") or 'xx'
 
 # Setting libraryDirs and libraries ===========================================
 libraryDirs = ["build/"+prod, kcoreLibDir]

@@ -2849,6 +2849,7 @@ def addCommonNvccVariables(env):
         env['_NVCCCOMCOM'] = '$_NVCCWRAPCPPPATH'
     return env
 
+# Cree le builder cuda dans env
 def createCudaBuilders(env, dirs=[]):
     import SCons
     # create a builder that makes PTX files from .cu files

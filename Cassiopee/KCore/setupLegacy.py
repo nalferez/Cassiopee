@@ -37,8 +37,7 @@ os.system("make -e FC="+f77compiler+" WDIR=KCore/Metric "+opt)
 os.system("make -e FC="+f77compiler+" WDIR=KCore/CompGeom "+opt)
 os.system("make -e FC="+f77compiler+" WDIR=KCore/Loc "+opt)
 os.system("make -e FC="+f77compiler+" WDIR=KCore/Linear "+opt)
-prod = os.getenv("ELSAPROD")
-if prod is None: prod = 'xx'
+prod = os.getenv("ELSAPROD") or 'xx'
 
 # Setting libraries path =====================================================
 libraryDirs = ["build/"+prod]
