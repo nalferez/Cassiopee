@@ -22,8 +22,17 @@
 #include "kcore.h"
 #include "packet.h"
 
+#include "TopoDS_Shape.hxx"
+#include "TDocStd_Document.hxx"
+
+// if defined, use XCAF instead of single topShape
+//#define USEXCAF
+
 namespace K_OCC
 {
+  TopoDS_Shape* copyOCAF2TopShape(TDocStd_Document& doc);
+  void addShape2OCAF(TopoDS_Shape& shape, char* labelName, TDocStd_Document& doc);
+
   PyObject* convertCAD2Arrays0(PyObject* self, PyObject* args); // with OCC internal
   PyObject* convertCAD2Arrays1(PyObject* self, PyObject* args); // with T3Mesher
   PyObject* convertCAD2Arrays2(PyObject* self, PyObject* args); // with T3Mesher

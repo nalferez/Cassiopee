@@ -828,74 +828,74 @@ def _setFaceNameInOCAF(hook, listFaces, name):
 #=============================================================================
 # CAD modeling
 #=============================================================================
-def _addArc(hook, P1, P2, P3):
+def _addArc(hook, P1, P2, P3, name='arc'):
     """Add an arc to hook."""
-    occ.addArc(hook, P1, P2, P3)
+    occ.addArc(hook, P1, P2, P3, name)
     return None
 
-def _addCircle(hook, C, axis, R, makeFace=False):
+def _addCircle(hook, C, axis, R, makeFace=False, name='circle'):
     """Add a circle to hook."""
-    occ.addCircle(hook, C, axis, R, makeFace)
+    occ.addCircle(hook, C, axis, R, makeFace, name)
     return None
 
-def _addEllipse(hook, C, axis, R1, R2, makeFace=False):
+def _addEllipse(hook, C, axis, R1, R2, makeFace=False, name='ellipse'):
     """Add an ellipse to hook."""
-    occ.addEllipse(hook, C, axis, R1, R2, makeFace)
+    occ.addEllipse(hook, C, axis, R1, R2, makeFace, name)
     return None
 
-def _addSuperEllipse(hook, C, R1, R2, n=4, samples=36, makeFace=False):
+def _addSuperEllipse(hook, C, R1, R2, n=4, samples=36, makeFace=False, name='superellipse'):
     """Add a super ellipse to hook."""
-    occ.addSuperEllipse(hook, C, R1, R2, n, samples, makeFace)
+    occ.addSuperEllipse(hook, C, R1, R2, n, samples, makeFace, name)
     return None
 
-def _addLine(hook, P1, P2):
+def _addLine(hook, P1, P2, name='line'):
     """Add a line to hook."""
-    occ.addLine(hook, P1, P2)
+    occ.addLine(hook, P1, P2, name)
     return None
 
-def _addSquare(hook, P0, width, height, makeFace=False):
+def _addSquare(hook, P0, width, height, makeFace=False, name='square'):
     """Add a square to hook."""
-    occ.addSquare(hook, P0, width, height, makeFace)
+    occ.addSquare(hook, P0, width, height, makeFace, name)
     return None
 
-def _addSquare2(hook, P1, P2, P3, P4, makeFace=False):
+def _addSquare2(hook, P1, P2, P3, P4, makeFace=False, name='square'):
     """Add a square to hook."""
-    occ.addSquare2(hook, P1, P2, P3, P4, makeFace)
+    occ.addSquare2(hook, P1, P2, P3, P4, makeFace, name)
     return None
 
-def _addSpline(hook, Points, method, degree):
+def _addSpline(hook, Points, method, degree, name='spline'):
     """Add a spline to hook."""
-    occ.addSpline(hook, Points, method, degree)
+    occ.addSpline(hook, Points, method, degree, name)
     return None
 
-def _addBox(hook, P0, width, height, depth):
+def _addBox(hook, P0, width, height, depth, name='box'):
     """Add a box to hook."""
-    occ.addBox(hook, P0, width, height, depth)
+    occ.addBox(hook, P0, width, height, depth, name)
     return None
 
-def _addBox2(hook, P1, P2, P3, P4, P5, P6, P7, P8):
+def _addBox2(hook, P1, P2, P3, P4, P5, P6, P7, P8, name='box2'):
     """Add a box to hook."""
-    occ.addBox2(hook, P1, P2, P3, P4, P5, P6, P7, P8)
+    occ.addBox2(hook, P1, P2, P3, P4, P5, P6, P7, P8, name)
     return None
 
-def _addSphere(hook, C, R):
+def _addSphere(hook, C, R, name='sphere'):
     """Add a sphere to hook."""
-    occ.addSphere(hook, C, R)
+    occ.addSphere(hook, C, R, name)
     return None
 
-def _addCylinder(hook, C, axis, R, H):
+def _addCylinder(hook, C, axis, R, H, name='cylinder'):
     """Add a cylinder to hook."""
-    occ.addCylinder(hook, C, axis, R, H)
+    occ.addCylinder(hook, C, axis, R, H, name)
     return None
 
-def _addSplineSurface(hook, points, degree):
+def _addSplineSurface(hook, points, degree, name='spline'):
     """Add a spline surface to hook."""
-    occ.addSplineSurface(hook, points, 2, degree)
+    occ.addSplineSurface(hook, points, 2, degree, name)
     return None
 
-def _addGordonSurface(hook, ucurves, vcurves):
+def _addGordonSurface(hook, ucurves, vcurves, name='gordon'):
     """Add a Gordon surface to hook."""
-    occ.addGordonSurface(hook, ucurves, vcurves)
+    occ.addGordonSurface(hook, ucurves, vcurves, name)
     return None
 
 def _addDomain(hook, dfar=10., type="box", plane=None):

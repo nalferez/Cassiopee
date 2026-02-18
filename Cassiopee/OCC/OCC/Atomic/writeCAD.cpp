@@ -65,17 +65,17 @@ PyObject* K_OCC::writeCAD(PyObject* self, PyObject* args)
     }
     else
     {
-      //Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
-      // Add all shape on "AllShape"
-      //TDF_Label shapeLabel = shapeTool->AddShape(*shape); 
-      //TDataStd_Name::Set(shapeLabel, "AllShape");
+#ifdef USEXCAF
+      Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
       // Write STEP with metadata
-      //STEPCAFControl_Writer writer;
-      //writer.Transfer(doc, STEPControl_AsIs);
-      //writer.Write(fileName);
+      STEPCAFControl_Writer writer;
+      writer.Transfer(doc, STEPControl_AsIs);
+      writer.Write(fileName);
+#else
       STEPControl_Writer writer;
       writer.Transfer(*shape, STEPControl_AsIs);
       writer.Write(fileName);
+#endif
     }
   }  
 

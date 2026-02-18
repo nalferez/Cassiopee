@@ -37,12 +37,11 @@ PyObject* K_OCC::addSquare(PyObject* self, PyObject* args)
   PyObject* hook; 
   E_Float x0, y0, z0, width, height;
   E_Int makeFace;
-  if (!PYPARSETUPLE_(args, O_ TRRR_ RR_ I_, &hook, &x0, &y0, &z0, 
-    &width, &height, &makeFace)) return NULL;
+  char* name;
+  if (!PYPARSETUPLE_(args, O_ TRRR_ RR_ I_ S_, &hook, &x0, &y0, &z0, 
+    &width, &height, &makeFace, &name)) return NULL;
 
   GETSHAPE;
-  GETMAPSURFACES;
-  GETMAPEDGES;
 
   /* new square */
   gp_Pnt p1(x0, y0, z0); // Bottom left
@@ -57,6 +56,26 @@ PyObject* K_OCC::addSquare(PyObject* self, PyObject* args)
 
   TopoDS_Wire wire = BRepBuilderAPI_MakeWire(edge1, edge2, edge3, edge4);
   TopoDS_Face face = BRepBuilderAPI_MakeFace(wire);
+
+#ifdef USEXCAF
+
+  BRep_Builder builder;
+  TopoDS_Compound compound;
+  builder.MakeCompound(compound);
+  builder.Add(compound, wire);
+  if (makeFace == 1) builder.Add(compound, face);
+  
+  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  addShape2OCAF(compound, name, *doc);
+  TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
+#else
+  GETMAPSURFACES;
+  GETMAPEDGES;
 
   // Rebuild a single compound
   BRep_Builder builder;
@@ -87,4 +106,5 @@ PyObject* K_OCC::addSquare(PyObject* self, PyObject* args)
   
   Py_INCREF(Py_None);
   return Py_None;
+#endif
 }

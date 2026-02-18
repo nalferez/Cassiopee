@@ -48,8 +48,8 @@
 #include "Standard_Version.hxx"
 
 //=====================================================================
-// Get face names
-// Return [names, [face no]] 
+// Get face lables
+// Return [names, [face no]]
 //=====================================================================
 PyObject* K_OCC::getFaceNameInOCAF(PyObject* self, PyObject* args)
 {
