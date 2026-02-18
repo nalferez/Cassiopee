@@ -20,7 +20,7 @@ __all__ = ['convertCAD2Arrays',
            'identifyTags__',
            'readCAD', 'writeCAD', 'createEmptyCAD', 'freeHook',
            'getNbEdges', 'getNbFaces', 'getFileAndFormat',
-           'printOCAF', 'getFaceNameInOCAF', 'getEdgeNameInOCAF', '_setFaceNameInOCAF',
+           'printOCAF', 'getFaceNameInOCAF', 'getEdgeNameInOCAF',
            'getFaceArea', 'getBoundingBox',
            '_translate', '_rotate', '_scale', '_sewing',
            '_splitFaces', '_mergeFaces', '_trimFaces', '_removeFaces',
@@ -814,16 +814,12 @@ def printOCAF(hook):
     occ.printOCAF(hook)
 
 def getFaceNameInOCAF(hook):
-    """Return face names in OCAF."""
+    """Return face labels in OCAF."""
     return occ.getFaceNameInOCAF2(hook)
 
 def getEdgeNameInOCAF(hook):
-    """Return edge names in OCAF."""
+    """Return edge labels in OCAF."""
     return occ.getEdgeNameInOCAF2(hook)
-
-def _setFaceNameInOCAF(hook, listFaces, name):
-    """Set face name in OCAF."""
-    return occ.setFaceNameInOCAF(hook, listFaces, name)
 
 #=============================================================================
 # CAD modeling
@@ -970,7 +966,6 @@ def _addDomain(hook, dfar=10., type="box", plane=None):
         raise NotImplementedError('addDomain: not implemented for half-box.')
     # tag as exterior
     #nf2 = getNbFaces(hook)
-    #_setFaceNameInOCAF(hook, [i for i in range(nf1+1,nf2+1)], 'exterior')
     return None
 
 def _revolve(hook, edges, C, axis, angle):

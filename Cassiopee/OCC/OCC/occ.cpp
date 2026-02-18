@@ -48,7 +48,6 @@ static PyMethodDef Pyocc [] =
   {"getFaceNameInOCAF", K_OCC::getFaceNameInOCAF, METH_VARARGS},
   {"getFaceNameInOCAF2", K_OCC::getFaceNameInOCAF2, METH_VARARGS},
   {"getEdgeNameInOCAF2", K_OCC::getEdgeNameInOCAF2, METH_VARARGS},
-  {"setFaceNameInOCAF", K_OCC::setFaceNameInOCAF, METH_VARARGS},
 
   {"bottle", K_OCC::bottle, METH_VARARGS},
   {"addSphere", K_OCC::addSphere, METH_VARARGS},

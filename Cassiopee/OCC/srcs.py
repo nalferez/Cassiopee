@@ -43,10 +43,11 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
 
         'OCC/Atomic/printOCAF.cpp',
         'OCC/Atomic/getFaceNameInOCAF.cpp',
-        'OCC/Atomic/setFaceNameInOCAF.cpp',
 
         'OCC/Atomic/copyOCAF2TopShape.cpp',
         'OCC/Atomic/addShape2OCAF.cpp',
+        'OCC/Atomic/getLabel2Faces.cpp',
+        'OCC/Atomic/copyTopShape2OCAF.cpp',
 
         'OCC/Atomic/bottle.cpp',
         'OCC/Atomic/addSphere.cpp',
