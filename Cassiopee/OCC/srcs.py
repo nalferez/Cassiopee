@@ -47,7 +47,7 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
 
         'OCC/Atomic/copyOCAF2TopShape.cpp',
         'OCC/Atomic/addShape2OCAF.cpp',
-        
+
         'OCC/Atomic/bottle.cpp',
         'OCC/Atomic/addSphere.cpp',
         'OCC/Atomic/addCylinder.cpp',
