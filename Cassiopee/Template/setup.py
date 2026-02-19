@@ -56,4 +56,3 @@ setup(
     packages=['Template'],
     package_dir={"":"."},
     ext_modules=listExtensions)
-

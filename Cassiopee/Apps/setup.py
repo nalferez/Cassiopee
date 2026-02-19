@@ -19,4 +19,3 @@ setup(
     packages=['Apps', 'Apps.Chimera', 'Apps.Fast', 'Apps.Mesh', 'Apps.Coda'],
     package_dir={"":"."}
 )
-

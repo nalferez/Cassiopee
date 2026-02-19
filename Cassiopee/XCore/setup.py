@@ -137,4 +137,3 @@ setup(
     package_dir={"":"."},
     ext_modules=listExtensions+cythonize(listExtensionsPyx,include_path=[paradigmaDir])
 )
-

@@ -83,4 +83,3 @@ setup(
     packages=['Compressor', 'Compressor.sz', 'Compressor.zfp'],
     ext_modules=extensions
 )
-

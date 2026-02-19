@@ -57,4 +57,3 @@ setup(
     packages=['Connector'],
     package_dir={"":"."},
     ext_modules=listExtensions)
-
