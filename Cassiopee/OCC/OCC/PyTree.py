@@ -607,14 +607,14 @@ def meshAllPara(hook, hmin=-1, hmax=-1., hausd=-1.):
     return t
 
 #=============================
-def meshAllOCC(hook, hausd):
+def meshAllOCC(hook, hausd, angularDeflection=28.):
     t = C.newPyTree(['EDGES', 'FACES'])
 
     # Add CAD top container containing the CAD file name
     fileName, fileFmt = OCC.occ.getFileAndFormat(hook)
     _setCADcontainer(t, fileName, fileFmt, -1, -1, hausd)
 
-    dedges, dfaces = OCC.meshAllOCC(hook, hausd)
+    dedges, dfaces = OCC.meshAllOCC(hook, hausd, angularDeflection)
 
     # - Edges -
     b = Internal.getNodeFromName1(t, 'EDGES')

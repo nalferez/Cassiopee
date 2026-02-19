@@ -37,15 +37,16 @@ PyObject* K_OCC::occmesh(PyObject* self, PyObject* args)
 {
   PyObject* hook;
   E_Float hausd;
-  if (!PYPARSETUPLE_(args, O_ R_, &hook, &hausd)) return NULL;  
+  E_Float angularDeflection; // in degrees
+  if (!PYPARSETUPLE_(args, O_ R_ R_, &hook, &hausd, &angularDeflection)) return NULL;  
   
   GETSHAPE;
   
   // Triangulate shape
-  E_Float angularDeflection = 0.5; // en radians
+  E_Float angle = angularDeflection * M_PI / 180.; // en radians
   Standard_Boolean relative = Standard_False;
   if (hausd < 0) { relative = Standard_True; hausd = -hausd; }
-  BRepMesh_IncrementalMesh Mesh(*shape, hausd, relative, angularDeflection, Standard_True);
+  BRepMesh_IncrementalMesh Mesh(*shape, hausd, relative, angle, Standard_True);
   Mesh.Perform(); 
 
   //===================
