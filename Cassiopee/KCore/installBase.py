@@ -305,6 +305,22 @@ installDict = {
         [] # NvccAdditionalOptions
     ],
     ###############################################################################
+    'ld_coda': [
+        'Poste grand calcul Onera-ld (ONERA)',
+        'gfortran', # f77compiler
+        'gfortran', # f90compiler
+        'gcc', # Cppcompiler
+        ['-DCACHELINE=64', '-DNB_SOCKET=1'], # CppAdditionalOptions
+        [], # f77AdditionalOptions
+        True, # useOMP
+        False, # static
+        [], # additionalIncludePaths
+        [], # additionalLibs
+        [], # additionalLibPaths
+        False, # useCuda
+        [] # NvccAdditionalOptions
+    ],
+    ###############################################################################
     'mangrove': [
         'Machine avec acces GPU (ONERA)',
         'ifort', # f77compiler
@@ -610,6 +626,22 @@ installDict = {
     ],
     ###############################################################################
     'sator_coda': [
+        'Cluster de calcul Sator Saphire (ONERA)',
+        'gfortran', # f77compiler
+        'gfortran', # f90compiler
+        'gcc', # Cppcompiler
+        ['-DCACHELINE=64', '-DNB_SOCKET=2', '-DCORE_PER_SOCK=48', '-DSIMD=AVX2P512'], # CppAdditionalOptions
+        [], # f77AdditionalOptions
+        True, # useOMP
+        False, # static
+        ['/usr/include/openblas/'], # additionalIncludePaths
+        ['openblas'], # additionalLibs
+        ['/usr/lib64/'], # additionalLibPaths
+        False, # useCuda
+        [] # NvccAdditionalOptions
+    ],
+    ###############################################################################
+    'sator_coda_2511': [
         'Cluster de calcul Sator Saphire (ONERA)',
         'gfortran', # f77compiler
         'gfortran', # f90compiler
