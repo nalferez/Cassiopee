@@ -761,7 +761,7 @@ def scanext(args, dir, file):
     givenExts = args[0]
     ret = args[1]
     for f in file:
-        (root,ext) = os.path.splitext(f)
+        root, ext = os.path.splitext(f)
         tot = '%s/%s'%(dir,f)
         t = os.path.islink(tot)
         m = True
@@ -780,7 +780,10 @@ def scanext(args, dir, file):
 #==============================================================================
 def getFilesOfExt(rootdir, givenExts):
     ret = []
-    os.path.walk(rootdir, scanext, [givenExts, ret])
+    for root, _, files in os.walk(rootdir):
+        for filename in files:
+            if filename.endswith(tuple(givenExts)):
+                ret.append(os.path.join(root, filename))
     return ret
 
 #==============================================================================
