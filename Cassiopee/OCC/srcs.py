@@ -1,12 +1,10 @@
 GORDON = True
 
-import glob
-import os
+import os, glob
 
 exceptions = ['../../OCC/occ_src/TKXSBase/stepread.c',
               '../../OCC/occ_src/TKXSBase/step.tab.c',
               '../../OCC/occ_src/TKXSBase/lex.step.c']
-
 def getFiles(module):
     if os.path.exists('../../OCC/occ_src/%s/PACKAGES'%module):
         f = open('../../OCC/occ_src/%s/PACKAGES'%module, 'r')
@@ -43,6 +41,7 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
 
         'OCC/Atomic/printOCAF.cpp',
         'OCC/Atomic/getFaceNameInOCAF.cpp',
+        'OCC/Atomic/changeLabelNameInOCAF.cpp',
 
         'OCC/Atomic/copyOCAF2TopShape.cpp',
         'OCC/Atomic/addShape2OCAF.cpp',
@@ -121,11 +120,3 @@ if GORDON:
         'OCC/Gordon/GordonSurfaceBuilder.cpp',
         'OCC/Gordon/IntersectBSplines.cpp',
         'OCC/Gordon/occ_gordon.cpp']
-
-#====================================================================================
-import KCore.Dist as Dist
-allMods = Dist.getOCCModules()
-
-mod_srcs = {}
-for m in allMods:
-    mod_srcs[m] = getFiles(m)

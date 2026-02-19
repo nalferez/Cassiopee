@@ -1538,70 +1538,87 @@ def checkOCC():
         return (False, i, l)
 
 # Return open-cascade module names depending on version
-def getOCCModules():
-    allMods6 = ["FWOSPlugin", "TKPLCAF", "PTKernel", "TKPrim",
-                "TKAdvTools", "TKPShape", "TKBinL", "TKService",
-                "TKBin", "TKShapeSchema", "TKBinTObj", "TKShHealing",
-                "TKBinXCAF", "TKStdLSchema", "TKBool", "TKStdSchema",
-                "TKBO", "TKSTEP209", "TKBRep", "TKSTEPAttr",
-                "TKCAF", "TKSTEPBase", "TKCDF", "TKSTEP",
-                "TKernel", "TKSTL", "TKFeat", "TKTObj",
-                "TKFillet", "TKTopAlgo", "TKG2d", "TKV3d",
-                "TKG3d", "TKVoxel", "TKGeomAlgo", "TKVRML",
-                "TKGeomBase", "TKXCAFSchema", "TKHLR", "TKXCAF",
-                "TKIGES", "TKXDEIGES", "TKLCAF", "TKXDESTEP",
-                "TKMath", "TKXMesh", "TKMesh", "TKXmlL",
-                "TKMeshVS", "TKXml", "TKNIS", "TKXmlTObj",
-                "TKOffset", "TKXmlXCAF", "TKOpenGl", "TKXSBase",
-                "TKPCAF"]
+def getOCCModules(OCCIncDir=None):
+    #default
+    if getSystem()[0] == 'mingw': version = (7, 8)
+    else: version = (7, 5)
 
-    allMods75 = ["TKBinL", "TKBin", "TKBinTObj",
-                 "TKBinXCAF", "TKBool", "TKBO", "TKBRep",
-                 "TKCAF", "TKCDF", "TKDCAF", "TKDraw", "TKernel",
-                 "TKFeat", "TKFillet", "TKG2d", "TKG3d", "TKGeomAlgo",
-                 "TKGeomBase", "TKHLR", "TKIGES", "TKLCAF", "TKMath",
-                 "TKMesh", "TKMeshVS", "TKOffset", "TKOpenGl", "TKPrim",
-                 "TKQADraw", "TKRWMesh", "TKService", "TKShHealing", "TKStdL",
-                 "TKStd", "TKSTEP209", "TKSTEPAttr", "TKSTEPBase", "TKSTEP",
-                 "TKSTL", "TKTObjDRAW", "TKTObj", "TKTopAlgo", "TKTopTest",
-                 "TKV3d", "TKVCAF", "TKViewerTest", "TKVRML", "TKXCAF", "TKXDEDRAW",
-                 "TKXDEIGES", "TKXDESTEP", "TKXMesh", "TKXmlL", "TKXml", "TKXmlTObj",
-                 "TKXmlXCAF", "TKXSBase", "TKXSDRAW"]
+    if OCCIncDir is not None:
+        if os.path.exists(OCCIncDir+'/Standard_Version.hxx'):
+            file = open(OCCIncDir+'/Standard_Version.hxx', 'r')
+            ret = file.readlines()
+            for r in ret: 
+                if '#define OCC_VERSION ' in r: 
+                    version = r.replace('#define OCC_VERSION ', '')
+                    version = version.split('.')
+                    version = (int(version[0]), int(version[1]))
 
-    allMods75W = ["TKBin", "TKBinL", "TKBinTObj", "TKBinXCAF", "TKBO",
-                  "TKBool", "TKBRep", "TKCAF", "TKCDF", "TKernel",
-                  "TKFeat", "TKFillet", "TKG2d", "TKG3d", "TKGeomAlgo",
-                  "TKGeomBase", "TKHLR", "TKIGES", "TKLCAF", "TKMath",
-                  "TKMesh", "TKMeshVS", "TKOffset", "TKOpenGl",
-                  "TKPrim", "TKService",
-                  "TKShHealing", "TKStdLSchema",
-                  "TKStdSchema", "TKSTEP", "TKSTEP209", "TKSTEPAttr",
-                  "TKSTEPBase", "TKSTL", "TKTObj", "TKTopAlgo",
-                  "TKV3d", "TKVoxel", "TKVRML", "TKXCAF", "TKXCAFSchema",
-                  "TKXDEIGES", "TKXDESTEP", "TKXMesh", "TKXml",
-                  "TKXmlL", "TKXmlTObj", "TKXmlXCAF", "TKXSBase",
-                  "TKPCAF", "TKPLCAF", "TKNIS", "TKPShape", "TKShapeSchema"]
-
-    allMods78 = ["TKBO", "TKBRep", "TKBin", "TKBinL", "TKBinTObj",
-                 "TKBinXCAF", "TKBool", "TKCAF", "TKCDF", "TKD3DHost",
-                 "TKD3DHostTest", "TKDCAF", "TKDE", "TKDECascade", "TKDEGLTF",
-                 "TKDEIGES", "TKDEOBJ", "TKDEPLY", "TKDESTEP", "TKDESTL",
-                 "TKDEVRML", "TKDraw", "TKExpress", "TKFeat", "TKFillet",
-                 "TKG2d", "TKG3d", "TKGeomAlgo", "TKGeomBase",
-                 "TKHLR", "TKIVtk", "TKIVtkDraw", "TKLCAF",
-                 "TKMath", "TKMesh", "TKMeshVS", "TKOffset",
-                 "TKOpenGl", "TKOpenGlTest", "TKPrim", "TKQADraw",
-                 "TKRWMesh", "TKService", "TKShHealing", "TKStd",
-                 "TKStdL", "TKTObj", "TKTObjDRAW", "TKTopAlgo",
-                 "TKTopTest", "TKV3d", "TKVCAF",
-                 "TKViewerTest", "TKXCAF", "TKXDEDRAW",
-                 "TKXMesh", "TKXSBase", "TKXSDRAW",
-                 "TKXSDRAWDE", "TKXSDRAWGLTF", "TKXSDRAWIGES",
-                 "TKXSDRAWOBJ", "TKXSDRAWPLY", "TKXSDRAWSTEP",
-                 "TKXSDRAWSTL", "TKXSDRAWVRML", "TKXml",
-                 "TKXmlL", "TKXmlTObj", "TKXmlXCAF", "TKernel"]
-    if getSystem()[0] == 'mingw': allMods = allMods78
-    else: allMods = allMods75
+    if version[0] <= 6:
+        allMods = [
+            "FWOSPlugin", "TKPLCAF", "PTKernel", "TKPrim",
+            "TKAdvTools", "TKPShape", "TKBinL", "TKService",
+            "TKBin", "TKShapeSchema", "TKBinTObj", "TKShHealing",
+            "TKBinXCAF", "TKStdLSchema", "TKBool", "TKStdSchema",
+            "TKBO", "TKSTEP209", "TKBRep", "TKSTEPAttr",
+            "TKCAF", "TKSTEPBase", "TKCDF", "TKSTEP",
+            "TKernel", "TKSTL", "TKFeat", "TKTObj",
+            "TKFillet", "TKTopAlgo", "TKG2d", "TKV3d",
+            "TKG3d", "TKVoxel", "TKGeomAlgo", "TKVRML",
+            "TKGeomBase", "TKXCAFSchema", "TKHLR", "TKXCAF",
+            "TKIGES", "TKXDEIGES", "TKLCAF", "TKXDESTEP",
+            "TKMath", "TKXMesh", "TKMesh", "TKXmlL",
+            "TKMeshVS", "TKXml", "TKNIS", "TKXmlTObj",
+            "TKOffset", "TKXmlXCAF", "TKOpenGl", "TKXSBase",
+            "TKPCAF"]
+    elif version[0] == 7 and version[1] <= 5:
+        allMods = [
+            "TKBinL", "TKBin", "TKBinTObj",
+            "TKBinXCAF", "TKBool", "TKBO", "TKBRep",
+            "TKCAF", "TKCDF", "TKDCAF", "TKDraw", "TKernel",
+            "TKFeat", "TKFillet", "TKG2d", "TKG3d", "TKGeomAlgo",
+            "TKGeomBase", "TKHLR", "TKIGES", "TKLCAF", "TKMath",
+            "TKMesh", "TKMeshVS", "TKOffset", "TKOpenGl", "TKPrim",
+            "TKQADraw", "TKRWMesh", "TKService", "TKShHealing", "TKStdL",
+            "TKStd", "TKSTEP209", "TKSTEPAttr", "TKSTEPBase", "TKSTEP",
+            "TKSTL", "TKTObjDRAW", "TKTObj", "TKTopAlgo", "TKTopTest",
+            "TKV3d", "TKVCAF", "TKViewerTest", "TKVRML", "TKXCAF", "TKXDEDRAW",
+            "TKXDEIGES", "TKXDESTEP", "TKXMesh", "TKXmlL", "TKXml", "TKXmlTObj",
+            "TKXmlXCAF", "TKXSBase", "TKXSDRAW"]
+    elif version[0] == 7 and version[1] == 6:
+        allMods = [
+            "TKBin", "TKBinL", "TKBinTObj", "TKBinXCAF", "TKBO",
+            "TKBool", "TKBRep", "TKCAF", "TKCDF", "TKernel",
+            "TKFeat", "TKFillet", "TKG2d", "TKG3d", "TKGeomAlgo",
+            "TKGeomBase", "TKHLR", "TKIGES", "TKLCAF", "TKMath",
+            "TKMesh", "TKMeshVS", "TKOffset", "TKOpenGl",
+            "TKPrim", "TKService",
+            "TKShHealing", "TKStdLSchema",
+            "TKStdSchema", "TKSTEP", "TKSTEP209", "TKSTEPAttr",
+            "TKSTEPBase", "TKSTL", "TKTObj", "TKTopAlgo",
+            "TKV3d", "TKVoxel", "TKVRML", "TKXCAF", "TKXCAFSchema",
+            "TKXDEIGES", "TKXDESTEP", "TKXMesh", "TKXml",
+            "TKXmlL", "TKXmlTObj", "TKXmlXCAF", "TKXSBase",
+            "TKPCAF", "TKPLCAF", "TKNIS", "TKPShape", "TKShapeSchema"]
+    else:
+        allMods = [
+            "TKBO", "TKBRep", "TKBin", "TKBinL", "TKBinTObj",
+            "TKBinXCAF", "TKBool", "TKCAF", "TKCDF", "TKD3DHost",
+            "TKD3DHostTest", "TKDCAF", "TKDE", "TKDECascade", "TKDEGLTF",
+            "TKDEIGES", "TKDEOBJ", "TKDEPLY", "TKDESTEP", "TKDESTL",
+            "TKDEVRML", "TKDraw", "TKExpress", "TKFeat", "TKFillet",
+            "TKG2d", "TKG3d", "TKGeomAlgo", "TKGeomBase",
+            "TKHLR", "TKIVtk", "TKIVtkDraw", "TKLCAF",
+            "TKMath", "TKMesh", "TKMeshVS", "TKOffset",
+            "TKOpenGl", "TKOpenGlTest", "TKPrim", "TKQADraw",
+            "TKRWMesh", "TKService", "TKShHealing", "TKStd",
+            "TKStdL", "TKTObj", "TKTObjDRAW", "TKTopAlgo",
+            "TKTopTest", "TKV3d", "TKVCAF",
+            "TKViewerTest", "TKXCAF", "TKXDEDRAW",
+            "TKXMesh", "TKXSBase", "TKXSDRAW",
+            "TKXSDRAWDE", "TKXSDRAWGLTF", "TKXSDRAWIGES",
+            "TKXSDRAWOBJ", "TKXSDRAWPLY", "TKXSDRAWSTEP",
+            "TKXSDRAWSTL", "TKXSDRAWVRML", "TKXml",
+            "TKXmlL", "TKXmlTObj", "TKXmlXCAF", "TKernel"]
     return allMods
 
 #=============================================================================

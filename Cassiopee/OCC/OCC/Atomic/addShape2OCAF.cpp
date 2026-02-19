@@ -94,7 +94,6 @@ void K_OCC::addShape2OCAF(TopoDS_Shape& shape, char* labelName, TDocStd_Document
         builder.Add(compound, E);
       }
     }
-
     {
       TopTools_IndexedMapOfShape sf = TopTools_IndexedMapOfShape();
       TopExp::MapShapes(shape, TopAbs_FACE, sf);

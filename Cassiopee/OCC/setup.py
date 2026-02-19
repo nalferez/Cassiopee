@@ -53,7 +53,7 @@ if OCCPresent:
     includeDirs += [OCCIncDir]
 
 srcs = loadModuleFromPath('srcs')
-libOCC = srcs.allMods
+libOCC = Dist.getOCCModules(OCCIncDir)
 if OCCPresent and Dist.getSystem()[0] == 'mingw':
     libOCE = [i+".dll" for i in libOCC]
 libraries += libOCC + libOCC
