@@ -1547,8 +1547,8 @@ def getOCCModules(OCCIncDir=None):
         if os.path.exists(OCCIncDir+'/Standard_Version.hxx'):
             file = open(OCCIncDir+'/Standard_Version.hxx', 'r')
             ret = file.readlines()
-            for r in ret: 
-                if '#define OCC_VERSION ' in r: 
+            for r in ret:
+                if '#define OCC_VERSION ' in r:
                     version = r.replace('#define OCC_VERSION ', '')
                     version = version.split('.')
                     version = (int(version[0]), int(version[1]))
