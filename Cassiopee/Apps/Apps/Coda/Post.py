@@ -16,9 +16,9 @@ except:
     raise ImportError("interpolationDonorPoints: FSDataManager and CODA")
 
 
-def interpolationDonorPoints(fsmesh, clac, discParaDict, discSelectionParaDict, markerIBM, wallBoundaryMarkers=[], localDir='./', check=False):
+def interpolationDonorPoints(fsmesh, clac, discParaDict, discSelectionParaDict, markerIBM, wallBoundaryMarkers=[], check=False):
     """ Interpolate the CODA flow field to the IBM donor points (image points in ghost cell IBM approach). 
-    Usage: interpolationDonorPoints(fsmesh, clac, discParaDict, discSelectionParaDict, markerIBM, wallBoundaryMarkers, localDir, check)"""
+    Usage: interpolationDonorPoints(fsmesh, clac, discParaDict, discSelectionParaDict, markerIBM, wallBoundaryMarkers, check)"""
     try:
         from FSZoltan import FSZoltanInterface  # noqa: 401
         WITH_FSZOLTAN = True
@@ -124,7 +124,7 @@ def interpolationDonorPoints(fsmesh, clac, discParaDict, discSelectionParaDict, 
     ipvr.InterpolateAtNodes(fsmesh, srcCoords, disc, state, fsmeshDonorPnt, dstCoords, quantities, False) or FSError.PrintAndExit()
 
     if check:
-        fsmeshDonorPnt.ExportMeshTECPLOT(Filename=localDir+'pointMesh_AugState.dat', FileFormat='ASCII', PrefixDatasetName=True) or FSError.PrintAndExit()
+        fsmeshDonorPnt.ExportMeshTECPLOT(Filename='pointMesh_AugState.dat', FileFormat='ASCII', PrefixDatasetName=True) or FSError.PrintAndExit()
     nodeDonorPoints = fsmeshDonorPnt.GetUnstructDataset("DonorPoints").GetValues()
     nodeWallPoints  = fsmeshDonorPnt.GetUnstructDataset("WallPoints").GetValues()
     augStateData    = fsmeshDonorPnt.GetUnstructDataset("CODAAugState").GetValues()
@@ -138,9 +138,9 @@ def interpolationDonorPoints(fsmesh, clac, discParaDict, discSelectionParaDict, 
     return nodeDonorPoints, nodeWallPoints, augStateData
 
 
-def computeSurfValues(fileNameResultIn, tb, CODAInputs, dim=3, fileNameIBMPnts=None, fileNameResultOut=None, localDir='./', check=False, verbose=False):
+def computeSurfValues(fileNameResultIn, tb, CODAInputs, dim=3, fileNameIBMPnts=None, fileNameResultOut=None, check=False, verbose=False):
     """ Surface quantity post-processing for CODA IBM computation. 
-    Usage: computeSurfValues(fileNameResultIn, tb, CODAInputs, dim, fileNameIBMPnts, fileNameResultOut, localDir, check, verbose)"""
+    Usage: computeSurfValues(fileNameResultIn, tb, CODAInputs, dim, fileNameIBMPnts, fileNameResultOut, check, verbose)"""
 
     ## CODAInputs = [discParaDictAllStages, discSelectionParaDict, IBM_markers, dictReferenceQuantities]
     ## fileNameResultIn = (e.g) output_stage3.h5 (the h5 from the CODA run)
@@ -157,11 +157,11 @@ def computeSurfValues(fileNameResultIn, tb, CODAInputs, dim=3, fileNameIBMPnts=N
 
     clac   = FSClac()
     fsmesh = FSMesh(clac)
-    fsmesh.ImportMeshHDF5(Filename=localDir+fileNameResultIn) or FSError.PrintAndExit()
+    fsmesh.ImportMeshHDF5(Filename=fileNameResultIn) or FSError.PrintAndExit()
 
     # Reconstruction of the solution at the donor points (in parallel).
     donorPointsNumpy, wallPointsNumpy, augStateNumpy = interpolationDonorPoints(fsmesh, clac, discParaDict, discSelectionParaDict,
-                                                                                IBMMarkers, localDir=localDir, check=check)
+                                                                                IBMMarkers, check=check)
 
     # Serial part of the post-processing.
     zw = None
@@ -170,7 +170,7 @@ def computeSurfValues(fileNameResultIn, tb, CODAInputs, dim=3, fileNameIBMPnts=N
                                                               numpy.concatenate(wallPointsNumpy),
                                                               numpy.concatenate(augStateNumpy),
                                                               discSelectionParaDict)
-        if fileNameIBMPnts is not None: C.convertPyTree2File(pytree, localDir+fileNameIBMPnts)
+        if fileNameIBMPnts is not None: C.convertPyTree2File(pytree, fileNameIBMPnts)
         zw = P_AMR.extractIBMWallFields(pytree, tb, discSelectionParaDict)
 
     zw       = Cmpi.bcast(zw, root=0)
@@ -186,15 +186,15 @@ def computeSurfValues(fileNameResultIn, tb, CODAInputs, dim=3, fileNameIBMPnts=N
         print("CLpres=  %g"%coefs[5])
 
     if fileNameResultOut is not None:
-        if Cmpi.master: C.convertPyTree2File(zw, localDir+fileNameResultOut)
+        if Cmpi.master: C.convertPyTree2File(zw, fileNameResultOut)
         return None
     else:
         return zw, coefs
 
 
-def computeSurfValuesFSUI(fileNameResultIn, tb, fileNameRelations, dim=3, fileNameIBMPnts=None, fileNameResultOut=None, localDir='./', check=False, verbose=False):
+def computeSurfValuesFSUI(fileNameResultIn, tb, fileNameRelations, dim=3, fileNameIBMPnts=None, fileNameResultOut=None, check=False, verbose=False):
     """ Surface quantity post-processing for CODA IBM computation using FSUI-CODA.
-    Usage: computeSurfValues(fileNameResultIn, tb, fileNameRelations, dim, fileNameIBMPnts, fileNameResultOut, localDir, check, verbose)"""
+    Usage: computeSurfValues(fileNameResultIn, tb, fileNameRelations, dim, fileNameIBMPnts, fileNameResultOut, check, verbose)"""
     import json
 
     ## fileNameResultIn  = (e.g) solution.h5    (the h5 from the fsui-coda run)
@@ -271,7 +271,7 @@ def computeSurfValuesFSUI(fileNameResultIn, tb, fileNameRelations, dim=3, fileNa
 
     # Reconstruction of the solution at the donor points (in parallel).
     donorPointsNumpy, wallPointsNumpy, augStateNumpy = interpolationDonorPoints(fsmesh, clac, discParaDict, discSelectionParaDict,
-                                                                                IBMMarkers, localDir=localDir, check=check)
+                                                                                IBMMarkers, check=check)
 
     # Serial part of the post-processing.
     zw = None
