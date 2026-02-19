@@ -7,20 +7,8 @@
 #=============================================================================
 import os
 from setuptools import setup, Extension
-from importlib.util import spec_from_file_location, module_from_spec
+import KCore.Dist as Dist
 
-def loadModuleFromPath(modname):
-    # Load a Python file by filesystem path (PEP-517 isolated build requirement)
-    helper = os.path.join(os.path.dirname(__file__), modname + ".py")
-    spec = spec_from_file_location(modname, helper)
-    mod = module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return mod
-
-# Compiler settings must be set in installBase.py / installBaseUser.py
-Dist = loadModuleFromPath('../KCore/Dist')
-installBase = loadModuleFromPath('../KCore/installBase')
-Dist.setConfigDict(installBase.installDict)
 additionalLibPaths = Dist.getAdditionalLibPaths()
 additionalIncludePaths = Dist.getAdditionalIncludePaths()
 additionalLibs = Dist.getAdditionalLibs()
@@ -70,12 +58,3 @@ setup(
     package_dir={"":"."},
     ext_modules=listExtensions)
 
-# Check PYTHONPATH ===========================================================
-installPath = loadModuleFromPath('../KCore/installPath')
-installPathDict = {
-    "installPath": installPath.installPath,
-    "libPath": installPath.libPath,
-    "includePath": installPath.includePath
-}
-Dist.checkPythonPath(installPathDict)
-Dist.checkLdLibraryPath(installPathDict)

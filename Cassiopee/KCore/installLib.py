@@ -6,6 +6,10 @@
 import os, shutil
 import Dist
 
+# Check PYTHONPATH
+Dist.checkPythonPath()
+Dist.checkLdLibraryPath()
+
 system = Dist.getSystem()[0]
 
 if system == 'Windows':

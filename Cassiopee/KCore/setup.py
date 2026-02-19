@@ -72,13 +72,3 @@ setup(
     packages=['KCore'],
     ext_modules=listExtensions
 )
-
-# Check PYTHONPATH
-installPath = loadModuleFromPath('installPath')
-installPathDict = {
-    "installPath": installPath.installPath,
-    "libPath": installPath.libPath,
-    "includePath": installPath.includePath
-}
-Dist.checkPythonPath(installPathDict)
-Dist.checkLdLibraryPath(installPathDict)
