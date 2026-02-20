@@ -36,8 +36,6 @@ PyObject* K_OCC::addSphere(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_ TRRR_ R_ S_, &hook, &xc, &yc, &zc, &R, &name)) return NULL;
 
   GETSHAPE;
-  GETMAPSURFACES;
-  GETMAPEDGES;
 
   /* new sphere */
   gp_Pnt center(xc, yc, zc);
@@ -55,6 +53,9 @@ PyObject* K_OCC::addSphere(PyObject* self, PyObject* args)
   return Py_None;
 
 #else
+
+  GETMAPSURFACES;
+  GETMAPEDGES;
 
   // Rebuild a single compound
   BRep_Builder builder;

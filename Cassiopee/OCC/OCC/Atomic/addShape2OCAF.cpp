@@ -34,7 +34,7 @@
 #include "TDF_Tool.hxx"
 
 //=====================================================================
-// Add a shape (shape, compound) to OCAF
+// Add a shape (shape, compound) to OCAF at the end
 //=====================================================================
 void K_OCC::addShape2OCAF(TopoDS_Shape& shape, char* labelName, TDocStd_Document& doc)
 {

@@ -33,8 +33,11 @@ namespace K_OCC
 {
   TopoDS_Shape* copyOCAF2TopShape(TDocStd_Document& doc);
   void addShape2OCAF(TopoDS_Shape& shape, char* labelName, TDocStd_Document& doc);
+  void getLabel2Edges(TDocStd_Document& doc, std::map< E_Int, std::vector<E_Int> >& label2Edges);
   void getLabel2Faces(TDocStd_Document& doc, std::map< E_Int, std::vector<E_Int> >& label2Faces);
-  void copyTopShape2OCAF(TopoDS_Shape& topShape, std::map< E_Int, std::vector<E_Int> >& label2Faces, TDocStd_Document& doc);
+  void copyTopShape2OCAF(TopoDS_Shape& topShape, 
+    std::map< E_Int, std::vector<E_Int> >& label2Edges, 
+    std::map< E_Int, std::vector<E_Int> >& label2Faces, TDocStd_Document& doc);
 
   PyObject* convertCAD2Arrays0(PyObject* self, PyObject* args); // with OCC internal
   PyObject* convertCAD2Arrays1(PyObject* self, PyObject* args); // with T3Mesher
@@ -52,6 +55,7 @@ namespace K_OCC
   PyObject* getFaceNameInOCAF(PyObject* self, PyObject* args);
   PyObject* getFaceNameInOCAF2(PyObject* self, PyObject* args);
   PyObject* getEdgeNameInOCAF2(PyObject* self, PyObject* args);
+  PyObject* getFaceNos(PyObject* self, PyObject* args);
   PyObject* changeLabelNameInOCAF(PyObject* self, PyObject* args);
 
   PyObject* bottle(PyObject* self, PyObject* args);

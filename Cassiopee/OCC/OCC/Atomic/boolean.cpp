@@ -49,7 +49,7 @@ PyObject* K_OCC::boolean(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, OOO_ III_ , &hook, &listFaces1, &listFaces2, &op, &rev1, &rev2)) return NULL;
 
   GETSHAPE;
-  GETMAPEDGES;
+  //GETMAPEDGES;
   GETMAPSURFACES;
 
   E_Int nfaces1 = PyList_Size(listFaces1);

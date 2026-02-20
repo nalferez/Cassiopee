@@ -37,7 +37,7 @@ PyObject* K_OCC::addLine(PyObject* self, PyObject* args)
   PyObject* hook; 
   E_Float x1, y1, z1, x2, y2, z2;
   char* name;
-  if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_, &hook, &x1, &y1, &z1, &x2, &y2, &z2, &name)) return NULL;
+  if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ S_, &hook, &x1, &y1, &z1, &x2, &y2, &z2, &name)) return NULL;
 
   GETSHAPE;
   

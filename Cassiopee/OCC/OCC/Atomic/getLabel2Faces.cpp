@@ -45,23 +45,68 @@ void K_OCC::getLabel2Faces(TDocStd_Document& doc, std::map< E_Int, std::vector<E
   for (Standard_Integer i = 1; i <= labels.Length(); i++)
   {
     TDF_Label label = labels.Value(i);
+
+    if (shapeTool->IsAssembly(label) == true || shapeTool->IsCompound(label) == true) 
+      continue;
+
     TopoDS_Shape shape = shapeTool->GetShape(label);
     
     TopTools_IndexedMapOfShape faces = TopTools_IndexedMapOfShape();
     TopExp::MapShapes(shape, TopAbs_FACE, faces);
 
-    iend = istart + faces.Extent()-1;
+    iend = istart + faces.Extent();
 
-    std::vector<E_Int>& p = label2Faces[i];
-    p.resize(faces.Extent());
-    for (E_Int j = istart; j <= iend; j++) p[j-istart] = j-istart+1;
+    std::vector<E_Int>& f = label2Faces[i];
+    f.resize(faces.Extent());
+    for (E_Int j = istart; j < iend; j++) f[j-istart] = j;
+    istart = iend;
+  }
+  
+  /*
+  for (Standard_Integer i = 1; i <= labels.Length(); i++)
+  {
+    printf("compound %d\n", i);
+    std::vector<E_Int>& f = label2Faces[i];
+    for (size_t j = 0; j < f.size(); j++) printf("%d ", f[j]);
+    printf("\n");
+  }*/
+}
+
+//=====================================================================
+// return label2Edges map
+//=====================================================================
+void K_OCC::getLabel2Edges(TDocStd_Document& doc, std::map< E_Int, std::vector<E_Int> >& label2Edges)
+{
+  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc.Main());  
+  TDF_LabelSequence labels;
+  shapeTool->GetShapes(labels);
+
+  E_Int istart = 1; E_Int iend = 1;
+  for (Standard_Integer i = 1; i <= labels.Length(); i++)
+  {
+    TDF_Label label = labels.Value(i);
+    
+    if (shapeTool->IsAssembly(label) == true || shapeTool->IsCompound(label) == true) 
+      continue;
+
+    TopoDS_Shape shape = shapeTool->GetShape(label);
+    
+    TopTools_IndexedMapOfShape edges = TopTools_IndexedMapOfShape();
+    TopExp::MapShapes(shape, TopAbs_EDGE, edges);
+
+    iend = istart + edges.Extent();
+
+    std::vector<E_Int>& e = label2Edges[i];
+    e.resize(edges.Extent());
+    for (E_Int j = istart; j < iend; j++) e[j-istart] = j;
+    istart = iend;
   }
   /*
   for (Standard_Integer i = 1; i <= labels.Length(); i++)
   {
     printf("compound %d\n", i);
-    std::vector<E_Int>& p = label2Faces[i];
-    for (size_t j = 0; j < p.size(); j++) printf("%d ", p[j]);
+    std::vector<E_Int>& e = label2Edges[i];
+    for (size_t j = 0; j < p.size(); j++) printf("%d ", e[j]);
     printf("\n");
   }*/
 }

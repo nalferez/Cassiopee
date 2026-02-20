@@ -71,7 +71,7 @@ def sewCAD(event=None):
     CTK.setCursor(2, WIDGETS['frame'])
     CTK.setCursor(2, WIDGETS['sewingButton'])
 
-    OCC._sewing(CTK.CADHOOK, faces, tol)
+    OCC._sewing(CTK.CADHOOK, tol, faces)
 
     # remesh CAD and redisplay
     edges = Internal.getNodeFromName1(CTK.t, 'EDGES')

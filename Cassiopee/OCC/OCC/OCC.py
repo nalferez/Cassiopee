@@ -21,7 +21,7 @@ __all__ = ['convertCAD2Arrays',
            'readCAD', 'writeCAD', 'createEmptyCAD', 'freeHook',
            'getNbEdges', 'getNbFaces', 'getFileAndFormat',
            'printOCAF', 'getFaceNameInOCAF', 'getEdgeNameInOCAF',
-           'getFaceArea', 'getBoundingBox',
+           'getFaceNos', 'getFaceArea', 'getBoundingBox',
            '_translate', '_rotate', '_scale', '_sewing',
            '_splitFaces', '_mergeFaces', '_trimFaces', '_removeFaces',
            '_fillHole', '_addFillet', '_offset', 'mergeCAD', '_mergeCAD',
@@ -821,6 +821,10 @@ def getEdgeNameInOCAF(hook):
     """Return edge labels in OCAF."""
     return occ.getEdgeNameInOCAF2(hook)
 
+def getFaceNos(hook, labelName):
+    """Return face nos for a label."""
+    return occ.getFaceNos(hook, labelName)
+
 #=============================================================================
 # CAD modeling
 #=============================================================================
@@ -968,17 +972,17 @@ def _addDomain(hook, dfar=10., type="box", plane=None):
     #nf2 = getNbFaces(hook)
     return None
 
-def _revolve(hook, edges, C, axis, angle):
+def _revolve(hook, edges, C, axis, angle, name='revolved'):
     """Revolve edges to create surface."""
-    occ.revolve(hook, edges, C, axis, angle)
+    occ.revolve(hook, edges, C, axis, angle, name)
 
-def _sweep(hook, profiles, paths):
+def _sweep(hook, profiles, paths, name='sweep'):
     """Sweep profiles along paths."""
-    occ.sweep(hook, profiles, paths)
+    occ.sweep(hook, profiles, paths, name)
 
-def _loft(hook, profiles, guides):
+def _loft(hook, profiles, guides, name='loft'):
     """Loft profiles."""
-    occ.loft(hook, profiles, guides)
+    occ.loft(hook, profiles, guides, name)
 
 def _boolean(hook, faces1, faces2, op=0, rev1=1, rev2=1):
     """Boolean operation on two surfaces."""
@@ -1031,9 +1035,9 @@ def _scale(hook, factor, X, faceList=None):
 
 # sew a set of faces
 # faces: face list numbers
-def _sewing(hook, faceList=None, tol=1.e-6):
+def _sewing(hook, tol=1.e-6, faceList=None):
     """Sew some faces (suppress redundant edges)."""
-    occ.sewing(hook, faceList, tol)
+    occ.sewing(hook, tol, faceList)
     return None
 
 # add fillet from edges with given radius
@@ -1056,9 +1060,9 @@ def _removeFaces(hook, faceList, new2OldEdgeMap=[], new2OldFaceMap=[]):
 
 # fill hole from edges
 # edges: edge list numbers (must be ordered)
-def _fillHole(hook, edges, faceList=None, continuity=0):
+def _fillHole(hook, edges, faceList=None, continuity=0, name="fill"):
     """Fill hole defined by close loop of edges."""
-    occ.fillHole(hook, edges, faceList, continuity)
+    occ.fillHole(hook, edges, faceList, continuity, name)
     return None
 
 # merge faces
