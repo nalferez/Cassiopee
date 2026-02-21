@@ -298,6 +298,7 @@ namespace K_TRANSFORM
   PyObject* perturbate(PyObject* self, PyObject* args);
   PyObject* smooth(PyObject* self, PyObject* args);
   PyObject* _smoothField(PyObject* self, PyObject* args);
+  PyObject* consSmooth(PyObject* self, PyObject* args);
   PyObject* deform(PyObject* self, PyObject* args);
   PyObject* deform2(PyObject* self, PyObject* args);
   PyObject* deformPoint(PyObject* self, PyObject* args);

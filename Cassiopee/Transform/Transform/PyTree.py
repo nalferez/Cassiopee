@@ -206,6 +206,14 @@ def _smooth(t, eps=0.5, niter=4, type=0, fixedConstraints=[],
     C.setFields(coordsp, t, 'nodes', writeDim=False)
     return None
 
+def consSmooth(t):
+    """Conservative smoothing."""
+    return C.TZGC3(t, 'nodes', 'nodes', False, Transform.consSmooth)
+
+def _consSmooth(t):
+    """Conservative smoothing."""
+    return C._TZGC3(t, 'nodes', 'nodes', False, Transform.consSmooth)
+
 def deform(t, vector=['dx','dy','dz']):
     """Deform surface by moving surface of the vector (dx, dy, dz).
     Usage: deform(t, vector=['dx','dy','dz'])"""
