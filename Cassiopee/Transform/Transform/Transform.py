@@ -24,7 +24,7 @@ __all__ = [
     'splitMultiplePts', 'splitNParts', 'splitSharpEdges', 'splitSize',
     'splitTBranches', 'splitTRI', 'subzone',
     '_symmetrize', 'symmetrize', '_symetrize', 'symetrize', 'deformMesh',
-    'controlPoints', 'freeForm', 'kround', 
+    'controlPoints', 'freeForm', 'kround',
     'smooth', 'smoothField', '_smoothField', 'consSmooth',
     'alignVectorFieldWithRadialCylindricProjection',
     '_alignVectorFieldWithRadialCylindricProjection'
