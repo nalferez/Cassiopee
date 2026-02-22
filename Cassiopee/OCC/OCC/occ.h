@@ -56,6 +56,7 @@ namespace K_OCC
   PyObject* getFaceNameInOCAF2(PyObject* self, PyObject* args);
   PyObject* getEdgeNameInOCAF2(PyObject* self, PyObject* args);
   PyObject* getFaceNos(PyObject* self, PyObject* args);
+  PyObject* getEdgeNos(PyObject* self, PyObject* args);
   PyObject* changeLabelNameInOCAF(PyObject* self, PyObject* args);
 
   PyObject* bottle(PyObject* self, PyObject* args);

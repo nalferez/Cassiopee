@@ -25,6 +25,7 @@
 #include "TopExp.hxx"
 #include "TopExp_Explorer.hxx"
 #include "BRep_Builder.hxx"
+#include "BRepBuilderAPI_Sewing.hxx"
 
 #include "TDF_Label.hxx"
 #include "TDataStd_Name.hxx"
@@ -80,7 +81,12 @@ void K_OCC::copyTopShape2OCAF(TopoDS_Shape& topShape,
       TopoDS_Face F = TopoDS::Face(faces(f[j]));
       builder.Add(compound, F);
     }
-    shapeTool->SetShape(label, compound);
+
+    BRepBuilderAPI_Sewing sewer(1.e-6);
+    sewer.Add(compound);
+    sewer.Perform();
+    
+    shapeTool->SetShape(label, sewer.SewedShape());
   }
   //shapeTool->UpdateAssemblies();
 }

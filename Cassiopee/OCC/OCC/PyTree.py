@@ -17,7 +17,7 @@ import numpy
 from OCC import readCAD, writeCAD, createEmptyCAD, freeHook, \
     getNbEdges, getNbFaces, getFileAndFormat, \
     printOCAF, getFaceNameInOCAF, getEdgeNameInOCAF, \
-    getFaceNos, getFaceArea, getBoundingBox, \
+    getFaceNos, getEdgeNos, getFaceArea, getBoundingBox, \
     _translate, _rotate, _scale, _sewing, _splitFaces, \
     _mergeFaces, _trimFaces, _removeFaces, _fillHole, \
     _addFillet, _offset, mergeCAD, _splitEdge, \
@@ -938,6 +938,7 @@ def _meshAllFacesTri(hook, t, metric=True, faceList=None, hList=[], hmin=-1, hma
         b[2].append(z)
 
     _updateEdgesFaceList__(t)
+    _addOCAFCompoundNames(hook, t)
     _setLonelyEdgesColor(t)
 
     return None
@@ -987,6 +988,7 @@ def _meshAllFacesStruct(hook, t, faceList=None):
         b[2].append(z)
 
     _updateEdgesFaceList__(t)
+    _addOCAFCompoundNames(hook, t)
     _setLonelyEdgesColor(t)
 
     return None

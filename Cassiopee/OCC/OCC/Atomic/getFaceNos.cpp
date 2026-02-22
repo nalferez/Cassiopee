@@ -55,7 +55,7 @@ PyObject* K_OCC::getFaceNos(PyObject* self, PyObject* args)
   TDocStd_Document* doc = (TDocStd_Document*)packet[5];
   
   // Get labels corresponding to shapes
-    Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
+  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
   
   TDF_LabelSequence labels;
   shapeTool->GetShapes(labels);
@@ -83,6 +83,65 @@ PyObject* K_OCC::getFaceNos(PyObject* self, PyObject* args)
     TopExp::MapShapes(shape, TopAbs_FACE, sf);
     
     iend = istart + sf.Extent();
+    if (found) break;
+    istart = iend;
+  }
+
+  PyObject* out = PyList_New(0);
+  if (found)
+  {
+    for (E_Int i = istart; i < iend; i++)
+    {
+      PyObject* o = PyLong_FromLong(i);
+      PyList_Append(out, o); Py_DECREF(o);
+    }
+  }
+  return out;
+}
+
+//=====================================================================
+// Get edge numbers from label name
+// Return [edge no]
+//=====================================================================
+PyObject* K_OCC::getEdgeNos(PyObject* self, PyObject* args)
+{
+  PyObject* hook;
+  char* labelName;
+  if (!PYPARSETUPLE_(args, O_ S_, &hook, &labelName)) return NULL;
+
+  GETPACKET;
+  
+  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  
+  // Get labels corresponding to shapes
+  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
+  
+  TDF_LabelSequence labels;
+  shapeTool->GetShapes(labels);
+  
+  Handle(TDataStd_Name) name = new TDataStd_Name();
+
+  E_Int istart = 1; E_Int iend = 1;
+  E_Bool found = false;
+  for (Standard_Integer i = 1; i <= labels.Length(); i++)
+  {
+    TDF_Label label = labels.Value(i);
+
+    if (shapeTool->IsAssembly(label) == true || shapeTool->IsCompound(label) == true) 
+      continue;
+
+    if (label.FindAttribute(TDataStd_Name::GetID(), name)) // retourne tous les attributs de type string
+    { 
+      TCollection_ExtendedString labelName2 = name->Get();
+      if (labelName2 == TCollection_ExtendedString(labelName)) 
+      { found = true; }
+    }
+
+    TopoDS_Shape shape = shapeTool->GetShape(label);
+    TopTools_IndexedMapOfShape se = TopTools_IndexedMapOfShape();
+    TopExp::MapShapes(shape, TopAbs_EDGE, se);
+    
+    iend = istart + se.Extent();
     if (found) break;
     istart = iend;
   }
