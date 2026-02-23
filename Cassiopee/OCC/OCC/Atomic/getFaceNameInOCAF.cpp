@@ -236,8 +236,8 @@ PyObject* K_OCC::getFaceNameInOCAF2(PyObject* self, PyObject* args)
   }
 
   // Get labels corresponding to shapes
+  GETSHAPETOOL;
   TDF_LabelSequence labels;
-  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
   shapeTool->GetShapes(labels);
 
   PyObject* out = PyList_New(0);
@@ -311,8 +311,8 @@ PyObject* K_OCC::getEdgeNameInOCAF2(PyObject* self, PyObject* args)
   }
   
   // Get labels corresponding to shapes
+  GETSHAPETOOL;
   TDF_LabelSequence labels;
-  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
   shapeTool->GetShapes(labels);
 
   PyObject* out = PyList_New(0);

@@ -46,14 +46,9 @@ PyObject* K_OCC::analyseEdges(PyObject* self, PyObject* args)
   PyObject* hook;
   if (!PYPARSETUPLE_(args, O_, &hook)) return NULL;
     
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
-  TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
+  GETPACKET;
+  GETMAPEDGES;
+  
   E_Float emin = K_CONST::E_MAX_FLOAT;
   E_Float emax = -K_CONST::E_MAX_FLOAT;
   E_Float ltot = 0.;

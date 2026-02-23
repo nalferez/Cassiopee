@@ -52,14 +52,8 @@ PyObject* K_OCC::evalEdge(PyObject* self, PyObject* args)
   E_Int edgeNo; // No de l'edge
   if (!PYPARSETUPLE_(args, OO_ I_, &hook, &arrayU, &edgeNo)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
-  TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
+  GETPACKET;
+  GETMAPEDGES;
   TopExp_Explorer expl;
 
   const TopoDS_Edge& E = TopoDS::Edge(edges(edgeNo));

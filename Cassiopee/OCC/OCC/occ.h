@@ -31,11 +31,17 @@
 
 namespace K_OCC
 {
+  // copy OCAF to top shape
   TopoDS_Shape* copyOCAF2TopShape(TDocStd_Document& doc);
+  // add shape to OCAF
   void addShape2OCAF(TopoDS_Shape& shape, char* labelName, TDocStd_Document& doc);
+  // get label -> edges
   void getLabel2Edges(TDocStd_Document& doc, std::map< E_Int, std::vector<E_Int> >& label2Edges);
+  // get label -> faces
   void getLabel2Faces(TDocStd_Document& doc, std::map< E_Int, std::vector<E_Int> >& label2Faces);
+  // get label name if attribute is present
   E_Int getLabelName(TDF_Label& label, TCollection_ExtendedString& labelName);
+  // copy top shape to OCAF
   void copyTopShape2OCAF(TopoDS_Shape& topShape, 
     std::map< E_Int, std::vector<E_Int> >& label2Edges, 
     std::map< E_Int, std::vector<E_Int> >& label2Faces, TDocStd_Document& doc);

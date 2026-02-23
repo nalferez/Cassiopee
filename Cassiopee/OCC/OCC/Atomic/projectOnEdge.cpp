@@ -39,13 +39,8 @@ PyObject* K_OCC::projectOnEdges(PyObject* self, PyObject* args)
   PyObject* hook; PyObject* array; PyObject* edgeList;
   if (!PYPARSETUPLE_(args, OOO_, &hook, &array, &edgeList)) return NULL;  
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
+  GETPACKET;
+  
   // array a projeter
   FldArrayI* c; FldArrayF* fi;
   E_Int ni, nj, nk;
