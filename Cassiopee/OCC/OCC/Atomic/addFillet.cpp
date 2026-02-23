@@ -42,11 +42,9 @@ PyObject* K_OCC::addFillet(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, OO_ R_ OO_, &hook, &listEdges, &radius, &edgeMap, &faceMap)) return NULL;
 
   GETPACKET;
-
-  // get top shape
-  TopoDS_Shape* shape = (TopoDS_Shape*)packet[0];
-  TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
-  TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
+  GETSHAPE;
+  GETMAPEDGES;
+  GETMAPSURFACES;
 
   // get edges 
   BRepFilletAPI_MakeFillet mkFillet(*shape);

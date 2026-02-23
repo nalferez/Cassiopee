@@ -29,7 +29,7 @@
 //=====================================================================
 E_Int K_OCC::getLabelName(TDF_Label& label, TCollection_ExtendedString& labelName)
 {
-  labelName = "unknown";
+  labelName = "Unnamed";
   Handle(TDataStd_Name) name = new TDataStd_Name();
   if (label.FindAttribute(TDataStd_Name::GetID(), name))
   { 
