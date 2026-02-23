@@ -117,37 +117,40 @@ pre- and post-processor for CFD simulations.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#Post.selectCells2" title="Post.selectCells2"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.selectCells2</span></code></a></p></td>
 <td><p>Select cells in a given array following tag.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#Post.interiorFaces" title="Post.interiorFaces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.interiorFaces</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Post.exteriorVertices" title="Post.exteriorVertices"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.exteriorVertices</span></code></a></p></td>
+<td><p>Exterior vertices of an array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#Post.interiorFaces" title="Post.interiorFaces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.interiorFaces</span></code></a></p></td>
 <td><p>Interior faces of an array a.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#Post.exteriorFaces" title="Post.exteriorFaces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.exteriorFaces</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Post.exteriorFaces" title="Post.exteriorFaces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.exteriorFaces</span></code></a></p></td>
 <td><p>Exterior faces of an array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#Post.exteriorFacesStructured" title="Post.exteriorFacesStructured"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.exteriorFacesStructured</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#Post.exteriorFacesStructured" title="Post.exteriorFacesStructured"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.exteriorFacesStructured</span></code></a></p></td>
 <td><p>Return the list of exterior faces for a structured array Usage: exteriorFacesStructured(a,indices)</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#Post.exteriorElts" title="Post.exteriorElts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.exteriorElts</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Post.exteriorElts" title="Post.exteriorElts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.exteriorElts</span></code></a></p></td>
 <td><p>Exterior elements of an array.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#Post.frontFaces" title="Post.frontFaces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.frontFaces</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#Post.frontFaces" title="Post.frontFaces"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.frontFaces</span></code></a></p></td>
 <td><p>Select faces located in the front of tag=0 and tag=1.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#Post.sharpEdges" title="Post.sharpEdges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.sharpEdges</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Post.sharpEdges" title="Post.sharpEdges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.sharpEdges</span></code></a></p></td>
 <td><p>Detect sharp edges between adjacent cells of a surface.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#Post.silhouette" title="Post.silhouette"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.silhouette</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#Post.silhouette" title="Post.silhouette"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.silhouette</span></code></a></p></td>
 <td><p>Detect shape of an unstructured surface.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#Post.coarsen" title="Post.coarsen"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.coarsen</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Post.coarsen" title="Post.coarsen"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.coarsen</span></code></a></p></td>
 <td><p>Coarsen a surface TRI-type mesh given a coarsening indicator for each element.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#id0" title="Post.refine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.refine</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#id0" title="Post.refine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.refine</span></code></a></p></td>
 <td><p>Refine a surface TRI-type mesh given an indicator for each element.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#Post.computeIndicatorValue" title="Post.computeIndicatorValue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.computeIndicatorValue</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#Post.computeIndicatorValue" title="Post.computeIndicatorValue"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.computeIndicatorValue</span></code></a></p></td>
 <td><p>Computes the indicator value on the octree mesh based on the maximum value of the absolute value of indicField.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#Post.computeIndicatorField" title="Post.computeIndicatorField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.computeIndicatorField</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#Post.computeIndicatorField" title="Post.computeIndicatorField"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Post.computeIndicatorField</span></code></a></p></td>
 <td><p>Compute the indicator -1, 0 or 1 for each element of the HEXA octree with respect to the indicatorValue field located at element centers.</p></td>
 </tr>
 </tbody>
@@ -1233,6 +1236,56 @@ located at cell centers or nodes.</p>
 
 <hr class="docutils" />
 <dl class="py function">
+<dt class="sig sig-object py" id="Post.exteriorVertices">
+<span class="sig-prename descclassname"><span class="pre">Post.</span></span><span class="sig-name descname"><span class="pre">exteriorVertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span></dt>
+<dd><p>Select the exterior vertices of a mesh, and return them in a single
+unstructured NODE zone. If indices=[], the indices of the original exterior
+vertices are returned.</p>
+<p>Exists also as in place version (_exteriorVertices) that modifies a and return None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> (<em>[</em><em>array</em><em>, </em><em>list</em><em> of </em><em>arrays</em><em>] or </em><em>[</em><em>pyTree</em><em>, </em><em>base</em><em>, </em><em>zone</em><em>, </em><em>list</em><em> of </em><em>zones</em><em>]</em>) &#8211; input data</p></li>
+<li><p><strong>indices</strong> (<em>list</em><em> of </em><em>integers</em>) &#8211; indices of original exterior vertices</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>zone</p>
+</dd>
+</dl>
+<p><em>Example of use:</em></p>
+<ul class="simple">
+<li><p><a class="reference external" href="Examples/Post/exteriorVertices.py">Select exterior vertices (array)</a>:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># - exteriorVertices (array) -</span>
+<span class="kn">import</span> <span class="nn">Converter</span> <span class="k">as</span> <span class="nn">C</span>
+<span class="kn">import</span> <span class="nn">Post</span> <span class="k">as</span> <span class="nn">P</span>
+<span class="kn">import</span> <span class="nn">Generator</span> <span class="k">as</span> <span class="nn">G</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">cartTetra</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">,</span><span class="mi">20</span><span class="p">))</span>
+<span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">exteriorVertices</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span>
+<span class="n">C</span><span class="o">.</span><span class="n">convertArrays2File</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;out.plt&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><a class="reference external" href="Examples/Post/exteriorVerticesPT.py">Select exterior vertices (pyTree)</a>:</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># - exteriorVertices (pyTree)-</span>
+<span class="kn">import</span> <span class="nn">Converter.PyTree</span> <span class="k">as</span> <span class="nn">C</span>
+<span class="kn">import</span> <span class="nn">Post.PyTree</span> <span class="k">as</span> <span class="nn">P</span>
+<span class="kn">import</span> <span class="nn">Generator.PyTree</span> <span class="k">as</span> <span class="nn">G</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">cartTetra</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">exteriorVertices</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">C</span><span class="o">.</span><span class="n">convertPyTree2File</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="s1">&#39;out.cgns&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<hr class="docutils" />
+<dl class="py function">
 <dt class="sig sig-object py" id="Post.interiorFaces">
 <span class="sig-prename descclassname"><span class="pre">Post.</span></span><span class="sig-name descname"><span class="pre">interiorFaces</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Select the interior faces of a mesh. Interior faces are faces with
@@ -1295,6 +1348,7 @@ that have only interior nodes.</p>
 indices of the original exterior faces are returned.
 For structured grids, indices are the global index containing i faces, then j faces, then k faces, starting from 0.
 For NGON grids, indices are the NGON face indices, starting from 1.</p>
+<p>Exists also as in place version (_exteriorFaces) that modifies a and return None.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1384,6 +1438,7 @@ For NGON grids, indices are the NGON face indices, starting from 1.</p>
 <dt class="sig sig-object py" id="Post.exteriorElts">
 <span class="sig-prename descclassname"><span class="pre">Post.</span></span><span class="sig-name descname"><span class="pre">exteriorElts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Select the exterior elements of a mesh, that is the first border fringe of cells.</p>
+<p>Exists also as in place version (_exteriorElts) that modifies a and return None.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>a</strong> (<em>[</em><em>array</em><em>, </em><em>list</em><em> of </em><em>arrays</em><em>] or </em><em>[</em><em>pyTree</em><em>, </em><em>base</em><em>, </em><em>zone</em><em>, </em><em>list</em><em> of </em><em>zones</em><em>]</em>) &#8211; input data</p>

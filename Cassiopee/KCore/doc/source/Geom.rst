@@ -399,7 +399,7 @@ A polyline is defined as a C0 i-array which contains only the polyline points (w
 
 ---------------------------------------
 
-.. py:function:: Geom.surface(f, N=100)
+.. py:function:: Geom.surface(f, N=100, isVectorized)
 
     Create a surface defined by an parametric function or an expression.
 
@@ -407,6 +407,8 @@ A polyline is defined as a C0 i-array which contains only the polyline points (w
     :type f: Python function or string
     :param N: number of discretization points per direction
     :type N: integer
+    :param isVectorized: can be set to True if f is a function in vectorized form.
+    :type isVectorized: boolean
     :return: a parametric surface
     :rtype: one array/zone (2D STRUCT)
 

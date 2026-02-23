@@ -29,10 +29,10 @@ for i in range(110):
 
         minFx = min(minFx, numpy.min(Fx))
         maxFx = max(maxFx, numpy.max(Fx))
-        
+
         minFy = min(minFy, numpy.min(Fy))
         maxFy = max(maxFy, numpy.max(Fy))
-        
+
     p4.extract(t, time=time, value=[minFx, maxFx, minFy, maxFy])
 
 # force probe flush
