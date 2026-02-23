@@ -239,8 +239,8 @@ PyObject* K_OCC::printOCAF(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_, &hook)) return NULL;
 
   GETPACKET;
-  
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
+
   if (doc == NULL) 
   {
     PyErr_SetString(PyExc_TypeError, "printOCAF: no OCAF document.");
@@ -263,8 +263,7 @@ PyObject* K_OCC::printShapeOCAF(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_, &hook)) return NULL;
 
   GETPACKET;
-
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   if (doc == NULL) 
   {
     PyErr_SetString(PyExc_TypeError, "printOCAF: no OCAF document.");
@@ -274,8 +273,8 @@ PyObject* K_OCC::printShapeOCAF(PyObject* self, PyObject* args)
   //============================================================
   // Retourne une collection de labels correspondants aux shapes
   //============================================================
+  GETSHAPETOOL;
   TDF_LabelSequence labels;
-  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
   shapeTool->GetShapes(labels);
 
   for (Standard_Integer i = 1; i <= labels.Length(); i++)

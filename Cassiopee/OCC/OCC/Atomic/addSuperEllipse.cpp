@@ -52,6 +52,7 @@ PyObject* K_OCC::addSuperEllipse(PyObject* self, PyObject* args)
         &xc, &yc, &zc, &a, &b, 
         &n, &samples, &makeFace, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
 
   Handle(TColgp_HArray1OfPnt) pointsArray = new TColgp_HArray1OfPnt(1, samples);
@@ -98,7 +99,7 @@ PyObject* K_OCC::addSuperEllipse(PyObject* self, PyObject* args)
   builder.Add(compound, wire);
   if (makeFace == 1) builder.Add(compound, face);
   
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(compound, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;

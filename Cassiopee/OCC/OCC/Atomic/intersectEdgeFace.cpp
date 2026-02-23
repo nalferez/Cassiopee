@@ -45,7 +45,8 @@ PyObject* K_OCC::intersectEdgeFace(PyObject* self, PyObject* args)
   PyObject* hook; PyObject* listEdges; PyObject* listFaces; 
   if (!PYPARSETUPLE_(args, OOO_ , &hook, &listEdges, &listFaces)) return NULL;
 
-  GETSHAPE;
+  GETPACKET;
+  //GETSHAPE;
   GETMAPEDGES;
   GETMAPSURFACES;
 

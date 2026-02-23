@@ -35,6 +35,7 @@ PyObject* K_OCC::addSphere(PyObject* self, PyObject* args)
   char* name;
   if (!PYPARSETUPLE_(args, O_ TRRR_ R_ S_, &hook, &xc, &yc, &zc, &R, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
 
   /* new sphere */
@@ -44,7 +45,7 @@ PyObject* K_OCC::addSphere(PyObject* self, PyObject* args)
 
 #ifdef USEXCAF
 
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(sphere, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;

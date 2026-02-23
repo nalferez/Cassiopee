@@ -45,6 +45,7 @@ PyObject* K_OCC::addCircle(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ R_ I_ S_, &hook, &xc, &yc, &zc, 
     &ax, &ay, &az, &R, &makeFace, &name)) return NULL;
 
+  GETPACKET; 
   GETSHAPE;
 
   /* new circle */
@@ -67,7 +68,7 @@ PyObject* K_OCC::addCircle(PyObject* self, PyObject* args)
   builder.Add(compound, wire);
   if (makeFace == 1) builder.Add(compound, face);
   
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(compound, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;

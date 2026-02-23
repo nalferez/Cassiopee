@@ -36,6 +36,7 @@ PyObject* K_OCC::translate(PyObject* self, PyObject* args)
   PyObject* hook; E_Float dx, dy, dz; PyObject* listFaces; 
   if (!PYPARSETUPLE_(args, O_ TRRR_ O_, &hook, &dx, &dy, &dz, &listFaces)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPSURFACES;
   
@@ -100,7 +101,7 @@ PyObject* K_OCC::translate(PyObject* self, PyObject* args)
   }
 
 #ifdef USEXCAF
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   std::map< E_Int, std::vector<E_Int> > label2Faces;
   std::map< E_Int, std::vector<E_Int> > label2Edges;
   getLabel2Edges(*doc, label2Edges);

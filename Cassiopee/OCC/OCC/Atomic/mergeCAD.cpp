@@ -24,7 +24,13 @@
 #include "TopExp.hxx"
 #include "TopExp_Explorer.hxx"
 #include "BRep_Builder.hxx"
+
 #include "TDocStd_Document.hxx"
+#include "XCAFDoc_ShapeTool.hxx"
+#include "XCAFDoc_DocumentTool.hxx"
+#include "TDataStd_Name.hxx"
+#include "TDF_LabelSequence.hxx"
+#include "XCAFApp_Application.hxx"
 
 // ============================================================================
 /* Merge CAD hooks in a new hook 
@@ -35,6 +41,60 @@ PyObject* K_OCC::mergeCAD(PyObject* self, PyObject* args)
   PyObject* listHooks;
   if (!PYPARSETUPLE_(args, O_, &listHooks)) return NULL;
 
+#ifdef USEXCAF
+  CREATEHOOK;
+  PyObject* hook2 = PyList_GetItem(listHooks, 0);
+  void** packet2 = (void**) PyCapsule_GetPointer(hook2, NULL);
+  char* fileName = (char*)packet2[3];
+  E_Int l = strlen(fileName);
+  char* fileNameC = new char [l+1];
+  strcpy(fileNameC, fileName);
+  packet[3] = fileNameC;
+  char* fileFmt = (char*)packet2[4];
+  l = strlen(fileFmt);
+  char* fileFmtC = new char [l+1];
+  strcpy(fileFmtC, fileFmt);
+  packet[4] = fileFmtC;
+  static Handle(TDocStd_Document) doc2 = new TDocStd_Document("XmlXCAF"); // static to avoid transcient  
+  Handle(XCAFApp_Application) app = XCAFApp_Application::GetApplication(); // init app at first call
+  app->InitDocument(doc2);
+  packet[5] = doc2.operator->();
+
+  GETDOC;
+  Handle(XCAFDoc_ShapeTool) shapeTool0 = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
+
+  E_Int size = PyList_Size(listHooks);
+  for (E_Int i = 0; i < size; i++) // loop on hooks
+  {
+    PyObject* hook = PyList_GetItem(listHooks, i);
+    GETPACKET;
+    GETDOC;
+    GETSHAPETOOL;
+    TDF_LabelSequence labels;
+    shapeTool->GetShapes(labels);
+
+    for (Standard_Integer i = 1; i <= labels.Length(); i++)
+    {
+      TDF_Label label = labels.Value(i);
+      TCollection_ExtendedString labelName;
+      getLabelName(label, labelName);
+
+      if (shapeTool->IsAssembly(label) == true || shapeTool->IsCompound(label) == true) 
+        continue;
+
+      TopoDS_Shape shape = shapeTool->GetShape(label);
+      TDF_Label label2 = shapeTool0->AddShape(shape);
+      TDataStd_Name::Set(label2, labelName);
+    }
+  }
+
+  GETSHAPE;
+  TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  return hook;
+
+#else
   // Rebuild a single compound
   BRep_Builder builder;
   TopoDS_Compound compound;
@@ -86,8 +146,8 @@ PyObject* K_OCC::mergeCAD(PyObject* self, PyObject* args)
   packet[4] = fileFmtC;
   TDocStd_Document* doc = (TDocStd_Document*)packet2[5]; // todo: must merge document
   packet[5] = doc;
-
   return hook;
+#endif
 } 
 
 // ============================================================================
@@ -98,6 +158,46 @@ PyObject* K_OCC::_mergeCAD(PyObject* self, PyObject* args)
   PyObject* listHooks;
   if (!PYPARSETUPLE_(args, O_, &listHooks)) return NULL;
 
+#ifdef USEXCAF
+
+  PyObject* hook = PyList_GetItem(listHooks, 0); // first hook
+  GETPACKET;
+  GETDOC;
+  Handle(XCAFDoc_ShapeTool) shapeTool0 = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
+
+  E_Int size = PyList_Size(listHooks);
+  for (E_Int i = 1; i < size; i++) // loop on hooks
+  {
+    PyObject* hook = PyList_GetItem(listHooks, i);
+    GETPACKET;
+    GETDOC;
+    GETSHAPETOOL;
+    TDF_LabelSequence labels;
+    shapeTool->GetShapes(labels);
+
+    for (Standard_Integer i = 1; i <= labels.Length(); i++)
+    {
+      TDF_Label label = labels.Value(i);
+      TCollection_ExtendedString labelName;
+      getLabelName(label, labelName);
+
+      if (shapeTool->IsAssembly(label) == true || shapeTool->IsCompound(label) == true) 
+        continue;
+
+      TopoDS_Shape shape = shapeTool->GetShape(label);
+      TDF_Label label2 = shapeTool0->AddShape(shape);
+      TDataStd_Name::Set(label2, labelName);
+    }
+  }
+
+  GETSHAPE;
+  TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
+#else
   // Rebuild a single compound
   BRep_Builder builder;
   TopoDS_Compound compound;
@@ -126,6 +226,7 @@ PyObject* K_OCC::_mergeCAD(PyObject* self, PyObject* args)
 
   // capsule
   PyObject* hook = PyList_GetItem(listHooks, 0);
+  GETPACKET;
   GETSHAPE;
   delete shape;
   SETSHAPE(newshp);
@@ -135,4 +236,5 @@ PyObject* K_OCC::_mergeCAD(PyObject* self, PyObject* args)
   
   Py_INCREF(Py_None);
   return Py_None;  
+#endif
 } 

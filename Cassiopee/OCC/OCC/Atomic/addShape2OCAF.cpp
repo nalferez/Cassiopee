@@ -26,8 +26,8 @@
 #include "TopExp_Explorer.hxx"
 #include "BRep_Builder.hxx"
 
-#include "XCAFDoc_ShapeTool.hxx"
 #include "XCAFDoc_DocumentTool.hxx"
+#include "XCAFDoc_ShapeTool.hxx"
 #include "XCAFDoc_ShapeMapTool.hxx"
 #include "TDocStd_Document.hxx"
 #include "TDataStd_Name.hxx"

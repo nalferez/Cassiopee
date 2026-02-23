@@ -46,19 +46,17 @@ PyObject* K_OCC::changeLabelNameInOCAF(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_ SS_, &hook, &oldName, &newName)) return NULL;
 
   GETPACKET;
-  
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
+  GETSHAPETOOL;
   
   // Get labels corresponding to shapes
   TDF_LabelSequence labels;
-  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
   shapeTool->GetShapes(labels);
 
   for (Standard_Integer i = 1; i <= labels.Length(); i++)
   {
     TDF_Label label = labels.Value(i);
     Handle(TDataStd_Name) name = new TDataStd_Name();
-
     if (label.FindAttribute(TDataStd_Name::GetID(), name)) // retourne tous les attributs de type string
     { 
       TCollection_ExtendedString labelName = name->Get();

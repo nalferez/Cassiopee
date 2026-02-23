@@ -37,21 +37,15 @@ PyObject* K_OCC::fixShape(PyObject* self, PyObject* args)
   PyObject* hook;
   if (!PYPARSETUPLE_(args, O_, &hook)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
-  TopoDS_Shape* shp = (TopoDS_Shape*)packet[0];
-
+  GETPACKET;
+  GETSHAPE;
+  
   TopoDS_Shape* newshp = new TopoDS_Shape();
 
   // Build a shape fixer
   /*
   Handle(ShapeFix_Shape) sfs = new ShapeFix_Shape; 
-  sfs->Init(*shp); 
+  sfs->Init(*shape); 
   sfs->SetPrecision(1.e-10); 
   sfs->SetMaxTolerance(1.e-6); 
   sfs->SetMinTolerance(1.e-8);
@@ -61,7 +55,7 @@ PyObject* K_OCC::fixShape(PyObject* self, PyObject* args)
 
   // Fix wireframes
   /*
-  Handle(ShapeFix_Wireframe) SFWF = new ShapeFix_Wireframe(*shp);
+  Handle(ShapeFix_Wireframe) SFWF = new ShapeFix_Wireframe(*shape);
   SFWF->SetPrecision(1.e-10);
   SFWF->SetMaxTolerance(1.e-6);
   SFWF->FixSmallEdges();
@@ -82,7 +76,7 @@ PyObject* K_OCC::fixShape(PyObject* self, PyObject* args)
   */
 
   // unify edges / faces
-  ShapeUpgrade_UnifySameDomain USD(*shp, Standard_True, Standard_True, Standard_False); // UnifyFaces mode on, UnifyEdges mode on, ConcatBSplines mode off.
+  ShapeUpgrade_UnifySameDomain USD(*shape, Standard_True, Standard_True, Standard_False); // UnifyFaces mode on, UnifyEdges mode on, ConcatBSplines mode off.
   USD.Build();
   *newshp = USD.Shape();
 

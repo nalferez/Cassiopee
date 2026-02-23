@@ -41,20 +41,15 @@ PyObject* K_OCC::addFillet(PyObject* self, PyObject* args)
   PyObject* edgeMap; PyObject* faceMap;
   if (!PYPARSETUPLE_(args, OO_ R_ OO_, &hook, &listEdges, &radius, &edgeMap, &faceMap)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETPACKET;
 
   // get top shape
-  TopoDS_Shape* shp = (TopoDS_Shape*)packet[0];
+  TopoDS_Shape* shape = (TopoDS_Shape*)packet[0];
   TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
   TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
 
   // get edges 
-  BRepFilletAPI_MakeFillet mkFillet(*shp);
+  BRepFilletAPI_MakeFillet mkFillet(*shape);
   bool fail = false;
   for (E_Int no = 0; no < PyList_Size(listEdges); no++)
   {
@@ -89,7 +84,7 @@ PyObject* K_OCC::addFillet(PyObject* self, PyObject* args)
   TopExp::MapShapes(*newshp, TopAbs_EDGE, *se);
   getFaceMap(surfaces, *sf, faceMap);
   getEdgeMap(edges, *se, edgeMap);
-  delete shp;
+  delete shape;
   TopTools_IndexedMapOfShape* ptr = (TopTools_IndexedMapOfShape*)packet[1];
   delete ptr;
   TopTools_IndexedMapOfShape* ptr2 = (TopTools_IndexedMapOfShape*)packet[2];

@@ -46,6 +46,7 @@ PyObject* K_OCC::loft(PyObject* self, PyObject* args)
   char* name;
   if (!PYPARSETUPLE_(args, OOO_ S_, &hook, &listProfiles, &listGuides, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPEDGES;
 
@@ -119,7 +120,7 @@ PyObject* K_OCC::loft(PyObject* self, PyObject* args)
 
 #ifdef USEXCAF
   
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(*newshp, name, *doc);
   delete newshp;
   newshp = copyOCAF2TopShape(*doc);

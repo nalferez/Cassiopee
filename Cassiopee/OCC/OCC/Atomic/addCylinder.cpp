@@ -45,6 +45,7 @@ PyObject* K_OCC::addCylinder(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ R_ R_ S_, 
     &hook, &xc, &yc, &zc, &xaxis, &yaxis, &zaxis, &R, &H, &name)) return NULL;
 
+  GETPACKET; 
   GETSHAPE;
   
   // Define the radius, height, and angle of the cylinder
@@ -68,7 +69,7 @@ PyObject* K_OCC::addCylinder(PyObject* self, PyObject* args)
   builder.MakeCompound(compound);
   builder.Add(compound, face);
 
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(compound, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;

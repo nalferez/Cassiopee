@@ -56,6 +56,7 @@ PyObject* K_OCC::splitFaces(PyObject* self, PyObject* args)
   PyObject* hook; E_Float area;
   if (!PYPARSETUPLE_(args, O_ R_, &hook, &area)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
 
   //TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];

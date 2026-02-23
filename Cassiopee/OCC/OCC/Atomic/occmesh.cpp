@@ -40,6 +40,7 @@ PyObject* K_OCC::occmesh(PyObject* self, PyObject* args)
   E_Float angularDeflection; // in degrees
   if (!PYPARSETUPLE_(args, O_ R_ R_, &hook, &hausd, &angularDeflection)) return NULL;  
   
+  GETPACKET;
   GETSHAPE;
   
   // Triangulate shape

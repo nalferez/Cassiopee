@@ -39,22 +39,16 @@ PyObject* K_OCC::freeHook(PyObject* self, PyObject* args)
   PyObject* hook;
   if (!PYPARSETUPLE_(args, O_, &hook)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETPACKET;
 
   // free
   TopTools_IndexedMapOfShape* edges = (TopTools_IndexedMapOfShape*)packet[2];
   TopTools_IndexedMapOfShape* surfaces = (TopTools_IndexedMapOfShape*)packet[1];
-  TopoDS_Shape* shp = (TopoDS_Shape*)packet[0];
+  TopoDS_Shape* shape = (TopoDS_Shape*)packet[0];
   char* fileName = (char*)packet[3];
   char* fileFmt = (char*)packet[4];
-  //TDocStd_Document* doc = (TDocStd_Document*)packet[5];
-
-  delete shp;
+  
+  delete shape;
   delete edges;
   delete surfaces;
   delete [] fileName;

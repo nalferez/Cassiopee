@@ -41,6 +41,7 @@ PyObject* K_OCC::addArc(PyObject* self, PyObject* args)
     &x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3,
     &name)) return NULL;
 
+  GETPACKET; 
   GETSHAPE;
   
   gp_Pnt p1(x1, y1, z1); // start
@@ -57,7 +58,7 @@ PyObject* K_OCC::addArc(PyObject* self, PyObject* args)
   builder.MakeCompound(compound);
   builder.Add(compound, edge);
   
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(compound, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;

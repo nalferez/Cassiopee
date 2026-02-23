@@ -42,6 +42,7 @@ PyObject* K_OCC::fillHole(PyObject* self, PyObject* args)
   char* name;
   if (!PYPARSETUPLE_(args, OOO_ I_ S_, &hook, &listEdges, &listFaces, &continuity, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPEDGES;
 
@@ -161,7 +162,7 @@ PyObject* K_OCC::fillHole(PyObject* self, PyObject* args)
   builder.MakeCompound(compound);
   builder.Add(compound, F);
   
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(compound, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;

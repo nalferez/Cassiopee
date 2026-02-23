@@ -36,6 +36,7 @@ PyObject* K_OCC::mergeEdges(PyObject* self, PyObject* args)
   PyObject* hook; PyObject* listEdges;
   if (!PYPARSETUPLE_(args, OO_, &hook, &listEdges)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPEDGES;
   GETMAPSURFACES;

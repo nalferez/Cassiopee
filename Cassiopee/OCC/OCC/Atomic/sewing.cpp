@@ -46,6 +46,7 @@ PyObject* K_OCC::sewing(PyObject* self, PyObject* args)
   PyObject* hook; PyObject* listFaces; E_Float tol;
   if (!PYPARSETUPLE_(args, O_ R_ O_, &hook, &tol, &listFaces)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
 
   //TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
@@ -125,7 +126,7 @@ PyObject* K_OCC::sewing(PyObject* self, PyObject* args)
   }
 
 #ifdef USEXCAF
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   std::map< E_Int, std::vector<E_Int> > label2Faces;
   std::map< E_Int, std::vector<E_Int> > label2Edges;
   getLabel2Edges(*doc, label2Edges);

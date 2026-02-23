@@ -49,6 +49,7 @@ PyObject* K_OCC::addSplineSurface(PyObject* self, PyObject* args)
 
   printf("INFO: addSplineSurface: method=%d, degree=%d\n", method, degree);
 
+  GETPACKET;
   GETSHAPE;
 
   /* get control points (method0) or through points (method1) */
@@ -151,7 +152,7 @@ PyObject* K_OCC::addSplineSurface(PyObject* self, PyObject* args)
   builder.MakeCompound(compound);
   builder.Add(compound, face);
 
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(compound, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;

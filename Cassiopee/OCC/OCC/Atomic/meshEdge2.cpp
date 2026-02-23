@@ -1152,13 +1152,8 @@ PyObject* K_OCC::meshOneEdge(PyObject* self, PyObject* args)
   E_Int N; PyObject* externalEdge;
   if (!PYPARSETUPLE_(args, O_ I_ RRR_ I_ O_, &hook, &i, &hmin, &hmax, &hausd, &N, &externalEdge)) return NULL;
     
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
+  GETPACKET;
+  
   // Get the ith edge (start 1)
   TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
   const TopoDS_Edge& E = TopoDS::Edge(edges(i));

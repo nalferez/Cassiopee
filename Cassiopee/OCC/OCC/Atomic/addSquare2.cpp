@@ -41,6 +41,7 @@ PyObject* K_OCC::addSquare2(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ TRRR_ TRRR_ I_ S_, &hook, &x1, &y1, &z1, 
     &x2, &y2, &z2, &x3, &y3, &z3, &x4, &y4, &z4, &makeFace, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
 
   /* new square */
@@ -65,7 +66,7 @@ PyObject* K_OCC::addSquare2(PyObject* self, PyObject* args)
   builder.Add(compound, wire);
   if (makeFace == 1) builder.Add(compound, face);
   
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(compound, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;

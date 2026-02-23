@@ -45,6 +45,7 @@ PyObject* K_OCC::addBox2(PyObject* self, PyObject* args)
     &x5, &y5, &z5, &x6, &y6, &z6, &x7, &y7, &z7, &x8, &y8, &z8,
     &name)) return NULL;
 
+  GETPACKET; 
   GETSHAPE;
 
   /* new box */
@@ -124,7 +125,7 @@ PyObject* K_OCC::addBox2(PyObject* self, PyObject* args)
 
 #ifdef USEXCAF
 
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(sewedShape, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;

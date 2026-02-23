@@ -45,6 +45,7 @@ PyObject* K_OCC::writeCAD(PyObject* self, PyObject* args)
   char* fileName; char* fileFmt;
   if (!PYPARSETUPLE_(args, O_ SS_, &hook, &fileName, &fileFmt)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   printf("write: %s %s\n", fileName, fileFmt);
 
@@ -56,7 +57,7 @@ PyObject* K_OCC::writeCAD(PyObject* self, PyObject* args)
   }
   else if (strcmp(fileFmt, "fmt_step") == 0)
   {
-    TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+    GETDOC;
     if (doc == NULL) 
     {
       STEPControl_Writer writer;
@@ -66,7 +67,7 @@ PyObject* K_OCC::writeCAD(PyObject* self, PyObject* args)
     else
     {
 #ifdef USEXCAF
-      Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
+      GETSHAPETOOL;
       // Write STEP with metadata
       STEPCAFControl_Writer writer;
       writer.Transfer(doc, STEPControl_AsIs);

@@ -51,12 +51,8 @@ PyObject* K_OCC::getFaceNos(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_ S_, &hook, &labelName)) return NULL;
 
   GETPACKET;
-  
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
-  
-  // Get labels corresponding to shapes
-  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
-  
+  GETDOC;  
+  GETSHAPETOOL;
   TDF_LabelSequence labels;
   shapeTool->GetShapes(labels);
   
@@ -110,12 +106,8 @@ PyObject* K_OCC::getEdgeNos(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_ S_, &hook, &labelName)) return NULL;
 
   GETPACKET;
-  
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
-  
-  // Get labels corresponding to shapes
-  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
-  
+  GETDOC;
+  GETSHAPETOOL;
   TDF_LabelSequence labels;
   shapeTool->GetShapes(labels);
   

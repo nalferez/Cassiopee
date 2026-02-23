@@ -36,6 +36,7 @@ PyObject* K_OCC::mergeFaces(PyObject* self, PyObject* args)
   PyObject* hook; PyObject* listFaces;
   if (!PYPARSETUPLE_(args, OO_, &hook, &listFaces)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPSURFACES;
 

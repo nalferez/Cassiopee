@@ -61,6 +61,7 @@ PyObject* K_OCC::addSpline(PyObject* self, PyObject* args)
 
   printf("INFO: addSpline: method=%d, degree=%d\n", method, degree);
 
+  GETPACKET;
   GETSHAPE;
   
   // incoming numpy
@@ -208,7 +209,7 @@ PyObject* K_OCC::addSpline(PyObject* self, PyObject* args)
   builder.MakeCompound(compound);
   builder.Add(compound, edge);
   
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(compound, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;

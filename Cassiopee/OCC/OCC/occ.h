@@ -35,6 +35,7 @@ namespace K_OCC
   void addShape2OCAF(TopoDS_Shape& shape, char* labelName, TDocStd_Document& doc);
   void getLabel2Edges(TDocStd_Document& doc, std::map< E_Int, std::vector<E_Int> >& label2Edges);
   void getLabel2Faces(TDocStd_Document& doc, std::map< E_Int, std::vector<E_Int> >& label2Faces);
+  E_Int getLabelName(TDF_Label& label, TCollection_ExtendedString& labelName);
   void copyTopShape2OCAF(TopoDS_Shape& topShape, 
     std::map< E_Int, std::vector<E_Int> >& label2Edges, 
     std::map< E_Int, std::vector<E_Int> >& label2Faces, TDocStd_Document& doc);

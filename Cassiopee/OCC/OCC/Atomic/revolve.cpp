@@ -44,6 +44,7 @@ PyObject* K_OCC::revolve(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, OO_ TRRR_ TRRR_ R_ S_, &hook, &listEdges, 
     &cx, &cy, &cz, &ax, &ay, &az, &angle, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPEDGES;
 
@@ -69,7 +70,7 @@ PyObject* K_OCC::revolve(PyObject* self, PyObject* args)
   
 #ifdef USEXCAF
 
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(*newshp, name, *doc);
   newshp = copyOCAF2TopShape(*doc);
   delete shape;

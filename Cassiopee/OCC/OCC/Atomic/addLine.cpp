@@ -39,6 +39,7 @@ PyObject* K_OCC::addLine(PyObject* self, PyObject* args)
   char* name;
   if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ S_, &hook, &x1, &y1, &z1, &x2, &y2, &z2, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   
   gp_Pnt p1(x1, y1, z1); // Bottom left
@@ -52,7 +53,7 @@ PyObject* K_OCC::addLine(PyObject* self, PyObject* args)
   builder.MakeCompound(compound);
   builder.Add(compound, edge);
   
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETDOC;
   addShape2OCAF(compound, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;

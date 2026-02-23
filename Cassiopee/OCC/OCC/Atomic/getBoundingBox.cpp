@@ -35,6 +35,7 @@ PyObject* K_OCC::getBoundingBox(PyObject* self, PyObject* args)
   PyObject* hook; PyObject* listFaces;
   if (!PYPARSETUPLE_(args, O_ O_, &hook, &listFaces)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPSURFACES;
 
