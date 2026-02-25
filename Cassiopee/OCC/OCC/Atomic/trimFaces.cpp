@@ -32,6 +32,12 @@
 #include "BRepAlgoAPI_Cut.hxx"
 #include "BRepAlgoAPI_Splitter.hxx"
 
+#include "XCAFDoc_DocumentTool.hxx"
+#include "TDocStd_Document.hxx"
+#include "XCAFDoc_ShapeTool.hxx"
+#include "XCAFDoc_ShapeMapTool.hxx"
+#include "TDataStd_Name.hxx"
+
 //=====================================================================
 // Trim faces
 // trim face1 set with face2 set
@@ -49,9 +55,10 @@ PyObject* K_OCC::trimFaces(PyObject* self, PyObject* args)
     &mode, &algo)) return NULL;
 
   GETPACKET;
+  GETSHAPE;
   GETMAPSURFACES;
   
-  // Build remaining faces list
+  // Build untouched faces list
   std::list<E_Int> pl;
   E_Int nfaces = surfaces.Extent();
   for (E_Int i = 1; i <= nfaces; i++) pl.push_back(i);
@@ -84,15 +91,17 @@ PyObject* K_OCC::trimFaces(PyObject* self, PyObject* args)
     builder2.Add(compound2, F);
   }  
 
-  // for rebuild
+  // For rebuild
   BRep_Builder builder3;
   TopoDS_Compound compound3;  
   builder3.MakeCompound(compound3);
-  for (auto& i : pl)
+#ifndef USEXCAF
+  for (auto& i : pl) // untouched faces
   {
     TopoDS_Face F = TopoDS::Face(surfaces(i));
     builder3.Add(compound3, F);
   }
+#endif
 
   if (algo == 0) // cut for closed shapes
   {
@@ -213,62 +222,60 @@ PyObject* K_OCC::trimFaces(PyObject* self, PyObject* args)
     }
   }
   
-  TopoDS_Shape* newshp = new TopoDS_Shape(compound3);
-  //TopoDS_Shape* newshp = new TopoDS_Shape(trimmedCompound2);
-  
-  // Rebuild the hook
-  packet[0] = newshp;
-  // Extract surfaces
-  TopTools_IndexedMapOfShape* ptr = (TopTools_IndexedMapOfShape*)packet[1];
-  delete ptr;
-  TopTools_IndexedMapOfShape* sf = new TopTools_IndexedMapOfShape();
-  TopExp::MapShapes(*newshp, TopAbs_FACE, *sf);
-  packet[1] = sf;
+#ifdef USEXCAF
 
-  // Extract edges
-  TopTools_IndexedMapOfShape* ptr2 = (TopTools_IndexedMapOfShape*)packet[2];
-  delete ptr2;
-  TopTools_IndexedMapOfShape* se = new TopTools_IndexedMapOfShape();
-  TopExp::MapShapes(*newshp, TopAbs_EDGE, *se);
-  packet[2] = se;
+  GETDOC;
+  GETSHAPETOOL;
+
+  // suppress somes faces
+  std::map< E_Int, std::vector<E_Int> > label2Faces;
+  std::map< E_Int, std::vector<E_Int> > label2Edges;
+  getLabel2Edges(*doc, label2Edges);
+  getLabel2Faces(*doc, label2Faces);
+
+  for (E_Int no = 0; no < PyList_Size(listOfFaceNo1); no++)
+  {
+    PyObject* noFaceO = PyList_GetItem(listOfFaceNo1, no);
+    E_Int noFace = PyInt_AsLong(noFaceO);
+    for (size_t j = 0; j < label2Faces.size(); j++)
+    {
+      std::vector< E_Int >& f = label2Faces[j];
+      f.erase(std::remove(f.begin(), f.end(), noFace), f.end());
+    }
+  }
+  for (E_Int no = 0; no < PyList_Size(listOfFaceNo2); no++)
+  {
+    PyObject* noFaceO = PyList_GetItem(listOfFaceNo2, no);
+    E_Int noFace = PyInt_AsLong(noFaceO);
+    for (size_t j = 0; j < label2Faces.size(); j++)
+    {
+      std::vector< E_Int >& f = label2Faces[j];
+      f.erase(std::remove(f.begin(), f.end(), noFace), f.end());
+    }
+  }
+  copyTopShape2OCAF(*shape, label2Edges, label2Faces, *doc);
+
+  // Add compound3 as a new shape
+  TDF_Label label = shapeTool->AddShape(*shape);
+  TDataStd_Name::Set(label, "trimmed");
+
+  // back copy
+  TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
+#else
+  TopoDS_Shape* newshp = new TopoDS_Shape(compound3);
+
+  delete shape;
+  SETSHAPE(newshp);
+
   printf("INFO: after trim: Nb edges=%d\n", se->Extent());
   printf("INFO: after trim: Nb faces=%d\n", sf->Extent());
 
   Py_INCREF(Py_None);
   return Py_None;
+#endif
 }
-
-//===
-/*
-#include <BRepAlgoAPI_Section.hxx>
-#include <BRepBuilderAPI_MakeFace.hxx>
-#include <TopoDS_Shape.hxx>
-#include <TopoDS_Face.hxx>
-#include <TopoDS_Edge.hxx>
-#include <TopoDS_Wire.hxx>
-#include <Geom_Surface.hxx>
-#include <GeomAPI_ProjectPointOnSurf.hxx>
-
-Handle(Geom_Surface) surface1 = ...; // Your first surface
-Handle(Geom_Surface) surface2 = ...; // Your second surface
-TopoDS_Face face1 = BRepBuilderAPI_MakeFace(surface1, Precision::Confusion());
-TopoDS_Face face2 = BRepBuilderAPI_MakeFace(surface2, Precision::Confusion());
-
-BRepAlgoAPI_Section section(face1, face2);
-section.ComputePCurveOn1(Standard_True);
-section.Approximation(Standard_True);
-section.Build();
-
-if (!section.IsDone()) {
-    std::cerr << "Error: Intersection computation failed." << std::endl;
-    return;
-}
-
-TopoDS_Shape intersection = section.Shape();
-TopoDS_Wire wire = BRepBuilderAPI_MakeWire(TopoDS::Edge(intersection));
-TopoDS_Face trimmedFace1 = BRepBuilderAPI_MakeFace(surface1, wire, Standard_True);
-TopoDS_Face trimmedFace2 = BRepBuilderAPI_MakeFace(surface2, wire, Standard_True);
-
-// on compounds == 
-TopoDS_Shape trimmedCompound = BRepAlgoAPI_Cut(compound1, compound2);
-*/

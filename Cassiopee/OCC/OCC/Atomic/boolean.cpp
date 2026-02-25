@@ -37,6 +37,12 @@
 #include "BRepAlgoAPI_Cut.hxx"
 #include "BRepAlgoAPI_Common.hxx"
 
+#include "XCAFDoc_DocumentTool.hxx"
+#include "TDocStd_Document.hxx"
+#include "XCAFDoc_ShapeTool.hxx"
+#include "XCAFDoc_ShapeMapTool.hxx"
+#include "TDataStd_Name.hxx"
+
 //=====================================================================
 // boolean operations
 // op=0 (fuse), 1 (cut), 2 (common)
@@ -51,11 +57,9 @@ PyObject* K_OCC::boolean(PyObject* self, PyObject* args)
   GETPACKET;
   GETSHAPE;
   GETMAPSURFACES;
-
-  E_Int nfaces1 = PyList_Size(listFaces1);
-  E_Int nfaces2 = PyList_Size(listFaces2);
   
   // Get compound1
+  E_Int nfaces1 = PyList_Size(listFaces1);
   BRep_Builder builder1;
   TopoDS_Compound compound1;
   builder1.MakeCompound(compound1);
@@ -76,6 +80,7 @@ PyObject* K_OCC::boolean(PyObject* self, PyObject* args)
   if (rev1 == 1) solid1 = TopoDS::Solid(solid1.Reversed());
   
   // Get compound2
+  E_Int nfaces2 = PyList_Size(listFaces2);
   BRep_Builder builder2;
   TopoDS_Compound compound2;
   builder2.MakeCompound(compound2);
@@ -104,15 +109,60 @@ PyObject* K_OCC::boolean(PyObject* self, PyObject* args)
   //unify.Build();
   //TopoDS_Shape unified = unify.Shape();
 
+#ifdef USEXCAF
+
+  GETDOC;
+  GETSHAPETOOL;
+
+  // suppress somes faces
+  std::map< E_Int, std::vector<E_Int> > label2Faces;
+  std::map< E_Int, std::vector<E_Int> > label2Edges;
+  getLabel2Edges(*doc, label2Edges);
+  getLabel2Faces(*doc, label2Faces);
+
+  for (E_Int i = 0; i < PyList_Size(listFaces1); i++)
+  {
+    PyObject* noFaceO = PyList_GetItem(listFaces1, i);
+    E_Int noFace = PyInt_AsLong(noFaceO);
+    for (size_t j = 0; j < label2Faces.size(); j++)
+    {
+      std::vector< E_Int >& f = label2Faces[j];
+      f.erase(std::remove(f.begin(), f.end(), noFace), f.end());
+    }
+  }
+  for (E_Int i = 0; i < PyList_Size(listFaces2); i++)
+  {
+    PyObject* noFaceO = PyList_GetItem(listFaces2, i);
+    E_Int noFace = PyInt_AsLong(noFaceO);
+    for (size_t j = 0; j < label2Faces.size(); j++)
+    {
+      std::vector< E_Int >& f = label2Faces[j];
+      f.erase(std::remove(f.begin(), f.end(), noFace), f.end());
+    }
+  }
+  copyTopShape2OCAF(*shape, label2Edges, label2Faces, *doc);
+
+  // Add compound3 as a new shape
+  TDF_Label label = shapeTool->AddShape(result);
+  TDataStd_Name::Set(label, "boolean");
+
+  // back copy
+  TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
+#else
+
   TopoDS_Shape* newshp = new TopoDS_Shape(result);
-  
-  // Rebuild the hook
   delete shape;
   SETSHAPE(newshp);
 
-  printf("INFO: after boolUnion: Nb edges=%d\n", se->Extent());
-  printf("INFO: after boolUnion: Nb faces=%d\n", sf->Extent());
+  printf("INFO: after boolean: Nb edges=%d\n", se->Extent());
+  printf("INFO: after boolean: Nb faces=%d\n", sf->Extent());
 
   Py_INCREF(Py_None);
   return Py_None;
+#endif
 }

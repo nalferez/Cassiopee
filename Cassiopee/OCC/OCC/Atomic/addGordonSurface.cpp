@@ -100,8 +100,6 @@ PyObject* K_OCC::addGordonSurface(PyObject* self, PyObject* args)
 #else
 
   TopoDS_Shape* newshp = new TopoDS_Shape(face);
-
-  // Rebuild the hook
   delete shape;
   SETSHAPE(newshp);
 

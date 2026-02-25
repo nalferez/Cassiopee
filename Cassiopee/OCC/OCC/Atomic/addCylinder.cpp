@@ -23,16 +23,16 @@
 #include "TopTools_IndexedMapOfShape.hxx"
 #include "TopExp.hxx"
 #include "TopExp_Explorer.hxx"
-#include "BRepPrimAPI_MakeSphere.hxx"
 #include "BRep_Builder.hxx"
 #include "BRepBuilderAPI_MakeEdge.hxx"
 #include "BRepBuilderAPI_MakeWire.hxx"
 #include "BRepBuilderAPI_MakeFace.hxx"
-#include <BRepPrimAPI_MakeCylinder.hxx>
-#include <gp_Cylinder.hxx>
-#include <gp_Ax2.hxx>
-#include <BRepBuilderAPI_MakeFace.hxx>
-#include <TopoDS_Shape.hxx>
+#include "BRepPrimAPI_MakeCylinder.hxx"
+#include "gp_Cylinder.hxx"
+#include "gp_Ax2.hxx"
+#include "BRepBuilderAPI_MakeFace.hxx"
+#include "TopoDS_Shape.hxx"
+#include "BRepBuilderAPI_Sewing.hxx"
 
 //=====================================================================
 // Add a part cylinder to CAD hook
@@ -45,7 +45,7 @@ PyObject* K_OCC::addCylinder(PyObject* self, PyObject* args)
   if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ R_ R_ S_, 
     &hook, &xc, &yc, &zc, &xaxis, &yaxis, &zaxis, &R, &H, &name)) return NULL;
 
-  GETPACKET; 
+  GETPACKET;
   GETSHAPE;
   
   // Define the radius, height, and angle of the cylinder
@@ -69,8 +69,13 @@ PyObject* K_OCC::addCylinder(PyObject* self, PyObject* args)
   builder.MakeCompound(compound);
   builder.Add(compound, face);
 
+  BRepBuilderAPI_Sewing sewingTool;
+  sewingTool.Add(compound);
+  sewingTool.Perform();
+  TopoDS_Shape sewedShape = sewingTool.SewedShape();
+
   GETDOC;
-  addShape2OCAF(compound, name, *doc);
+  addShape2OCAF(sewedShape, name, *doc);
   TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
   delete shape;
   SETSHAPE(newshp);
@@ -98,7 +103,12 @@ PyObject* K_OCC::addCylinder(PyObject* self, PyObject* args)
   }
   builder.Add(compound, face);
 
-  TopoDS_Shape* newshp = new TopoDS_Shape(compound);
+  BRepBuilderAPI_Sewing sewingTool;
+  sewingTool.Add(compound);
+  sewingTool.Perform();
+  TopoDS_Shape sewedShape = sewingTool.SewedShape();
+
+  TopoDS_Shape* newshp = new TopoDS_Shape(sewedShape);
     
   delete shape;
   SETSHAPE(newshp);

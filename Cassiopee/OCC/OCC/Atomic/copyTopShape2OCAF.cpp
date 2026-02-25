@@ -82,7 +82,7 @@ void K_OCC::copyTopShape2OCAF(TopoDS_Shape& topShape,
       builder.Add(compound, F);
     }
 
-    BRepBuilderAPI_Sewing sewer(1.e-6);
+    BRepBuilderAPI_Sewing sewer; // 1.e-6
     sewer.Add(compound);
     sewer.Perform();
     

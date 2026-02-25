@@ -25,6 +25,7 @@
 #include "TopExp_Explorer.hxx"
 #include "BRepPrimAPI_MakeSphere.hxx"
 #include "BRep_Builder.hxx"
+#include "BRepBuilderAPI_Sewing.hxx"
 
 //=====================================================================
 // Add a sphere to CAD hook
@@ -75,18 +76,20 @@ PyObject* K_OCC::addSphere(PyObject* self, PyObject* args)
   }
 
   // Add the sphere faces
-  TopTools_IndexedMapOfShape* sfs = new TopTools_IndexedMapOfShape();
-  TopExp::MapShapes(sphere, TopAbs_FACE, *sfs);
-  TopTools_IndexedMapOfShape& surfaces2 = *(TopTools_IndexedMapOfShape*)sfs;
+  TopTools_IndexedMapOfShape surfaces2 = TopTools_IndexedMapOfShape();
+  TopExp::MapShapes(sphere, TopAbs_FACE, surfaces2);
   for (E_Int i = 1; i <= surfaces2.Extent(); i++)
   {
     TopoDS_Face F = TopoDS::Face(surfaces2(i));
     builder.Add(compound, F);
   }
-  delete sfs;
+
+  BRepBuilderAPI_Sewing sewingTool;
+  sewingTool.Add(compound);
+  sewingTool.Perform();
+  TopoDS_Shape sewedShape = sewingTool.SewedShape();
 
   TopoDS_Shape* newshp = new TopoDS_Shape(compound);
-
   delete shape;
   SETSHAPE(newshp);
 

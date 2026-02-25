@@ -103,7 +103,7 @@ PyObject* K_OCC::removeFaces(PyObject* self, PyObject* args)
   GETDOC;
   std::map< E_Int, std::vector<E_Int> > label2Faces;
   std::map< E_Int, std::vector<E_Int> > label2Edges;
-  getLabel2Edges(*doc, label2Edges);
+  //getLabel2Edges(*doc, label2Edges);
   getLabel2Faces(*doc, label2Faces);
   for (E_Int no = 0; no < PyList_Size(listFaces); no++)
   {
