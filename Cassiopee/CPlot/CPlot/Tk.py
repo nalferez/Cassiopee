@@ -289,7 +289,7 @@ def buildCPlotArrays(a, topTree=[]):
             dimz = Internal.getZoneDim(z)
             if dimz[0] == 'Unstructured' and dimz[4] == 3:
                 if dimz[3] == "NGON": P._exteriorFaces(z)
-                else: 
+                else:
                     P._exteriorElts(z)
                     #if ',' not in dimz[3]: P._exteriorFaces(z)
                     #else: P._exteriorElts(z)
