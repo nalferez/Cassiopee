@@ -53,7 +53,7 @@
 //=============================================================================
 void Data::displayUMeshZone(UnstructZone* zonep, E_Int zone, E_Int zonet)
 {
-  if (zonep->_is_high_order == true)
+  if (zonep->_isHighOrder == true)
   {
     displayUMeshZone_ho(zonep, zone, zonet);
     return;

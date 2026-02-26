@@ -107,7 +107,7 @@ void DataDL::displayUSolid()
                 if (ptrState->simplifyOnDrag == 1 && ptrState->ondrag == 1) displayUBBZone(zonep);
                 else
                 {
-                    if (zonep->_is_high_order == false)
+                    if (zonep->_isHighOrder == false)
                     {
                         if (zoneImpl->_DLsolid != 0) renderGPUUSolidZone(zonep, zone, zonet);
                         else displayUSolidZone(zonep, zone, zonet);  // Direct

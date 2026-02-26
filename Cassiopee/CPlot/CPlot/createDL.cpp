@@ -55,7 +55,7 @@ void DataDL::createGPURes()
     if (zImpl._GPUResUse == 1 && zImpl._DLsolid == 0)
     {
       zonet = zone + _numberOfStructZones;
-      if ( not z->_is_high_order)
+      if ( not z->_isHighOrder)
       { createGPUUSolidZone(z, zone, zonet); goto end; }
       else
       {
@@ -95,7 +95,7 @@ void DataDL::createGPURes()
   {
     UnstructZone* z = _uzones[zone];
     ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
-    if (zImpl._GPUResUse == 1 && zImpl._DLmesh == 0 && z->_is_high_order == true )
+    if (zImpl._GPUResUse == 1 && zImpl._DLmesh == 0 && z->_isHighOrder == true )
     {
       zonet = zone + _numberOfStructZones;
       { createGPUUMeshZone(z, zone, zonet); goto end; }

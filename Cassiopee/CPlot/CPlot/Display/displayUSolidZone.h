@@ -213,7 +213,7 @@
     float* surfy = surfx + np;
     float* surfz = surfy + np;
     
-    glBegin(GL_QUADS);      
+    glBegin(GL_QUADS);  
     
     if (zonep->blank == 0)
     {

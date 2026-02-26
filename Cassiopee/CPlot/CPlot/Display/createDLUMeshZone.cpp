@@ -26,7 +26,7 @@
 //=============================================================================
 void DataDL::createGPUUMeshZone(UnstructZone* zonep, E_Int zone, E_Int zonet)
 {
-  if (zonep->_is_high_order == true) 
+  if (zonep->_isHighOrder == true) 
   {
     createGPUUMeshZoneHO(zonep, zone, zonet);
     return;

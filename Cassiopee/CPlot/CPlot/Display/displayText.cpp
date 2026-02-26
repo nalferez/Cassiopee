@@ -648,7 +648,7 @@ void Data::displayInfo()
                   z->zoneName, zu->npts);
           break;
         case 1:
-          if (zu->_is_high_order && eltSize == 3)
+          if (zu->_isHighOrder && eltSize == 3)
             sprintf(temp,"@1%s@0 (BAR_3): " SF_D_ " pts, " SF_D_ " elts",
                     z->zoneName, zu->npts, zu->ne);
           else
@@ -656,7 +656,7 @@ void Data::displayInfo()
                     z->zoneName, zu->npts, zu->ne);
           break;
         case 2:
-          if (zu->_is_high_order && eltSize == 6)
+          if (zu->_isHighOrder && eltSize == 6)
             sprintf(temp,"@1%s@0 (TRI_6): " SF_D_ " pts, " SF_D_ " elts",
                     z->zoneName, zu->npts, zu->ne);
           else
@@ -664,10 +664,10 @@ void Data::displayInfo()
                     z->zoneName, zu->npts, zu->ne);
           break;
         case 3:
-          if (zu->_is_high_order && eltSize == 8)
+          if (zu->_isHighOrder && eltSize == 8)
             sprintf(temp,"@1%s@0 (QUAD_8): " SF_D_ " pts, " SF_D_ " elts",
                     z->zoneName, zu->npts, zu->ne);
-          else if (zu->_is_high_order && eltSize == 9)
+          else if (zu->_isHighOrder && eltSize == 9)
             sprintf(temp,"@1%s@0 (QUAD_9): " SF_D_ " pts, " SF_D_ " elts",
                     z->zoneName, zu->npts, zu->ne);
           else
@@ -675,7 +675,7 @@ void Data::displayInfo()
                     z->zoneName, zu->npts, zu->ne);
           break;
         case 4:
-          if (zu->_is_high_order && eltSize == 10)
+          if (zu->_isHighOrder && eltSize == 10)
             sprintf(temp,"@1%s@0 (TETRA_10): " SF_D_ " pts, " SF_D_ " elts",
                     z->zoneName, zu->npts, zu->ne);
           else
@@ -683,10 +683,10 @@ void Data::displayInfo()
                     z->zoneName, zu->npts, zu->ne);
           break;
         case 5:
-          if (zu->_is_high_order && eltSize == 15)
+          if (zu->_isHighOrder && eltSize == 15)
             sprintf(temp,"@1%s@0 (PENTA_15): " SF_D_ " pts, " SF_D_ " elts",
                     z->zoneName, zu->npts, zu->ne);
-          else if (zu->_is_high_order && eltSize == 18)
+          else if (zu->_isHighOrder && eltSize == 18)
             sprintf(temp,"@1%s@0 (PENTA_18): " SF_D_ " pts, " SF_D_ " elts",
                     z->zoneName, zu->npts, zu->ne);
           else
@@ -694,7 +694,7 @@ void Data::displayInfo()
                     z->zoneName, zu->npts, zu->ne);
           break;
         case 6:
-          if (zu->_is_high_order && eltSize == 14)
+          if (zu->_isHighOrder && eltSize == 14)
             sprintf(temp,"@1%s@0 (PYRA_14): " SF_D_ " pts, " SF_D_ " elts",
                     z->zoneName, zu->npts, zu->ne);
           else
@@ -702,10 +702,10 @@ void Data::displayInfo()
                     z->zoneName, zu->npts, zu->ne);
           break;
         case 7:
-          if (zu->_is_high_order && eltSize == 20)
+          if (zu->_isHighOrder && eltSize == 20)
             sprintf(temp,"@1%s@0 (HEXA_20): " SF_D_ " pts, " SF_D_ " elts",
                     z->zoneName, zu->npts, zu->ne);
-          else if (zu->_is_high_order && eltSize == 27)
+          else if (zu->_isHighOrder && eltSize == 27)
             sprintf(temp,"@1%s@0 (HEXA_27): " SF_D_ " pts, " SF_D_ " elts",
                     z->zoneName, zu->npts, zu->ne);
           else

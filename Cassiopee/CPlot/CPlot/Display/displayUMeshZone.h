@@ -26,7 +26,7 @@
   double* y = zonep->y;
   double* z = zonep->z;
 
-  for (size_t nc = 0; nc < zonep->connect.size(); nc++) {
+  for (size_t nc = 0; nc < zonep->connect.size(); nc++) { // ME
 
   E_Int eltType = zonep->eltType[nc];
   E_Int* connect = zonep->connect[nc];

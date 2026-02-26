@@ -66,16 +66,8 @@ def computeMeshInfo(z, dim):
         elif dim[3] == 'NODE':
             ncells = 0
             nfaces = 0
-        else: # BE, very expensive!!
-            if dim[1] < 100000: # Trouver un autre moyen
-                zp = C.convertArray2NGon(z)
-                elts = Internal.getNodesFromType2(zp, 'Elements_t')
-                nfaces = 0
-                for e in elts:
-                    if Internal.getValue(e)[0] == 22:
-                        erange = Internal.getNodeFromName1(e, 'ElementRange')
-                        nfaces += erange[1][1]-erange[1][0]+1
-            else: nfaces = 0
+        else: # others, not computed
+            nfaces = 0
     return np, ncells, nfaces
 
 #==============================================================================
