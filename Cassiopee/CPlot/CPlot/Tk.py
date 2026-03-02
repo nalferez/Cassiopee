@@ -354,7 +354,7 @@ def display(t, dim=-1,
     if mainTree <= 0 and __MAINTREE__ == 1:
         __MAINACTIVEZONES__ = CP.getActiveZones()
     if location != 'unchanged': CPlot.__LOCATION__ = location
-    zoneNames = C.getZoneNames(t)
+    zoneNames = C.getZoneNames(t, prefixByBase=True)
     renderTags = CPlot.getRenderTags(t)
     arrays = buildCPlotArrays(t)
     CP.display(arrays, dim, mode, scalarField, vectorField1, vectorField2,

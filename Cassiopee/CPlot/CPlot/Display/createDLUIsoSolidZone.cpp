@@ -36,7 +36,7 @@ void DataDL::createGPUUIsoSolidZone(UnstructZone* zonep, E_Int zone, E_Int zonet
   float r, /*g, b,*/ offb;
   E_Int ret1, ret2, ret3, ret4, ff;
   offb = 0.;
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
 
   zImpl->_DLiso = glGenLists(1);
   glNewList(zImpl->_DLiso, GL_COMPILE);
@@ -61,7 +61,7 @@ void DataDL::createGPUUIsoSolidZone(UnstructZone* zonep, E_Int zone, E_Int zonet
   E_Int ret1, ret2, ret3, ret4, ff;
   offb = 0.;
 
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
   zImpl->_DLiso = glGenLists(1);
   glNewList(zImpl->_DLiso, GL_COMPILE);
 #undef PLOTTRI

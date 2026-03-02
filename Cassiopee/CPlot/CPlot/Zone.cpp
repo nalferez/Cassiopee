@@ -30,7 +30,7 @@
 #endif
 
 //=============================================================================
-Zone::Zone(CPlotState* states, ZoneImpl* impl) : ptr_impl(impl)
+Zone::Zone(CPlotState* states, ZoneImpl* impl) : ptrImpl(impl)
 {
   dim = 3;
   nfield = 0;
@@ -74,13 +74,13 @@ Zone::~Zone()
   if (regtexv != NULL) delete [] regtexv;
   
   delete [] _voxelArray;
-  ptr_impl->freeGPURes(ptrState);
-  delete ptr_impl; ptr_impl = NULL;
+  ptrImpl->freeGPURes(ptrState);
+  delete ptrImpl; ptrImpl = NULL;
 }
 // ------------------------------------------------------------------------
 void Zone::freeGPURessources(bool useGPURessources, bool freeIso)
 {
-  if (ptr_impl != NULL) ptr_impl->freeGPURes(ptrState, freeIso);
+  if (ptrImpl != NULL) ptrImpl->freeGPURes(ptrState, freeIso);
   if (useGPURessources) setUseGPURessources();
   else unsetUseGPURessources();
 }

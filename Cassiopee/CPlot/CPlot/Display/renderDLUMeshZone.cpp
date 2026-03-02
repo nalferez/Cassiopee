@@ -63,7 +63,7 @@
 //=============================================================================
 void DataDL::renderGPUUMeshZone(UnstructZone* zonep, E_Int zone, E_Int zonet)
 {
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
   if (zImpl->_DLmesh == 0)
   {
     displayUMeshZone(zonep, zone, zonet);

@@ -37,7 +37,7 @@
 void DataDL::createGPUUMeshZoneHO(UnstructZone* zonep, E_Int zone, E_Int zonet)
 {
   E_Int i, n1, n2, n3, ret1, ret2;
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
 
   zImpl->_DLmesh = glGenLists(1);
   glNewList(zImpl->_DLmesh, GL_COMPILE);

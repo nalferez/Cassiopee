@@ -89,7 +89,7 @@ void DataDL::renderGPUUSolidZone(UnstructZone* zonep, E_Int zone, E_Int zonet)
   }
 #endif
 
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
   glCallList(zImpl->_DLsolid);
   GLenum error = glGetError();
   if (error != GL_NO_ERROR)

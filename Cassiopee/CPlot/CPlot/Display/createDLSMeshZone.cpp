@@ -37,7 +37,7 @@ void DataDL::createGPUSMeshZone(StructZone* zonep, E_Int zone)
 
   // steps
   stepi = 1; stepj = 1; stepk = 1;
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
 
   zImpl->_DLmesh = glGenLists(1);
   glNewList(zImpl->_DLmesh, GL_COMPILE);

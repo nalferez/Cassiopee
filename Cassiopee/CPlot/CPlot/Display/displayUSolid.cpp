@@ -42,7 +42,7 @@ void DataDL::displayUSolid()
         glPolygonOffset(1., zone % 10 + 1.);
         zonet = zone + _numberOfStructZones;
         UnstructZone *zonep = _uzones[zone];
-        ZoneImplDL *zoneImpl = static_cast<ZoneImplDL *>(zonep->ptr_impl);
+        ZoneImplDL *zoneImpl = static_cast<ZoneImplDL *>(zonep->ptrImpl);
 
         // if zone is active and in frustum
         if ((zonep->active == 1 ||

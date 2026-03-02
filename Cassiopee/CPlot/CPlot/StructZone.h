@@ -21,7 +21,6 @@
 #define _CPLOT_STRUCTZONE_H_
 
 #include "Zone.h"
-//#include "kcore.h"
 
 /* Define a structured zone */
 class StructZone : public Zone

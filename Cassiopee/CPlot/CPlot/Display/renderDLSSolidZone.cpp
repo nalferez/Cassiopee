@@ -88,7 +88,7 @@ void DataDL::renderGPUSSolidZone(StructZone* zonep, E_Int zone)
   }
 #endif
 
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
   glCallList(zImpl->_DLsolid);
   glLineWidth(1.);
 }

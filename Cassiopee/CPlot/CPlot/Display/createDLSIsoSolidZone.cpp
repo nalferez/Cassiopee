@@ -39,7 +39,7 @@ void DataDL::createGPUSIsoSolidZone(StructZone* zonep, E_Int zone, E_Int nofield
   E_Int stepi, stepj, stepk;
   float offb = 0.;
   stepi = 1; stepj = 1; stepk = 1;
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
   zImpl->_DLiso = glGenLists(1);
   glNewList(zImpl->_DLiso, GL_COMPILE);
 #include "displaySIsoSolidZone.h"
@@ -64,7 +64,7 @@ void DataDL::createGPUSIsoSolidZone(StructZone* zonep, E_Int zone,
 {
   E_Int stepi, stepj, stepk;
   stepi = 1; stepj = 1; stepk = 1;
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
 
   zImpl->_DLiso = glGenLists(1);
   glNewList(zImpl->_DLiso, GL_COMPILE);

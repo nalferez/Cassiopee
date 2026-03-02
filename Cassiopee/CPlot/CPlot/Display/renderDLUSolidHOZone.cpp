@@ -105,7 +105,7 @@ void DataDL::renderGPUUSolidHOZone(UnstructZone *zonep, E_Int zone, E_Int zonet)
   this->_shaders[ idShader ]->setUniform( "uInner", (float)t_inner );
   this->_shaders[ idShader ]->setUniform( "uOuter", (float)t_outer );
   this->_shaders[ idShader ]->setUniform( "patch_size", (int)zonep->eltSize[0] );
-  ZoneImplDL *zImpl = static_cast<ZoneImplDL *>(zonep->ptr_impl);
+  ZoneImplDL *zImpl = static_cast<ZoneImplDL *>(zonep->ptrImpl);
   glPatchParameteri(GL_PATCH_VERTICES, GLint(zonep->eltSize[0]));
   glCallList(zImpl->_DLsolid);
   glLineWidth(1.);

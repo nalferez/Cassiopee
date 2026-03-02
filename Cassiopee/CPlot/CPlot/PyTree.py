@@ -64,7 +64,7 @@ def display(t,
     if __LOCATION__ == 'nodes':
         t = C.center2Node(t, Internal.__FlowSolutionCenters__)
     else: t = C.node2Center(t)
-    zoneNames = C.getZoneNames(t)
+    zoneNames = C.getZoneNames(t, prefixByBase=True)
     renderTags = getRenderTags(t)
     arrays = C.getAllFields(t, 'nodes', api=3)
     CPlot.display(arrays, dim, mode, scalarField, vectorField1,
@@ -117,7 +117,7 @@ def displayRaw(t,
                location="unchanged",
                frameBuffer=-1,
                offscreen=0):
-    zoneNames = C.getZoneNames(t)
+    zoneNames = C.getZoneNames(t, prefixByBase=True)
     renderTags = getRenderTags(t)
     arrays = C.getAllFields(t, 'nodes', api=3)
     CPlot.display(arrays, dim, mode, scalarField, vectorField1,

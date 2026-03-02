@@ -46,7 +46,6 @@ StructZone* Data::createStructZone(FldArrayF* structF, char* varString,
   StructZone* sz = new StructZone(ptrState, createZoneImpl());
   StructZone& z = *sz;
   strcpy(z.zoneName, zoneName);
-
   z.ni = ni; z.nj = nj; z.nk = nk;
   z.npts = z.ni * z.nj * z.nk;
   if (referenceNfield != -1) z.nfield = referenceNfield;

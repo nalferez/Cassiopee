@@ -35,29 +35,29 @@ using namespace std;
 // si retourne 1: OK
 //=============================================================================
 E_Int DataDL::initZoneData(vector<FldArrayF*>& structF,
-	vector<char*>& structVarString,
-	vector<E_Int>& nit,
-	vector<E_Int>& njt,
-	vector<E_Int>& nkt,
-	vector<FldArrayF*>& unstrF,
-	vector<char*>& unstrVarString,
-	vector<FldArrayI*>& cnt,
-	vector<char*>& eltType,
-	vector<char*>& zoneNames,
-	vector<char*>& zoneTags,
-    E_Int referenceNfield,
-    char** referenceVarNames)
+  vector<char*>& structVarString,
+  vector<E_Int>& nit,
+  vector<E_Int>& njt,
+  vector<E_Int>& nkt,
+  vector<FldArrayF*>& unstrF,
+  vector<char*>& unstrVarString,
+  vector<FldArrayI*>& cnt,
+  vector<char*>& eltType,
+  vector<char*>& zoneNames,
+  vector<char*>& zoneTags,
+  E_Int referenceNfield,
+  char** referenceVarNames)
 {
   // Dit a display de liberer les DL des zones
   ptrState->syncGPURes();
   for (E_Int i = 0; i < _numberOfZones; i++) 
   {
     ZoneImplDL* z;
-    z = static_cast<ZoneImplDL*>(_zones[i]->ptr_impl);
+    z = static_cast<ZoneImplDL*>(_zones[i]->ptrImpl);
     z->freeGPURes(ptrState); z->_GPUResUse = 0; 
   }
 
   return Data::initZoneData(structF, structVarString, nit, njt, nkt,
-			unstrF, unstrVarString, cnt, eltType, zoneNames, zoneTags,
-            referenceNfield, referenceVarNames);
+    unstrF, unstrVarString, cnt, eltType, zoneNames, zoneTags,
+    referenceNfield, referenceVarNames);
 }

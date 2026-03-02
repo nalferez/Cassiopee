@@ -41,7 +41,7 @@ void DataDL::createGPURes()
   while (zone < _numberOfStructZones)
   {
     StructZone* z    = _szones[zone];
-    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
     if (zImpl._GPUResUse == 1 && zImpl._DLsolid == 0)
     { createGPUSSolidZone(z, zone); goto end; }
     zone++;
@@ -51,7 +51,7 @@ void DataDL::createGPURes()
   while (zone < _numberOfUnstructZones)
   {
     UnstructZone* z = _uzones[zone];
-    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
     if (zImpl._GPUResUse == 1 && zImpl._DLsolid == 0)
     {
       zonet = zone + _numberOfStructZones;
@@ -71,7 +71,7 @@ void DataDL::createGPURes()
   while (zone < _numberOfStructZones)
   {
     StructZone* z = _szones[zone];
-    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
     if (zImpl._GPUResUse == 1 && zImpl._DLmesh == 0)
     { createGPUSMeshZone(z, zone); goto end; }
     zone++;
@@ -81,7 +81,7 @@ void DataDL::createGPURes()
   while (zone < _numberOfUnstructZones)
   {
     UnstructZone* z = _uzones[zone];
-    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
     if (zImpl._GPUResUse == 1 && zImpl._DLmesh == 0)
     {
       zonet = zone + _numberOfStructZones;
@@ -94,7 +94,7 @@ void DataDL::createGPURes()
   while (zone < _numberOfUnstructZones)
   {
     UnstructZone* z = _uzones[zone];
-    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
     if (zImpl._GPUResUse == 1 && zImpl._DLmesh == 0 && z->_isHighOrder == true )
     {
       zonet = zone + _numberOfStructZones;
@@ -117,7 +117,7 @@ void DataDL::createIsoGPURes(E_Int nofield)
   while (zone < _numberOfStructZones)
   {
     StructZone* z = _szones[zone];
-    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
     
     if (zImpl._GPUResUse == 1)
     {
@@ -137,7 +137,7 @@ void DataDL::createIsoGPURes(E_Int nofield)
   while (zone < _numberOfUnstructZones)
   {
     UnstructZone* z = _uzones[zone];
-    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
     if (zImpl._GPUResUse == 1)
     {
       zonet = zone + _numberOfStructZones;
@@ -165,7 +165,7 @@ void DataDL::createIsoGPUResForRender()
   while (zone < _numberOfStructZones)
   {
     StructZone* z = _szones[zone];
-    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
     int color = (int)(z->colorR);
     if (zImpl._GPUResUse == 1 && color < -1.5)
     {
@@ -186,7 +186,7 @@ void DataDL::createIsoGPUResForRender()
   while (zone < _numberOfUnstructZones)
   {
     UnstructZone* z = _uzones[zone];
-    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
     int color = (int)(z->colorR);
     if (zImpl._GPUResUse == 1 && color < -1.5)
     {
@@ -216,7 +216,7 @@ void DataDL::createIsoGPURes(E_Int nofield1, E_Int nofield2, E_Int nofield3)
   while (zone < _numberOfStructZones)
   {
     StructZone* z = _szones[zone];
-    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
     if (zImpl._GPUResUse == 1)
     {
       if (zImpl._DLisoField != nofield1 || zImpl._DLisoField2 != nofield2 
@@ -235,7 +235,7 @@ void DataDL::createIsoGPURes(E_Int nofield1, E_Int nofield2, E_Int nofield3)
   while (zone < _numberOfUnstructZones)
   {
     UnstructZone* z = _uzones[zone];
-    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+    ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
     if (zImpl._GPUResUse == 1)
     {
       zonet = zone + _numberOfStructZones;
@@ -269,7 +269,7 @@ void DataDL::freeGPURes(int mode, int start, int end, int permanent)
     for (i = start; i <= end; i++)
     { 
       Zone* z = _zones[i];
-      ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+      ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
       if (zImpl._DLmesh != 0) {glDeleteLists(zImpl._DLmesh, 1); zImpl._DLmesh = 0;}
       if (permanent == 1) zImpl._GPUResUse = 0;
     }
@@ -279,7 +279,7 @@ void DataDL::freeGPURes(int mode, int start, int end, int permanent)
     for (i = start; i <= end; i++)
     { 
       Zone* z = _zones[i];
-      ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+      ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
       if (zImpl._DLsolid != 0) {glDeleteLists(zImpl._DLsolid, 1); zImpl._DLsolid = 0;}
       if (permanent == 1) zImpl._GPUResUse = 0;
     }
@@ -300,7 +300,7 @@ void DataDL::freeGPURes(int mode, int size, int* ptr, int permanent)
       if (ptr[i] >= 0 && ptr[i] < _numberOfZones)
       {
         Zone* z = _zones[ptr[i]];
-        ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+        ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
         if (zImpl._DLmesh != 0) {glDeleteLists(zImpl._DLmesh, 1); zImpl._DLmesh = 0;}
         if (permanent == 1) zImpl._GPUResUse = 0;
       }
@@ -313,7 +313,7 @@ void DataDL::freeGPURes(int mode, int size, int* ptr, int permanent)
       if (ptr[i] >= 0 && ptr[i] < _numberOfZones)
       {
         Zone* z = _zones[ptr[i]];
-        ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptr_impl);
+        ZoneImplDL& zImpl = *static_cast<ZoneImplDL*>(z->ptrImpl);
         if (zImpl._DLsolid != 0) {glDeleteLists(zImpl._DLsolid, 1); zImpl._DLsolid = 0;}
         if (permanent == 1) zImpl._GPUResUse = 0;
       }

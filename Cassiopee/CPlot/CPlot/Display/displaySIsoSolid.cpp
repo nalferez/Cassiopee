@@ -160,7 +160,7 @@ void DataDL::displaySIsoSolid()
   {
     glPolygonOffset(1., zone%10+1.);
     StructZone* zonep = _szones[zone];
-    ZoneImplDL* zoneImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+    ZoneImplDL* zoneImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
     // if zone is activated and in frustum
     if ((zonep->active == 1 ||
          (zonep->active == 0 && ptrState->ghostifyDeactivatedZones == 1))

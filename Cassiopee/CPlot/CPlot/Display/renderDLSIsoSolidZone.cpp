@@ -38,7 +38,7 @@ void DataDL::renderSIsoSolidZone(StructZone* zonep, E_Int zone, E_Int nofield)
   E_Int nj = zonep->nj;
   E_Int nk = zonep->nk;
   
-  ZoneImplDL* zoneImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zoneImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
 
   // Blending
   blend = 1.;
@@ -94,7 +94,7 @@ void DataDL::renderSIsoSolidZone(StructZone* zonep, E_Int zone, E_Int nofield1,
   if (ptrState->dim == 2) nk = 1;
   E_Int nij = ni*nj;
 
-  ZoneImplDL* zoneImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zoneImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
 
   // Blending
   blend = 1.;
