@@ -95,7 +95,7 @@ def createApp(win):
     B = TTK.Entry(Frame, textvariable=VARS[1], background='White', width=10)
     B.grid(row=0, column=1, sticky=TK.EW)
     BB = CTK.infoBulle(parent=B, text='Grading.')
-    
+
     # - Run -
     B = TTK.Button(Frame, text="tetraMesher", command=tetraMesher)
     B.grid(row=1, column=0, columnspan=2, sticky=TK.EW)
