@@ -108,9 +108,18 @@ PyObject* K_GENERATOR::tetgen(PyObject* self, PyObject* args)
   }
   else // create option string for meshing wihout remeshing boundaries with grading
   {
-    char opt[256];
-    if (remeshBoundaries == 1) sprintf(opt, "q%g", grading);
-    else sprintf(opt, "q%g Y", grading);
+    char opt[512]; char loc[256];
+    sprintf(opt, "q%g", grading);
+    if (remeshBoundaries == 0)
+    {
+      strcpy(loc, " Y"); 
+      strcat(opt, loc);
+    }
+    if (maxh > 0)
+    {
+      sprintf(loc, " a%g", (maxh*maxh*maxh)*0.25);
+      strcat(opt, loc);
+    }
     b.parse_commandline(opt);
   }
   /*

@@ -112,7 +112,7 @@ void display_parameters(const sz_params &params)
     else
       printf("compressor Name:        \t Other compressor\n");
     
-      switch(params.dataType)
+    switch(params.dataType)
     {
       case SZ_FLOAT:
         printf("Data type:                      \t FLOAT\n");

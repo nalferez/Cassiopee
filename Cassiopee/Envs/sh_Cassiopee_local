@@ -641,6 +641,7 @@ elif [ "$MAC" = "atlas" ]; then
     export ELSAPROD=$ELSAPROD$EXT
     # Nbre de threads
     export OMP_NUM_THREADS=12
+    export OMP_PLACES cores
     export PYTHONEXE=python3
     export PRODMODE=3
 
