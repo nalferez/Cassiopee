@@ -1465,7 +1465,7 @@ def T3mesher2D(a, grading=1.2, triangulateOnly=0, metricInterpType=0):
     except:
         return generator.T3mesher2D(a, grading, triangulateOnly, metricInterpType)
 
-def tetraMesher(a, maxh=-1., grading=0.4, triangulateOnly=0,
+def tetraMesher(a, maxh=-1., grading=1.1, triangulateOnly=0,
                 remeshBoundaries=0, algo=1, optionString=""):
     """Create a TRI/TETRA mesh given a set of BAR or surfaces in a.
     Usage: tetraMesher(a, maxh, grading)"""

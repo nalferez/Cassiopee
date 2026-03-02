@@ -582,7 +582,7 @@ General purpose grid generator
 
 ---------------------------------------
 
-.. py:function:: Generator.tetraMesher(a, maxh=-1., grading=0.4, algo=1, optionString="") 
+.. py:function:: Generator.tetraMesher(a, maxh=-1., grading=1.1, algo=1, optionString="") 
 
     Create a 3D tetra mesh given a TRI surface defined in a. If the TRI surface has external normals, tetras are filled inside the surface. If algo=0, netgen is used, if algo=1, tetgen is used.
 

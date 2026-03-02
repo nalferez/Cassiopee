@@ -27,6 +27,8 @@ def tetraMesher():
     if VARS[0].get() == 'netgen': algo = 0
     else: algo = 1
 
+    grading = CTK.varsFromWidget(VARS[1].get(), 1)[0]
+
     CTK.setCursor(2, WIDGETS['tetraMesher'])
     CTK.saveTree()
     out = []
@@ -36,7 +38,7 @@ def tetraMesher():
         out.append(CTK.t[2][nob][2][noz])
 
     try:
-        mesh = G.tetraMesher(out, algo=algo, grading=0.3, recoverBC=True)
+        mesh = G.tetraMesher(out, algo=algo, grading=grading, recoverBC=True)
         CTK.t = C.addBase2PyTree(CTK.t, 'MESHES')
         bases = Internal.getNodesFromName1(CTK.t, 'MESHES')
         nob = C.getNobOfBase(bases[0], CTK.t)
@@ -80,13 +82,23 @@ def createApp(win):
     V = TK.StringVar(win); V.set('tetgen'); VARS.append(V)
     if 'tkTetraMesherType' in CTK.PREFS: V.set(CTK.PREFS['tkTetraMesherType'])
 
+    # -1- grading -
+    V = TK.StringVar(win); V.set('1.1'); VARS.append(V)
+
     # - mesher menu -
     #B = TTK.OptionMenu(Frame, VARS[0], 'netgen', 'tetgen')
     #B.grid(row=0, column=1, columnspan=1, sticky=TK.EW)
 
+    # grading
+    B = TTK.Label(Frame, text='Grading:')
+    B.grid(row=0, column=0, sticky=TK.EW)
+    B = TTK.Entry(Frame, textvariable=VARS[1], background='White', width=10)
+    B.grid(row=0, column=1, sticky=TK.EW)
+    BB = CTK.infoBulle(parent=B, text='Grading.')
+    
     # - Run -
     B = TTK.Button(Frame, text="tetraMesher", command=tetraMesher)
-    B.grid(row=0, column=0, columnspan=2, sticky=TK.EW)
+    B.grid(row=1, column=0, columnspan=2, sticky=TK.EW)
     WIDGETS['tetraMesher'] = B
     BB = CTK.infoBulle(parent=B, text='Mesh with TETRAs or TRIs.')
 
