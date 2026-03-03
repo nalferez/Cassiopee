@@ -213,6 +213,7 @@ void Data::keyboard(unsigned char key, E_Int x, E_Int y)
 
   // -- I/J/K mode --
   case 'i':
+  case 9: // ctrl+i or ctrl+I
   {
     changeIPlanePlus();
     break;
@@ -223,6 +224,7 @@ void Data::keyboard(unsigned char key, E_Int x, E_Int y)
     break;
   }
   case 'j':
+  case 10: // ctrl+j or ctrl+J
   {
     changeJPlanePlus();
     break;
@@ -233,6 +235,7 @@ void Data::keyboard(unsigned char key, E_Int x, E_Int y)
     break;
   }
   case 'k':
+  case 11: // ctrl+k or ctrl+K
   {
     changeKPlanePlus();
     break;
@@ -1125,8 +1128,8 @@ void Data::changeIPlanePlus()
     {
       z->activePlane = 0;
       z->iPlane++;
-      if (z->iPlane > z->ni-1) z->iPlane = -1;
-      if (modif == GLUT_ACTIVE_CTRL) z->iPlane = -1;
+      if (z->iPlane > z->ni-1) z->iPlane = 0;
+      if (modif == GLUT_ACTIVE_CTRL) z->iPlane = -1; // both plane display
       if (modif == (GLUT_ACTIVE_CTRL | GLUT_ACTIVE_SHIFT)) z->iPlane = -2; // no plane display
       changed[nchanged] = nz;
       nchanged++;
@@ -1152,8 +1155,8 @@ void Data::changeJPlanePlus()
     {
       z->activePlane = 1;
       z->jPlane++;
-      if (z->jPlane > z->nj-1) z->jPlane = -1;
-      if (modif == GLUT_ACTIVE_CTRL) z->jPlane = -1;
+      if (z->jPlane > z->nj-1) z->jPlane = 0;
+      if (modif == GLUT_ACTIVE_CTRL) z->jPlane = -1; // both plane display
       if (modif == (GLUT_ACTIVE_CTRL | GLUT_ACTIVE_SHIFT)) z->jPlane = -2; // no plane display
       changed[nchanged] = nz;
       nchanged++;
@@ -1179,7 +1182,7 @@ void Data::changeKPlanePlus()
     {
       z->activePlane = 2;
       z->kPlane++;
-      if (z->kPlane > z->nk-1) z->kPlane = -1;
+      if (z->kPlane > z->nk-1) z->kPlane = 0;
       if (modif == GLUT_ACTIVE_CTRL) z->kPlane = -1; // both plane display
       if (modif == (GLUT_ACTIVE_CTRL | GLUT_ACTIVE_SHIFT)) z->kPlane = -2; // no plane display
       changed[nchanged] = nz;
@@ -1195,7 +1198,6 @@ void Data::changeKPlanePlus()
 //=============================================================================
 void Data::changeIPlaneMinus()
 {
-  E_Int modif = glutGetModifiers();
   E_Int* changed = new E_Int [_numberOfStructZones];
   E_Int nchanged = 0;
 
@@ -1206,8 +1208,7 @@ void Data::changeIPlaneMinus()
     {
       z->activePlane = 0;
       z->iPlane--;
-      if (z->iPlane < -1) z->iPlane = z->ni-1;
-      if (modif == (GLUT_ACTIVE_CTRL | GLUT_ACTIVE_SHIFT)) z->iPlane = -2; // no plane display
+      if (z->iPlane < 0) z->iPlane = z->ni-1;
       changed[nchanged] = nz;
       nchanged++;
       z->destroyGPUIsoField();
@@ -1221,7 +1222,6 @@ void Data::changeIPlaneMinus()
 //=============================================================================
 void Data::changeJPlaneMinus()
 {
-  E_Int modif = glutGetModifiers();
   E_Int* changed = new E_Int [_numberOfStructZones];
   E_Int nchanged = 0;
 
@@ -1232,8 +1232,7 @@ void Data::changeJPlaneMinus()
     {
       z->activePlane = 1;
       z->jPlane--;
-      if (z->jPlane < -1) z->jPlane = z->nj-1;
-      if (modif == (GLUT_ACTIVE_CTRL | GLUT_ACTIVE_SHIFT)) z->jPlane = -2; // no plane display
+      if (z->jPlane < 0) z->jPlane = z->nj-1;
       changed[nchanged] = nz;
       nchanged++;
       z->destroyGPUIsoField();
@@ -1247,7 +1246,6 @@ void Data::changeJPlaneMinus()
 //=============================================================================
 void Data::changeKPlaneMinus()
 {
-  E_Int modif = glutGetModifiers();
   E_Int* changed = new E_Int [_numberOfStructZones];
   E_Int nchanged = 0;
 
@@ -1258,8 +1256,7 @@ void Data::changeKPlaneMinus()
     {
       z->activePlane = 1;
       z->kPlane--;
-      if (z->kPlane < -1) z->kPlane = z->nk-1;
-      if (modif == (GLUT_ACTIVE_CTRL | GLUT_ACTIVE_SHIFT)) z->kPlane = -2; // no plane display
+      if (z->kPlane < 0) z->kPlane = z->nk-1;
       changed[nchanged] = nz;
       nchanged++;
       z->destroyGPUIsoField();
