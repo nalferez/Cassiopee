@@ -40,14 +40,6 @@ PyObject* K_TRANSFORM::consSmooth(PyObject* self, PyObject* args)
   E_Int res =  K_ARRAY::getFromArray3(array, varString,
                                       f, im, jm, km, cn, eltType);
 
-  if (res == 1) 
-  {
-    RELEASESHAREDS(array, f);
-    PyErr_SetString(PyExc_TypeError,
-                    "consSmooth: array must be unstructured.");
-    return NULL;
-  }
-
   if (res != 2)
   {
     PyErr_SetString(PyExc_TypeError,
@@ -61,18 +53,19 @@ PyObject* K_TRANSFORM::consSmooth(PyObject* self, PyObject* args)
 
   if (posx == -1 || posy == -1 || posz == -1)
   {
-    RELEASESHAREDU(array, f, cn);
+    RELEASESHAREDB(res, array, f, cn);
     PyErr_SetString(PyExc_TypeError,
                     "consSmooth: can't find coordinates in array.");
     return NULL;
   }
   posx++; posy++; posz++;
 
-  PyObject* tpl = K_ARRAY::buildArray3(*f, varString, *cn, eltType, f->getApi());
-  FldArrayF* fo; FldArrayI* cno;
-  K_ARRAY::getFromArray3(array,fo, cno);
+  // Build output
+  PyObject* tpl = K_ARRAY::buildArray3(*f, varString, im, jm, km, f->getApi());
+  FldArrayF* fo;
+  K_ARRAY::getFromArray3(array, fo);
 
-  RELEASESHAREDU(array, f, cn); 
-  RELEASESHAREDU(tpl, fo, cno); 
+  RELEASESHAREDB(res, array, f, cn); 
+  RELEASESHAREDS(tpl, fo); 
   return tpl;
 }
