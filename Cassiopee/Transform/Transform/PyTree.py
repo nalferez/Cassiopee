@@ -147,15 +147,15 @@ def _symmetrize(a, point, vector1, vector2):
 symetrize = symmetrize
 _symetrize = _symmetrize
 
-def perturbate(a, radius, dim=3):
+def perturbate(a, radius, dim=3, relative=True):
     """Perturbate a mesh randomly of radius
     Usage: perturbate(a, radius, dim)"""
-    return C.TZA3(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim)
+    return C.TZA3(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim, relative)
 
-def _perturbate(a, radius, dim=3):
+def _perturbate(a, radius, dim=3, relative=True):
     """Perturbate a mesh randomly of radius
     Usage: perturbate(a, radius, dim)"""
-    return C._TZA3(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim)
+    return C._TZA3(a, 'nodes', 'nodes', False, Transform.perturbate, radius, dim, relative)
 
 def smoothField(t, eps=0.1, niter=1, type=0, varNames=[]):
     """Smooth given fields."""

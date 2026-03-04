@@ -30,9 +30,9 @@ using namespace K_FLD;
 PyObject* K_TRANSFORM::perturbate(PyObject* self, PyObject* args)
 {
   E_Float radius; PyObject* array;
-  E_Int dim;
-  if (!PYPARSETUPLE_(args, O_ R_ I_,
-                    &array, &radius, &dim))
+  E_Int dim; E_Int relative;
+  if (!PYPARSETUPLE_(args, O_ R_ II_,
+                    &array, &radius, &dim, &relative))
   {
     return NULL;
   }
@@ -65,34 +65,78 @@ PyObject* K_TRANSFORM::perturbate(PyObject* self, PyObject* args)
     }
     posx++; posy++; posz++;
 
-    E_Float* fx = f->begin(posx);
-    E_Float* fy = f->begin(posy);
-    E_Float* fz = f->begin(posz);
+    // Build array
+    PyObject* tpl = K_ARRAY::buildArray3(*f, varString, im, jm, km, api);
+    FldArrayF* fo;
+    K_ARRAY::getFromArray3(tpl, fo);
+
+    E_Float* fx = fo->begin(posx);
+    E_Float* fy = fo->begin(posy);
+    E_Float* fz = fo->begin(posz);
 
     // Random perturbation
     E_LONG idum = -1;
+    l = 1.;
+    
     // Boundaries are not modified
-    if (km == 2 || km == 1)
+    if (km == 1 && jm == 1) // 1D
+    {
+      for (E_Int i = 1; i < im-1; i++)
+      {
+        rx = K_NOISE::stdRand(&idum)-0.5;
+        ry = 0.; rz = 0.;
+        if (dim > 1) ry = K_NOISE::stdRand(&idum)-0.5;
+        if (dim > 2) rz = K_NOISE::stdRand(&idum)-0.5;
+
+        ind  = i;
+        if (relative)
+        {
+          indi = ind + 1;
+          rxi = fx[indi]-fx[ind];
+          ryi = fy[indi]-fy[ind];
+          rzi = fy[indi]-fy[ind];
+          l = rxi*rxi+ryi*ryi+rzi*rzi;
+          l = sqrt(l); 
+        }
+
+        fx[ind] += radius*rx*l;
+        fy[ind] += radius*ry*l;
+        fz[ind] += radius*rz*l;
+      }
+    }
+    else if (km == 2 || km == 1) // 2D
     {
       for (E_Int j = 1; j < jm-1; j++)
         for (E_Int i = 1; i < im-1; i++)
         {
-          rx = K_NOISE::stdRand(&idum);
+          rx = K_NOISE::stdRand(&idum)-0.5;
           ry = 0.; rz = 0.;
-          if (dim > 1) ry = K_NOISE::stdRand(&idum);
-          if (dim > 2) rz = K_NOISE::stdRand(&idum);
+          if (dim > 1) ry = K_NOISE::stdRand(&idum)-0.5;
+          if (dim > 2) rz = K_NOISE::stdRand(&idum)-0.5;
 
           for (E_Int k = 0; k < km; k++)
           {
-            ind  = i + j*im + k*im*jm;
-            indi = ind + 1;
-            indj = ind + im;
-            rxi = fx[indi]-fx[ind];
-            ryi = fy[indi]-fy[ind];
-            rxj = fx[indj]-fx[ind];
-            ryj = fy[indj]-fy[ind];
-            fx[ind] += radius*(rx*rxi+ry*rxj);
-            fy[ind] += radius*(rx*ryi+ry*ryj);
+            ind = i + j*im + k*im*jm;
+            if (relative)
+            {
+              indi = ind + 1;
+              indj = ind + im;
+
+              rxi = fx[indi]-fx[ind];
+              ryi = fy[indi]-fy[ind];
+              rzi = fz[indi]-fz[ind];
+              
+              rxj = fx[indj]-fx[ind];
+              ryj = fy[indj]-fy[ind];
+              rzj = fz[indj]-fz[ind];
+              
+              l = rxi*rxi+ryi*ryi+rzi*rzi;
+              l = K_FUNC::E_min(l, rxj*rxj+ryj*ryj+rzj*rzj);
+              l = sqrt(l);
+            }
+            fx[ind] += radius*rx*l;
+            fy[ind] += radius*ry*l;
+            fz[ind] += radius*rz*l;
           }
         }
     }
@@ -108,30 +152,37 @@ PyObject* K_TRANSFORM::perturbate(PyObject* self, PyObject* args)
             if (dim > 2) rz = K_NOISE::stdRand(&idum)-0.5;
 
             ind = i + j*im + k*im*jm;
-            indi = i+1 + j*im + k*im*jm;
-            indj = i + (j+1)*im + k*im*jm;
-            indk = i + j*im + (k+1)*im*jm;
-            rxi = fx[indi]-fx[ind];
-            ryi = fy[indi]-fy[ind];
-            rzi = fz[indi]-fz[ind];
+            if (relative)
+            {
+              indi = i+1 + j*im + k*im*jm;
+              indj = i + (j+1)*im + k*im*jm;
+              indk = i + j*im + (k+1)*im*jm;
+              rxi = fx[indi]-fx[ind];
+              ryi = fy[indi]-fy[ind];
+              rzi = fz[indi]-fz[ind];
 
-            rxj = fx[indj]-fx[ind];
-            ryj = fy[indj]-fy[ind];
-            rzj = fz[indj]-fz[ind];
+              rxj = fx[indj]-fx[ind];
+              ryj = fy[indj]-fy[ind];
+              rzj = fz[indj]-fz[ind];
 
-            rxk = fx[indk]-fx[ind];
-            ryk = fy[indk]-fy[ind];
-            rzk = fz[indk]-fz[ind];
+              rxk = fx[indk]-fx[ind];
+              ryk = fy[indk]-fy[ind];
+              rzk = fz[indk]-fz[ind];
 
-            fx[ind] += radius*(rx*rxi+ry*rxj+rz*rxk);
-            fy[ind] += radius*(rx*ryi+ry*ryj+rz*ryk);
-            fz[ind] += radius*(rx*rzi+ry*rzj+rz*rzk);
+              l = rxi*rxi+ryi*ryi+rzi*rzi;
+              l = K_FUNC::E_min(l, rxj*rxj+ryj*ryj+rzj*rzj);
+              l = K_FUNC::E_min(l, rxk*rxk+ryk*ryk+rzk*rzk);
+              l = sqrt(l);
+            }
+
+            fx[ind] += radius*rx*l;
+            fy[ind] += radius*ry*l;
+            fz[ind] += radius*rz*l;
           }
     }
 
-    // Build array
-    PyObject* tpl = K_ARRAY::buildArray3(*f, varString, im, jm, km, api);
     RELEASESHAREDS(array, f);
+    RELEASESHAREDS(tpl, fo);
     return tpl;
   }
   else if (res == 2)
@@ -148,13 +199,18 @@ PyObject* K_TRANSFORM::perturbate(PyObject* self, PyObject* args)
     }
     posx++; posy++; posz++;
 
-    E_Float* fx = f->begin(posx);
-    E_Float* fy = f->begin(posy);
-    E_Float* fz = f->begin(posz);
+    // Build array
+    PyObject* tpl = K_ARRAY::buildArray3(*f, varString, *cn, eltType, api);
+    FldArrayF* fo; FldArrayI* cno;
+    K_ARRAY::getFromArray3(tpl, fo, cno);
+
+    E_Float* fx = fo->begin(posx);
+    E_Float* fy = fo->begin(posy);
+    E_Float* fz = fo->begin(posz);
 
     // Random perturbation
     E_LONG idum = -1;
-
+    l = 1.;
     E_Int npts = f->getSize();
     vector< vector<E_Int> > cVN(npts);
     if (strcmp(eltType, "NGON") == 0) K_CONNECT::connectNG2VNbrs(*cn, cVN);
@@ -163,29 +219,31 @@ PyObject* K_TRANSFORM::perturbate(PyObject* self, PyObject* args)
 
     for (E_Int i = 0; i < npts; i++)
     {
-      rx = K_NOISE::stdRand(&idum);
+      rx = K_NOISE::stdRand(&idum)-0.5;
       ry = 0.; rz = 0.;
-      if (dim > 1) ry = K_NOISE::stdRand(&idum);
-      if (dim > 2) rz = K_NOISE::stdRand(&idum);
-      vector<E_Int>& pt = cVN[i];
-      l = 1.e6;
-      for (size_t j = 0; j < pt.size(); j++)
+      if (dim > 1) ry = K_NOISE::stdRand(&idum)-0.5;
+      if (dim > 2) rz = K_NOISE::stdRand(&idum)-0.5;
+      if (relative)
       {
-        ind = pt[j]-1;
-        lx = fx[i] - fx[ind];
-        ly = fy[i] - fy[ind];
-        lz = fz[i] - fz[ind];
-        l = std::min(l, lx*lx+ly*ly+lz*lz);
+        vector<E_Int>& pt = cVN[i];
+        l = 1.e6;
+        for (size_t j = 0; j < pt.size(); j++)
+        {
+          ind = pt[j]-1;
+          lx = fx[i] - fx[ind];
+          ly = fy[i] - fy[ind];
+          lz = fz[i] - fz[ind];
+          l = K_FUNC::E_min(l, lx*lx+ly*ly+lz*lz);
+        }
+        l = sqrt(l);
       }
-      l = sqrt(l);
       fx[i] += radius*rx*l;
       fy[i] += radius*ry*l;
       fz[i] += radius*rz*l;
     }
 
-    // Build array
-    PyObject* tpl = K_ARRAY::buildArray3(*f, varString, *cn, eltType, api);
     RELEASESHAREDU(array, f, cn);
+    RELEASESHAREDU(tpl, fo, cno);
     return tpl;
   }
   else

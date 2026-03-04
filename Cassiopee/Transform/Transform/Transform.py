@@ -311,16 +311,16 @@ def _symmetrize(a, point, vector1, vector2):
 symetrize = symmetrize
 _symetrize = _symmetrize
 
-def perturbate(a, radius, dim=3):
+def perturbate(a, radius, dim=3, relative=True):
     """Perturbate a mesh randomly of radius
-    Usage: perturbate(a, radius, dim)"""
+    Usage: perturbate(a, radius, dim, relative)"""
     if isinstance(a[0], list):
         b = []
         for i in a:
-            b.append(transform.perturbate(i, radius, dim))
+            b.append(transform.perturbate(i, radius, dim, relative))
         return b
     else:
-        return transform.perturbate(a, radius, dim)
+        return transform.perturbate(a, radius, dim, relative)
 
 
 def smoothField(a, eps=0.1, niter=1, type=0, varNames=[]):

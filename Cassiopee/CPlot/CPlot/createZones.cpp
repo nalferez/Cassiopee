@@ -571,7 +571,7 @@ UnstructZone* Data::createUnstrZone(FldArrayF* unstrF, char* varString,
 
   for (size_t i = 0; i < eltTypes.size(); i++) delete [] eltTypes[i];
   
-  // copie par access universel
+  // copie par acces universel
   if (z.eltType[0] == 10) // NGON
   {
     E_Int nfaces = cn->getNFaces();
@@ -610,7 +610,7 @@ UnstructZone* Data::createUnstrZone(FldArrayF* unstrF, char* varString,
       znp += size+1;
     }
   }
-  else // BE
+  else // ME
   {
     E_Int ncon = cn->getNConnect();
     E_Int neTot = 0;

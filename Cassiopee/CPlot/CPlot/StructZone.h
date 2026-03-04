@@ -31,7 +31,7 @@ class StructZone : public Zone
     void compNorm();
       
   public:
-    E_Int ni, nj, nk;                  // number of points
+    E_Int ni, nj, nk; // number of points
  
     E_Int activePlane; // not used, i=0, j=1, k=2
     // In 2D or 3D mode, CPlot displays 3 2D planes (i=cste, j=cste, k=cste)

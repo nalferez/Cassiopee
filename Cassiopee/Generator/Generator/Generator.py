@@ -2462,17 +2462,17 @@ def getMeshFieldInfo__(array, field, critValue, verbose):
     for cpt, m in enumerate(array):
         f = DictFunction[field](m)[1]
 
-        size_loc  = numpy.size(f)
+        size_loc = numpy.size(f)
         fcrit_loc = numpy.count_nonzero(f<critValue) if field == 'vol' else numpy.count_nonzero(f>critValue)
-        fmin_loc  = numpy.min(f)
-        fmax_loc  = numpy.max(f)
-        fsum_loc  = numpy.sum(f)
+        fmin_loc = numpy.min(f)
+        fmax_loc = numpy.max(f)
+        fsum_loc = numpy.sum(f)
 
-        fmin   = min(fmin_loc, fmin)
-        fmax   = max(fmax_loc, fmax)
-        fsum  += fsum_loc
+        fmin = min(fmin_loc, fmin)
+        fmax = max(fmax_loc, fmax)
+        fsum += fsum_loc
         fcrit += fcrit_loc
-        size  += size_loc
+        size += size_loc
 
         if verbose == 2 or (verbose == 1 and fcrit_loc > 0):
             print(info%(field.upper(),fmin_loc,fmax_loc,fsum_loc/float(size_loc),field,'<' if field == 'vol' else '>',critValue,fcrit_loc,size_loc,fcrit_loc/float(size_loc)*100,"Zone %d"%(cpt)))

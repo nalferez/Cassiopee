@@ -236,7 +236,7 @@ def createDragonMesh0(body, dictOfParams={}, check=False, directory_tmp_files='.
         sexts = P.exteriorFaces(s2)
         sexts = T.splitConnexity(sexts)
         for sext in sexts:
-            sext = G.tetraMesher(sext, grading=1.1, maxh=0.5*snear, algo=1)
+            sext = G.tetraMesher(sext, grading=2., maxh=0.5*snear, algo=1)
             s2.append(sext)
 
     # Blanking with delta surface
@@ -318,14 +318,14 @@ def createDragonMesh0(body, dictOfParams={}, check=False, directory_tmp_files='.
             if abs(slineloc - locmin)<eps: surfsmin.append(slines[i])
             if abs(slineloc - locmax)<eps: surfsmax.append(slines[i])
 
-        surfsym1 = G.tetraMesher(surfsmin, grading=1.1, maxh=0.5*snear, algo=1)
+        surfsym1 = G.tetraMesher(surfsmin, grading=2., maxh=0.5*snear, algo=1)
         s_in += [surfsym1]
         if nbsyms == 2:
-            surfsym2 = G.tetraMesher(surfsmax, grading=1.1, maxh=0.5*snear, algo=1)
+            surfsym2 = G.tetraMesher(surfsmax, grading=2., maxh=0.5*snear, algo=1)
             s_in += [surfsym2]
 
     s_in = T.join(s_in); s_in = XOR.conformUnstr(s_in, tol=0., itermax=1); T._reorderAll(s_in,dir=1)
-    m = G.tetraMesher([s_in], grading=1.1, maxh=0.5*snear, algo=1)
+    m = G.tetraMesher([s_in], grading=2., maxh=0.5*snear, algo=1)
     m = C.convertArray2NGon(m)
     if check: C.convertPyTree2File(m, directory_tmp_files+'tetra1.cgns')
 
