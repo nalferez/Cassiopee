@@ -89,6 +89,8 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
 
         'OCC/Atomic/fix.cpp',
         'OCC/Atomic/sewing.cpp',
+        'OCC/Atomic/reverse.cpp',
+        
         'OCC/Atomic/removeFaces.cpp',
         'OCC/Atomic/fillHole.cpp',
         'OCC/Atomic/addFillet.cpp',

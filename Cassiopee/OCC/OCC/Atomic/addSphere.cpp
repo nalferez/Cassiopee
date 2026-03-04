@@ -33,8 +33,11 @@
 PyObject* K_OCC::addSphere(PyObject* self, PyObject* args)
 {
   PyObject* hook; E_Float xc, yc, zc, R;
+  E_Int reverse;
   char* name;
-  if (!PYPARSETUPLE_(args, O_ TRRR_ R_ S_, &hook, &xc, &yc, &zc, &R, &name)) return NULL;
+  if (!PYPARSETUPLE_(args, O_ TRRR_ R_ I_ S_, 
+    &hook, &xc, &yc, &zc, &R, 
+    &reverse, &name)) return NULL;
 
   GETPACKET;
   GETSHAPE;
@@ -43,6 +46,8 @@ PyObject* K_OCC::addSphere(PyObject* self, PyObject* args)
   gp_Pnt center(xc, yc, zc);
   BRepPrimAPI_MakeSphere makerSphere(center, R);
   TopoDS_Shape sphere = makerSphere.Shape();
+
+  if (reverse == 1) sphere = sphere.Reversed();
 
 #ifdef USEXCAF
 

@@ -22,7 +22,7 @@ __all__ = ['convertCAD2Arrays',
            'getNbEdges', 'getNbFaces', 'getFileAndFormat',
            'printOCAF', 'getFaceNameInOCAF', 'getEdgeNameInOCAF',
            'getFaceNos', 'getEdgeNos', 'getFaceArea', 'getBoundingBox',
-           '_translate', '_rotate', '_scale', '_sewing',
+           '_translate', '_rotate', '_scale', '_sewing', '_reverse',
 
            '_splitFaces', '_mergeFaces', '_trimFaces', '_removeFaces',
            '_fillHole', '_addFillet', '_offset', 'mergeCAD', '_mergeCAD',
@@ -901,9 +901,9 @@ def _addSpline(hook, Points, method, degree, name='spline'):
     occ.addSpline(hook, Points, method, degree, name)
     return None
 
-def _addBox(hook, P0, width, height, depth, name='box'):
+def _addBox(hook, P0, width, height, depth, reverse=False, name='box'):
     """Add a box to hook."""
-    occ.addBox(hook, P0, width, height, depth, name)
+    occ.addBox(hook, P0, width, height, depth, reverse, name)
     return None
 
 def _addBox2(hook, P1, P2, P3, P4, P5, P6, P7, P8, name='box2'):
@@ -911,9 +911,9 @@ def _addBox2(hook, P1, P2, P3, P4, P5, P6, P7, P8, name='box2'):
     occ.addBox2(hook, P1, P2, P3, P4, P5, P6, P7, P8, name)
     return None
 
-def _addSphere(hook, C, R, name='sphere'):
+def _addSphere(hook, C, R, reverse=False, name='sphere'):
     """Add a sphere to hook."""
-    occ.addSphere(hook, C, R, name)
+    occ.addSphere(hook, C, R, reverse, name)
     return None
 
 def _addCylinder(hook, C, axis, R, H, name='cylinder'):
@@ -948,13 +948,13 @@ def _addDomain(hook, dfar=10., type="box", plane=None):
     if type == "sphere":
         P0 = ((bb[3]+bb[0])*0.5, (bb[4]+bb[1])*0.5, (bb[5]+bb[2])*0.5)
         R = max(dfarx, dfary, dfarz)
-        _addSphere(hook, P0, R)
+        _addSphere(hook, P0, R, reverse=True)
     elif type == "box":
         P0 = (bb[0]-dfarx,bb[1]-dfary,bb[2]-dfarz)
         width = bb[3]-bb[0]+2*dfarx
         height = bb[4]-bb[1]+2*dfary
         depth = bb[5]-bb[2]+2*dfarz
-        _addBox(hook, P0, width, height, depth)
+        _addBox(hook, P0, width, height, depth, reverse=True)
     elif type == "half-sphere":
         if plane is None:
             raise ValueError('addDomain: requires plane for half-sphere.')
@@ -1082,6 +1082,13 @@ def _sewing(hook, tol=1.e-6, faceList=None):
     """Sew some faces (suppress redundant edges)."""
     faceList = getFaceList__(hook, faceList)
     occ.sewing(hook, tol, faceList)
+    return None
+
+# reverse a set of faces
+def _reverse(hook, faceList=None):
+    """Reverse some faces."""
+    faceList = getFaceList__(hook, faceList)
+    occ.reverse(hook, faceList)
     return None
 
 # add fillet from edges with given radius
