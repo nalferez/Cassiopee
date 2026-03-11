@@ -2,6 +2,7 @@
 a whitelist of approved modules and classes."""
 import pickle
 import importlib
+import io
 
 class RestrictedUnpickler(pickle.Unpickler):
     SAFE_GLOBALS = {
@@ -23,3 +24,6 @@ class RestrictedUnpickler(pickle.Unpickler):
 
 def restrictedPickleLoad(file, encoding="ASCII", errors="strict"):
     return RestrictedUnpickler(file, encoding=encoding, errors=errors).load()
+
+def restrictedPickleLoads(data):
+    return RestrictedUnpickler(io.BytesIO(data)).load()
