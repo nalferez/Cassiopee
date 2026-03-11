@@ -236,7 +236,7 @@ def createDragonMesh0(body, dictOfParams={}, check=False, directory_tmp_files='.
         sexts = P.exteriorFaces(s2)
         sexts = T.splitConnexity(sexts)
         for sext in sexts:
-            sext = G.tetraMesher(sext, grading=2., maxh=0.5*snear, algo=1)
+            sext = G.tetraMesher(sext, quality=2., maxh=0.5*snear, algo=1)
             s2.append(sext)
 
     # Blanking with delta surface
@@ -318,14 +318,14 @@ def createDragonMesh0(body, dictOfParams={}, check=False, directory_tmp_files='.
             if abs(slineloc - locmin)<eps: surfsmin.append(slines[i])
             if abs(slineloc - locmax)<eps: surfsmax.append(slines[i])
 
-        surfsym1 = G.tetraMesher(surfsmin, grading=2., maxh=0.5*snear, algo=1)
+        surfsym1 = G.tetraMesher(surfsmin, quality=2., maxh=0.5*snear, algo=1)
         s_in += [surfsym1]
         if nbsyms == 2:
-            surfsym2 = G.tetraMesher(surfsmax, grading=2., maxh=0.5*snear, algo=1)
+            surfsym2 = G.tetraMesher(surfsmax, quality=2., maxh=0.5*snear, algo=1)
             s_in += [surfsym2]
 
     s_in = T.join(s_in); s_in = XOR.conformUnstr(s_in, tol=0., itermax=1); T._reorderAll(s_in,dir=1)
-    m = G.tetraMesher([s_in], grading=2., maxh=0.5*snear, algo=1)
+    m = G.tetraMesher([s_in], quality=2., maxh=0.5*snear, algo=1)
     m = C.convertArray2NGon(m)
     if check: C.convertPyTree2File(m, directory_tmp_files+'tetra1.cgns')
 
@@ -337,14 +337,14 @@ def createDragonMesh0(body, dictOfParams={}, check=False, directory_tmp_files='.
     if nbsyms == 1:
         t = P.selectCells(t, '{Coordinate%s}>%f'%(sym,Locsyms[0]), strict=0)
 
-    Internal._rmNodesByName(t,'FlowSolution*')
-    if check: C.convertPyTree2File(t,directory_tmp_files+'tmp.cgns')
+    Internal._rmNodesByName(t, 'FlowSolution*')
+    if check: C.convertPyTree2File(t, directory_tmp_files+'tmp.cgns')
     m = T.join(m, t)
     G._close(m)
     #print(Internal.getZoneDim(m))
 
     m = XOR.closeCells(m)
-    err = XOR.checkCellsClosure(m);print("CheckCellsClosure status : %d"%(err))
+    err = XOR.checkCellsClosure(m); print("CheckCellsClosure status : %d"%(err))
     if check: C.convertPyTree2File(m, directory_tmp_files+'meshOut.cgns')
 
     # Creation des BCs
@@ -428,13 +428,13 @@ def createDragonMeshForBladeInChannel(ts, dictOfParams={}, check=False, director
         raise("ValueError: no base/zone of name HUB found.")
         return None
 
-    surf_shroud = Internal.getNodeFromName2(ts,"SHROUD")
-    if surf_shroud is None or surf_shroud==[]:
+    surf_shroud = Internal.getNodeFromName2(ts, "SHROUD")
+    if surf_shroud is None or surf_shroud == []:
         raise("ValueError: no base/zone of name SHROUD found.")
         return None
 
     surf_blade = Internal.getNodeFromName2(ts,'BLADE')
-    if surf_blade is None or surf_blade==[]:
+    if surf_blade is None or surf_blade == []:
         raise("ValueError: no base/zone of name BLADE found.")
         return None
 
@@ -664,7 +664,7 @@ def createDragonMeshForBladeInChannel(ts, dictOfParams={}, check=False, director
         surfs = C.convertArray2Tetra(surfs_wall,split='withBarycenters')
 
         surfs = T.join(surfs); surfs = T.reorderAll(surfs)
-        mesh_final = G.tetraMesher(surfs, grading=2.)
+        mesh_final = G.tetraMesher(surfs, quality=2.)
         npts = Internal.getZoneDim(mesh_final)[1]
         if npts == 0:
             raise ValueError("createDragonMesh: tetraMesher failed. Please check input data.")
@@ -921,7 +921,7 @@ def createInternalTetraMesh__(ext_TRI, ts, hext):
     surfs = Internal.getZones(ZONES)+Internal.getZones(ext_TRI)
     surfs = T.join(surfs)
     surfs = T.reorder(surfs,(1,))
-    tetMesh = G.tetraMesher(surfs, grading=2.)
+    tetMesh = G.tetraMesher(surfs, quality=2.)
     return tetMesh
 
 def remapSurf__(z, hmin=1e-6, dir=1):
@@ -1065,7 +1065,7 @@ def generateTriMeshBetweenContours__(lineb, surfp, hmin=1e-6,remeshBorders=False
     Internal._rmNodesFromName(line_ext0, 'FlowSol*')
 
     contour = T.join([line_ext0,line_ext])
-    tri_ext = G.tetraMesher(contour, grading=2.)
+    tri_ext = G.tetraMesher(contour, quality=2.)
 
     # check qu on a bien triangule la zone entre les deux ??
     # par distance des frontieres exterieures aux lignes en entree
@@ -1077,7 +1077,7 @@ def generateTriMeshBetweenContours__(lineb, surfp, hmin=1e-6,remeshBorders=False
         Internal._rmNodesFromName(line_ext, 'FlowSol*')
 
         contour = T.join([line_ext0,line_ext])
-        tri_ext = G.tetraMesher(contour, grading=2.)
+        tri_ext = G.tetraMesher(contour, quality=2.)
 
     # projection sur la surface de depart...
     #...sans bouger les frontieres...

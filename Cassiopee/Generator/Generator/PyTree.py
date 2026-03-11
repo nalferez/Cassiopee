@@ -444,10 +444,10 @@ def T3mesher2D(a, grading=1.2, triangulateOnly=0, metricInterpType=0):
     c = Generator.T3mesher2D(c, grading, triangulateOnly, metricInterpType)
     return C.convertArrays2ZoneNode('tri', [c])
 
-def tetraMesher(a, maxh=-1., grading=1.1, triangulateOnly=0,
+def tetraMesher(a, maxh=-1., quality=1.2, grading=1.2, triangulateOnly=0,
                 remeshBoundaries=0, algo=1, optionString="", recoverBC=False):
     """Create a TRI/TETRA mesh given a set of BAR or surfaces in a.
-    Usage: tetraMesher(a, fineness, grading)"""
+    Usage: tetraMesher(a, ...)"""
     if recoverBC:
         zbcs=[]; bcnames=[]; bctypes=[]
         for z in Internal.getZones(a):
@@ -455,7 +455,7 @@ def tetraMesher(a, maxh=-1., grading=1.1, triangulateOnly=0,
             zbcs += b[0]; bcnames += b[1]; bctypes += b[2]
         gbcs = (zbcs, bcnames, bctypes)
     c = C.getFields('coords', a, api=1)
-    c = Generator.tetraMesher(c, maxh, grading, triangulateOnly,
+    c = Generator.tetraMesher(c, maxh, quality, grading, triangulateOnly,
                               remeshBoundaries, algo, optionString)
     z = C.convertArrays2ZoneNode('mesh', [c])
     if recoverBC: C._recoverBCs(z, gbcs)

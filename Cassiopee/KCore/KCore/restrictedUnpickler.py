@@ -10,7 +10,9 @@ class RestrictedUnpickler(pickle.Unpickler):
         "collections": {"OrderedDict"},
         "numpy": {"dtype"},
         "numpy.core.multiarray": {"_reconstruct", "scalar"},
-        "numpy.core.numeric": {"_frombuffer"}
+        "numpy.core.numeric": {"_frombuffer"},
+        "numpy._core.multiarray": {"_reconstruct", "scalar"},
+        "numpy._core.numeric": {"_frombuffer"}
     }
 
     def __init__(self, file, *, encoding="ASCII", errors="strict"):

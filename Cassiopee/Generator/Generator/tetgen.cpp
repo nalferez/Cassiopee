@@ -30,12 +30,12 @@ jmp_buf __env__;
 PyObject* K_GENERATOR::tetgen(PyObject* self, PyObject* args)
 {
   PyObject* array;
-  E_Float grading, maxh;
+  E_Float quality, maxh;
   E_Int remeshBoundaries;
   char* optionString;
   PyObject* holes; // coord. d'un point a l'interieur
   if (!PYPARSETUPLE_(args, O_ RR_ I_ O_ S_, 
-                    &array, &maxh, &grading, &remeshBoundaries, &holes, &optionString))
+                    &array, &maxh, &quality, &remeshBoundaries, &holes, &optionString))
     return NULL;
 
   // ambiguite sur maxh (max volume ou volume impose?)
@@ -109,7 +109,7 @@ PyObject* K_GENERATOR::tetgen(PyObject* self, PyObject* args)
   else // create option string for meshing wihout remeshing boundaries with grading
   {
     char opt[512]; char loc[256];
-    sprintf(opt, "pq%g", grading);
+    sprintf(opt, "pq%g", quality);
     if (remeshBoundaries == 0)
     {
       strcpy(loc, "Y0");
@@ -135,7 +135,7 @@ PyObject* K_GENERATOR::tetgen(PyObject* self, PyObject* args)
     // Ajoute des pts pour la qualite
     b.quality = 1; // -q (ajoute de points)
 
-    //b.minratio = 1.2; // radius-edge ratio >= 0.612 - better control on aspect ratio
+    //b.minratio = quality; // radius-edge ratio >= 0.612 - better control on aspect ratio
     
     //b.diagnose = 1;
 

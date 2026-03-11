@@ -257,7 +257,7 @@ PyObject* K_GENERATOR::getOrthogonalityMap(PyObject* self, PyObject* args)
               ( K_FUNC::fEqualZero(d3,eps) == true ))
           {
             // degenerated element
-            alphamax[et]= 120.; // 180. - 60.
+            alphamax[et] = 120.; // 180. - 60.
           }
           else
           {
