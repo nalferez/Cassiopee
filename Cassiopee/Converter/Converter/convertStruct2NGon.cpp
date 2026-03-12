@@ -31,7 +31,11 @@ PyObject* K_CONVERTER::convertStruct2NGon(PyObject* self, PyObject* args)
 {
   PyObject* array;
   E_Int ngonType = 1;
-  if (!PYPARSETUPLE_(args, O_ I_, &array, &ngonType)) return NULL;
+  PyObject* indices = NULL;
+  if (!PYPARSETUPLE_(args, OO_ I_, &array, &indices, &ngonType)) return NULL;
+
+  E_Bool exportIndirPts = false;
+  if (indices != Py_None) exportIndirPts = true;
 
   // Check array
   E_Int ni, nj, nk, res;
@@ -388,10 +392,20 @@ PyObject* K_CONVERTER::convertStruct2NGon(PyObject* self, PyObject* args)
       varString, *f2, *cn2, "NGON", tol,
       rmOverlappingPts, rmOrphanPts,
       rmDuplicatedFaces, rmDuplicatedElts,
-      rmDegeneratedFaces, rmDegeneratedElts
+      rmDegeneratedFaces, rmDegeneratedElts,
+      exportIndirPts
   );
   
   RELEASESHAREDU(tpl, f2, cn2);
   Py_DECREF(tpl);
+  if (exportIndirPts)
+  {
+    PyObject* vmap = PyTuple_GetItem(tplClean, 1);
+    PyList_Append(indices, vmap);
+    PyObject* o = PyTuple_GetItem(tplClean, 0);
+    Py_INCREF(o);
+    Py_DECREF(tplClean);
+    return o;
+  }
   return tplClean;
 }
