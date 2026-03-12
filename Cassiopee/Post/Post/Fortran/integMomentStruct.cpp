@@ -169,70 +169,68 @@ void K_POST::integMomentStructNodeCenter2D(const E_Int ni, const E_Int nj,
     E_Int it = 3*__CURRENT_THREAD__;
     reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
 
-    #pragma omp for
+    #pragma omp for collapse(2)
     for (E_Int j = 0; j < nj - 1; j++)
+    for (E_Int i = 0; i < ni - 1; i++)
     {
-      for (E_Int i = 0; i < ni - 1; i++)
-      {
-        ind1 = i + j*ni;
-        ind2 = ind1 + ni;
-        ind3 = ind1 + 1;
-        ind4 = ind3 + ni;
-        ind = i + j*ni1;
+      ind1 = i + j*ni;
+      ind2 = ind1 + ni;
+      ind3 = ind1 + 1;
+      ind4 = ind3 + ni;
+      ind = i + j*ni1;
 
-        rind = ratio[ind1];
-        dx = xt[ind1] - cx;
-        dy = yt[ind1] - cy;
-        dz = zt[ind1] - cz;
+      rind = ratio[ind1];
+      dx = xt[ind1] - cx;
+      dy = yt[ind1] - cy;
+      dz = zt[ind1] - cz;
 
-        f1x = rind * vx[ind1];
-        f1y = rind * vy[ind1];
-        f1z = rind * vz[ind1];
-        m1x = dy * f1z - dz * f1y;
-        m1y = dz * f1x - dx * f1z;
-        m1z = dx * f1y - dy * f1x;
+      f1x = rind * vx[ind1];
+      f1y = rind * vy[ind1];
+      f1z = rind * vz[ind1];
+      m1x = dy * f1z - dz * f1y;
+      m1y = dz * f1x - dx * f1z;
+      m1z = dx * f1y - dy * f1x;
 
-        rind = ratio[ind2];
-        dx = xt[ind2] - cx;
-        dy = yt[ind2] - cy;
-        dz = zt[ind2] - cz;
+      rind = ratio[ind2];
+      dx = xt[ind2] - cx;
+      dy = yt[ind2] - cy;
+      dz = zt[ind2] - cz;
 
-        f2x = rind * vx[ind2];
-        f2y = rind * vy[ind2];
-        f2z = rind * vz[ind2];
-        m2x = dy * f2z - dz * f2y;
-        m2y = dz * f2x - dx * f2z;
-        m2z = dx * f2y - dy * f2x;
+      f2x = rind * vx[ind2];
+      f2y = rind * vy[ind2];
+      f2z = rind * vz[ind2];
+      m2x = dy * f2z - dz * f2y;
+      m2y = dz * f2x - dx * f2z;
+      m2z = dx * f2y - dy * f2x;
 
-        rind = ratio[ind3];
-        dx = xt[ind3] - cx;
-        dy = yt[ind3] - cy;
-        dz = zt[ind3] - cz;
+      rind = ratio[ind3];
+      dx = xt[ind3] - cx;
+      dy = yt[ind3] - cy;
+      dz = zt[ind3] - cz;
 
-        f3x = rind * vx[ind3];
-        f3y = rind * vy[ind3];
-        f3z = rind * vz[ind3];
-        m3x = dy * f3z - dz * f3y;
-        m3y = dz * f3x - dx * f3z;
-        m3z = dx * f3y - dy * f3x;
+      f3x = rind * vx[ind3];
+      f3y = rind * vy[ind3];
+      f3z = rind * vz[ind3];
+      m3x = dy * f3z - dz * f3y;
+      m3y = dz * f3x - dx * f3z;
+      m3z = dx * f3y - dy * f3x;
 
-        rind = ratio[ind4];
-        dx = xt[ind4] - cx;
-        dy = yt[ind4] - cy;
-        dz = zt[ind4] - cz;
+      rind = ratio[ind4];
+      dx = xt[ind4] - cx;
+      dy = yt[ind4] - cy;
+      dz = zt[ind4] - cz;
 
-        f4x = rind * vx[ind4];
-        f4y = rind * vy[ind4];
-        f4z = rind * vz[ind4];
-        m4x = dy * f4z - dz * f4y;
-        m4y = dz * f4x - dx * f4z;
-        m4z = dx * f4y - dy * f4x;
+      f4x = rind * vx[ind4];
+      f4y = rind * vy[ind4];
+      f4z = rind * vz[ind4];
+      m4x = dy * f4z - dz * f4y;
+      m4y = dz * f4x - dx * f4z;
+      m4z = dx * f4y - dy * f4x;
 
-        sind = surf[ind];
-        reti[it] += sind * (m1x + m2x + m3x + m4x);
-        reti[it+1] += sind * (m1y + m2y + m3y + m4y);
-        reti[it+2] += sind * (m1z + m2z + m3z + m4z);
-      }
+      sind = surf[ind];
+      reti[it] += sind * (m1x + m2x + m3x + m4x);
+      reti[it+1] += sind * (m1y + m2y + m3y + m4y);
+      reti[it+2] += sind * (m1z + m2z + m3z + m4z);
     }
   }
 
@@ -341,36 +339,34 @@ void K_POST::integMomentStructCellCenter2D(const E_Int ni, const E_Int nj,
     E_Int it = 3*__CURRENT_THREAD__;
     reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
 
-    #pragma omp for
+    #pragma omp for collapse(2)
     for (E_Int j = 0; j < nj - 1; j++)
+    for (E_Int i = 0; i < ni - 1; i++)
     {
-      for (E_Int i = 0; i < ni - 1; i++)
-      {
-        ind1 = i + j * ni;
-        ind2 = ind1 + ni;
-        ind3 = ind1 + 1;
-        ind4 = ind2 + 1;
-        ind = i + j*ni1;
+      ind1 = i + j * ni;
+      ind2 = ind1 + ni;
+      ind3 = ind1 + 1;
+      ind4 = ind2 + 1;
+      ind = i + j*ni1;
 
-        srind = surf[ind]*ratio[ind];
-        
-        centerx = xt[ind1] + xt[ind2] + xt[ind3] + xt[ind4];
-        centerx = 0.25 * centerx - cx;
+      srind = surf[ind]*ratio[ind];
+      
+      centerx = xt[ind1] + xt[ind2] + xt[ind3] + xt[ind4];
+      centerx = 0.25 * centerx - cx;
 
-        centery = yt[ind1] + yt[ind2] + yt[ind3] + yt[ind4];
-        centery = 0.25 * centery - cy;
+      centery = yt[ind1] + yt[ind2] + yt[ind3] + yt[ind4];
+      centery = 0.25 * centery - cy;
 
-        centerz = zt[ind1] + zt[ind2] + zt[ind3] + zt[ind4];
-        centerz = 0.25 * centerz - cz;
+      centerz = zt[ind1] + zt[ind2] + zt[ind3] + zt[ind4];
+      centerz = 0.25 * centerz - cz;
 
-        mx = centery * vz[ind] - centerz * vy[ind];
-        my = centerz * vx[ind] - centerx * vz[ind];
-        mz = centerx * vy[ind] - centery * vx[ind];
+      mx = centery * vz[ind] - centerz * vy[ind];
+      my = centerz * vx[ind] - centerx * vz[ind];
+      mz = centerx * vy[ind] - centery * vx[ind];
 
-        reti[it] += srind * mx;
-        reti[it+1] += srind * my;
-        reti[it+2] += srind * mz;
-      }
+      reti[it] += srind * mx;
+      reti[it+1] += srind * my;
+      reti[it+2] += srind * mz;
     }
   }
 

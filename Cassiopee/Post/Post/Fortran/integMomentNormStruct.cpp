@@ -117,45 +117,43 @@ void K_POST::integMomentNormStructNodeCenter2D(
     E_Int it = 3*__CURRENT_THREAD__;
     reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
 
-    #pragma omp for
+    #pragma omp for collapse(2)
     for (E_Int j = 0; j < nj - 1; j++)
+    for (E_Int i = 0; i < ni - 1; i++)
     {
-      for (E_Int i = 0; i < ni - 1; i++)
-      {
-        ind1 = i + j * ni;
-        ind2 = ind1 + ni;
-        ind3 = ind1 + 1;
-        ind4 = ind3 + ni;
-        ind = i + j * ni1;
+      ind1 = i + j * ni;
+      ind2 = ind1 + ni;
+      ind3 = ind1 + 1;
+      ind4 = ind3 + ni;
+      ind = i + j * ni1;
 
-        f1 = ratio[ind1] * field[ind1];
-        f2 = ratio[ind2] * field[ind2];
-        f3 = ratio[ind3] * field[ind3];
-        f4 = ratio[ind4] * field[ind4];
+      f1 = ratio[ind1] * field[ind1];
+      f2 = ratio[ind2] * field[ind2];
+      f3 = ratio[ind3] * field[ind3];
+      f4 = ratio[ind4] * field[ind4];
 
-        f = 0.25 * (f1 + f2 + f3 + f4);
+      f = 0.25 * (f1 + f2 + f3 + f4);
 
-        sx0 = sx[ind];
-        sy0 = sy[ind];
-        sz0 = sz[ind];
+      sx0 = sx[ind];
+      sy0 = sy[ind];
+      sz0 = sz[ind];
 
-        centerx = 0.25 * (xt[ind1] + xt[ind2] + xt[ind3] + xt[ind4]);
-        centerx = centerx - cx;
+      centerx = 0.25 * (xt[ind1] + xt[ind2] + xt[ind3] + xt[ind4]);
+      centerx = centerx - cx;
 
-        centery = 0.25 * (yt[ind1] + yt[ind2] + yt[ind3] + yt[ind4]);
-        centery = centery - cy;
+      centery = 0.25 * (yt[ind1] + yt[ind2] + yt[ind3] + yt[ind4]);
+      centery = centery - cy;
 
-        centerz = 0.25 * (zt[ind1] + zt[ind2] + zt[ind3] + zt[ind4]);
-        centerz = centerz - cz;
+      centerz = 0.25 * (zt[ind1] + zt[ind2] + zt[ind3] + zt[ind4]);
+      centerz = centerz - cz;
 
-        mx = centery * sz0 - centerz * sy0;
-        my = centerz * sx0 - centerx * sz0;
-        mz = centerx * sy0 - centery * sx0;
+      mx = centery * sz0 - centerz * sy0;
+      my = centerz * sx0 - centerx * sz0;
+      mz = centerx * sy0 - centery * sx0;
 
-        reti[it] += f * mx;
-        reti[it+1] += f * my;
-        reti[it+2] += f * mz;
-      }
+      reti[it] += f * mx;
+      reti[it+1] += f * my;
+      reti[it+2] += f * mz;
     }
   }
 
@@ -201,41 +199,38 @@ void K_POST::integMomentNormStructCellCenter2D(
     E_Int it = 3*__CURRENT_THREAD__;
     reti[it] = 0.; reti[it+1] = 0.; reti[it+2] = 0.;
 
-    #pragma omp for
+    #pragma omp for collapse(2)
     for (E_Int j = 0; j < nj - 1; j++)
+    for (E_Int i = 0; i < ni - 1; i++)
     {
-      for (E_Int i = 0; i < ni - 1; i++)
-      {
-        ind1 = i + j * ni;
-        ind2 = ind1 + ni;
-        ind3 = ind1 + 1;
-        ind4 = ind3 + ni;
-        ind = i + j * ni1;
+      ind1 = i + j * ni;
+      ind2 = ind1 + ni;
+      ind3 = ind1 + 1;
+      ind4 = ind3 + ni;
+      ind = i + j * ni1;
 
-        f = ratio[ind] * field[ind];
+      f = ratio[ind] * field[ind];
 
-        sx0 = sx[ind];
-        sy0 = sy[ind];
-        sz0 = sz[ind];
+      sx0 = sx[ind];
+      sy0 = sy[ind];
+      sz0 = sz[ind];
 
-        centerx = xt[ind1] + xt[ind2] + xt[ind3] + xt[ind4];
-        centerx = 0.25 * centerx - cx;
+      centerx = xt[ind1] + xt[ind2] + xt[ind3] + xt[ind4];
+      centerx = 0.25 * centerx - cx;
 
-        centery = yt[ind1] + yt[ind2] + yt[ind3] + yt[ind4];
-        centery = 0.25 * centery - cy;
+      centery = yt[ind1] + yt[ind2] + yt[ind3] + yt[ind4];
+      centery = 0.25 * centery - cy;
 
-        centerz = zt[ind1] + zt[ind2] + zt[ind3] + zt[ind4];
-        centerz = 0.25 * centerz - cz;
+      centerz = zt[ind1] + zt[ind2] + zt[ind3] + zt[ind4];
+      centerz = 0.25 * centerz - cz;
 
-        mx = centery * sz0 - centerz * sy0;
-        my = centerz * sx0 - centerx * sz0;
-        mz = centerx * sy0 - centery * sx0;
+      mx = centery * sz0 - centerz * sy0;
+      my = centerz * sx0 - centerx * sz0;
+      mz = centerx * sy0 - centery * sx0;
 
-        reti[it] += f * mx;
-        reti[it+1] += f * my;
-        reti[it+2] += f * mz;
-
-      }
+      reti[it] += f * mx;
+      reti[it+1] += f * my;
+      reti[it+2] += f * mz;
     }
   }
 

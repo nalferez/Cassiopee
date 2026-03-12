@@ -94,29 +94,27 @@ void K_POST::integNormProdStructNodeCenter2D(
     E_Int it = __CURRENT_THREAD__;
     reti[it] = 0.;
 
-    #pragma omp for
+    #pragma omp for collapse(2)
     for (E_Int j = 0; j < nj - 1; j++)
+    for (E_Int i = 0; i < ni - 1; i++)
     {
-      for (E_Int i = 0; i < ni - 1; i++)
-      {
-        ind1 = i + j * ni;
-        ind2 = ind1 + ni;
-        ind3 = ind1 + 1;
-        ind4 = ind3 + ni;
+      ind1 = i + j * ni;
+      ind2 = ind1 + ni;
+      ind3 = ind1 + 1;
+      ind4 = ind3 + ni;
 
-        ind = i + j * ni1;
+      ind = i + j * ni1;
 
-        r1 = ratio[ind1];
-        r2 = ratio[ind2];
-        r3 = ratio[ind3];
-        r4 = ratio[ind4];
+      r1 = ratio[ind1];
+      r2 = ratio[ind2];
+      r3 = ratio[ind3];
+      r4 = ratio[ind4];
 
-        fx = r1 * vx[ind1] + r2 * vx[ind2] + r3 * vx[ind3] + r4 * vx[ind4];
-        fy = r1 * vy[ind1] + r2 * vy[ind2] + r3 * vy[ind3] + r4 * vy[ind4];
-        fz = r1 * vz[ind1] + r2 * vz[ind2] + r3 * vz[ind3] + r4 * vz[ind4];
+      fx = r1 * vx[ind1] + r2 * vx[ind2] + r3 * vx[ind3] + r4 * vx[ind4];
+      fy = r1 * vy[ind1] + r2 * vy[ind2] + r3 * vy[ind3] + r4 * vy[ind4];
+      fz = r1 * vz[ind1] + r2 * vz[ind2] + r3 * vz[ind3] + r4 * vz[ind4];
 
-        reti[it] += sx[ind] * fx + sy[ind] * fy + sz[ind] * fz;
-      }
+      reti[it] += sx[ind] * fx + sy[ind] * fy + sz[ind] * fz;
     }
   }
 
@@ -152,15 +150,13 @@ void K_POST::integNormProdStructCellCenter2D(
     E_Int it = __CURRENT_THREAD__;
     reti[it] = 0.;
 
-    #pragma omp for
+    #pragma omp for collapse(2)
     for (E_Int j = 0; j < nj; j++)
+    for (E_Int i = 0; i < ni; i++)
     {
-      for (E_Int i = 0; i < ni; i++)
-      {
-        ind = i + j * ni;
-        sum = sx[ind] * vx[ind] + sy[ind] * vy[ind] + sz[ind] * vz[ind];
-        reti[it] += ratio[ind] * sum;
-      }
+      ind = i + j * ni;
+      sum = sx[ind] * vx[ind] + sy[ind] * vy[ind] + sz[ind] * vz[ind];
+      reti[it] += ratio[ind] * sum;
     }
   }
 
