@@ -670,7 +670,7 @@ def exteriorFacesStructured(t):
 
 def exteriorFaces(t, indices=None):
     """Exterior faces of a mesh.
-    Usage: exteriorFaces(t,indices)"""
+    Usage: exteriorFaces(t, indices)"""
     tp = Internal.copyRef(t)
     _exteriorFaces(tp, indices)
     return tp

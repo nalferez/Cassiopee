@@ -77,7 +77,7 @@ PyObject* K_POST::exteriorFacesStructured(char* varString, FldArrayF& f,
   E_Int api = f.getApi();
   E_Int nfld = f.getNfld();
   PyObject* tpl = NULL;
-  bool boolIndir = false;
+  E_Bool boolIndir = false;
   if (indices != Py_None) boolIndir = true;
   PyObject* indir = NULL;
   E_Int* indirp = NULL;

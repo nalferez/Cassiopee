@@ -969,7 +969,7 @@ pyTree creation and manipulation
 
 ---------------------------------------------------------------------------
 
-.. py:function:: Converter.PyTree.recoverBCs(t, (BCs, BCNames, BCTypes), tol=1.e-11)
+.. py:function:: Converter.PyTree.recoverBCs(t, (BCs, BCNames, BCTypes), tol=1.e-11, removeBC=True)
 
     Recover given BCs onto a NGon tree. BCs are given by a tuple of geometries, names and types has obtained
     by getBCs.
@@ -978,7 +978,9 @@ pyTree creation and manipulation
     :param t: input NGon data
     :type t: [pyTree, base, zone, list of zones]
     :param (BCs, BCNames, BCTypes): tuple (BCs, BCNames, BCTypes) where BCs is a list of BC nodes, BCNames a list of BC names and BCTypes a list of BC types.
-    :type (BCs, BCNames, BCTypes): tuple (list,list,list)
+    :type (BCs, BCNames, BCTypes): tuple (list, list, list)
+    :param removeBC: if True, removes existing BCs in t before recovering those in BCs.
+    :type reorder: Boolean
     :rtype: reference copy of t
 
     *Example of use:*

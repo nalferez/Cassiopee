@@ -31,7 +31,11 @@ PyObject* K_CONVERTER::convertUnstruct2NGon(PyObject* self, PyObject* args)
 {
   PyObject* array;
   E_Int ngonType = 1;
-  if (!PYPARSETUPLE_(args, O_ I_, &array, &ngonType)) return NULL;
+  PyObject* indices = NULL;
+  if (!PYPARSETUPLE_(args, OO_ I_, &array, &indices, &ngonType)) return NULL;
+
+  E_Bool exportIndirPts = false;
+  if (indices != Py_None) exportIndirPts = true;
 
   // Check array
   E_Int ni, nj, nk, res;
@@ -385,17 +389,27 @@ PyObject* K_CONVERTER::convertUnstruct2NGon(PyObject* self, PyObject* args)
 
   // Clean connectivity
   E_Float tol = 1.e-12;
-  E_Bool rmOverlappingPts=true; E_Bool rmOrphanPts=false;
-  E_Bool rmDuplicatedFaces=true; E_Bool rmDuplicatedElts=false;
-  E_Bool rmDegeneratedFaces=false; E_Bool rmDegeneratedElts=false;
+  E_Bool rmOverlappingPts = true; E_Bool rmOrphanPts = false;
+  E_Bool rmDuplicatedFaces = true; E_Bool rmDuplicatedElts = false;
+  E_Bool rmDegeneratedFaces = false; E_Bool rmDegeneratedElts = false;
   PyObject* tplClean = K_CONNECT::V_cleanConnectivity(
-      varString, *f2, *cn2, "NGON", tol,
-      rmOverlappingPts, rmOrphanPts,
-      rmDuplicatedFaces, rmDuplicatedElts,
-      rmDegeneratedFaces, rmDegeneratedElts
+    varString, *f2, *cn2, "NGON", tol,
+    rmOverlappingPts, rmOrphanPts,
+    rmDuplicatedFaces, rmDuplicatedElts,
+    rmDegeneratedFaces, rmDegeneratedElts,
+    exportIndirPts
   );
   
   RELEASESHAREDU(tpl, f2, cn2);
   Py_DECREF(tpl);
+  if (exportIndirPts)
+  {
+    PyObject* vmap = PyTuple_GetItem(tplClean, 1);
+    PyList_Append(indices, vmap);
+    PyObject* o = PyTuple_GetItem(tplClean, 0);
+    Py_INCREF(o);
+    Py_DECREF(tplClean);
+    return o;
+  }
   return tplClean;
 }

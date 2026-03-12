@@ -178,7 +178,7 @@ PyObject* K_CONNECT::V_cleanConnectivityNGon(
       }
     }
   }
-  
+
   if (!exportIndirPts) indir.clear();
 
   // --- 2. Identify dirty elements topologically ---
@@ -370,13 +370,20 @@ PyObject* K_CONNECT::V_cleanConnectivityNGon(
   {
     tpl = K_ARRAY::buildArray3(f, varString, cn, "NGON", api);
   }
-  
   if (exportIndirPts)
   {
     PyObject* vmap = K_NUMPY::buildNumpyArray(npts, 1, 1);
     E_Int* vmapp = K_NUMPY::getNumpyPtrI(vmap);
-    #pragma omp parallel for
-    for (E_Int i = 0; i < npts; i++) vmapp[i] = indir[i];
+    if ((E_Int)indir.size() == npts)
+    {
+      #pragma omp parallel for
+      for (E_Int i = 0; i < npts; i++) vmapp[i] = indir[i];
+    }
+    else
+    {
+      #pragma omp parallel for
+      for (E_Int i = 0; i < npts; i++) vmapp[i] = i+1;
+    }
     return Py_BuildValue("(OO)", tpl, vmap);
   }
   return tpl;
