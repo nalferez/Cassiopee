@@ -23,16 +23,16 @@
 #include "TopTools_IndexedMapOfShape.hxx"
 #include "TopExp.hxx"
 #include "TopExp_Explorer.hxx"
-#include "BRepPrimAPI_MakeSphere.hxx"
 #include "BRep_Builder.hxx"
 #include "BRepBuilderAPI_MakeEdge.hxx"
 #include "BRepBuilderAPI_MakeWire.hxx"
 #include "BRepBuilderAPI_MakeFace.hxx"
-#include <BRepPrimAPI_MakeCylinder.hxx>
-#include <gp_Cylinder.hxx>
-#include <gp_Ax2.hxx>
-#include <BRepBuilderAPI_MakeFace.hxx>
-#include <TopoDS_Shape.hxx>
+#include "BRepPrimAPI_MakeCylinder.hxx"
+#include "gp_Cylinder.hxx"
+#include "gp_Ax2.hxx"
+#include "BRepBuilderAPI_MakeFace.hxx"
+#include "TopoDS_Shape.hxx"
+#include "BRepBuilderAPI_Sewing.hxx"
 
 //=====================================================================
 // Add a part cylinder to CAD hook
@@ -41,26 +41,50 @@ PyObject* K_OCC::addCylinder(PyObject* self, PyObject* args)
 {
   PyObject* hook; 
   E_Float xc, yc, zc, xaxis, yaxis, zaxis, R, H;
-  if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ R_ R_, 
-    &hook, &xc, &yc, &zc, &xaxis, &yaxis, &zaxis, &R, &H)) return NULL;
+  char* name;
+  if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ R_ R_ S_, 
+    &hook, &xc, &yc, &zc, &xaxis, &yaxis, &zaxis, &R, &H, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
-  GETMAPSURFACES;
-  GETMAPEDGES;
   
   // Define the radius, height, and angle of the cylinder
   //Standard_Real angle = 2*M_PI;
-  // Create the cylinder with closing faces 
+  //Create the cylinder with closing faces 
   //TopoDS_Shape part = BRepPrimAPI_MakeCylinder(R, H, angle).Shape();
 
   // Create only the side of cylinder
   gp_Ax2 axis(gp_Pnt(xc, yc, zc), gp_Dir(xaxis, yaxis, zaxis)); // Axis of the cylinder
-  gp_Cylinder cylinder(axis, R); // Radius of 10.0
+  gp_Cylinder cylinder(axis, R); // Radius
   Standard_Real uMin = 0.0;
   Standard_Real uMax = 2 * M_PI; // Full circle
   Standard_Real vMin = 0.0;
   Standard_Real vMax = H; // Height of the cylinder
   TopoDS_Face face = BRepBuilderAPI_MakeFace(cylinder, uMin, uMax, vMin, vMax);
+
+#ifdef USEXCAF
+
+  BRep_Builder builder;
+  TopoDS_Compound compound;
+  builder.MakeCompound(compound);
+  builder.Add(compound, face);
+
+  BRepBuilderAPI_Sewing sewingTool;
+  sewingTool.Add(compound);
+  sewingTool.Perform();
+  TopoDS_Shape sewedShape = sewingTool.SewedShape();
+
+  GETDOC;
+  addShape2OCAF(sewedShape, name, *doc);
+  TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
+#else
+  GETMAPSURFACES;
+  GETMAPEDGES;
 
   // Rebuild a single compound
   BRep_Builder builder;
@@ -79,7 +103,12 @@ PyObject* K_OCC::addCylinder(PyObject* self, PyObject* args)
   }
   builder.Add(compound, face);
 
-  TopoDS_Shape* newshp = new TopoDS_Shape(compound);
+  BRepBuilderAPI_Sewing sewingTool;
+  sewingTool.Add(compound);
+  sewingTool.Perform();
+  TopoDS_Shape sewedShape = sewingTool.SewedShape();
+
+  TopoDS_Shape* newshp = new TopoDS_Shape(sewedShape);
     
   delete shape;
   SETSHAPE(newshp);
@@ -89,4 +118,5 @@ PyObject* K_OCC::addCylinder(PyObject* self, PyObject* args)
   
   Py_INCREF(Py_None);
   return Py_None;
+#endif
 }

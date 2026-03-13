@@ -161,7 +161,7 @@ class ngon_unit
         }
         for (E_Int j = 0; j < nb*(bstrd + 1); ++j)
         {
-          int v = pos + j + na * (astrd + 1);
+          E_Int v = pos + j + na * (astrd + 1);
           assert (v > -1 && v < E_Int(_NGON.size()));
           _NGON[v] = bstrd;
         }

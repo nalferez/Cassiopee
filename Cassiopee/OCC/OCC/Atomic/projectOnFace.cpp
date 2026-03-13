@@ -74,12 +74,8 @@ PyObject* K_OCC::projectOnFaces(PyObject* self, PyObject* args)
   PyObject* hook; PyObject* array; PyObject* faceList;
   if (!PYPARSETUPLE_(args, OOO_, &hook, &array, &faceList)) return NULL;  
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETPACKET;
+  GETMAPSURFACES;
 
   // array a projeter
   FldArrayF* fi; E_Int ni, nj, nk;
@@ -91,9 +87,6 @@ PyObject* K_OCC::projectOnFaces(PyObject* self, PyObject* args)
                     "projectOnFaces: invalid array.");
     return NULL;
   }
-
-  TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
-  //TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
 
   // liste des no des faces sur lesquelles on projete
   FldArrayI faces;
@@ -123,7 +116,6 @@ PyObject* K_OCC::projectOnFaces(PyObject* self, PyObject* args)
 
   //printf("nfaces=%d, npts=%d\n", nfaces, npts); fflush(stdout);
   //npts = 500;
-  
 
 #pragma omp parallel
   {
@@ -184,6 +176,13 @@ PyObject* K_OCC::projectOnFaces(PyObject* self, PyObject* args)
         catch (StdFail_NotDone& e)
         { 
           //printf("FAIL for point %g %g %g\n", px[i],py[i],pz[i]); 
+          ptx[i] = K_CONST::E_MAX_FLOAT;
+          pty[i] = K_CONST::E_MAX_FLOAT;
+          ptz[i] = K_CONST::E_MAX_FLOAT;
+        }
+        catch (Standard_NullObject& e)
+        {
+          //printf("Face is NULL for point %g %g %g\n", px[i],py[i],pz[i]); 
           ptx[i] = K_CONST::E_MAX_FLOAT;
           pty[i] = K_CONST::E_MAX_FLOAT;
           ptz[i] = K_CONST::E_MAX_FLOAT;

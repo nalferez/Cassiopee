@@ -1,37 +1,34 @@
-#from distutils.core import setup, Extension
-from setuptools import setup, Extension
-import os
-
 #=============================================================================
 # Roms requires:
 # C++ compiler
 # Numpy
 # KCore, Compressor
 #=============================================================================
+import os
+from setuptools import setup, Extension
+import KCore.Dist as Dist
+
+additionalLibPaths = Dist.getAdditionalLibPaths()
+additionalIncludePaths = Dist.getAdditionalIncludePaths()
+additionalLibs = Dist.getAdditionalLibs()
 
 # Write setup.cfg file
-import KCore.Dist as Dist
 Dist.writeSetupCfg()
-
-from KCore.config import *
 
 # Test if numpy exists =======================================================
 (numpyVersion, numpyIncDir, numpyLibDir) = Dist.checkNumpy()
 
 # Test if kcore exists =======================================================
-(kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkKCore()
+(kcoreVersion, kcoreIncDir, kcoreLibDir) = Dist.checkModuleCassiopee("KCore")
 
-prod = os.getenv("ELSAPROD")
-if prod is None: prod = 'xx'
+prod = os.getenv("ELSAPROD") or "xx"
 
 # Setting libraryDirs, include dirs and libraries =============================
 libraryDirs = ["build/"+prod, kcoreLibDir]
 includeDirs = [numpyIncDir, kcoreIncDir]
 libraries = ["kcore", "roms"]
-(ok, libs, paths) = Dist.checkCppLibs([], additionalLibPaths)
+(ok, libs, paths) = Dist.checkCppLibs()
 libraryDirs += paths; libraries += libs
-
-import srcs
 
 # Extensions ==================================================================
 listExtensions = []
@@ -51,11 +48,8 @@ setup(
     version="4.1",
     description="Roms module.",
     author="ONERA",
-    url="https://cassiopee.onera.fr",
+    url="https://onera.github.io/Cassiopee/",
     packages=['Roms', 'Roms.DB', 'Roms.LA', 'Roms.Models', 'Roms.Optim'],
     package_dir={"":"."},
     ext_modules=listExtensions
 )
-
-# Check PYTHONPATH ===========================================================
-Dist.checkPythonPath(); Dist.checkLdLibraryPath()

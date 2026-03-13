@@ -39,9 +39,11 @@
 //=====================================================================
 PyObject* K_OCC::sweep(PyObject* self, PyObject* args)
 {
-  PyObject* hook; PyObject* listProfiles; PyObject* listPaths; 
-  if (!PYPARSETUPLE_(args, OOO_ , &hook, &listProfiles, &listPaths)) return NULL;
+  PyObject* hook; PyObject* listProfiles; PyObject* listPaths;
+  char* name; 
+  if (!PYPARSETUPLE_(args, OOO_ S_, &hook, &listProfiles, &listPaths, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPEDGES;
 
@@ -89,6 +91,19 @@ PyObject* K_OCC::sweep(PyObject* self, PyObject* args)
   BRepOffsetAPI_MakePipe pipe(W2, W1);
   newshp = new TopoDS_Shape(pipe.Shape());
 
+#ifdef USEXCAF
+  
+  GETDOC;
+  addShape2OCAF(*newshp, name, *doc);
+  delete newshp;
+  newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
+#else
+
   // Rebuild the hook
   delete shape;
   SETSHAPE(newshp);
@@ -98,4 +113,5 @@ PyObject* K_OCC::sweep(PyObject* self, PyObject* args)
 
   Py_INCREF(Py_None);
   return Py_None;
+#endif
 }

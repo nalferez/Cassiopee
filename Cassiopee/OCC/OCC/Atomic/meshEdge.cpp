@@ -613,12 +613,7 @@ PyObject* K_OCC::meshGlobalEdges1(PyObject* self, PyObject* args)
   PyObject* hook; E_Float hmax;
   if (!PYPARSETUPLE_(args, O_ R_, &hook, &hmax)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETPACKET;
 
   E_Int nbPoints;
   PyObject* out = PyList_New(0);
@@ -649,12 +644,7 @@ PyObject* K_OCC::meshGlobalEdges2(PyObject* self, PyObject* args)
   PyObject* hook; E_Int nbPoints;
   if (!PYPARSETUPLE_(args, O_ I_, &hook, &nbPoints)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETPACKET;
 
   PyObject* out = PyList_New(0);
   TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
@@ -682,12 +672,7 @@ PyObject* K_OCC::meshGlobalEdges3(PyObject* self, PyObject* args)
   PyObject* hook; PyObject* globalEdges;
   if (!PYPARSETUPLE_(args, O_ O_, &hook, &globalEdges)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETPACKET;
 
   PyObject* out = PyList_New(0);
   TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
@@ -723,12 +708,7 @@ PyObject* K_OCC::meshGlobalEdges4(PyObject* self, PyObject* args)
   PyObject* hook; E_Float hausd;
   if (!PYPARSETUPLE_(args, O_ R_, &hook, &hausd)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETPACKET;
 
   E_Int nbPoints=1;
   PyObject* out = PyList_New(0);
@@ -761,12 +741,7 @@ PyObject* K_OCC::meshEdgesByFace(PyObject* self, PyObject* args)
   PyObject* hook; E_Int nbPoints; E_Int noFace; E_Float hmax; E_Float hausd;
   if (!PYPARSETUPLE_(args, O_ II_ RR_, &hook, &noFace, &nbPoints, &hmax, &hausd)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETPACKET;
 
   PyObject* out = PyList_New(0);
   TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
@@ -806,12 +781,7 @@ PyObject* K_OCC::meshEdgesByFace2(PyObject* self, PyObject* args)
   PyObject* globalEdges;
   if (!PYPARSETUPLE_(args, O_ I_ O_, &hook, &noFace, &globalEdges)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETPACKET;
 
   PyObject* out = PyList_New(0);
   TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
@@ -863,12 +833,7 @@ PyObject* K_OCC::meshEdgesByFace3(PyObject* self, PyObject* args)
   E_Float hmax, hausd;
   if (!PYPARSETUPLE_(args, O_ I_ RR_, &hook, &noFace, &hmax, &hausd)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETPACKET;
 
   TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
   //TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
@@ -1088,13 +1053,8 @@ PyObject* K_OCC::getEdgeNoByFace(PyObject* self, PyObject* args)
   PyObject* hook; E_Int noFace;
   if (!PYPARSETUPLE_(args, O_ I_, &hook, &noFace)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
+  GETPACKET;
+  
   TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
   TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
   TopExp_Explorer expl;

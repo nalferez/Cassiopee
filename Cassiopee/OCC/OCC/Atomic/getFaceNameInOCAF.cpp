@@ -48,22 +48,16 @@
 #include "Standard_Version.hxx"
 
 //=====================================================================
-// Get face names
-// Return [names, [face no]] 
+// Get face lables
+// Return [names, [face no]]
 //=====================================================================
 PyObject* K_OCC::getFaceNameInOCAF(PyObject* self, PyObject* args)
 {
   PyObject* hook;
   if (!PYPARSETUPLE_(args, O_, &hook)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETPACKET;
+  GETDOC;
   if (doc == NULL) 
   {
     PyErr_SetString(PyExc_TypeError, "getFaceNameInOCAF: no OCAF document.");
@@ -74,7 +68,7 @@ PyObject* K_OCC::getFaceNameInOCAF(PyObject* self, PyObject* args)
   
   // Get labels corresponding to shapes
   TDF_LabelSequence labels;
-  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
+  GETSHAPETOOL;
   shapeTool->GetShapes(labels);
 
   PyObject* out = PyList_New(0);
@@ -232,14 +226,9 @@ PyObject* K_OCC::getFaceNameInOCAF2(PyObject* self, PyObject* args)
   PyObject* hook;
   if (!PYPARSETUPLE_(args, O_, &hook)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+  GETPACKET;
+  GETDOC;
+  
   if (doc == NULL) 
   {
     PyErr_SetString(PyExc_TypeError, "getFaceNameInOCAF: no OCAF document.");
@@ -247,8 +236,8 @@ PyObject* K_OCC::getFaceNameInOCAF2(PyObject* self, PyObject* args)
   }
 
   // Get labels corresponding to shapes
+  GETSHAPETOOL;
   TDF_LabelSequence labels;
-  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
   shapeTool->GetShapes(labels);
 
   PyObject* out = PyList_New(0);
@@ -312,14 +301,9 @@ PyObject* K_OCC::getEdgeNameInOCAF2(PyObject* self, PyObject* args)
   PyObject* hook;
   if (!PYPARSETUPLE_(args, O_, &hook)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETPACKET; 
+  GETDOC;
 
-  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
   if (doc == NULL) 
   {
     PyErr_SetString(PyExc_TypeError, "getFaceNameInOCAF: no OCAF document.");
@@ -327,8 +311,8 @@ PyObject* K_OCC::getEdgeNameInOCAF2(PyObject* self, PyObject* args)
   }
   
   // Get labels corresponding to shapes
+  GETSHAPETOOL;
   TDF_LabelSequence labels;
-  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
   shapeTool->GetShapes(labels);
 
   PyObject* out = PyList_New(0);

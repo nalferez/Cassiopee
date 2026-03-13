@@ -31,7 +31,7 @@ void DataDL::createGPUSSolidZone(StructZone* zonep, E_Int zone)
   E_Int ret1, ret2, ret3, ret4, ret13, ret24;
 
   stepi = 1; stepj = 1; stepk = 1;
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
 
   zImpl->_DLsolid = glGenLists(1);
   glNewList(zImpl->_DLsolid, GL_COMPILE);

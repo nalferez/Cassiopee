@@ -52,14 +52,8 @@ PyObject* K_OCC::evalFace(PyObject* self, PyObject* args)
   E_Int faceNo; // No de la face 
   if (!PYPARSETUPLE_(args, OO_ I_, &hook, &arrayUV, &faceNo)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
-  TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
+  GETPACKET;
+  GETMAPSURFACES;
   TopExp_Explorer expl;
 
   const TopoDS_Face& F = TopoDS::Face(surfaces(faceNo));

@@ -108,7 +108,7 @@ PyObject* K_OCC::readCAD(PyObject* self, PyObject* args)
   // get shape
   shapeTool->GetFreeShapes(labels);
   //printf("freeshapes length=%d\n", labels.Length());
-  if (labels.Length() == 1)
+  if (labels.Length() == 1) // one shape or one assembly
   {
     TDF_Label label = labels.Value(1);
     *shp = shapeTool->GetShape(label);
@@ -190,14 +190,8 @@ PyObject* K_OCC::getNbFaces(PyObject* self, PyObject* args)
   PyObject* hook;
   if (!PYPARSETUPLE_(args, O_, &hook)) return NULL;  
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
-  TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
+  GETPACKET;
+  GETMAPSURFACES;
   return Py_BuildValue("l", surfaces.Extent());
 }
 
@@ -209,14 +203,8 @@ PyObject* K_OCC::getNbEdges(PyObject* self, PyObject* args)
   PyObject* hook;
   if (!PYPARSETUPLE_(args, O_, &hook)) return NULL;  
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
-  TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
+  GETPACKET;
+  GETMAPEDGES;
   return Py_BuildValue("l", edges.Extent());
 }
 
@@ -228,12 +216,6 @@ PyObject* K_OCC::getFileAndFormat(PyObject* self, PyObject* args)
   PyObject* hook;
   if (!PYPARSETUPLE_(args, O_, &hook)) return NULL;  
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
+  GETPACKET;
   return Py_BuildValue("ss", packet[3], packet[4]);
 }

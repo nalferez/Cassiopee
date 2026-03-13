@@ -1,12 +1,10 @@
 GORDON = True
 
-import glob
-import os
+import os, glob
 
 exceptions = ['../../OCC/occ_src/TKXSBase/stepread.c',
               '../../OCC/occ_src/TKXSBase/step.tab.c',
               '../../OCC/occ_src/TKXSBase/lex.step.c']
-
 def getFiles(module):
     if os.path.exists('../../OCC/occ_src/%s/PACKAGES'%module):
         f = open('../../OCC/occ_src/%s/PACKAGES'%module, 'r')
@@ -43,15 +41,24 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
 
         'OCC/Atomic/printOCAF.cpp',
         'OCC/Atomic/getFaceNameInOCAF.cpp',
+        'OCC/Atomic/getFaceNos.cpp',
+        'OCC/Atomic/changeLabelNameInOCAF.cpp',
+        'OCC/Atomic/copyOCAF2TopShape.cpp',
+        'OCC/Atomic/addShape2OCAF.cpp',
+        'OCC/Atomic/getLabel2Faces.cpp',
+        'OCC/Atomic/getLabelName.cpp',
+        'OCC/Atomic/copyTopShape2OCAF.cpp',
 
         'OCC/Atomic/bottle.cpp',
         'OCC/Atomic/addSphere.cpp',
         'OCC/Atomic/addCylinder.cpp',
         'OCC/Atomic/addBox.cpp',
+        'OCC/Atomic/addBox2.cpp',
         'OCC/Atomic/addLine.cpp',
         'OCC/Atomic/addCircle.cpp',
         'OCC/Atomic/addEllipse.cpp',
         'OCC/Atomic/addSquare.cpp',
+        'OCC/Atomic/addSquare2.cpp',
         'OCC/Atomic/addSpline.cpp',
         'OCC/Atomic/addArc.cpp',
         'OCC/Atomic/addSuperEllipse.cpp',
@@ -68,19 +75,26 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
         'OCC/Atomic/projectOnEdge.cpp',
         'OCC/Atomic/linkNodes2CAD.cpp',
         'OCC/Atomic/trimesh.cpp',
+        'OCC/Atomic/occmesh.cpp',
+
         'OCC/Atomic/analyse.cpp',
         'OCC/Atomic/getFaceArea.cpp',
+        'OCC/Atomic/getBoundingBox.cpp',
         'OCC/Atomic/areEdgeIdentical.cpp',
 
         'OCC/Atomic/splitFaces.cpp',
         'OCC/Atomic/splitEdge.cpp',
+        'OCC/Atomic/mergeFaces.cpp',
+        'OCC/Atomic/mergeEdges.cpp',
+
         'OCC/Atomic/fix.cpp',
         'OCC/Atomic/sewing.cpp',
+        'OCC/Atomic/reverse.cpp',
+
         'OCC/Atomic/removeFaces.cpp',
         'OCC/Atomic/fillHole.cpp',
         'OCC/Atomic/addFillet.cpp',
-        'OCC/Atomic/mergeFaces.cpp',
-        'OCC/Atomic/mergeEdges.cpp',
+        'OCC/Atomic/offset.cpp',
 
         'OCC/Atomic/loft.cpp',
         'OCC/Atomic/sweep.cpp',
@@ -91,7 +105,7 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
         'OCC/Atomic/rotate.cpp',
 
         'OCC/Atomic/intersectEdgeFace.cpp',
-        'OCC/Atomic/trim.cpp',
+        'OCC/Atomic/trimFaces.cpp',
         'OCC/Atomic/boolean.cpp',
 
         'OCC/Atomic/getOppData.cpp',
@@ -109,11 +123,3 @@ if GORDON:
         'OCC/Gordon/GordonSurfaceBuilder.cpp',
         'OCC/Gordon/IntersectBSplines.cpp',
         'OCC/Gordon/occ_gordon.cpp']
-
-#====================================================================================
-import KCore.Dist as Dist
-allMods = Dist.getOCCModules()
-
-mod_srcs = {}
-for m in allMods:
-    mod_srcs[m] = getFiles(m)

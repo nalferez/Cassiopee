@@ -494,7 +494,7 @@ E_Int Conformizer<DIM, Element_t>::__run
 #ifdef FLAG_STEP
   E_Int nb_merges =
 #endif
-    int n0 = (_X1 != 0) ? -_N0 : _N0; 
+    E_Int n0 = (_X1 != 0) ? -_N0 : _N0; 
     __merge_clean(_tol_clean/*1.e-9 for now*/, pos, connect, ancestors, nids, &xc, n0);
 
 #ifdef DEBUG_CONFORMIZER
@@ -920,12 +920,12 @@ Conformizer<DIM, Element_t>::__compute_intersections_brute
   E_Int nbelts = _elements.size();
   E_Int nbX(0);
   //
-  for (int i = 0; i < _X0; ++i)
+  for (E_Int i = 0; i < _X0; ++i)
   {
     DS_Type& e1 = _elements[i];
 
     // Loop through the second part and do the intersection test.
-    for (int j = _X0; j < nbelts; ++j)
+    for (E_Int j = _X0; j < nbelts; ++j)
     {
       DS_Type& e2 = _elements[j];
 

@@ -32,7 +32,7 @@
 #include <BRepPrimAPI_MakeRevol.hxx>
 
 //=====================================================================
-// Revolve
+// Revolve a list of edges
 //=====================================================================
 PyObject* K_OCC::revolve(PyObject* self, PyObject* args)
 {
@@ -40,13 +40,13 @@ PyObject* K_OCC::revolve(PyObject* self, PyObject* args)
   E_Float cx, cy, cz;
   E_Float ax, ay, az; 
   E_Float angle; 
-  if (!PYPARSETUPLE_(args, OO_ TRRR_ TRRR_ R_, &hook, &listEdges, 
-    &cx, &cy, &cz, &ax, &ay, &az, &angle)) return NULL;
+  char* name;
+  if (!PYPARSETUPLE_(args, OO_ TRRR_ TRRR_ R_ S_, &hook, &listEdges, 
+    &cx, &cy, &cz, &ax, &ay, &az, &angle, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
-
-  //TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
-  TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
+  GETMAPEDGES;
 
   gp_Pnt center(cx, cy, cz);
   gp_Ax1 axis(center, gp_Dir(ax, ay, az));
@@ -63,12 +63,54 @@ PyObject* K_OCC::revolve(PyObject* self, PyObject* args)
     const TopoDS_Edge& E = TopoDS::Edge(edges(no));
     builder.Add(compound, E);
   }
-
   TopoDS_Shape revolvedSurface = BRepPrimAPI_MakeRevol(compound, axis);
 
   // rebuild
   TopoDS_Shape* newshp = new TopoDS_Shape(revolvedSurface);
   
+#ifdef USEXCAF
+
+  GETDOC;
+  addShape2OCAF(*newshp, name, *doc);
+  newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
+#else
+
+  GETMAPSURFACES;
+  
+  // Rebuild a single compound
+  BRep_Builder builder2;
+  TopoDS_Compound compound2;
+  builder2.MakeCompound(compound2);
+    
+  for (E_Int i = 1; i <= surfaces.Extent(); i++)
+  {
+    TopoDS_Face F = TopoDS::Face(surfaces(i));
+    builder2.Add(compound2, F);
+  }
+  for (E_Int i = 1; i <= edges.Extent(); i++)
+  {
+    TopoDS_Edge E = TopoDS::Edge(edges(i));
+    builder2.Add(compound2, E);
+  }
+
+  // Add the revolved faces
+  TopTools_IndexedMapOfShape* sfs = new TopTools_IndexedMapOfShape();
+  TopExp::MapShapes(*newshp, TopAbs_FACE, *sfs);
+  TopTools_IndexedMapOfShape& surfaces2 = *(TopTools_IndexedMapOfShape*)sfs;
+  for (E_Int i = 1; i <= surfaces2.Extent(); i++)
+  {
+    TopoDS_Face F = TopoDS::Face(surfaces2(i));
+    builder2.Add(compound2, F);
+  }
+  delete sfs;
+
+  newshp = new TopoDS_Shape(compound2);
+
   delete shape;
   SETSHAPE(newshp);
 
@@ -77,4 +119,5 @@ PyObject* K_OCC::revolve(PyObject* self, PyObject* args)
 
   Py_INCREF(Py_None);
   return Py_None;
+#endif
 }

@@ -41,15 +41,16 @@
 //=====================================================================
 PyObject* K_OCC::addGordonSurface(PyObject* self, PyObject* args)
 {
-  PyObject* hook; PyObject* listSet1; PyObject* listSet2; 
-  if (!PYPARSETUPLE_(args, OOO_ , &hook, &listSet1, &listSet2)) return NULL;
+  PyObject* hook; PyObject* listSet1; PyObject* listSet2;
+  char* name;
+  if (!PYPARSETUPLE_(args, OOO_ S_, &hook, &listSet1, &listSet2, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPEDGES;
 
   E_Int n1 = PyList_Size(listSet1);
   E_Int n2 = PyList_Size(listSet2);
-  TopoDS_Shape* newshp = NULL;
   Standard_Real firstParam, lastParam;
 
   std::vector<Handle (Geom_Curve)> ucurves;
@@ -79,10 +80,26 @@ PyObject* K_OCC::addGordonSurface(PyObject* self, PyObject* args)
 
   Handle(Geom_BSplineSurface) surf;
   surf = occ_gordon::interpolate_curve_network(ucurves, vcurves, 1.e-4);
-  TopoDS_Face F = BRepBuilderAPI_MakeFace(surf, Precision::Confusion());
-  newshp = new TopoDS_Shape(F);
+  TopoDS_Face face = BRepBuilderAPI_MakeFace(surf, Precision::Confusion());
 
-  // Rebuild the hook
+#ifdef USEXCAF
+
+  BRep_Builder builder;
+  TopoDS_Compound compound;
+  builder.MakeCompound(compound);
+  builder.Add(compound, face);
+
+  GETDOC;
+  addShape2OCAF(compound, name, *doc);
+  TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
+#else
+
+  TopoDS_Shape* newshp = new TopoDS_Shape(face);
   delete shape;
   SETSHAPE(newshp);
 
@@ -91,4 +108,5 @@ PyObject* K_OCC::addGordonSurface(PyObject* self, PyObject* args)
 
   Py_INCREF(Py_None);
   return Py_None;
+#endif
 }

@@ -1617,9 +1617,7 @@ def _setInterpDataForGhostCellsStruct__(aR, aD, storage='direct', loc='nodes'):
                         if dimPb == 3: trirac[2] = transfo[1][2]
                     Periodic = Internal.getNodeFromType2(join, 'Periodic_t')
                     RotationAngle=None; RotationCenter=None
-
                     if Periodic is not None:
-
                         RotationAngle = Internal.getNodeFromName1(Periodic,'RotationAngle')
                         RotationCenter = Internal.getNodeFromName1(Periodic,'RotationCenter')
                         if RotationAngle is not None:
@@ -2050,7 +2048,6 @@ def _setInterpTransfers(aR, topTreeD, variables=[], cellNVariable='',
                 sname = s[0][0:2]
                 # test pour eviter parcours arbre inutile
                 if ((sname == 'ID') and variables is not None) or (sname == 'IB' and variablesIBC is not None):
-
                     idn = Internal.getNodeFromName1(s, 'InterpolantsDonor')
                     if idn is not None: # la subRegion decrit des interpolations
                         zoneRole = Internal.getNodeFromName2(s, 'ZoneRole')
@@ -2070,7 +2067,6 @@ def _setInterpTransfers(aR, topTreeD, variables=[], cellNVariable='',
                             else: loc = 0
                             # Transferts
                             if sname == 'ID':
-
                                 RotAngleNode = Internal.getNodeFromName1(s, 'RotationAngle')
                                 RotAngleX = 0.; RotAngleY = 0.; RotAngleZ = 0.
                                 if RotAngleNode is not None:
@@ -2085,7 +2081,6 @@ def _setInterpTransfers(aR, topTreeD, variables=[], cellNVariable='',
                                                               Internal.__FlowSolutionNodes__,
                                                               Internal.__FlowSolutionCenters__,
                                                               RotAngleX, RotAngleY, RotAngleZ)
-
 
                             elif sname == 'IB' and compactD:
                                 xPC = Internal.getNodeFromName1(s,'CoordinateX_PC')[1]
@@ -2263,7 +2258,6 @@ def _setInterpTransfersD(topTreeD, variables=[], cellNVariable='',
     for zd in zonesD:
         subRegions = Internal.getNodesFromType1(zd, 'ZoneSubRegion_t')
         for s in subRegions:
-
             sname = s[0][0:2]
             #test pour eviter parcours arbre inutile
             if (sname=='ID' and variables is not None) or (sname == 'IB' and variablesIBC is not None):
@@ -2308,7 +2302,6 @@ def _setInterpTransfersD(topTreeD, variables=[], cellNVariable='',
                                                                  Internal.__GridCoordinates__,
                                                                  Internal.__FlowSolutionNodes__,
                                                                  Internal.__FlowSolutionCenters__)
-
                             infos.append([dname,arrayT,ListRcv,loc])
 
                         elif sname == 'IB' and "gradxDensity" in variablesIBC:
@@ -2985,7 +2978,6 @@ def _setIBCTransfersDForPressureGradients(topTreeD, ibctypes=[], secondOrder=Fal
                                                                                Internal.__FlowSolutionNodes__,
                                                                                Internal.__FlowSolutionCenters__)
             else:
-
                 arrayT = connector._setIBCTransfersDForPressureGradientsOrder1(zd, variables, ListDonor, DonorType, Coefs,
                                                                                dictOfNumpys['Pressure'],
                                                                                dictOfNumpys['gradxPressure'] , dictOfNumpys['gradyPressure'] , dictOfNumpys['gradzPressure'],
@@ -3353,7 +3345,6 @@ def _setIBCTransfers4GradP3(zones, zonesD, graphInvIBCD, graphIBCD, procDict,
                             connector._setIBCTransfers4GradP4(
                                 gradxP_new, gradyP_new, gradzP_new,
                                 gradxP, gradyP, gradzP)
-
 
     return None
 

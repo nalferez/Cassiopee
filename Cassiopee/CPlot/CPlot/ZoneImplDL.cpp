@@ -33,12 +33,13 @@ ZoneImplDL::ZoneImplDL() : ZoneImpl(),
 			   _DLisoField(-1), _DLisoField2(-1), _DLisoField3(-1)
 {}
 // ========================================================================
-void ZoneImplDL::freeGPURes( CPlotState* pt_state, bool freeIso )
+void ZoneImplDL::freeGPURes(CPlotState* pt_state, bool freeIso)
 {
   CPlotStateDL& state = *static_cast<CPlotStateDL*>(pt_state);
   if (_DLmesh != 0) state.freeDLList.push_back(_DLmesh);
   if (_DLsolid != 0) state.freeDLList.push_back(_DLsolid);
-  if (freeIso) {
+  if (freeIso) 
+  {
     if (_DLiso != 0) state.freeDLList.push_back(_DLiso);
     _DLiso = 0;
   }
@@ -49,7 +50,8 @@ void ZoneImplDL::freeGPURes( CPlotState* pt_state, bool freeIso )
 void
 ZoneImplDL::destroyIsoField()
 {
-  if (_DLiso != 0) { 
+  if (_DLiso != 0) 
+  { 
     glDeleteLists(_DLiso, 1); 
     _DLisoField = -1; _DLiso = 0; 
   }

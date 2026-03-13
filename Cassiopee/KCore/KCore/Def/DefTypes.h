@@ -75,7 +75,7 @@
     #define E_PCM_INT sizeof(E_Int)
   #endif
   #define E_NPY_INT NPY_INT64 
-  #define E_IDX_NONE E_Int(9223372036854775807)
+  #define E_IDX_NONE 9223372036854775807
   #define E_MAXINT 9223372036854775807 // Max for signed int64
 #else
   typedef int E_Int;

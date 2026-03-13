@@ -389,7 +389,7 @@ void hierarchical_mesh<ELT_t, STYPE, ngo_t>::extract_enabled_phs(ngon_type& filt
     if (_PHtree.is_enabled(i) == true)
     {
       const E_Int* p = _ng.PHs.get_facets_ptr(i);
-      int s = _ng.PHs.stride(i);
+      E_Int s = _ng.PHs.stride(i);
       filtered_ng.PHs.add(s,p);//alexis : set _type for children ??
     }
   }
@@ -506,7 +506,7 @@ void hierarchical_mesh<ELT_t, STYPE, ngo_t>::get_higher_level_neighbours
   const E_Int* children = _PGtree.children(PGi);
   E_Int nb_children = _PGtree.nb_children(PGi);
   
-  for (int i = 0; i < nb_children; ++i)
+  for (E_Int i = 0; i < nb_children; ++i)
   {
     E_Int PH = (_F2E(0,PGi) == PHi) ? _F2E(1,children[i]) : _F2E(0,children[i]);
     neighbours[nb_neighbours++] = PH;
@@ -526,7 +526,7 @@ void hierarchical_mesh<ELT_t, STYPE, ngo_t>::get_enabled_neighbours
 #ifdef DEBUG_HIERARCHICAL_MESH
   assert (nb_neighbours == 0);
 #endif
-  for (int i = 0; i < nb_faces; ++i)
+  for (E_Int i = 0; i < nb_faces; ++i)
   {
     E_Int PGi = p[i] - 1;
       

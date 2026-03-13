@@ -96,23 +96,38 @@ PyObject* K_OCC::removeFaces(PyObject* self, PyObject* args)
   PyObject* edgeMap; PyObject* faceMap;
   if (!PYPARSETUPLE_(args, OO_ OO_, &hook, &listFaces, &edgeMap, &faceMap)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
+  GETPACKET;
+  GETSHAPE;
+
+#ifdef USEXCAF
+  GETDOC;
+  std::map< E_Int, std::vector<E_Int> > label2Faces;
+  std::map< E_Int, std::vector<E_Int> > label2Edges;
+  //getLabel2Edges(*doc, label2Edges);
+  getLabel2Faces(*doc, label2Faces);
+  for (E_Int no = 0; no < PyList_Size(listFaces); no++)
+  {
+    PyObject* noFaceO = PyList_GetItem(listFaces, no);
+    E_Int noFace = PyInt_AsLong(noFaceO);
+    for (size_t i = 0; i < label2Faces.size(); i++)
+    {
+      std::vector< E_Int >& f = label2Faces[i];
+      f.erase(std::remove(f.begin(), f.end(), noFace), f.end());
+    }
+  }
+  copyTopShape2OCAF(*shape, label2Edges, label2Faces, *doc);
+  TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
 #else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
+  GETMAPEDGES;
+  GETMAPSURFACES;
 
-  // get top shape
-  TopoDS_Shape* shp = (TopoDS_Shape*)packet[0];
-  TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
-  TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
+// get top shape
   E_Int nbFaces = surfaces.Extent();
-
-  //Handle(TDF_Data) data = new TDF_Data();
-  //TDF_Label label = data->Root();
-  //TDataStd_Name::Set(label, "MyFaceTag");
-  //TDF_Tool::AddShape(label, F);
 
   ShapeBuild_ReShape reshaper;
   for (E_Int no = 0; no < PyList_Size(listFaces); no++)
@@ -127,17 +142,18 @@ PyObject* K_OCC::removeFaces(PyObject* self, PyObject* args)
     }
     else printf("Warning: removeFaces: invalid face number.\n");
   }
-  TopoDS_Shape shc = reshaper.Apply(*shp);
+  TopoDS_Shape shc = reshaper.Apply(*shape);
 
   // export
   TopoDS_Shape* newshp = new TopoDS_Shape(shc);
+
   TopTools_IndexedMapOfShape* sf = new TopTools_IndexedMapOfShape();
   TopExp::MapShapes(*newshp, TopAbs_FACE, *sf);
   TopTools_IndexedMapOfShape* se = new TopTools_IndexedMapOfShape();
   TopExp::MapShapes(*newshp, TopAbs_EDGE, *se);
   getFaceMap(surfaces, *sf, faceMap);
   getEdgeMap(edges, *se, edgeMap);
-  delete shp;
+  delete shape;
   TopTools_IndexedMapOfShape* ptr = (TopTools_IndexedMapOfShape*)packet[1];
   delete ptr;
   TopTools_IndexedMapOfShape* ptr2 = (TopTools_IndexedMapOfShape*)packet[2];
@@ -151,4 +167,5 @@ PyObject* K_OCC::removeFaces(PyObject* self, PyObject* args)
 
   Py_INCREF(Py_None);
   return Py_None;
+#endif
 }

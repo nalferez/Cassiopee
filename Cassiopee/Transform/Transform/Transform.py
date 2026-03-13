@@ -19,12 +19,13 @@ __all__ = [
     'mergeCartByRefinementLevel', 'oneovern', 'patch', 'perturbate',
     'projectAllDirs', 'projectDir', 'projectOrtho', 'projectOrthoSmooth',
     'projectRay', 'reorder', 'reorderAll', 'rotate', '_rotate',
-    '_scale', 'scale', 'smooth', 'splitBAR', 'splitConnexity',
+    '_scale', 'scale', 'splitBAR', 'splitConnexity',
     'splitCurvatureAngle', 'splitCurvatureRadius', 'splitManifold',
     'splitMultiplePts', 'splitNParts', 'splitSharpEdges', 'splitSize',
     'splitTBranches', 'splitTRI', 'subzone',
     '_symmetrize', 'symmetrize', '_symetrize', 'symetrize', 'deformMesh',
-    'controlPoints', 'freeForm', 'kround', 'smoothField', '_smoothField',
+    'controlPoints', 'freeForm', 'kround',
+    'smooth', 'smoothField', '_smoothField', 'consSmooth',
     'alignVectorFieldWithRadialCylindricProjection',
     '_alignVectorFieldWithRadialCylindricProjection'
 ]
@@ -310,16 +311,16 @@ def _symmetrize(a, point, vector1, vector2):
 symetrize = symmetrize
 _symetrize = _symmetrize
 
-def perturbate(a, radius, dim=3):
+def perturbate(a, radius, dim=3, relative=True):
     """Perturbate a mesh randomly of radius
-    Usage: perturbate(a, radius, dim)"""
+    Usage: perturbate(a, radius, dim, relative)"""
     if isinstance(a[0], list):
         b = []
         for i in a:
-            b.append(transform.perturbate(i, radius, dim))
+            b.append(transform.perturbate(i, radius, dim, relative))
         return b
     else:
-        return transform.perturbate(a, radius, dim)
+        return transform.perturbate(a, radius, dim, relative)
 
 
 def smoothField(a, eps=0.1, niter=1, type=0, varNames=[]):
@@ -414,6 +415,15 @@ def smooth(a, eps=0.5, niter=4, type=0, fixedConstraints=[],
     else: # array non structure
         return transform.smooth(a, eps, niter, type, fixedConstraint,
                                 projConstraint, delta, point, radius)
+
+def consSmooth(a):
+    """Conservative smoothing."""
+    if isinstance(a[0], list):
+        for i in a:
+            transform.consSmooth(i)
+    else:
+        return transform.consSmooth(a)
+    return None
 
 def projectAllDirs(arrays, surfaces, vect=['nx','ny','nz'], oriented=0):
     """Project points defined in arrays to surfaces according to the direction provided by vect.

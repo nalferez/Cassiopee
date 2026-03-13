@@ -137,26 +137,26 @@ Design
     inline size_type capacity() { return _allocated_sz;}
 
     /// Expands the capacity.
-    int reserve(size_type rows, size_type cols);
+    E_Int reserve(size_type rows, size_type cols);
 
     /// Resizes the array preserving the relevant data and set the missing ones to the input val.
     void resize(size_type rows, size_type cols, const value_type* val = 0);
     void resize(size_type rows, size_type cols, const value_type& val);
 
     /// Appends an array at the end of the array. array must have the same nb of rows.
-    int pushBack(const self_type& a);
+    E_Int pushBack(const self_type& a);
 
     /// pushBack a colum defined by values between begin and end.
-    template <typename Iterator> int pushBack(Iterator begin, Iterator end);
+    template <typename Iterator> E_Int pushBack(Iterator begin, Iterator end);
     
     /// pushBack a std::vector for a one-row DynArray
-    int pushBack(const std::vector<T>& a);
+    E_Int pushBack(const std::vector<T>& a);
     
     ///
-    int pushBack(const self_type& a, const E_Int* fields, E_Int sz);
+    E_Int pushBack(const self_type& a, const E_Int* fields, E_Int sz);
 
     /// pushBack a constant col colum .
-    int pushBack(value_type v, E_Int rows);
+    E_Int pushBack(value_type v, E_Int rows);
     
     /// Extract a selection of entries given by ids from arr.
     void append_selection (const self_type& arr, const std::vector<E_Int>& ids);
@@ -195,7 +195,7 @@ Design
     inline const_iterator begin(size_type i) const
     {assert(i < _cols);return _data + (i*_rowsMax);} 
     
-    inline size_type stride(int i) { return _rows; }
+    inline size_type stride(E_Int i) { return _rows; }
 
   public: /** Operators and operations*/
 
@@ -407,13 +407,11 @@ Design
 
   ///DynArray --> FldArray
   template <typename T> inline
-  void
-  DynArray<T>::convert(FldArray<T>& out, T shift) const
+  void DynArray<T>::convert(FldArray<T>& out, T shift) const
   {__exportFldArray(out, shift);}
 
   template <typename T> inline
-  void
-  DynArray<T>::extract_field(size_type i, std::vector<T>& f)
+  void DynArray<T>::extract_field(size_type i, std::vector<T>& f)
   {
     f.resize(_cols, {});
     for (size_type j = 0; j < _cols; ++j)
@@ -421,8 +419,7 @@ Design
   }
   
   template <typename T> inline
-  void
-  DynArray<T>::set_field(size_type i, const std::vector<T>& f)
+  void DynArray<T>::set_field(size_type i, const std::vector<T>& f)
   {
     assert(f.size() == (size_t)_cols);
     assert(i < _rows);
@@ -456,8 +453,7 @@ Design
   *   Memory is reallocated (preserve data). 
   */
   template <typename T>
-  int
-  DynArray<T>::reserve(size_type rows, size_type cols)
+  E_Int DynArray<T>::reserve(size_type rows, size_type cols)
   {
     if ((rows == _rowsMax) && (cols == _colsMax)) // Allocated memory is OK.
       return 0;
@@ -526,8 +522,7 @@ Design
   }
   
   template <typename T>
-  void
-  DynArray<T>::resize(size_type rows, size_type cols, const value_type& val)
+  void DynArray<T>::resize(size_type rows, size_type cols, const value_type& val)
   {
     size_type size(rows*cols);
     size_type cols0(_cols);
@@ -556,8 +551,7 @@ Design
 
   ///
   template <typename T>
-  int
-  DynArray<T>::pushBack(const self_type& a)
+  E_Int DynArray<T>::pushBack(const self_type& a)
   {
     if (_rows == 0)// Empty array
     {
@@ -569,7 +563,7 @@ Design
     if (a._cols > (_colsMax - _cols))
     {
       // If the spare room is too tight.
-      int err = reserve(_rows, 2*(_cols+a._cols));  // Double the columns capacity.
+      E_Int err = reserve(_rows, 2*(_cols+a._cols));  // Double the columns capacity.
       if (err) return 1;
     }
     
@@ -582,8 +576,7 @@ Design
   
   ///
   template <typename T>
-  int
-  DynArray<T>::pushBack(const self_type& a, const E_Int* fields, E_Int sz)
+  E_Int DynArray<T>::pushBack(const self_type& a, const E_Int* fields, E_Int sz)
   {
     if (sz==0) return 0;
     
@@ -595,7 +588,7 @@ Design
     if (a._cols > (_colsMax - _cols)) 
     {    
       // If the spare room is too tight.
-      int err = reserve(_rows, 2*(_cols+a._cols));  // Double the columns capacity.
+      E_Int err = reserve(_rows, 2*(_cols+a._cols));  // Double the columns capacity.
       if (err) return 1;
     }
 
@@ -611,8 +604,7 @@ Design
   
   ///
   template <typename T>
-  int
-  DynArray<T>::pushBack(const std::vector<T>& a)
+  E_Int DynArray<T>::pushBack(const std::vector<T>& a)
   {
     if (a.empty())  return 0;
     if (_rows == 0) _rows=1;
@@ -637,8 +629,7 @@ Design
   ///
   template <typename T>
   template <typename Iterator>
-  int
-  DynArray<T>::pushBack(Iterator begin, Iterator end)
+  E_Int DynArray<T>::pushBack(Iterator begin, Iterator end)
   {
     if (_rows == 0)// Empty array
       _rows = (end - begin);
@@ -647,7 +638,7 @@ Design
 
     if (_cols == _colsMax)
     {
-      int err = reserve (_rows, 2*(_cols+1));
+      E_Int err = reserve (_rows, 2*(_cols+1));
       if (err) return 1;
     }
 
@@ -659,8 +650,7 @@ Design
 
   ///
   template <typename T>
-  int
-  DynArray<T>::pushBack(value_type val, E_Int rows) 
+  E_Int DynArray<T>::pushBack(value_type val, E_Int rows) 
   {      
     if (_rows == 0)// Empty array
       _rows = rows;
@@ -669,7 +659,7 @@ Design
 
     if (_cols == _colsMax)
     {
-      int err = reserve(_rows, 2 * (_cols + 1));
+      E_Int err = reserve(_rows, 2 * (_cols + 1));
       if (err) return 1;
     }
 
@@ -681,8 +671,7 @@ Design
   
   ///
   template <typename T>
-  void
-  DynArray<T>::append_selection(const self_type& arr, const std::vector<E_Int>& ids)
+  void DynArray<T>::append_selection(const self_type& arr, const std::vector<E_Int>& ids)
   {
     assert ((_rows==0) || (_rows==arr._rows));
     
@@ -692,8 +681,7 @@ Design
 
   /// Assignment operator.
   template <typename T>
-  DynArray<T>&
-  DynArray<T>::operator=(const self_type& rhs)
+  DynArray<T>& DynArray<T>::operator=(const self_type& rhs)
   {
     if (this == &rhs) //avoid self assignment.
       return *this;
@@ -733,8 +721,7 @@ Design
 
   /// Move Assignment operator.
   template <typename T>
-  DynArray<T>&
-  DynArray<T>::operator=(self_type&& rhs) 
+  DynArray<T>& DynArray<T>::operator=(self_type&& rhs) 
   {
     if (this == &rhs) //avoid self move.
       return *this;
@@ -757,8 +744,7 @@ Design
 
   /// Adds two DynArrays. Do the job on the common dimensions.
   template <typename T>
-  DynArray<T>
-  DynArray<T>::operator+(const self_type& rhs) const 
+  DynArray<T> DynArray<T>::operator+(const self_type& rhs) const 
   {
     size_type r = std::min(_rows, rhs._rows);
     size_type c = std::min(_cols, rhs._cols);
@@ -773,8 +759,7 @@ Design
 
   /// Multiplies two DynArrays. Do the job on the common dimensions.
   template <typename T>
-  const DynArray<T>
-  DynArray<T>::operator*(const self_type& rhs) const 
+  const DynArray<T> DynArray<T>::operator*(const self_type& rhs) const 
   {
     size_type n = std::min(_rows, rhs._cols);
     size_type m = std::min(_cols, rhs._rows);
@@ -802,8 +787,7 @@ Design
   
   /// Checks equality
   template <typename T>
-  bool
-  DynArray<T>::operator==(const self_type& rhs) const
+  bool DynArray<T>::operator==(const self_type& rhs) const
   {
     size_t r=rows();
     size_t c=cols();
@@ -826,8 +810,7 @@ Design
 
   /// Transposes the input array.
   template <typename T>
-  DynArray<T>&
-  DynArray<T>::transpose()
+  DynArray<T>& DynArray<T>::transpose()
   {
     DynArray<T> result(_cols, _rows);
 
@@ -840,8 +823,7 @@ Design
   }
 
   template <typename T>
-  void
-  DynArray<T>::transpose(self_type& result) const 
+  void DynArray<T>::transpose(self_type& result) const 
   {
     result.resize(_cols, _rows);
 
@@ -920,8 +902,7 @@ Design
   ///
   template <>
   template <typename Vector>
-  void
-  DynArray<E_Int>::changeIndices (self_type& a, const Vector& new_Ids)
+  void DynArray<E_Int>::changeIndices (self_type& a, const Vector& new_Ids)
   {
     for (size_type i=0; i<a._cols; ++i)
     {
@@ -937,8 +918,7 @@ Design
   ///
   template <typename T>
   template <typename Vector>
-  void
-  DynArray<T>::uniqueVals(Vector& vals) const
+  void DynArray<T>::uniqueVals(Vector& vals) const
   {
     vals.clear();
     std::set<T> pool;
@@ -958,8 +938,7 @@ Design
   ///
   template <>
   template <typename Vector>
-  void
-  DynArray<E_Int>::uniqueVals(Vector& vals) const
+  void DynArray<E_Int>::uniqueVals(Vector& vals) const
   {
     vals.clear();
     std::set<E_Int> pool;
@@ -980,8 +959,7 @@ Design
 
   ///
   template <> inline
-  void
-  DynArray<E_Int>::uniqueVals(std::set<E_Int>& vals) const
+  void DynArray<E_Int>::uniqueVals(std::set<E_Int>& vals) const
   {
     vals.clear();
     E_Int v;
@@ -997,8 +975,7 @@ Design
   }
 
   template <typename T>
-  void
-  DynArray<T>::shift(T val, size_type istart)
+  void DynArray<T>::shift(T val, size_type istart)
   {
     size_type beg=istart*_rowsMax;
     T* p = _data + beg;
@@ -1013,11 +990,9 @@ Design
   /*****************  private ***********************************/
 
   template <typename T>
-  T*
-    DynArray<T>::__create(size_type size)
-    {
-      if (size == 0)
-        return nullptr;
+  T* DynArray<T>::__create(size_type size)
+  {
+      if (size == 0) return nullptr;
 
       T* p = nullptr;
       if (!_calloc)
@@ -1031,9 +1006,8 @@ Design
   }
 
   template <typename T>
-  void
-    DynArray<T>::__destroy(){
-      
+  void DynArray<T>::__destroy()
+  {    
     if (!_calloc)
       NUGA::allocator<false>::deallocate(_data);
     else
@@ -1042,9 +1016,8 @@ Design
 
   template <typename T>
   template <typename InputIterator>
-  void
-  DynArray<T>::__copy(InputIterator begin, InputIterator end, iterator there){
-
+  void DynArray<T>::__copy(InputIterator begin, InputIterator end, iterator there)
+  {
     assert(there != nullptr);
 
     for (InputIterator it = begin; it != end; ++it)
@@ -1054,9 +1027,8 @@ Design
   }
 
   template <typename T>
-  void
-    DynArray<T>::__copy(value_type val, E_Int rows, iterator there) {
-
+  void DynArray<T>::__copy(value_type val, E_Int rows, iterator there) 
+  {
     assert(there != nullptr);
     
     for (E_Int i=0; i < rows; ++i)
@@ -1064,11 +1036,9 @@ Design
   }
   
   template <typename T>
-  inline void
-  DynArray<T>::__mappingcopy(const self_type& arr, iterator tgt_data, E_Int tgt_stride, E_Int nb_fields, E_Int nb_entries)
+  inline void DynArray<T>::__mappingcopy(const self_type& arr, iterator tgt_data, E_Int tgt_stride, E_Int nb_fields, E_Int nb_entries)
   {  
-    if (nb_fields*nb_entries == 0)
-      return;
+    if (nb_fields*nb_entries == 0) return;
 
     assert (nb_fields >=0);
     assert (nb_entries >=0);
@@ -1097,8 +1067,7 @@ Design
   inline void
   DynArray<T>::__mappingcopyandfill(const self_type& arr, iterator tgt_data, E_Int tgt_stride, E_Int nb_fields, E_Int nb_entries, const T* val)
   {
-    if (nb_fields*nb_entries == 0)
-      return;
+    if (nb_fields*nb_entries == 0) return;
 
     assert (nb_fields >=0);
     assert (nb_entries >=0);
@@ -1125,20 +1094,18 @@ Design
   }
 
   template <typename T>
-  void
-    DynArray<T>::__assign (iterator begin, iterator end, const value_type& v){
+  void DynArray<T>::__assign (iterator begin, iterator end, const value_type& v)
+  {
+    for (iterator it = begin; it != end; ++it)
+      *it = v;
 
-      for (iterator it = begin; it != end; ++it)
-        *it = v;
-
-      //std::fill_n (begin, end, v);
+    //std::fill_n (begin, end, v);
   }
 
   template <typename T>
   template <typename U>
-  void
-    DynArray<T>::__importFldArray (const U& a, value_type shift){
-
+  void DynArray<T>::__importFldArray (const U& a, value_type shift)
+  {
       size_type rows(a.getNfld()), cols(a.getSize());
       const T* *p =  new const T*[rows];
 
@@ -1161,9 +1128,8 @@ Design
   
   template <>
   template <typename U>
-  void
-    DynArray<E_Float>::__importFldArray (const U& a, const E_Float** p, E_Int npos){
-
+  void DynArray<E_Float>::__importFldArray (const U& a, const E_Float** p, E_Int npos)
+  {
       size_type rows(a.getNfld()), cols(a.getSize());
             
       assert (npos <= rows);
@@ -1199,9 +1165,8 @@ Design
 
   template <typename T>
   template <typename FldArrayType>
-  void
-    DynArray<T>::__exportFldArray (FldArrayType& a, value_type shift) const {
-
+  void DynArray<T>::__exportFldArray (FldArrayType& a, value_type shift) const 
+  {
       FldArrayType out;
       out.resize(_cols, _rows);
 
@@ -1222,8 +1187,8 @@ Design
   }
 
   template <typename T>
-  std::ostream & operator<<(std::ostream& out, const DynArray<T>& arr){
-
+  std::ostream & operator<<(std::ostream& out, const DynArray<T>& arr)
+  {
     out << "####################################" << std::endl;
 
     // Print out the matrix.

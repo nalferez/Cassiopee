@@ -39,13 +39,8 @@ PyObject* K_OCC::projectOnEdges(PyObject* self, PyObject* args)
   PyObject* hook; PyObject* array; PyObject* edgeList;
   if (!PYPARSETUPLE_(args, OOO_, &hook, &array, &edgeList)) return NULL;  
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
+  GETPACKET;
+  
   // array a projeter
   FldArrayI* c; FldArrayF* fi;
   E_Int ni, nj, nk;
@@ -104,13 +99,21 @@ PyObject* K_OCC::projectOnEdges(PyObject* self, PyObject* args)
 #pragma omp for
     for (E_Int i=0; i < npts; i++)
     {
+      ptx[i] = K_CONST::E_MAX_FLOAT;
+      pty[i] = K_CONST::E_MAX_FLOAT;
+      ptz[i] = K_CONST::E_MAX_FLOAT;
+
       for (E_Int j = 0; j < nedges; j++)
       {
         const TopoDS_Edge& E = TopoDS::Edge(cadEdges(edges[j]));
+        if (BRep_Tool::Degenerated(E))
+        {
+          //printf("edge is degenerated for point %g %g %g\n", px[i],py[i],pz[i]); 
+          continue;
+        }
         BRepAdaptor_Curve C0(E);
         Standard_Real aFirst=C0.FirstParameter(), aEnd=C0.LastParameter();
         Handle(Geom_Curve) aCurve = BRep_Tool::Curve(E, aFirst, aEnd);
-
         Point.SetCoord(pox[i], poy[i], poz[i]);
         try
         {
@@ -121,20 +124,23 @@ PyObject* K_OCC::projectOnEdges(PyObject* self, PyObject* args)
         }
         catch (StdFail_NotDone& e) 
         { 
-          //printf("FAIL for point %g %g %g\n", px[i],py[i],pz[i]); 
-          ptx[i] = K_CONST::E_MAX_FLOAT;
-          pty[i] = K_CONST::E_MAX_FLOAT;
-          ptz[i] = K_CONST::E_MAX_FLOAT;
+          //printf("FAIL to project for point %g %g %g\n", px[i],py[i],pz[i]); 
+          continue;
         }
-      }
+        catch (Standard_NullObject& e)
+        {
+          //printf("Curve is ill formed for point %g %g %g\n", px[i],py[i],pz[i]); 
+          continue;
+        }
 
-      dx = ptx[i]-pox[i];
-      dy = pty[i]-poy[i];
-      dz = ptz[i]-poz[i];
-      d = dx*dx+dy*dy+dz*dz;
-      if (d < dist[i])
-      { dist[i] = d; px[i] = ptx[i]; py[i] = pty[i]; pz[i] = ptz[i]; }
-      //printf("projection %f %f %f -> %f %f %f\n",pox[i],poy[i],poz[i],px[i],py[i],pz[i]);
+        dx = ptx[i]-pox[i];
+        dy = pty[i]-poy[i];
+        dz = ptz[i]-poz[i];
+        d = dx*dx+dy*dy+dz*dz;
+        if (d < dist[i])
+        { dist[i] = d; px[i] = ptx[i]; py[i] = pty[i]; pz[i] = ptz[i]; }
+        //printf("projection %f %f %f -> %f %f %f\n",pox[i],poy[i],poz[i],px[i],py[i],pz[i]);
+      }
     }
   }
 

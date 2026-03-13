@@ -93,11 +93,11 @@ class Zone
     float tesOuter, tesInner; // Tesselation shader param ( from tag ? )
                               // Default value is 3 ( can vary in 3-50 )
 
-    ZoneImpl* ptr_impl;
-    void setUseGPURessources()   { ptr_impl->_GPUResUse = 1; }
-    void unsetUseGPURessources() { ptr_impl->_GPUResUse = 0; }
+    ZoneImpl* ptrImpl;
+    void setUseGPURessources()   { ptrImpl->_GPUResUse = 1; }
+    void unsetUseGPURessources() { ptrImpl->_GPUResUse = 0; }
     void freeGPURessources(bool useGPURessources=true, bool freeIso=true);
-    void destroyGPUIsoField() { ptr_impl->destroyIsoField(); }
+    void destroyGPUIsoField() { ptrImpl->destroyIsoField(); }
     unsigned char* _voxelArray; // array voxel pour les zones en rendu volumique
 };
 

@@ -86,14 +86,8 @@ PyObject* K_OCC::areEdgeIdentical(PyObject* self, PyObject* args)
   E_Int edgeNo2; // No de l'edge1
   if (!PYPARSETUPLE_(args, OO_ I_, &hook, &edgeNo1, &edgeNo2)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
-  TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
+  GETPACKET;
+  GETMAPEDGES;
   TopExp_Explorer expl;
 
   const TopoDS_Edge& E1 = TopoDS::Edge(edges(edgeNo1));

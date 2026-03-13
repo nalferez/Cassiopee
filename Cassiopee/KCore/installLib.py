@@ -6,6 +6,10 @@
 import os, shutil
 import Dist
 
+# Check PYTHONPATH
+Dist.checkPythonPath()
+Dist.checkLdLibraryPath()
+
 system = Dist.getSystem()[0]
 
 if system == 'Windows':
@@ -18,8 +22,7 @@ else:
 try: import KCore.installPath as K
 except ImportError: import installPath as K
 libPath = K.libPath
-prod = os.getenv("ELSAPROD")
-if prod is None: prod = 'xx'
+prod = os.getenv("ELSAPROD") or 'xx'
 installPathLocal = 'build/'+prod
 
 # La librarie statique existe?
@@ -37,7 +40,6 @@ else: # Essai en dynamique
 installPath = K.installPath+'/KCore'
 
 # Copie aussi les .py
-shutil.copyfile("config.py", installPath+"/config.py")
 shutil.copyfile("Dist.py", installPath+"/Dist.py")
 shutil.copyfile("installPath.py", installPath+"/installPath.py")
 shutil.copyfile("installBase.py", installPath+"/installBase.py")

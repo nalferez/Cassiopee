@@ -232,7 +232,7 @@ namespace NUGA
       // the 8 children of PH
       E_Int PHichildr[10];
 
-      for (int j = 0; j < 10; ++j)
+      for (E_Int j = 0; j < 10; ++j)
         PHichildr[j] = firstPHChild + j;
 
       E_Int* h271 = ng.PHs.get_facets_ptr(PHichildr[0]);

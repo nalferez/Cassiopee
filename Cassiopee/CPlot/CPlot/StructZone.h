@@ -21,7 +21,6 @@
 #define _CPLOT_STRUCTZONE_H_
 
 #include "Zone.h"
-//#include "kcore.h"
 
 /* Define a structured zone */
 class StructZone : public Zone
@@ -32,7 +31,7 @@ class StructZone : public Zone
     void compNorm();
       
   public:
-    E_Int ni, nj, nk;                  // number of points
+    E_Int ni, nj, nk; // number of points
  
     E_Int activePlane; // not used, i=0, j=1, k=2
     // In 2D or 3D mode, CPlot displays 3 2D planes (i=cste, j=cste, k=cste)

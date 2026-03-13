@@ -901,7 +901,7 @@ class Surface():
             self.DefTree[i+1].computeMeshDisplacement()
 
         # copie Displacement#0/DisplacementX dans UV
-        zones1 = Internal.getZones(self.RefMeshUV)
+        #zones1 = Internal.getZones(self.RefMeshUV)
         zones2 = Internal.getZones(self.RefMeshUV2)
         zones3 = Internal.getZones(self.RefMesh)
         for i, z1 in enumerate(zones3):
@@ -928,7 +928,7 @@ class Surface():
             o = OCC.occ.evalFace(self.hook, a, i+1)
             zones3[i] = C.setFields([o], zones3[i], 'nodes')
 
-            C.convertPyTree2File(self.RefMeshUV2, 'out2.cgns')
+            #C.convertPyTree2File(self.RefMeshUV2, 'out2.cgns')
 
         return self.RefMesh
 

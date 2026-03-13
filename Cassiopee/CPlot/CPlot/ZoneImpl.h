@@ -21,12 +21,13 @@
 #include "CPlotState.h"
 #include "shaders_id.h"
 
-struct ZoneImpl {
-    ZoneImpl( ) : _GPUResUse( 1 ) {}
-    virtual ~ZoneImpl( ) {}
-    E_Int _GPUResUse; // =1 si cette zone utilise les ressources internes du GPU (Display Lists ou VBO)
-    virtual void freeGPURes(CPlotState* state, bool freeIso=true) = 0;
-    virtual void destroyIsoField( ) = 0;
+struct ZoneImpl 
+{
+  ZoneImpl( ) : _GPUResUse( 1 ) {}
+  virtual ~ZoneImpl( ) {}
+  E_Int _GPUResUse; // =1 si cette zone utilise les ressources internes du GPU (Display Lists ou VBO)
+  virtual void freeGPURes(CPlotState* state, bool freeIso=true) = 0;
+  virtual void destroyIsoField( ) = 0;
 };
 
 #endif

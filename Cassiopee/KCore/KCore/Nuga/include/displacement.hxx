@@ -481,7 +481,7 @@ namespace NUGA
     std::vector<bool> targeted(crd.cols(), false);
     for (E_Int i = 0; i < m.crd.cols(); ++i)
     {
-      int N = tree.getClosest(m.crd.col(i), ZERO_M*ZERO_M, d2);
+      E_Int N = tree.getClosest(m.crd.col(i), ZERO_M*ZERO_M, d2);
 
       if (N == IDX_NONE) continue;
       assert(targeted[N] == false);
@@ -506,7 +506,7 @@ namespace NUGA
     bound_mesh_t only_mask_walls(*bit);
     std::vector<E_Int> ptoids;
 
-    int nbcells = bit->ncells();
+    E_Int nbcells = bit->ncells();
 
     bound_mesh_t zwalls(zbound);
     //E_Int nb_occ1 = std::count(ALL(zbound.cnt._type), 1);

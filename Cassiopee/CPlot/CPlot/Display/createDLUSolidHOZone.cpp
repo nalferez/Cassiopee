@@ -27,7 +27,7 @@
 void DataDL::createGPUUSolidHOZone(UnstructZone *zonep, E_Int zone, E_Int zonet)
 {
     E_Int ind, ind_elt;
-    ZoneImplDL *zImpl = static_cast<ZoneImplDL *>( zonep->ptr_impl );
+    ZoneImplDL *zImpl = static_cast<ZoneImplDL *>( zonep->ptrImpl );
     GLenum error = glGetError();
     if (error != GL_NO_ERROR)
     {

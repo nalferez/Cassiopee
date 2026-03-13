@@ -59,8 +59,7 @@ public:
 };
 
 template <typename SurfaceType>
-E_Int
-SurfaceMesher<SurfaceType>::run(SurfaceMeshData<SurfaceType>& data)
+E_Int SurfaceMesher<SurfaceType>::run(SurfaceMeshData<SurfaceType>& data)
 {
   typedef GeomMetric<Aniso2D, SurfaceType> MetricType;
   //typedef Mesher<Aniso2D, MetricType> MesherType;
@@ -69,12 +68,10 @@ SurfaceMesher<SurfaceType>::run(SurfaceMeshData<SurfaceType>& data)
                           mode.chordal_error, mode.hmin, mode.hmax, mode.growth_ratio);
   
   metric_aniso.set_pos2D(*data.pos);// hack to avoid to create an argument for init_metric (that is not required for other metric than GeomMetric
-
   metric_aniso.init_metric(data.metrics, data.pos3D, *data.connectB, data.hardNodes);
   
   parent_t::clear(); // clear container attributes
   parent_t::set(metric_aniso);
-
   parent_t::mode = mode;
   
 #ifdef DEBUG_MESHER
@@ -109,8 +106,7 @@ SurfaceMesher<SurfaceType>::run(SurfaceMeshData<SurfaceType>& data)
 }
 
 template <typename SurfaceType>
-void
-SurfaceMesher<SurfaceType>::__mapToSurface
+void SurfaceMesher<SurfaceType>::__mapToSurface
 (const SurfaceType& surface, const K_FLD::FloatArray& pos2D, K_FLD::FloatArray& pos3D, E_Bool exportUV)
 {
   E_Float pt[3];

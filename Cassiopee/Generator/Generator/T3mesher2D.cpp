@@ -87,7 +87,7 @@ PyObject* K_GENERATOR::T3mesher2D(PyObject* self, PyObject* args)
   }
  
   K_FLD::FloatArray& POS = *f;
-  K_FLD::IntArray&   CONNECT = *cn;
+  K_FLD::IntArray& CONNECT = *cn;
 
   POS.resize(2, POS.cols());
 
@@ -130,7 +130,6 @@ PyObject* K_GENERATOR::T3mesher2D(PyObject* self, PyObject* args)
 
   if (metric_interp_type != 0)
     mode.metric_interpol_type = mode.GEOMETRIC;
-
   
   E_Int err = 0;
   if (dT3.metrics.rows() < 3) // Isotropic

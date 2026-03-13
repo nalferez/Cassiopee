@@ -39,8 +39,10 @@
 PyObject* K_OCC::fillHole(PyObject* self, PyObject* args)
 {
   PyObject* hook; PyObject* listEdges; PyObject* listFaces; E_Int continuity;
-  if (!PYPARSETUPLE_(args, OOO_ I_, &hook, &listEdges, &listFaces, &continuity)) return NULL;
+  char* name;
+  if (!PYPARSETUPLE_(args, OOO_ I_ S_, &hook, &listEdges, &listFaces, &continuity, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPEDGES;
 
@@ -153,11 +155,24 @@ PyObject* K_OCC::fillHole(PyObject* self, PyObject* args)
     }
   }
 
-  // Add face to shape
-  //ShapeBuild_ReShape reshaper;
-  //reshaper.Add(F); // no add
-  //TopoDS_Shape shc = reshaper.Apply(*shp);
+#ifdef USEXCAF
 
+  BRep_Builder builder;
+  TopoDS_Compound compound;
+  builder.MakeCompound(compound);
+  builder.Add(compound, F);
+  
+  GETDOC;
+  addShape2OCAF(compound, name, *doc);
+  TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
+#else
+
+  // Add face to shape
   TopoDS_Shape* newshp = NULL;
 
   TopoDS_Compound shc;
@@ -189,4 +204,5 @@ PyObject* K_OCC::fillHole(PyObject* self, PyObject* args)
 
   Py_INCREF(Py_None);
   return Py_None;
+#endif
 }

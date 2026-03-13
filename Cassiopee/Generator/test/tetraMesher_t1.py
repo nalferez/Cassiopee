@@ -12,7 +12,8 @@ ext = G.close(ext)
 ext = T.reorder(ext, (-1,))
 # netgen
 #m = G.tetraMesher(ext, algo=0)
-#test.testA([m], 1)
+#test.testA(m, 1)
 # tetgen
-m = G.tetraMesher(ext, algo=1)
-test.testA([m], 2)
+m = G.tetraMesher(ext, grading=1., maxh=10., algo=1)
+test.testA(m, 2)
+C.convertArrays2File(m, 'out.plt')

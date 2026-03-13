@@ -617,12 +617,13 @@ Mesh transformation
 ---------------------------------------
 
 
-.. py:function:: Transform.perturbate(a, radius, dim=3)
+.. py:function:: Transform.perturbate(a, radius, dim=3, relative=True)
 
     .. A1.O0.D1
     
-    Perturbate randomly a mesh a with given radius. Mesh points are modified aleatoirely
+    Perturbate randomly a mesh a with given radius. Mesh points are modified randomly
     in all directions, with a distance less or equal to radius.
+    If relative is true, the perturbation is proportional to the minimum length of local edges.
     If dim=2, Z coordinates are fixed.
     If dim=1, only the X coordinates are modified.
 

@@ -276,7 +276,7 @@ CAD manipulation
 
 ------------------------------------------
 
-.. py:function:: OCC._translate(hook, vector, listOfFaces=None)
+.. py:function:: OCC._translate(hook, vector, faceList=None)
 
     Translate a CAD hook by a given vector.
 
@@ -284,8 +284,8 @@ CAD manipulation
     :type hook: CAD hook
     :param vector: translation vector (dx, dy, dz)
     :type vector: tuple of floats
-    :param listOfFaces: if None, translate all else translate only given faces
-    :type listOfFaces: list of face indices (starts 1)
+    :param faceList: if None, translate all else translate only given faces
+    :type faceList: list of face indices (starts 1)
 
     *Example of use:*
 
@@ -295,7 +295,7 @@ CAD manipulation
 
 ------------------------------------------
 
-.. py:function:: OCC._rotate(hook, Xc, axis, angle, listOfFaces=None)
+.. py:function:: OCC._rotate(hook, Xc, axis, angle, faceList=None)
 
     Rotate a CAD hook around a given axis by a given angle.
 
@@ -307,8 +307,8 @@ CAD manipulation
     :type axis: tuple of floats
     :param angle: rotation angle in degrees
     :type angle: float
-    :param listOfFaces: if None, rotate all else rotate only given faces
-    :type listOfFaces: list of face indices (starts 1)
+    :param faceList: if None, rotate all else rotate only given faces
+    :type faceList: list of face indices (starts 1)
 
     *Example of use:*
 
@@ -318,7 +318,7 @@ CAD manipulation
 
 ------------------------------------------
 
-.. py:function:: OCC._scale(hook, factor, X, listOfFaces=None)
+.. py:function:: OCC._scale(hook, factor, X, faceList=None)
 
     Scale a CAD hook by a given factor.
 
@@ -328,8 +328,8 @@ CAD manipulation
     :type factor: float
     :param X: invariant point (x, y, z)
     :type X: tuple of floats
-    :param listOfFaces: if None, scale all else scale only given faces
-    :type listOfFaces: list of face indices (starts 1)
+    :param faceList: if None, scale all else scale only given faces
+    :type faceList: list of face indices (starts 1)
 
     *Example of use:*
 
@@ -373,16 +373,16 @@ CAD manipulation
 
 ------------------------------------------
 
-.. py:function:: OCC._sewing(hook, faceList=None, tol=1.e-6)
+.. py:function:: OCC._sewing(hook, tol=1.e-6, faceList=None)
 
     Sew faces. Supress redundant edges.
 
     :param hook: CAD hook
     :type hook: CAD hook
-    :param faceList: if None, merge all faces else list of faces indices to merge
-    :type faceList: list of face indices (starts 1)
     :param tol: tolerance for sewing
     :type tol: float
+    :param faceList: if None, merge all faces else list of faces indices to merge
+    :type faceList: list of face indices (starts 1)
 
     *Example of use:*
 

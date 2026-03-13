@@ -46,6 +46,7 @@ PyObject* K_OCC::splitEdge(PyObject* self, PyObject* args)
   PyObject* hook; E_Int no; E_Float param; E_Float x, y, z;
   if (!PYPARSETUPLE_(args, O_ I_ R_ TRRR_, &hook, &no, &param, &x, &y, &z)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPEDGES;
   GETMAPSURFACES;

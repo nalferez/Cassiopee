@@ -43,8 +43,10 @@
 PyObject* K_OCC::loft(PyObject* self, PyObject* args)
 {
   PyObject* hook; PyObject* listProfiles; PyObject* listGuides; 
-  if (!PYPARSETUPLE_(args, OOO_ , &hook, &listProfiles, &listGuides)) return NULL;
+  char* name;
+  if (!PYPARSETUPLE_(args, OOO_ S_, &hook, &listProfiles, &listGuides, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
   GETMAPEDGES;
 
@@ -116,6 +118,19 @@ PyObject* K_OCC::loft(PyObject* self, PyObject* args)
     newshp = new TopoDS_Shape(F);
   }
 
+#ifdef USEXCAF
+  
+  GETDOC;
+  addShape2OCAF(*newshp, name, *doc);
+  delete newshp;
+  newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
+#else
+
   // Rebuild the hook
   delete shape;
   SETSHAPE(newshp);
@@ -125,4 +140,5 @@ PyObject* K_OCC::loft(PyObject* self, PyObject* args)
 
   Py_INCREF(Py_None);
   return Py_None;
+#endif
 }

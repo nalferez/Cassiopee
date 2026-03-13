@@ -45,6 +45,7 @@ static PyMethodDef PyTransform[] =
   {"perturbate", K_TRANSFORM::perturbate, METH_VARARGS},
   {"smooth", K_TRANSFORM::smooth, METH_VARARGS},
   {"_smoothField", K_TRANSFORM::_smoothField, METH_VARARGS},
+  {"consSmooth", K_TRANSFORM::consSmooth, METH_VARARGS},
   {"deform", K_TRANSFORM::deform, METH_VARARGS},
   {"deform2", K_TRANSFORM::deform2, METH_VARARGS},
   {"deformPoint", K_TRANSFORM::deformPoint, METH_VARARGS},

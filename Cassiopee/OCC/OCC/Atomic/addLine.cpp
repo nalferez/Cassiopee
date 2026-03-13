@@ -36,16 +36,35 @@ PyObject* K_OCC::addLine(PyObject* self, PyObject* args)
 {
   PyObject* hook; 
   E_Float x1, y1, z1, x2, y2, z2;
-  if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_, &hook, &x1, &y1, &z1, &x2, &y2, &z2)) return NULL;
+  char* name;
+  if (!PYPARSETUPLE_(args, O_ TRRR_ TRRR_ S_, &hook, &x1, &y1, &z1, &x2, &y2, &z2, &name)) return NULL;
 
+  GETPACKET;
   GETSHAPE;
-  GETMAPSURFACES;
-  GETMAPEDGES;
   
   gp_Pnt p1(x1, y1, z1); // Bottom left
   gp_Pnt p2(x2, y2, z2); // Bottom right
-
   TopoDS_Edge edge = BRepBuilderAPI_MakeEdge(p1, p2);
+
+#ifdef USEXCAF
+
+  BRep_Builder builder;
+  TopoDS_Compound compound;
+  builder.MakeCompound(compound);
+  builder.Add(compound, edge);
+  
+  GETDOC;
+  addShape2OCAF(compound, name, *doc);
+  TopoDS_Shape* newshp = copyOCAF2TopShape(*doc);
+  delete shape;
+  SETSHAPE(newshp);
+  Py_INCREF(Py_None);
+  return Py_None;
+
+#else
+
+  GETMAPSURFACES;
+  GETMAPEDGES;
 
   // Rebuild a single compound
   BRep_Builder builder;
@@ -74,4 +93,5 @@ PyObject* K_OCC::addLine(PyObject* self, PyObject* args)
   
   Py_INCREF(Py_None);
   return Py_None;
+#endif
 }

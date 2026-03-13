@@ -14,9 +14,8 @@
 #define GETPACKET \
   void** packet = (void**) PyCapsule_GetPointer(hook, NULL);
 
-// GET PACKET+SHAPE
+// GET SHAPE
 #define GETSHAPE \
-  void** packet = (void**) PyCapsule_GetPointer(hook, NULL); \
   TopoDS_Shape* shape = (TopoDS_Shape*)packet[0];
 
 // GET MAPS
@@ -26,6 +25,14 @@
 #define GETMAPEDGES \
   TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
 
+// GET DOC
+#define GETDOC \
+  TDocStd_Document* doc = (TDocStd_Document*)packet[5];
+
+// GET SHAPETOOL
+#define GETSHAPETOOL \
+  Handle(XCAFDoc_ShapeTool) shapeTool = XCAFDoc_DocumentTool::ShapeTool(doc->Main());
+  
 // SET MAPS
 #define SETMAPSURFACES \
   TopTools_IndexedMapOfShape* ptr = (TopTools_IndexedMapOfShape*)packet[1]; \

@@ -46,7 +46,6 @@ StructZone* Data::createStructZone(FldArrayF* structF, char* varString,
   StructZone* sz = new StructZone(ptrState, createZoneImpl());
   StructZone& z = *sz;
   strcpy(z.zoneName, zoneName);
-
   z.ni = ni; z.nj = nj; z.nk = nk;
   z.npts = z.ni * z.nj * z.nk;
   if (referenceNfield != -1) z.nfield = referenceNfield;
@@ -320,8 +319,8 @@ UnstructZone* Data::createUnstrZone(FldArrayF* unstrF, char* varString,
     ind_type++;
     pt_type = high_order_types[ind_type];
   }
-  bool is_high_order = (pt_type != NULL);
-  z._is_high_order = is_high_order;
+  bool isHighOrder = (pt_type != NULL);
+  z._isHighOrder = isHighOrder;
 # endif
   z.x = new E_Float[z.npts];
   memcpy(z.x, unstrF->begin(posx), z.npts*sizeof(E_Float));
@@ -553,7 +552,7 @@ UnstructZone* Data::createUnstrZone(FldArrayF* unstrF, char* varString,
       z.eltSize.push_back(1);
       z.dim = 3;
     }
-    else if (not z._is_high_order)
+    else if (not z._isHighOrder)
     {
       printf("Warning: element type is unknown. Set to TRI.\n");
       z.eltType.push_back(2);
@@ -562,7 +561,7 @@ UnstructZone* Data::createUnstrZone(FldArrayF* unstrF, char* varString,
     }
   }
 # if defined(__SHADERS__)
-  if (is_high_order)
+  if (isHighOrder)
   {
     z.eltSize.push_back(nb_nodes_per_elts[ind_type]);
     z.eltType.push_back((ind_type < 5 ? 2 : 3));
@@ -572,7 +571,7 @@ UnstructZone* Data::createUnstrZone(FldArrayF* unstrF, char* varString,
 
   for (size_t i = 0; i < eltTypes.size(); i++) delete [] eltTypes[i];
   
-  // copie par access universel
+  // copie par acces universel
   if (z.eltType[0] == 10) // NGON
   {
     E_Int nfaces = cn->getNFaces();
@@ -611,7 +610,7 @@ UnstructZone* Data::createUnstrZone(FldArrayF* unstrF, char* varString,
       znp += size+1;
     }
   }
-  else // BE
+  else // ME
   {
     E_Int ncon = cn->getNConnect();
     E_Int neTot = 0;

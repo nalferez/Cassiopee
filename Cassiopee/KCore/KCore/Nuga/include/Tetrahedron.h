@@ -92,7 +92,7 @@ class Tetrahedron
     static bool is_of_type(const ngunit_t & PGs, const E_Int* first_pg, E_Int nb_pgs) {
       if (nb_pgs != 4) return false;
 
-      for (int i = 0; i<4; i++)
+      for (E_Int i = 0; i < 4; i++)
         if (PGs.stride(*(first_pg + i) - 1) != 3) return false;
 
       return true;
@@ -276,8 +276,8 @@ class Tetrahedron
         if (NB_SPIKES != 4)
           std::cout << "LOGIC ERROR" << std::endl;
 
-        int count = 0; //fist 2 spike should be enough
-        int pairs[2][2];
+        E_Int count = 0; //fist 2 spike should be enough
+        E_Int pairs[2][2];
         pairs[0][0] = -1;
         pairs[0][1] = -1;
         pairs[1][0] = -1;

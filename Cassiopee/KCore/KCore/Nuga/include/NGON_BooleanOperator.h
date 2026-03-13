@@ -2958,7 +2958,7 @@ E_Int NGON_BOOLEAN_CLASS::__build_connect_hard
   // PG history
   _nT3_to_oPG2 = oT3_to_PG;
   _nT3_to_oPG2.insert(_nT3_to_oPG2.end(), nT3_to_PG.begin(), nT3_to_PG.end());
-  int shft = extrawPGs.size();
+  E_Int shft = extrawPGs.size();
   K_CONNECT::IdTool::shift(_nT3_to_oPG2, oT3_to_PG.size()/*from*/, shft);
   
   K_FLD::IntArray new_ancPG = extrawPGs._ancEs; //transfer origin
@@ -3103,7 +3103,7 @@ E_Int NGON_BOOLEAN_CLASS::__build_connect_hard2
 
       tapPGs._type.resize(tapPGs.size(), INITIAL_SKIN);
 
-      int aPG = nT3_to_PG[i.second[0]];
+      E_Int aPG = nT3_to_PG[i.second[0]];
       for (size_t k = 1; k < i.second.size(); ++k)
         assert(nT3_to_PG[i.second[k]] == aPG);
 
@@ -3123,20 +3123,20 @@ E_Int NGON_BOOLEAN_CLASS::__build_connect_hard2
   ngXh.clear();
 
   ngXh.PGs = extrawPGs;
-  int shiftPG = extrawPGs.size();
+  E_Int shiftPG = extrawPGs.size();
   ngXh.PGs.append(tapPGs);
 
   // build ngXh.Phs
   std::map<E_Int, std::vector<E_Int>> ph_to_faces;
-  for (int i = 0; i < shiftPG; ++i)
+  for (E_Int i = 0; i < shiftPG; ++i)
   {
     /*const int* anc = ngXh.PGs._ancEs.col(i);
     assert(anc[0] == IDX_NONE);
     assert(anc[1] != IDX_NONE);*/
-    int aPG = i;// anc[1];
+    E_Int aPG = i;// anc[1];
     assert(aPG < _extraF2E.cols());
-    int lPH = _extraF2E(0, aPG);
-    int rPH = _extraF2E(1, aPG);
+    E_Int lPH = _extraF2E(0, aPG);
+    E_Int rPH = _extraF2E(1, aPG);
     
     if (lPH != IDX_NONE) ph_to_faces[lPH].push_back(i);
     if (rPH != IDX_NONE) ph_to_faces[rPH].push_back(i);
@@ -3154,11 +3154,10 @@ E_Int NGON_BOOLEAN_CLASS::__build_connect_hard2
     rpgs.insert(anc[1]);
     assert(anc[0] == IDX_NONE);
     assert(anc[1] != IDX_NONE);
-    int aPG = anc[1];
     assert(aPG < _F2E.cols());
-    int lPH = _F2E(0, aPG);
+    E_Int lPH = _F2E(0, aPG);
     //assert(lPH != IDX_NONE);
-    int rPH = _F2E(1, aPG);
+    E_Int rPH = _F2E(1, aPG);
     //assert(rPH == IDX_NONE);*/
     //lphs.insert(tutu[0]);
     //rphs.insert(tutu[1]);

@@ -118,13 +118,7 @@ PyObject* K_OCC::linkNodes2CAD(PyObject* self, PyObject* args)
   PyObject* dhx; PyObject* dhy; PyObject* dhz; PyObject* ncad; 
   if (!PYPARSETUPLE_(args, OOOO_ OOO_, &arr, &arrf, &hook, &dhx, &dhy, &dhz, &ncad)) return NULL;
 
-  void** packet = NULL;
-  #if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-    packet = (void**) PyCObject_AsVoidPtr(hook);
-  #else
-    packet = (void**) PyCapsule_GetPointer(hook, NULL);
-  #endif
-
+  GETPACKET;
   E_Float tol = 1e-11;
   
   // Get first component of each list 
@@ -494,13 +488,8 @@ PyObject* K_OCC::getNodalParameters(PyObject* self, PyObject* args)
   
   if (!PYPARSETUPLE_(args, OOOO_ OOOO_ O_, &arr, &arrf, &hook, &arrayU, &arrayV, &dhx, &dhy, &dhz, &ncad)) return NULL;  
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-  
+  GETPACKET;
+    
   TopExp_Explorer expl;
 
   //chrono::steady_clock sc;

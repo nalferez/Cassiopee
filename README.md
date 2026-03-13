@@ -10,10 +10,16 @@ Computational Fluid Dynamics pre- and post-processing python modules.
 
 ## Installation from binaries
 
-<!-- - [Docker image](https://github.com/onera/Cassiopee/blob/main/docs/developers/Docker/UsingDocker.md) -->
+- [On windows](https://github.com/onera/Cassiopee/releases/tag/v4.1)
 
-<!--- - with pip -->
-<!-- - On windows, download setup.exe -->
+- On linux with pip:
+
+```shell
+pip install cassiopee
+```
+
+- [Using Docker](https://github.com/onera/Cassiopee/blob/main/docs/developers/Docker/UsingDocker.md)
+
 
 ## Installation from sources
 

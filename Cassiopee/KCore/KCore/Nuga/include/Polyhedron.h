@@ -2168,7 +2168,7 @@ namespace K_MESH
     static bool pt_is_inside(E_Int PHi, const ngon_unit& PGS, const E_Int* first_pg, E_Int nb_pgs, const K_FLD::FloatArray& crd, const K_FLD::IntArray& F2E, const E_Float* pt, E_Float tolerance)
     {
 
-      for (int i = 0; i < nb_pgs; i++)
+      for (E_Int i = 0; i < nb_pgs; i++)
       {
         E_Int PGi = first_pg[i] - 1;
         const E_Int* pN = PGS.get_facets_ptr(PGi);
@@ -2180,7 +2180,7 @@ namespace K_MESH
         {
           E_Float u[3];
           E_Float v[3];
-          for (int j = 0; j < 3; ++j)
+          for (E_Int j = 0; j < 3; ++j)
           {
             u[j] = crd.col(pN[1] - 1)[j] - crd.col(pN[0] - 1)[j];
             v[j] = crd.col(pN[2] - 1)[j] - crd.col(pN[0] - 1)[j];
@@ -2296,7 +2296,7 @@ namespace K_MESH
     {
       if (nb_pgs != 6) return false;
 
-      for (int i = 0; i < 6; i++)
+      for (E_Int i = 0; i < 6; i++)
         if (PGs.stride(*(firstPG + i) - 1) != 4)
           return false;
 

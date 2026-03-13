@@ -38,33 +38,12 @@ PyObject* K_OCC::getFaceArea(PyObject* self, PyObject* args)
   PyObject* hook; PyObject* listFaces;
   if (!PYPARSETUPLE_(args, O_ O_, &hook, &listFaces)) return NULL;
 
-  void** packet = NULL;
-#if (PY_MAJOR_VERSION == 2 && PY_MINOR_VERSION < 7) || (PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION < 1)
-  packet = (void**) PyCObject_AsVoidPtr(hook);
-#else
-  packet = (void**) PyCapsule_GetPointer(hook, NULL);
-#endif
-
-  //TopoDS_Shape* shp = (TopoDS_Shape*) packet[0];
+  GETPACKET;
+  
   TopTools_IndexedMapOfShape& surfaces = *(TopTools_IndexedMapOfShape*)packet[1];
   //TopTools_IndexedMapOfShape& edges = *(TopTools_IndexedMapOfShape*)packet[2];
   TopExp_Explorer expl;
 
-  //const TopoDS_Face& F = TopoDS::Face(surfaces(noFace));
-
-  // By wire
-  /*
-  for (expl.Init(surfaces(noFace), TopAbs_WIRE); expl.More(); expl.Next())
-  {
-    const TopoDS_Wire& W = TopoDS::Wire(expl.Current());
-    E_Float surface = ShapeAnalysis::ContourArea(W);
-    //printf("wire surface=%f\n", surface);	
-    area = std::max(area, surface);
-  }
-  printf("area1=%g\n", area);
-  */
-
-  // By face
   E_Float area = 0.;
   if (listFaces == Py_None) // all faces of topshape
   {

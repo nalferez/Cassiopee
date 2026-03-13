@@ -38,8 +38,7 @@ PyObject* K_GENERATOR::tetgen(PyObject* self, PyObject* args)
                     &array, &maxh, &grading, &remeshBoundaries, &holes, &optionString))
     return NULL;
 
-  // grading is not used
-  // ambiguite sur maxh (max volume ou volume impose)
+  // ambiguite sur maxh (max volume ou volume impose?)
 
   E_Int ni, nj, nk;
   FldArrayF* f; FldArrayI* cn;
@@ -102,11 +101,28 @@ PyObject* K_GENERATOR::tetgen(PyObject* self, PyObject* args)
 
   // si les options sont passees par la ligne d'options
   // elles priment sur celles passees par arguments
-  E_Int l = strlen(optionString); 
+  E_Int l = strlen(optionString);
   if (l > 0) // options par optionString
   {
     b.parse_commandline(optionString);
   }
+  else // create option string for meshing wihout remeshing boundaries with grading
+  {
+    char opt[512]; char loc[256];
+    sprintf(opt, "pq%g", grading);
+    if (remeshBoundaries == 0)
+    {
+      strcpy(loc, "Y0");
+      strcat(opt, loc);
+    }
+    if (maxh > 0)
+    {
+      sprintf(loc, "a%g", (maxh*maxh*maxh)*0.25);
+      strcat(opt, loc);
+    }
+    b.parse_commandline(opt);
+  }
+  /*
   else // options par arguments
   { 
     // Maille l'interieur d'un PLC
@@ -156,7 +172,7 @@ PyObject* K_GENERATOR::tetgen(PyObject* self, PyObject* args)
     // b.coarsen = 1;
     // b.coarsen_param = 1; // ??
     // b.coarsen_percent = 0.5; // x % less points
-  }
+  }*/
 
   // print b
   /*

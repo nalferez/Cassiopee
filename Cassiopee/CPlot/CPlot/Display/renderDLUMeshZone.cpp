@@ -63,7 +63,7 @@
 //=============================================================================
 void DataDL::renderGPUUMeshZone(UnstructZone* zonep, E_Int zone, E_Int zonet)
 {
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
   if (zImpl->_DLmesh == 0)
   {
     displayUMeshZone(zonep, zone, zonet);
@@ -113,7 +113,7 @@ void DataDL::renderGPUUMeshZone(UnstructZone* zonep, E_Int zone, E_Int zonet)
   #include "meshStyles.h"
   #include "selection.h"
 
-  if (zonep->_is_high_order == true)
+  if (zonep->_isHighOrder == true)
   {
     int ishader = 3;
     this->_shaders.set_tesselation(ishader);

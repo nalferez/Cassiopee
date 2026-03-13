@@ -140,7 +140,7 @@ TRI_Conformizer<DIM>::__split_Elements
   if (mode.ignore_coincident_nodes) K_CONNECT::IdTool::init_inc(gnids, pos.cols());
   
 #ifdef DEBUG_TRI_CONFORMIZER
-  int err_count(0);
+  E_Int err_count(0);
 #endif
 #ifdef DEBUG_EXTRACT
   std::ostringstream xfname;
@@ -329,7 +329,7 @@ TRI_Conformizer<DIM>::__split_Elements
         E_Float dX = box.maxB[0] - box.minB[0];
         E_Float dY = box.maxB[1] - box.minB[1];
 
-        for (int u = 0; u < pi.cols(); ++u)
+        for (E_Int u = 0; u < pi.cols(); ++u)
         {
           pi(0, u) = (pi(0, u) - box.minB[0]) / dX;
           pi(1, u) = (pi(1, u) - box.minB[1]) / dY;

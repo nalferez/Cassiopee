@@ -107,7 +107,7 @@ void DataDL::renderGPUSMeshZone(StructZone* zonep, E_Int zone)
               zonep->xmin, zonep->ymin, zonep->zmin,
               zonep->xmax, zonep->ymax, zonep->zmax);
   
-  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
 
 #if (USEDLMESH == 1)
   glCallList(zImpl->_DLmesh);

@@ -651,7 +651,7 @@ namespace NUGA
   void TEMPLATE_CLASS::__build_mask_bits
   (const std::vector<K_FLD::FloatArray> &mask_crds, const std::vector<K_FLD::IntArray>& mask_cnts,
    std::vector< std::vector<E_Int> > &mask_wall_ids,
-   const std::vector<E_Int>& z_priorities, E_Int rank_wnp, std::vector< bound_mesh_t*> & mask_bits)
+   const std::vector<E_Int>& z_priorities, E_Int rank_wnp, std::vector< bound_mesh_t*>& mask_bits)
   {
 
   	mask_bits.clear();
@@ -660,7 +660,7 @@ namespace NUGA
     // grabbing OP (WP are discarded) and WNP
   	for (size_t i=0; i <z_priorities.size(); ++i)
   	{
-  	  int compi = z_priorities[i];
+  	  E_Int compi = z_priorities[i];
       
       //std::cout << "__build_mask_bits : comp " << compi << std::endl;
   	  
@@ -1165,7 +1165,7 @@ namespace NUGA
     E_Int nb_subzones = *std::max_element(ALL(cur_xcelln)) - UPPER_COL + 1;
 
 #ifdef CLASSIFYER_DBG
-    // std::set<int> all_cols(ALL(cur_xcelln));
+    // std::set<E_Int> all_cols(ALL(cur_xcelln));
     // for (auto c : all_cols)
     //   std::cout << "colors : " << c << std::endl;
     // std::cout << "nb of supposed sub zones: " <<nb_subzones << std::endl;

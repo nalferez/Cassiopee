@@ -24,7 +24,7 @@ __all__ = ['cart', 'cartr1', 'cartr2', 'cartHexa', 'cartTetra', 'cartPenta',
            'TFIStar', 'TFIStar2',
            'TTM', 'bboxOfCells', 'getCellPlanarity', 'getVolumeMap',
            'getCellCenters', 'getFaceCentersAndAreas', 'getNormalMap',
-           'getSmoothNormalMap', 'getEdgeRatio', 'getMaxLength', 'collarMesh',
+           'getSmoothNormalMap', 'getEdgeRatio', 'getEdgeLength', 'collarMesh',
            'surfaceWalk', 'buildExtension', 'getCircumCircleMap', 'getInCircleMap',
            'addNormalLayers', 'gencartmb', 'mapSplit', 'T3mesher2D', 'tetraMesher',
            'modifyNormalWithMetric',
@@ -1073,14 +1073,14 @@ def getEdgeRatio(array, dim=3):
 #=============================================================================
 # Computes the max length of all the edges of cells
 #=============================================================================
-def getMaxLength(array, dim=3):
-    """Computes the max length of all the edges of cells in an array.
-    Usage: getMaxLength(a)"""
+def getEdgeLength(array, type=0, dim=3):
+    """Computes the min,max,mean length of all the edges for each cell in an array.
+    Usage: getEdgeLength(a)"""
     if isinstance(array[0], list):
         b = []
-        for i in array: b.append(generator.getMaxLength(i, dim))
+        for i in array: b.append(generator.getEdgeLength(i, type, dim))
         return b
-    else: return generator.getMaxLength(array, dim)
+    else: return generator.getEdgeLength(array, type, dim)
 
 #=============================================================================
 # Generate a list of collar grids depending on the assembly type
@@ -1465,7 +1465,7 @@ def T3mesher2D(a, grading=1.2, triangulateOnly=0, metricInterpType=0):
     except:
         return generator.T3mesher2D(a, grading, triangulateOnly, metricInterpType)
 
-def tetraMesher(a, maxh=-1., grading=0.4, triangulateOnly=0,
+def tetraMesher(a, maxh=-1., grading=1.1, triangulateOnly=0,
                 remeshBoundaries=0, algo=1, optionString=""):
     """Create a TRI/TETRA mesh given a set of BAR or surfaces in a.
     Usage: tetraMesher(a, maxh, grading)"""
@@ -2462,17 +2462,17 @@ def getMeshFieldInfo__(array, field, critValue, verbose):
     for cpt, m in enumerate(array):
         f = DictFunction[field](m)[1]
 
-        size_loc  = numpy.size(f)
+        size_loc = numpy.size(f)
         fcrit_loc = numpy.count_nonzero(f<critValue) if field == 'vol' else numpy.count_nonzero(f>critValue)
-        fmin_loc  = numpy.min(f)
-        fmax_loc  = numpy.max(f)
-        fsum_loc  = numpy.sum(f)
+        fmin_loc = numpy.min(f)
+        fmax_loc = numpy.max(f)
+        fsum_loc = numpy.sum(f)
 
-        fmin   = min(fmin_loc, fmin)
-        fmax   = max(fmax_loc, fmax)
-        fsum  += fsum_loc
+        fmin = min(fmin_loc, fmin)
+        fmax = max(fmax_loc, fmax)
+        fsum += fsum_loc
         fcrit += fcrit_loc
-        size  += size_loc
+        size += size_loc
 
         if verbose == 2 or (verbose == 1 and fcrit_loc > 0):
             print(info%(field.upper(),fmin_loc,fmax_loc,fsum_loc/float(size_loc),field,'<' if field == 'vol' else '>',critValue,fcrit_loc,size_loc,fcrit_loc/float(size_loc)*100,"Zone %d"%(cpt)))

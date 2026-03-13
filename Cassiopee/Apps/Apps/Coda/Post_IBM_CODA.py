@@ -236,7 +236,7 @@ def extractIBMWallFields(pytree,tb,discSelectionParaDict,tempViscFlag=False):
     #This is a workaround for the function P_IBM.extractIBMWallFields, which projects the variable "Temperature" and not the "ViscosityMolecular". -> We put then the viscosity into a node called "Temperature".
     if tempViscFlag:
         Internal.getNodeFromName(info,"Temperature")[1] = Internal.getNodeFromName(info,"ViscosityMolecular")[1]
-    zw = P_IBM.extractIBMWallFields(z, tb=tb, famZones=[])#, front=1)
+    zw = P_IBM.extractIBMWallFields(z, tb=tb, famZones=[], isRevertToOld=True, isPreProjectOrtho=True)#, front=1)
     if discSelectionParaDict["PDE"]=="Euler":
         C._initVars(zw,"utau",0)
         C._initVars(zw,"yplus",0)
@@ -245,7 +245,7 @@ def extractIBMWallFields(pytree,tb,discSelectionParaDict,tempViscFlag=False):
 def computeBoundaryQuantities(zw,dictReferenceQuantities,dimPb=3,reorderFlag=False,invertYZ=False):
     if Cmpi.rank==0:
         print("Computing integral coefficients..")
-    if dimPb==2:
+    if dimPb == 2:
         zw = C.convertBAR2Struct(zw)
         T._addkplane(zw)
 
@@ -264,7 +264,7 @@ def computeBoundaryQuantities(zw,dictReferenceQuantities,dimPb=3,reorderFlag=Fal
     zw = C.convertArray2Tetra(zw); zw = G.close(zw)
     zw = C.node2Center(zw,Internal.__FlowSolutionNodes__)
     # add reference state for computation of integrated coefficients
-    ref1 = Internal.getNodesFromName(zw,"ReferenceState")
+    ref1 = Internal.getNodesFromName(zw, "ReferenceState")
     if ref1!=[]:
         Internal._rmNodesByName(zw,"ReferenceState")
     ref = Internal.newReferenceState("ReferenceState",parent=zw)
@@ -326,7 +326,7 @@ def computeExtraVariablesForLocalIBM(ts,dictReferenceQuantities,dimPb=3):
     zones = Internal.getZones(ts)
     zone_IBM = zones[-1] #last zone is IBM
     if zones:
-        ref1 = Internal.getNodesFromName(ts,"ReferenceState")
+        ref1 = Internal.getNodesFromName(ts, "ReferenceState")
         if ref1!=[]:
             Internal._rmNodesByName(ts,"ReferenceState")
         ref = Internal.newReferenceState("ReferenceState",parent=ts)
@@ -448,7 +448,6 @@ def _loads0LocalIBM(ts,Sref=1.0,Qref=1.0,alpha=0.0,beta=0.0,dimPb=2,BFtreatment=
     cdp_BF,  clp_BF,  cdf_BF,  clf_BF  = computeClCd(res_pres_BF, res_fric_BF)
     cdp_IBM, clp_IBM, cdf_IBM, clf_IBM = computeClCd(res_pres_IBM, res_fric_IBM)
 
-
     print(cdp_BF,  clp_BF,  cdf_BF,  clf_BF)
     cd_BF = cdp_BF+cdf_BF
     cl_BF = clp_BF+clf_BF
@@ -464,7 +463,7 @@ def _loads0LocalIBM(ts,Sref=1.0,Qref=1.0,alpha=0.0,beta=0.0,dimPb=2,BFtreatment=
     clp = clp_BF + clp_IBM
     cl  = cl_BF + cl_IBM
 
-    FSC = Internal.getNodesFromName(ts,Internal.__FlowSolutionCenters__)
+    FSC = Internal.getNodesFromName(ts, Internal.__FlowSolutionCenters__)
     Internal._rmNodesFromName(FSC, 'ShearStress*')
 
     return ts, [[cd, cl, cdf, cdp, clf, clp], [cd_BF, cl_BF, cdf_BF, cdp_BF, clf_BF, clp_BF], [cd_IBM, cl_IBM, cdf_IBM, cdp_IBM, clf_IBM, clp_IBM]]
@@ -498,6 +497,7 @@ def intersectObstacleMesh(t, surf_detail,list_bcs):
         zbc = T.join(zbc)
         zbcs.append(zbc)
         if bctype.startswith("BCWall"):
+            nobc = i
             wall_clean = zbc
 
     #4: intersect surfaces
@@ -531,7 +531,7 @@ def extractNotIBMWallFields(t, IBM_parameters, list_boundary_values_to_extract, 
             zbc = C.extractBCOfType(t,bctype)
             break
     zbc = T.join(zbc)
-    FS = Internal.getNodesFromName(zbc, "FlowSolution#Centers")
+    FS = Internal.getNodesFromName(zbc, Internal.__FlowSolutionCenters__)
     Internal._rmNodesFromName(FS, "CoefSkinFrictionImmersed")
 
     names_var = list_boundary_values_to_extract
@@ -647,7 +647,7 @@ def _loads0(ts, Sref=None, Pref=None, Qref=None, alpha=0., beta=0., dimPb=3, ver
             print("Total Lateral Force (time/nit=%.4e) : %.4e"%(time,(clatp+clatf)))
             print("****************************************")
 
-        FSC = Internal.getNodesFromName(ts,Internal.__FlowSolutionCenters__)
+        FSC = Internal.getNodesFromName(ts, Internal.__FlowSolutionCenters__)
         Internal._rmNodesFromName(FSC, 'ShearStress*')
 
     return [res, res2, [clp, cdp, clatp], [clf, cdf, clatf]]

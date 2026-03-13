@@ -31,7 +31,7 @@ void DataDL::renderUIsoSolidZone(UnstructZone* zonep, E_Int zonet, E_Int nofield
   float offb;
   double blend;
   
-  ZoneImplDL* zoneImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zoneImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
   
   // Blending
   blend = 1.;
@@ -81,7 +81,7 @@ void DataDL::renderUIsoSolidZone(UnstructZone* zonep, E_Int zonet,
   double blend;
   E_Int ret1, ret2;
 
-  ZoneImplDL* zoneImpl = static_cast<ZoneImplDL*>(zonep->ptr_impl);
+  ZoneImplDL* zoneImpl = static_cast<ZoneImplDL*>(zonep->ptrImpl);
   
   // Blending
   blend = 1.;

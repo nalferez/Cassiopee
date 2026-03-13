@@ -1473,9 +1473,9 @@ if (PHi == faultyPH)
     {
       E_Int PGi = first_pg[f] - 1;
       const E_Int* pn = PGS.get_facets_ptr(PGi);
-      int nnodes = PGS.stride(PGi);
+      E_Int nnodes = PGS.stride(PGi);
 
-      for (int n = 0; n < nnodes; ++n)
+      for (E_Int n = 0; n < nnodes; ++n)
       {
         E_Int Ni = pn[n];
         node_to_faces[Ni].insert(PGi);
@@ -1509,7 +1509,7 @@ if (PHi == faultyPH)
       for (auto PGi : common_faces)
       {
         const E_Int* pn = PGS.get_facets_ptr(PGi);
-        int nnodes = PGS.stride(PGi);
+        E_Int nnodes = PGS.stride(PGi);
 
         K_MESH::Polygon::normal<K_FLD::FloatArray, 3>(crd, pn, nnodes, 1, nPGi);
         E_Float ps = fabs(NUGA::dot<3>(N, nPGi));
@@ -1622,7 +1622,7 @@ if (PHi == faultyPH)
     std::cout << twoPH.PGs._NGON[k] << std::endl;*/
     
 #ifdef DEBUG_SPLITTER
-  static int count = 0;
+  static E_Int count = 0;
   ++count;
   std::ostringstream o;
   

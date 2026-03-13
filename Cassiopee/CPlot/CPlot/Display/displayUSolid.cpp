@@ -42,7 +42,7 @@ void DataDL::displayUSolid()
         glPolygonOffset(1., zone % 10 + 1.);
         zonet = zone + _numberOfStructZones;
         UnstructZone *zonep = _uzones[zone];
-        ZoneImplDL *zoneImpl = static_cast<ZoneImplDL *>(zonep->ptr_impl);
+        ZoneImplDL *zoneImpl = static_cast<ZoneImplDL *>(zonep->ptrImpl);
 
         // if zone is active and in frustum
         if ((zonep->active == 1 ||
@@ -107,7 +107,7 @@ void DataDL::displayUSolid()
                 if (ptrState->simplifyOnDrag == 1 && ptrState->ondrag == 1) displayUBBZone(zonep);
                 else
                 {
-                    if (zonep->_is_high_order == false)
+                    if (zonep->_isHighOrder == false)
                     {
                         if (zoneImpl->_DLsolid != 0) renderGPUUSolidZone(zonep, zone, zonet);
                         else displayUSolidZone(zonep, zone, zonet);  // Direct
