@@ -130,7 +130,7 @@ PyObject* K_POST::coarsen(PyObject* self, PyObject* args)
   FldArrayIS indic(nelts);
   short* indicp = indic.begin();
   E_Float* findicp = findic->begin();
-#ifdef E_ADOLC 
+#ifdef E_ADOUBLE
   for (E_Int i = 0; i < nelts; i++) indicp[i] = short(findicp[i].value());
 #else
   for (E_Int i = 0; i < nelts; i++) indicp[i] = short(findicp[i]);

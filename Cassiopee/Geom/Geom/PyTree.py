@@ -205,8 +205,16 @@ def surface(f, N=100, isVectorized=False):
 def getLength(t):
     """Return the length of 1D array(s) defining a mesh.
     Usage: getLength(t)"""
-    coords = C.getFields(Internal.__GridCoordinates__, t, api=3)
-    return Geom.getLength(coords)
+    a = C.getFields(Internal.__GridCoordinates__, t, api=3)
+    return Geom.getLength(a)
+
+def dLength(t):
+    """Return dlength of 1D arrays."""
+    return C.TZA3(t, 'nodes', 'nodes', False, Geom.dLength)
+
+def _dLength(t):
+    """Return dlength of 1D arrays."""
+    return C._TZA3(t, 'nodes', 'nodes', False, Geom.dLength)
 
 def getDistantIndex(t, ind, l):
     """Return the index of 1D array defining a mesh located at a

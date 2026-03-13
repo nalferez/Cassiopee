@@ -118,7 +118,7 @@ void UBSSurface::__eval (E_Float u, const std::vector<pBaseFunc>& FUs,
   v = K_FUNC::E_min(_Vmax, v);
   v = K_FUNC::E_max(_Vmin, v);
  
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
   E_Int i = (v.value() == _Vmax.value())? E_Int(_Vmax.value() - 1.) : E_Int(v.value());
   E_Int j = (u.value() == _Umax.value())? E_Int(_Umax.value() - 1.) : E_Int(u.value());
 #else
@@ -234,7 +234,7 @@ void UBSSurface::triangulate(K_FLD::FloatArray& pos,
   connectT3.clear();
   pos.clear();
   K_FLD::IntArray net;
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
   E_Int Vmaxi = E_Int(_Vmax.value());
   E_Int Umaxi = E_Int(_Umax.value());
 #else

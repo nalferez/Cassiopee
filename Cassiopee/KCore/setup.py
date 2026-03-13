@@ -44,12 +44,6 @@ ok, libs, paths = Dist.checkCppLibs()
 libraryDirs += paths
 libraries += libs
 
-if Dist.ADOLC:
-    adolc, adolcIncDir, adolcLibDir, adolcLib = Dist.checkAdolc()
-    if adolc:
-        libraryDirs += adolcLibDir
-        libraries.append(adolcLib)
-
 # Extensions
 listExtensions = [
     Extension(

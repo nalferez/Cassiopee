@@ -50,6 +50,9 @@ namespace K_GEOM
   PyObject* getSharpestAngleForVertices(PyObject* self, PyObject* args);
   PyObject* getNearestPointIndex(PyObject* self, PyObject* args);
   PyObject* getUV(PyObject* self, PyObject* args);
+#ifdef E_ADOLC
+  PyObject* dLength(PyObject* self, PyObject* args);
+#endif
 
   /* Calcul des centres des cercles circonscrits de tous les triangles
      IN: coord: coordonnees des vertices

@@ -409,6 +409,14 @@ def getLength(a):
         return l
     else: return geom.getLength(a)
 
+def dLength(a):
+    """Return dlength of 1D-mesh."""
+    if isinstance(a[0], list):
+        b = []
+        for i in a: b.append(geom.dLength(i))
+        return b
+    else: return geom.dLength(a)
+    
 def getDistantIndex(a, ind, l):
     """Return the index of 1D-mesh located at a distance l of ind.
     Usage: ind = getDistantIndex(a, ind, l)"""

@@ -875,7 +875,7 @@ void K_INTERP::OBbox(
   }
   else val = E_Float(n);
 
-  #ifdef E_ADOLC
+#ifdef E_ADOUBLE
   if (val == floor(val))   // si le nuage de point est carre on enleve une ligne (cas 2D)
     n_ = n-E_Int(val.value());
 #else

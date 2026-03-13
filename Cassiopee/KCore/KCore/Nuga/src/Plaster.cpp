@@ -152,7 +152,7 @@ Plaster::make
   E_Float njf = 1. + (maxB[1] - minB[1]) / dx;
   nif *= fabs(bump_factor) + 1.; // 2 times more if factor is 1 or -1.
   njf *= fabs(bump_factor) + 1.;
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
   ni = E_Int(nif.value());
   nj = E_Int(njf.value());
 #else

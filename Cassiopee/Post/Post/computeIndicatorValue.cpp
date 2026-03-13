@@ -214,7 +214,7 @@ PyObject* K_POST::computeIndicatorValue(PyObject* self, PyObject* args)
         for (novert = 1; novert <= nvert; novert++)
         {
           ind = (*cn)(et,novert)-1;
-          #ifdef E_ADOLC
+          #ifdef E_ADOUBLE
           E_Float val = (xo[ind]-xmint[noblk])*dhi; 
           ic = E_Int(val.value());
           val = (yo[ind]-ymint[noblk])*dhi;
@@ -281,7 +281,7 @@ PyObject* K_POST::computeIndicatorValue(PyObject* self, PyObject* args)
         for (novert = 1; novert <= nvert; novert++)
         {
           ind = (*cn)(et,novert)-1;
-          #ifdef E_ADOLC
+          #ifdef E_ADOUBLE
           E_Float val = (xo[ind]-xmint[noblk])*dhi;
           ic = E_Int(val.value());
           val = (yo[ind]-ymint[noblk])*dhi;

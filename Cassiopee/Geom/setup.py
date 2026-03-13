@@ -34,6 +34,13 @@ libraryDirs += paths; libraries += libs
 (ok, libs, paths) = Dist.checkCppLibs()
 libraryDirs += paths; libraries += libs
 
+ADDITIONALCPPFLAGS = []
+adolc, adolcIncDir, adolcLibDir, adolcLib = Dist.checkAdolc()
+if adolc:
+    libraryDirs += adolcLibDir
+    libraries.append(adolcLib)
+    ADDITIONALCPPFLAGS = ["-DE_ADOLC"]
+
 # setup ======================================================================
 setup(
     name="Geom",
@@ -48,7 +55,7 @@ setup(
                            include_dirs=["Geom"]+additionalIncludePaths+[numpyIncDir, kcoreIncDir],
                            library_dirs=additionalLibPaths+libraryDirs,
                            libraries=libraries+additionalLibs,
-                           extra_compile_args=Dist.getCppArgs(),
-                           extra_link_args=Dist.getLinkArgs()
+                           extra_compile_args=Dist.getCppArgs()+ADDITIONALCPPFLAGS,
+                           extra_link_args=Dist.getLinkArgs()+ADDITIONALCPPFLAGS
                            )]
 )

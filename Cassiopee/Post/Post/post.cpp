@@ -83,10 +83,8 @@ static PyMethodDef Pypost [] =
   {"silhouette", K_POST::silhouette, METH_VARARGS},
   {"computeIndicatorValue",K_POST::computeIndicatorValue,METH_VARARGS},
   {"usurp", K_POST::usurpF, METH_VARARGS},
-  #ifndef E_ADOLC
   {"zipper", K_POST::zipperF, METH_VARARGS},
   {"perlinNoise", K_POST::perlinNoise, METH_VARARGS},
-  #endif
   {NULL, NULL}
 };
 

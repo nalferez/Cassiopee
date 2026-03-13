@@ -836,7 +836,9 @@ def convertFile2Arrays(fileName, format=None, nptsCurve=20, nptsLine=2,
             elif np > 0: line = f[0]
             else: line = ''
             line = line.split(' ')
-            nv = len(line)
+            nv = 0
+            for l in line:
+                if l != '': nv += 1
             # varstring
             varString = ''
             for i in range(nv-1): varString += 'v%d,'%(i+1)
@@ -844,10 +846,14 @@ def convertFile2Arrays(fileName, format=None, nptsCurve=20, nptsLine=2,
             a = array(varString, np, 1, 1)
             pt = a[1]
             for i in range(np):
-                line = f[i]; line = line.split(' ')
-                for n in range(len(line)): pt[n,i] = float(line[n])
+                line = f[i]
+                line = line.split(' ')
+                n = 0
+                for l in line:
+                    if l != '': pt[n,i] = float(l); n += 1
             print('done.')
-            zoneNames.append('zone0')
+            if zoneNames is not None:
+                zoneNames.append('Zone0')
             return [a]
         except:
             raise TypeError("convertFile2Arrays: file %s can not be read."%fileName)

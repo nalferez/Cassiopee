@@ -1552,7 +1552,7 @@ namespace DELAUNAY
     T m(factor*d);
     setMetric(N, m);
 
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
     length_to_points.push_back(std::make_pair(-d.value(), N));
 #else
     length_to_points.push_back(std::make_pair(-d, N));
@@ -1568,7 +1568,7 @@ namespace DELAUNAY
     tmpNodes.clear();
     E_Float d = length(Ni, Nj, threshold, tmpNodes); // decoupe de l'edge (regulierement?)
     
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
     size_type n = std::max(size_type(d.value()), size_type(1));
 #else
     size_type n = std::max(size_type(d), size_type(1));
