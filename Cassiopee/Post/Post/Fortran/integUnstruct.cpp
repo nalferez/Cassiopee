@@ -22,9 +22,9 @@
 //=============================================================================
 // Integre les grandeurs de F comme des scalaires
 // Retourne 1 si succes, 0 si echec
-// Attention : cette routine n'integre que sur des elements triangulaires
+// 1D and 2D
 //=============================================================================
-E_Int K_POST::integUnstruct2D(E_Int center2node,
+E_Int K_POST::integUnstruct(E_Int center2node,
                               E_Int posx, E_Int posy, E_Int posz,
                               FldArrayI& cn, const char* eltType, FldArrayF& coord, 
                               FldArrayF& F, FldArrayF& ratio, 
@@ -70,64 +70,6 @@ E_Int K_POST::integUnstruct2D(E_Int center2node,
       K_POST::integUnstructNodeCenter(
         cn,
         ratio.begin(), surf.begin(), F.begin(n),
-        result
-      );
-      resultat[n-1] += result;
-    }
-  }
-  return 1;
-}
-
-//=============================================================================
-// Integre les grandeurs de F comme des scalaires
-// Retourne 1 si succes, 0 si echec
-// Attention : cette routine n'integre que sur des elements "bar"
-//=============================================================================
-E_Int K_POST::integUnstruct1D(E_Int center2node,
-                              E_Int posx, E_Int posy, E_Int posz,
-                              FldArrayI& cn, const char* eltType, FldArrayF& coord, 
-                              FldArrayF& F, FldArrayF& ratio, 
-                              FldArrayF& resultat)
-{
-  E_Float result = 0.;
-  E_Int numberOfVariables = F.getNfld();
-  E_Int ntotElts = 0;
-  E_Int nc = cn.getNConnect();
-  for (E_Int ic = 0; ic < nc; ic++)
-  {
-    FldArrayI& cm = *(cn.getConnect(ic));
-    E_Int nelts = cm.getSize();
-    ntotElts += nelts;
-  }
-  FldArrayF length(ntotElts);
-  
-  K_METRIC::compUnstructSurf1d(
-    cn, eltType,
-    coord.begin(posx), coord.begin(posy), coord.begin(posz),
-    length.begin());
-
-  if (center2node == 1) 
-  {
-    for (E_Int n = 1 ; n <= numberOfVariables ; n++)
-    {
-      // Compute integral, coordinates defined in node 
-      // and field F in center 
-      K_POST::integUnstructCellCenter(
-        ntotElts,
-        ratio.begin(), length.begin(), F.begin(n),
-        result
-      );
-      resultat[n-1] += result;
-    }
-  }
-  else
-  {
-    for (E_Int n = 1 ; n <= numberOfVariables ; n++)    
-    {
-      // Compute integral, coordinates and field have the same size
-      K_POST::integUnstructNodeCenter(
-        cn,
-        ratio.begin(), length.begin(), F.begin(n),
         result
       );
       resultat[n-1] += result;

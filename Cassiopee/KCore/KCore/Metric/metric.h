@@ -295,14 +295,10 @@ namespace K_METRIC
     K_FLD::FldArrayI& cm, const E_Int fcOffset,
     const E_Float* xt, const E_Float* yt, const E_Float* zt,
     E_Float* surfnx, E_Float* surfny, E_Float* surfnz, E_Float* surface);
-
-  /* Calcul de la longueur entre chaque sommet pour une ligne non structuree
-
-  */
-  void compUnstructSurf1d(
-    K_FLD::FldArrayI& cn, const char* eltType,
+  void compBarSurf(
+    K_FLD::FldArrayI& cm, const E_Int fcOffset,
     const E_Float* xt, const E_Float* yt, const E_Float* zt,
-    E_Float* length);
+    E_Float* surface);
 
   /* Calcule l aire d'une cellule d un maillage surfacique nk=1.
      N'est pas necessairement dans le plan 

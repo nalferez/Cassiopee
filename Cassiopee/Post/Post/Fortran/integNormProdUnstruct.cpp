@@ -23,7 +23,7 @@
 // Integre les grandeurs de vect(F).vect(n)
 // Retourne 1 si success, 0 si echec
 //=============================================================================
-E_Int K_POST::integNormProdUnstruct2D(E_Int center2node,
+E_Int K_POST::integNormProdUnstruct(E_Int center2node,
                                       E_Int posx, E_Int posy, E_Int posz,
                                       FldArrayI& cn, const char* eltType, FldArrayF& coord, 
                                       FldArrayF& F, FldArrayF& ratio, 

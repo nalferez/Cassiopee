@@ -23,7 +23,7 @@
 // Integre les grandeurs de M = OM^F.vect(n)
 // Retourne 1 si success, 0 si echec
 //=============================================================================
-E_Int K_POST::integMomentNormUnstruct2D(E_Int center2node,
+E_Int K_POST::integMomentNormUnstruct(E_Int center2node,
                                       E_Int posx, E_Int posy, E_Int posz,
                                       E_Float cx, E_Float cy, E_Float cz, 
                                       FldArrayI& cn, const char* eltType, FldArrayF& coord, 
