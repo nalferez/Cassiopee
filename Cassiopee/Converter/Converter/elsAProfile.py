@@ -777,7 +777,6 @@ def _fillNeighbourList(t, sameBase=0):
                 if Internal.getType(zr)=='Zone_t':
                     dictOfNobOfZone[zr[0]]=nobR
                     dictOfNozOfZone[zr[0]]=nozR
-
     nbOfDD = 1
     nbOfG = 1
     tBBD = G.BB(t)
@@ -801,28 +800,29 @@ def _fillNeighbourList(t, sameBase=0):
     for nobR in range(len(t[2])):
         baseR = t[2][nobR]
         basenameR = baseR[0]
-        NList=""
+        NList = ""
         chimgroupname = __CHIMGROUPNAME__+str(nbOfG)
-        if Internal.getType(baseR)=='CGNSBase_t':
-            listOfDnrBasesNob=[]
+        if Internal.getType(baseR) == 'CGNSBase_t':
+            listOfDnrBasesNob = []
             dnrZoneNames0 = intersectionDict[basenameR]
             for zdname in dnrZoneNames0:
                 nozd = dictOfNozOfZone[zdname]
                 nobd = dictOfNobOfZone[zdname]
                 if sameBase == 1 or (sameBase==0 and nobd != nobR):
-                    Internal.createNode("FamilyName", "FamilyName_t", value=chimgroupname, parent=t[2][nobd][2][nozd])
+                    #Internal.createNode("FamilyName", "FamilyName_t", value=chimgroupname, parent=t[2][nobd][2][nozd])
+                    Internal.createNode(chimgroupname, "FamilyName_t", value=chimgroupname, parent=t[2][nobd][2][nozd])
 
                 # create ChimGroup for donor base
                 if nobd not in listOfDnrBasesNob:
                     listOfDnrBasesNob.append(nobd)
                     chimgroupsons = [Internal.createNode("FamilyBC","FamilyBC_t",value='UserDefined')]
-                    chmg=Internal.createNode(chimgroupname,"Family_t",children=chimgroupsons)
+                    chmg = Internal.createNode(chimgroupname, "Family_t", children=chimgroupsons)
                     t[2][nobd][2].append(chmg)
                     basenameD = t[2][nobd][0]
                     if NList=="": NList=basenameD+'/'+chimgroupname
                     else: NList+=" "+basenameD+'/'+chimgroupname
                     #print 'NeighbourList = ', NList, ' for chimgroup ', chimgroupname
-                    nbOfG+=1
+                    nbOfG += 1
 
             if NList != "":
                 NLnode = Internal.getNodeFromName1(baseR,__FAMOVERLAPBC__+basenameR)
@@ -864,12 +864,13 @@ def _fillNeighbourList(t, sameBase=0):
                             # create a chim group
                             nozd = dictOfNozOfZone[dnrname]
                             nobd = dictOfNobOfZone[dnrname]
-                            Internal.createNode("FamilyName", "FamilyName_t", value=chimgroupnamedd, parent=t[2][nobd][2][nozd])
+                            #Internal.createNode("FamilyName", "FamilyName_t", value=chimgroupnamedd, parent=t[2][nobd][2][nozd])
+                            Internal.createNode(chimgroupnamedd, "FamilyName_t", value=chimgroupnamedd, parent=t[2][nobd][2][nozd])
                             # create ChimGroup for donor base
                             if nobd not in listOfDnrBasesNob:
                                 listOfDnrBasesNob.append(nobd)
                                 chimgroupsons = [Internal.createNode("FamilyBC","FamilyBC_t",value='UserDefined')]
-                                chmg=Internal.createNode(chimgroupnamedd,"Family_t",children=chimgroupsons)
+                                chmg = Internal.createNode(chimgroupnamedd,"Family_t",children=chimgroupsons)
                                 t[2][nobd][2].append(chmg)
                                 basenameD = t[2][nobd][0]
                                 if dnrListNL == "": dnrListNL=basenameD+'/'+chimgroupnamedd
@@ -877,7 +878,7 @@ def _fillNeighbourList(t, sameBase=0):
 
                     #print 'NeighbourList = ', NList[0], " : ", dnrListNL, ' for dd chimgroup ', chimgroupnamedd
                     Internal.setValue(NList[0],dnrListNL)
-                    nbOfDD+=1
+                    nbOfDD += 1
 
     _cleanDonorFamilyNodes(t, name=__CHIMGROUPNAME__+'*')
     return None
