@@ -29,7 +29,8 @@ cpp_srcs = ["Geom/naca.cpp",
             "Geom/xatlas/xatlas.cpp",
             "Geom/getUV.cpp"]
 
-#==============================================================================
-# Fichiers fortran
-#==============================================================================
-for_srcs = []
+import KCore.Dist as Dist
+adolc, adolcIncDir, adolcLibDir, adolcLib = Dist.checkAdolc()
+if adolc:
+    cpp_srcs += ["Geom/dLength.cpp"]
+adolc_srcs = []

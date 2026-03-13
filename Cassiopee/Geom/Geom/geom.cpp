@@ -50,6 +50,9 @@ static PyMethodDef Pygeom [] =
   {"nurbs", K_GEOM::nurbs, METH_VARARGS},
   {"getSharpestAngle", K_GEOM::getSharpestAngleForVertices, METH_VARARGS},
   {"getUV", K_GEOM::getUV, METH_VARARGS},
+#ifdef E_ADOLC
+  {"dLength", K_GEOM::dLength, METH_VARARGS},
+#endif
   {NULL, NULL}
 };
 

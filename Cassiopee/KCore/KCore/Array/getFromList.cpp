@@ -64,7 +64,7 @@ E_Int K_ARRAY::getFromList(PyObject* o, FldArrayI& out)
       for (E_Int i = 0; i < n; i++)
       {
         valf = PyFloat_AsDouble(PyList_GetItem(o, i));
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
         out[i] = E_Int(valf.value());
 #else
         out[i] = E_Int(valf);

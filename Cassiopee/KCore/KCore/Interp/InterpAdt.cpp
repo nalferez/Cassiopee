@@ -1315,7 +1315,7 @@ short K_INTERP::InterpAdt::searchInterpolationCellStruct(
         break;
       }
       /* Apply a technique of jump */
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
       E_Float vx = (xi+K_FUNC::E_sign(xi))*K_CONST::ONE_HALF;
       E_Float vy = (yi+K_FUNC::E_sign(yi))*K_CONST::ONE_HALF;
       E_Float vz = (zi+K_FUNC::E_sign(zi))*K_CONST::ONE_HALF;

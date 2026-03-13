@@ -21,11 +21,6 @@
 #include <limits.h>
 #include <stdint.h>
 
-// E_ADOLC set by compilation option
-#ifdef E_ADOLC
-#include <adolc/adolc.h>
-#endif
-
 // ==========================================================================
 #ifndef _KCORE_DEF_DEFTYPES_H_
 #define _KCORE_DEF_DEFTYPES_H_
@@ -45,9 +40,7 @@
 #endif
 
 #ifdef E_DOUBLEREAL
-  #ifndef E_ADOLC
   typedef double E_Float;
-  #endif
   #ifdef E_MPI
     #define E_PCM_FLOAT MPI_DOUBLE
   #else
@@ -96,10 +89,6 @@
 #define E_EPSILON 1.e-12
 
 ///-
-
-#ifdef E_ADOLC
-typedef adouble E_Float;
-#endif
 
 #endif
 // ===== Def/DefTypes.h === Last line ===

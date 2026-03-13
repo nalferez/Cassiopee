@@ -1580,7 +1580,7 @@ void NUGA::MeshTool::extrude_line
 
   // 3. NEW POINTS (stored line by line)
   // greater than one
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
   E_Float val = H / Lmean;
   E_Int nbr = E_Int(val.value()) + 2; 
 #else

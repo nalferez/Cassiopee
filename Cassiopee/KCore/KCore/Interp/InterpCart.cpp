@@ -78,7 +78,7 @@ short K_INTERP::InterpCart::searchInterpolationCellCartO2(E_Int ni, E_Int nj, E_
   if (z < _zmin-EPS) return 0;
   if (z > _zmax+EPS) return 0;
 
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
   E_Float vx = (x-_xmin)*_hii;
   E_Float vy = (y-_ymin)*_hji;
   E_Float vz = (z-_zmin)*_hki;
@@ -152,7 +152,7 @@ short K_INTERP::InterpCart::searchInterpolationCellCartO3(E_Int ni, E_Int nj, E_
   if (z < _zmin-EPS) return 0;
   if (z > _zmax+EPS) return 0;
   
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
   E_Float vx = (x-_xmin)*_hii;
   E_Float vy = (y-_ymin)*_hji;
   E_Float vz = (z-_zmin)*_hki;  
@@ -362,7 +362,7 @@ short K_INTERP::InterpCart::searchInterpolationCellCartO4(E_Int ni, E_Int nj, E_
   if (z < _zmin-EPS) return 0;
   if (z > _zmax+EPS) return 0;
 
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
   E_Float vx = (x-_xmin)*_hii;
   E_Float vy = (y-_ymin)*_hji;
   E_Float vz = (z-_zmin)*_hki;
@@ -466,7 +466,7 @@ E_Int K_INTERP::InterpCart::getListOfCandidateCells(E_Float x, E_Float y, E_Floa
   E_Float y0 = y-dy; E_Float y1 = y+dy;
   E_Float z0 = z-dz; E_Float z1 = z+dz;
 
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
   E_Float vx = (x0-_xmin)*_hii;
   E_Float vy = (y0-_ymin)*_hji;
   E_Float vz = (z0-_zmin)*_hki;
@@ -479,7 +479,7 @@ E_Int K_INTERP::InterpCart::getListOfCandidateCells(E_Float x, E_Float y, E_Floa
   E_Int kcmin = E_Int((z0-_zmin)*_hki)+_koff;
 #endif
 
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
   vx = (x1-_xmin)*_hii;
   vy = (y1-_ymin)*_hji;
   vz = (z1-_zmin)*_hki;

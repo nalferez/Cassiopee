@@ -202,7 +202,7 @@ void K_POST::doIsoSurfNGon(FldArrayF& f, FldArrayI& cn, E_Int posf, E_Float valu
       E_Float f0, f1, f2, f3;
       E_Float ffs, fcs;
       E_Float delta = (nelts*1.)/(nthreads*1.);
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
       E_Int ieltstart = E_Int(ithread*delta.value());
       E_Int ieltend = E_Int((ithread+1)*delta.value());
 #else
@@ -218,7 +218,7 @@ void K_POST::doIsoSurfNGon(FldArrayF& f, FldArrayI& cn, E_Int posf, E_Float valu
       {
         np = 0; ntri = 0;
         //printf("" SF_D2_ "\n", djp, djp1);
-      #ifdef E_ADOLC
+      #ifdef E_ADOUBLE
         E_Int djp1 = E_Int((j+1)*deltap.value());
         E_Int djp = E_Int(j*deltap.value());
       #else
@@ -355,7 +355,7 @@ void K_POST::doIsoSurfNGon(FldArrayF& f, FldArrayI& cn, E_Int posf, E_Float valu
     E_Float delta = (nelts*1.)/(nthreads*1.);
     for (E_Int i = 0; i < nthreads; i++)
     {
-    #ifdef E_ADOLC
+    #ifdef E_ADOUBLE
       E_Int ieltstart = E_Int(i*delta.value());
       E_Int ieltend = E_Int((i+1)*delta.value());
     #else
@@ -365,7 +365,7 @@ void K_POST::doIsoSurfNGon(FldArrayF& f, FldArrayI& cn, E_Int posf, E_Float valu
       E_Float deltap = (ieltend-ieltstart)/(10.);
       for (E_Int j = 0; j < 10; j++)
       {
-        #ifdef E_ADOLC
+        #ifdef E_ADOUBLE
         iestart[j+10*i] = ieltstart+E_Int(deltap.value()*j);
         ieend[j+10*i] = ieltstart+E_Int(deltap.value()*(j+1));
         #else
@@ -386,7 +386,7 @@ void K_POST::doIsoSurfNGon(FldArrayF& f, FldArrayI& cn, E_Int posf, E_Float valu
     for (E_Int i = 0; i < nthreads; i++)
     {
       E_Int nc = 0; E_Int np = 0;
-      #ifdef E_ADOLC
+      #ifdef E_ADOUBLE
       E_Int alphai = E_Int(alpha.value());
       #else
       E_Int alphai = E_Int(alpha);

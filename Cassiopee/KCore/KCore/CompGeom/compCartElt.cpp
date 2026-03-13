@@ -247,7 +247,7 @@ void K_COMPGEOM::compDimOfCartElts(E_Int dir, E_Int ni, E_Int nj, E_Int nk,
         dzMax = K_FUNC::E_max(dzMax,dz);   
       }
 
-#ifdef E_ADOLC
+#ifdef E_ADOUBLE
   E_Int nx = E_Int(sizex.value()/dxMax.value());
   E_Int ny = E_Int(sizey.value()/dyMax.value());
   E_Int nz = E_Int(sizez.value()/dzMax.value());
