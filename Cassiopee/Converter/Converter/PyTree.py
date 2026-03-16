@@ -5225,17 +5225,21 @@ def getBC__(i, z, T, res, reorder=True, extrapFlow=True, shift=0, method="geomet
                 if kmin == 1: kmin += shift; kmax += shift
                 else: kmin -= shift; kmax -= shift
             zp = T.subzone(z, (imin,jmin,kmin), (imax,jmax,kmax))
+            zp[0] = z[0]+Internal.SEP1+i[0]
+            # Get BCDataSet if any
+            _keepBCDataSet(zp, z, i, extrapFlow=extrapFlow)
             if reorder: _reorderSubzone__(zp, w, T) # normales ext
+            _deleteZoneBC__(zp)
+            _deleteGridConnectivity__(zp)
         elif r[1].shape[0] == 1: # suppose BE + BCC
             r = r[1]
             zp = selectConnectivity(z, irange=[r[0,0], r[0,1]])
+            zp[0] = z[0]+Internal.SEP1+i[0]
+            _deleteZoneBC__(zp)
+            _deleteGridConnectivity__(zp)
             _deleteSolverNodes__(zp)
-
-        zp[0] = z[0]+Internal.SEP1+i[0]
-        _deleteZoneBC__(zp)
-        _deleteGridConnectivity__(zp)
-        # Get BCDataSet if any
-        _keepBCDataSet(zp, z, i, extrapFlow=extrapFlow)
+            # Get BCDataSet if any
+            _keepBCDataSet(zp, z, i, extrapFlow=extrapFlow)
         res.append(zp)
         return None
 
