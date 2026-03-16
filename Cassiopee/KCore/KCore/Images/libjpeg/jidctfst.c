@@ -2,6 +2,7 @@
  * jidctfst.c
  *
  * Copyright (C) 1994-1998, Thomas G. Lane.
+ * Modified 2015-2025 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -14,11 +15,11 @@
  * a time).  Direct algorithms are also available, but they are much more
  * complex and seem not to be any faster when reduced to code.
  *
- * This implementation is based on Arai, Agui, and Nakajima's algorithm for
- * scaled DCT.  Their original paper (Trans. IEICE E-71(11):1095) is in
- * Japanese, but the algorithm is described in the Pennebaker & Mitchell
- * JPEG textbook (see REFERENCES section in file README).  The following code
- * is based directly on figure 4-8 in P&M.
+ * This implementation is based on Arai, Agui, and Nakajima's algorithm
+ * for scaled DCT.  Their original paper (Trans. IEICE E-71(11):1095) is
+ * in Japanese, but the algorithm is described in the Pennebaker & Mitchell
+ * JPEG textbook (see REFERENCES section in file README).  The following
+ * code is based directly on figure 4-8 in P&M.
  * While an 8-point DCT cannot be done in less than 11 multiplies, it is
  * possible to arrange the computation so that many of the multiplies are
  * simple scalings of the final outputs.  These multiplies can then be
@@ -27,9 +28,9 @@
  * to be done in the DCT itself.
  * The primary disadvantage of this method is that with fixed-point math,
  * accuracy is lost due to imprecise representation of the scaled
- * quantization values.  The smaller the quantization table entry, the less
- * precise the scaled value, so this implementation does worse with high-
- * quality-setting files than with low-quality ones.
+ * quantization values.  The smaller the quantization table entry,
+ * the less precise the scaled value, so this implementation does
+ * worse with high-quality-setting files than with low-quality ones.
  */
 
 #define JPEG_INTERNALS
@@ -45,7 +46,7 @@
  */
 
 #if DCTSIZE != 8
-  Sorry, this code only copes with 8x8 DCTs. /* deliberate syntax err */
+  Sorry, this code only copes with 8x8 DCT blocks. /* deliberate syntax err */
 #endif
 
 
@@ -54,17 +55,17 @@
  * (right shift) multiplication products as soon as they are formed,
  * rather than carrying additional fractional bits into subsequent additions.
  * This compromises accuracy slightly, but it lets us save a few shifts.
- * More importantly, 16-bit arithmetic is then adequate (for 8-bit samples)
- * everywhere except in the multiplications proper; this saves a good deal
- * of work on 16-bit-int machines.
+ * More importantly, 16-bit arithmetic is then adequate (for up to 10-bit
+ * data) everywhere except in the multiplications proper;
+ * this saves a good deal of work on 16-bit-int machines.
  *
  * The dequantized coefficients are not integers because the AA&N scaling
  * factors have been incorporated.  We represent them scaled up by PASS1_BITS,
  * so that the first and second IDCT rounds have the same input scaling.
- * For 8-bit JSAMPLEs, we choose IFAST_SCALE_BITS = PASS1_BITS so as to
+ * For up to 10-bit data, we choose IFAST_SCALE_BITS = PASS1_BITS so as to
  * avoid a descaling shift; this compromises accuracy rather drastically
  * for small quantization table entries, but it saves a lot of shifts.
- * For 12-bit JSAMPLEs, there's no hope of using 16x16 multiplies anyway,
+ * For higher bit depths, there's no hope of using 16x16 multiplies anyway,
  * so we use a much larger scaling factor to preserve accuracy.
  *
  * A final compromise is to represent the multiplicative constants to only
@@ -73,16 +74,20 @@
  * are fewer one-bits in the constants).
  */
 
-#if BITS_IN_JSAMPLE == 8
+#if JPEG_DATA_PRECISION <= 10 && BITS_IN_JSAMPLE <= 13
 #define CONST_BITS  8
-#define PASS1_BITS  2
+#define PASS1_BITS  (10 - JPEG_DATA_PRECISION)
+#define PASS2_BITS  (13 - BITS_IN_JSAMPLE)
 #else
+#if JPEG_DATA_PRECISION <= 13 && BITS_IN_JSAMPLE <= 16
 #define CONST_BITS  8
-#define PASS1_BITS  1		/* lose a little precision to avoid overflow */
+#define PASS1_BITS  (13 - JPEG_DATA_PRECISION)
+#define PASS2_BITS  (16 - BITS_IN_JSAMPLE)
+#endif
 #endif
 
-/* Some C compilers fail to reduce "FIX(constant)" at compile time, thus
- * causing a lot of useless floating-point operations at run time.
+/* Some C compilers fail to reduce "FIX(constant)" at compile time,
+ * thus causing a lot of useless floating-point operations at run time.
  * To get around this we use the following pre-calculated constants.
  * If you change CONST_BITS you may want to add appropriate values.
  * (With a reasonable C compiler, you can just rely on the FIX() macro...)
@@ -101,9 +106,9 @@
 #endif
 
 
-/* We can gain a little more speed, with a further compromise in accuracy,
- * by omitting the addition in a descaling shift.  This yields an incorrectly
- * rounded result half the time...
+/* We can gain a little more speed, with a further compromise
+ * in accuracy, by omitting the addition in a descaling shift.
+ * This yields an incorrectly rounded result half the time...
  */
 
 #ifndef USE_ACCURATE_ROUNDING
@@ -112,20 +117,20 @@
 #endif
 
 
-/* Multiply a DCTELEM variable by an INT32 constant, and immediately
- * descale to yield a DCTELEM result.
+/* Multiply a DCTELEM variable by an INT32 constant,
+ * and immediately descale to yield a DCTELEM result.
  */
 
 #define MULTIPLY(var,const)  ((DCTELEM) DESCALE((var) * (const), CONST_BITS))
 
 
 /* Dequantize a coefficient by multiplying it by the multiplier-table
- * entry; produce a DCTELEM result.  For 8-bit data a 16x16->16
- * multiplication will do.  For 12-bit data, the multiplier table is
- * declared INT32, so a 32-bit multiply will be used.
+ * entry; produce a DCTELEM result.  For up to 10-bit data a 16x16->16
+ * multiplication will do.  For higher bit depths, the multiplier table
+ * is declared INT32, so a 32-bit multiply will be used.
  */
 
-#if BITS_IN_JSAMPLE == 8
+#if JPEG_DATA_PRECISION <= 10 && BITS_IN_JSAMPLE <= 13
 #define DEQUANTIZE(coef,quantval)  (((IFAST_MULT_TYPE) (coef)) * (quantval))
 #else
 #define DEQUANTIZE(coef,quantval)  \
@@ -133,35 +138,20 @@
 #endif
 
 
-/* Like DESCALE, but applies to a DCTELEM and produces an int.
- * We assume that int right shift is unsigned if INT32 right shift is.
- */
+/* Final output conversion: scale down and range-limit. */
 
-#ifdef RIGHT_SHIFT_IS_UNSIGNED
-#define ISHIFT_TEMPS	DCTELEM ishift_temp;
-#if BITS_IN_JSAMPLE == 8
-#define DCTELEMBITS  16		/* DCTELEM may be 16 or 32 bits */
+#if PASS2_BITS > 0
+#define FINAL_OUTPUT(x)  \
+	range_limit[(int) IRIGHT_SHIFT(x, PASS2_BITS) & RANGE_MASK]
 #else
-#define DCTELEMBITS  32		/* DCTELEM must be 32 bits */
-#endif
-#define IRIGHT_SHIFT(x,shft)  \
-    ((ishift_temp = (x)) < 0 ? \
-     (ishift_temp >> (shft)) | ((~((DCTELEM) 0)) << (DCTELEMBITS-(shft))) : \
-     (ishift_temp >> (shft)))
-#else
-#define ISHIFT_TEMPS
-#define IRIGHT_SHIFT(x,shft)	((x) >> (shft))
-#endif
-
-#ifdef USE_ACCURATE_ROUNDING
-#define IDESCALE(x,n)  ((int) IRIGHT_SHIFT((x) + (1 << ((n)-1)), n))
-#else
-#define IDESCALE(x,n)  ((int) IRIGHT_SHIFT(x, n))
+#define FINAL_OUTPUT(x)  range_limit[(int) (x) & RANGE_MASK]
 #endif
 
 
 /*
  * Perform dequantization and inverse DCT on one block of coefficients.
+ *
+ * cK represents cos(K*pi/16).
  */
 
 GLOBAL(void)
@@ -180,7 +170,7 @@ jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
   int ctr;
   int workspace[DCTSIZE2];	/* buffers data between passes */
   SHIFT_TEMPS			/* for DESCALE */
-  ISHIFT_TEMPS			/* for IDESCALE */
+  ISHIFT_TEMPS			/* for IRIGHT_SHIFT */
 
   /* Pass 1: process columns from input, store into work array. */
 
@@ -196,7 +186,7 @@ jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
      * With typical images and quantization tables, half or more of the
      * column DCT calculations can be simplified this way.
      */
-    
+
     if (inptr[DCTSIZE*1] == 0 && inptr[DCTSIZE*2] == 0 &&
 	inptr[DCTSIZE*3] == 0 && inptr[DCTSIZE*4] == 0 &&
 	inptr[DCTSIZE*5] == 0 && inptr[DCTSIZE*6] == 0 &&
@@ -212,13 +202,13 @@ jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
       wsptr[DCTSIZE*5] = dcval;
       wsptr[DCTSIZE*6] = dcval;
       wsptr[DCTSIZE*7] = dcval;
-      
+
       inptr++;			/* advance pointers to next column */
       quantptr++;
       wsptr++;
       continue;
     }
-    
+
     /* Even part */
 
     tmp0 = DEQUANTIZE(inptr[DCTSIZE*0], quantptr[DCTSIZE*0]);
@@ -236,7 +226,7 @@ jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
     tmp3 = tmp10 - tmp13;
     tmp1 = tmp11 + tmp12;
     tmp2 = tmp11 - tmp12;
-    
+
     /* Odd part */
 
     tmp4 = DEQUANTIZE(inptr[DCTSIZE*1], quantptr[DCTSIZE*1]);
@@ -253,12 +243,12 @@ jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
     tmp11 = MULTIPLY(z11 - z13, FIX_1_414213562); /* 2*c4 */
 
     z5 = MULTIPLY(z10 + z12, FIX_1_847759065); /* 2*c2 */
-    tmp10 = MULTIPLY(z12, FIX_1_082392200) - z5; /* 2*(c2-c6) */
-    tmp12 = MULTIPLY(z10, - FIX_2_613125930) + z5; /* -2*(c2+c6) */
+    tmp10 = z5 - MULTIPLY(z12, FIX_1_082392200); /* 2*(c2-c6) */
+    tmp12 = z5 - MULTIPLY(z10, FIX_2_613125930); /* 2*(c2+c6) */
 
     tmp6 = tmp12 - tmp7;	/* phase 2 */
     tmp5 = tmp11 - tmp6;
-    tmp4 = tmp10 + tmp5;
+    tmp4 = tmp10 - tmp5;
 
     wsptr[DCTSIZE*0] = (int) (tmp0 + tmp7);
     wsptr[DCTSIZE*7] = (int) (tmp0 - tmp7);
@@ -266,21 +256,35 @@ jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
     wsptr[DCTSIZE*6] = (int) (tmp1 - tmp6);
     wsptr[DCTSIZE*2] = (int) (tmp2 + tmp5);
     wsptr[DCTSIZE*5] = (int) (tmp2 - tmp5);
-    wsptr[DCTSIZE*4] = (int) (tmp3 + tmp4);
-    wsptr[DCTSIZE*3] = (int) (tmp3 - tmp4);
+    wsptr[DCTSIZE*3] = (int) (tmp3 + tmp4);
+    wsptr[DCTSIZE*4] = (int) (tmp3 - tmp4);
 
     inptr++;			/* advance pointers to next column */
     quantptr++;
     wsptr++;
   }
-  
-  /* Pass 2: process rows from work array, store into output array. */
-  /* Note that we must descale the results by a factor of 8 == 2**3, */
-  /* and also undo the PASS1_BITS scaling. */
+
+  /* Pass 2: process rows from work array, store into output array.
+   * Note that we must descale the results by a factor of 8 == 2**3,
+   * which is folded into the PASS2_BITS value.
+   */
 
   wsptr = workspace;
   for (ctr = 0; ctr < DCTSIZE; ctr++) {
     outptr = output_buf[ctr] + output_col;
+
+    /* Add range center and fudge factor for final descale and range-limit. */
+#if PASS2_BITS > 1
+    z5 = (DCTELEM) wsptr[0] +
+	   ((((DCTELEM) RANGE_CENTER) << PASS2_BITS) + (1 << (PASS2_BITS-1)));
+#else
+#if PASS2_BITS > 0
+    z5 = (DCTELEM) wsptr[0] + ((((DCTELEM) RANGE_CENTER) << 1) + 1);
+#else
+    z5 = (DCTELEM) wsptr[0] + (DCTELEM) RANGE_CENTER;
+#endif
+#endif
+
     /* Rows of zeroes can be exploited in the same way as we did with columns.
      * However, the column calculation has created many nonzero AC terms, so
      * the simplification applies less often (typically 5% to 10% of the time).
@@ -288,14 +292,13 @@ jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
      * test takes more time than it's worth.  In that case this section
      * may be commented out.
      */
-    
+
 #ifndef NO_ZERO_ROW_TEST
     if (wsptr[1] == 0 && wsptr[2] == 0 && wsptr[3] == 0 && wsptr[4] == 0 &&
 	wsptr[5] == 0 && wsptr[6] == 0 && wsptr[7] == 0) {
       /* AC terms all zero */
-      JSAMPLE dcval = range_limit[IDESCALE(wsptr[0], PASS1_BITS+3)
-				  & RANGE_MASK];
-      
+      JSAMPLE dcval = FINAL_OUTPUT(z5);
+
       outptr[0] = dcval;
       outptr[1] = dcval;
       outptr[2] = dcval;
@@ -309,15 +312,15 @@ jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
       continue;
     }
 #endif
-    
+
     /* Even part */
 
-    tmp10 = ((DCTELEM) wsptr[0] + (DCTELEM) wsptr[4]);
-    tmp11 = ((DCTELEM) wsptr[0] - (DCTELEM) wsptr[4]);
+    tmp10 = z5 + (DCTELEM) wsptr[4];
+    tmp11 = z5 - (DCTELEM) wsptr[4];
 
-    tmp13 = ((DCTELEM) wsptr[2] + (DCTELEM) wsptr[6]);
-    tmp12 = MULTIPLY((DCTELEM) wsptr[2] - (DCTELEM) wsptr[6], FIX_1_414213562)
-	    - tmp13;
+    tmp13 = (DCTELEM) wsptr[2] + (DCTELEM) wsptr[6];
+    tmp12 = MULTIPLY((DCTELEM) wsptr[2] - (DCTELEM) wsptr[6],
+		     FIX_1_414213562) - tmp13; /* 2*c4 */
 
     tmp0 = tmp10 + tmp13;
     tmp3 = tmp10 - tmp13;
@@ -335,31 +338,23 @@ jpeg_idct_ifast (j_decompress_ptr cinfo, jpeg_component_info * compptr,
     tmp11 = MULTIPLY(z11 - z13, FIX_1_414213562); /* 2*c4 */
 
     z5 = MULTIPLY(z10 + z12, FIX_1_847759065); /* 2*c2 */
-    tmp10 = MULTIPLY(z12, FIX_1_082392200) - z5; /* 2*(c2-c6) */
-    tmp12 = MULTIPLY(z10, - FIX_2_613125930) + z5; /* -2*(c2+c6) */
+    tmp10 = z5 - MULTIPLY(z12, FIX_1_082392200); /* 2*(c2-c6) */
+    tmp12 = z5 - MULTIPLY(z10, FIX_2_613125930); /* 2*(c2+c6) */
 
     tmp6 = tmp12 - tmp7;	/* phase 2 */
     tmp5 = tmp11 - tmp6;
-    tmp4 = tmp10 + tmp5;
+    tmp4 = tmp10 - tmp5;
 
-    /* Final output stage: scale down by a factor of 8 and range-limit */
+    /* Final output stage: scale down and range-limit */
 
-    outptr[0] = range_limit[IDESCALE(tmp0 + tmp7, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[7] = range_limit[IDESCALE(tmp0 - tmp7, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[1] = range_limit[IDESCALE(tmp1 + tmp6, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[6] = range_limit[IDESCALE(tmp1 - tmp6, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[2] = range_limit[IDESCALE(tmp2 + tmp5, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[5] = range_limit[IDESCALE(tmp2 - tmp5, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[4] = range_limit[IDESCALE(tmp3 + tmp4, PASS1_BITS+3)
-			    & RANGE_MASK];
-    outptr[3] = range_limit[IDESCALE(tmp3 - tmp4, PASS1_BITS+3)
-			    & RANGE_MASK];
+    outptr[0] = FINAL_OUTPUT(tmp0 + tmp7);
+    outptr[7] = FINAL_OUTPUT(tmp0 - tmp7);
+    outptr[1] = FINAL_OUTPUT(tmp1 + tmp6);
+    outptr[6] = FINAL_OUTPUT(tmp1 - tmp6);
+    outptr[2] = FINAL_OUTPUT(tmp2 + tmp5);
+    outptr[5] = FINAL_OUTPUT(tmp2 - tmp5);
+    outptr[3] = FINAL_OUTPUT(tmp3 + tmp4);
+    outptr[4] = FINAL_OUTPUT(tmp3 - tmp4);
 
     wsptr += DCTSIZE;		/* advance pointer to next row */
   }

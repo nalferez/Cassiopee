@@ -2,7 +2,7 @@
  * jerror.c
  *
  * Copyright (C) 1991-1998, Thomas G. Lane.
- * Modified 2012 by Guido Vollbeding.
+ * Modified 2012-2025 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -19,15 +19,15 @@
  * These routines are used by both the compression and decompression code.
  */
 
+#ifdef USE_WINDOWS_MESSAGEBOX
+#include <windows.h>
+#endif
+
 /* this is not a core library module, so it doesn't define JPEG_INTERNALS */
 #include "jinclude.h"
 #include "jpeglib.h"
 #include "jversion.h"
 #include "jerror.h"
-
-#ifdef USE_WINDOWS_MESSAGEBOX
-#include <windows.h>
-#endif
 
 #ifndef EXIT_FAILURE		/* define exit() codes if not provided */
 #define EXIT_FAILURE  1
@@ -237,9 +237,18 @@ jpeg_std_error (struct jpeg_error_mgr * err)
   err->format_message = format_message;
   err->reset_error_mgr = reset_error_mgr;
 
+  err->msg_code = 0;		/* may be useful as a flag for "no error" */
+  err->msg_parm.i[0] = 0;	/* initialize 8 int message parameters */
+  err->msg_parm.i[1] = 0;
+  err->msg_parm.i[2] = 0;
+  err->msg_parm.i[3] = 0;
+  err->msg_parm.i[4] = 0;
+  err->msg_parm.i[5] = 0;
+  err->msg_parm.i[6] = 0;
+  err->msg_parm.i[7] = 0;
+
   err->trace_level = 0;		/* default = no tracing */
   err->num_warnings = 0;	/* no warnings emitted yet */
-  err->msg_code = 0;		/* may be useful as a flag for "no error" */
 
   /* Initialize message table pointers */
   err->jpeg_message_table = jpeg_std_message_table;
