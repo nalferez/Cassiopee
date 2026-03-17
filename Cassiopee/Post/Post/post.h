@@ -183,23 +183,7 @@ namespace K_POST
   1 if coord is in nodes and F in centers
   resultat: integration result, same size as F variable number
 */
-  E_Int integUnstruct2D(E_Int center2node,
-                        E_Int posx, E_Int posy, E_Int posz,
-                        FldArrayI& cn, const char* eltType, FldArrayF& coord,
-                        FldArrayF& F, FldArrayF& ratio,
-                        FldArrayF& resultat);
-/*
-  Calcul de l'integrale de F sur une surface "BAR"
-  posx, posy, posz: positions de x,y,z dans coord
-  cn: connectivite: element ->noeud
-  coord: coordonnees  des noeuds
-  ratio: ponderation ds integ. Taille: celle de xt
-  F: champ a integrer
-  center2node: 0 if coord and F have the same size
-  1 if coord is in nodes and F in centers
-  resultat: integration result, same size as F variable number
-*/
-  E_Int integUnstruct1D(E_Int center2node,
+  E_Int integUnstruct(E_Int center2node,
                         E_Int posx, E_Int posy, E_Int posz,
                         FldArrayI& cn, const char* eltType, FldArrayF& coord,
                         FldArrayF& F, FldArrayF& ratio,
@@ -228,7 +212,7 @@ namespace K_POST
   1 if coord is in nodes and F in centers
   resultat: integration result, same size as F variable number*3
 */
-  E_Int integNormUnstruct2D(E_Int center2node,
+  E_Int integNormUnstruct(E_Int center2node,
                             E_Int posx, E_Int posy, E_Int posz,
                             FldArrayI& cn, const char* eltType, FldArrayF& coord,
                             FldArrayF& F, FldArrayF& ratio,
@@ -260,7 +244,7 @@ namespace K_POST
    1 if coord is in nodes and F in centers
    resultat: integration result, same size as F variable number
 */
-  E_Int integNormProdUnstruct2D(E_Int center2node,
+  E_Int integNormProdUnstruct(E_Int center2node,
                                E_Int posx, E_Int posy, E_Int posz,
                                FldArrayI& cn, const char* eltType, FldArrayF& coord,
                                FldArrayF& F, FldArrayF& ratio,
@@ -304,27 +288,13 @@ namespace K_POST
    1 if coord is in nodes and F in centers
    resultat: integration result, same size as F variable number
 */
-  E_Int integMomentUnstruct2D(E_Int center2node,
+  E_Int integMomentUnstruct(E_Int center2node,
                               E_Int posx, E_Int posy, E_Int posz,
                               E_Float cx, E_Float cy, E_Float cz,
                               FldArrayI& cn, const char* eltType, FldArrayF& coord,
                               FldArrayF& F, FldArrayF& ratio,
                               FldArrayF& resultat);
-/*
-   Compute the linear integral of moment (OM^F)
-   cn: connectivity
-   ratio: to have the better value in overlap mesh case
-   (equal to 1 if not defined)
-   center2node: 0 if coord and F have the same size
-   1 if coord is in nodes and F in centers
-   resultat: integration result, same size as F variable number
-*/
-  E_Int integMomentUnstruct1D(E_Int center2node,
-                              E_Int posx, E_Int posy, E_Int posz,
-                              E_Float cx, E_Float cy, E_Float cz,
-                              FldArrayI& cn, const char* eltType, FldArrayF& coord,
-                              FldArrayF& F, FldArrayF& ratio,
-                              FldArrayF& resultat);
+
 /*
    Compute the surface integral of moment (OM^F.vect(n))
    ni*nj*nk: dimension of coordinate array (coord)
@@ -350,7 +320,7 @@ namespace K_POST
    1 if coord is in nodes and F in centers
    resultat: integration result, same size as F variable number
 */
-  E_Int integMomentNormUnstruct2D(E_Int center2node,
+  E_Int integMomentNormUnstruct(E_Int center2node,
                                   E_Int posx, E_Int posy, E_Int posz,
                                   E_Float cx, E_Float cy, E_Float cz,
                                   FldArrayI& cn, const char* eltType, FldArrayF& coord,

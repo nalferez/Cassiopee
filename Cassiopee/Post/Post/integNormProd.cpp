@@ -273,7 +273,8 @@ PyObject* K_POST::integNormProduct(PyObject* self, PyObject* args)
       // check if elt is valid (QUAD, TRI)
       for (size_t ic = 0; ic < eltTypecs.size(); ic++)
       {
-        if ((strcmp(eltTypecs[ic], "QUAD") != 0) && (strcmp(eltTypecs[ic], "TRI") != 0)) res = 0;
+        if ((strcmp(eltTypecs[ic], "QUAD") != 0) && 
+            (strcmp(eltTypecs[ic], "TRI") != 0)) res = 0;
       }
 
       for (size_t ic = 0; ic < eltTypecs.size(); ic++) delete [] eltTypecs[ic];
@@ -310,7 +311,7 @@ PyObject* K_POST::integNormProduct(PyObject* self, PyObject* args)
       }
       // integ sur chaque bloc
       res = 0;
-      res = integNormProdUnstruct2D(center2node, posx, posy, posz, 
+      res = integNormProdUnstruct(center2node, posx, posy, posz, 
                            *cnc, eltTypec, *fc, *ff, *ratio, resultat);
 
       if (res == 0) 
