@@ -16,21 +16,40 @@
     You should have received a copy of the GNU General Public License
     along with Cassiopee.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-// getRegularityMap
-
 # include "generator.h"
 
-using namespace std;
-using namespace K_CONST;
-using namespace K_FLD;
-using namespace K_FUNC;
+// ============================================================================
+// Inline functions
+// ============================================================================
+inline E_Float ratioMax1(E_Float v, E_Float v1)
+{
+  return K_FUNC::E_abs(v1 - v)/(K_FUNC::E_max(v, K_CONST::E_GEOM_CUTOFF));
+}
 
-#define RATIOMAX2(v,v1,v2)              E_max(E_abs(v1-v)/E_max(v,E_GEOM_CUTOFF),E_abs(v2-v)/E_max(v,E_GEOM_CUTOFF))
-#define RATIOMAX3(v,v1,v2,v3)           E_max(E_max(E_abs(v1-v)/E_max(v,E_GEOM_CUTOFF),E_abs(v2-v)/E_max(v,E_GEOM_CUTOFF)),E_abs(v3-v)/E_max(v,E_GEOM_CUTOFF))
-#define RATIOMAX4(v,v1,v2,v3,v4)        E_max(E_max(E_abs(v1-v)/E_max(v,E_GEOM_CUTOFF),E_abs(v2-v)/E_max(v,E_GEOM_CUTOFF)),E_max(E_abs(v3-v)/E_max(v,E_GEOM_CUTOFF),E_abs(v4-v)/E_max(v,E_GEOM_CUTOFF)))
-#define RATIOMAX5(v,v1,v2,v3,v4,v5)     E_max(E_max(E_max(E_abs(v1-v)/E_max(v,E_GEOM_CUTOFF),E_abs(v2-v)/E_max(v,E_GEOM_CUTOFF)),E_max(E_abs(v3-v)/E_max(v,E_GEOM_CUTOFF),E_abs(v4-v)/E_max(v,E_GEOM_CUTOFF))),E_abs(v5-v)/E_max(v,E_GEOM_CUTOFF))
-#define RATIOMAX6(v,v1,v2,v3,v4,v5,v6)  E_max(E_max(E_max(E_abs(v1-v)/E_max(v,E_GEOM_CUTOFF),E_abs(v2-v)/E_max(v,E_GEOM_CUTOFF)),E_abs(v3-v)/E_max(v,E_GEOM_CUTOFF)),E_max(E_max(E_abs(v4-v)/E_max(v,E_GEOM_CUTOFF),E_abs(v5-v)/E_max(v,E_GEOM_CUTOFF)),E_abs(v6-v)/E_max(v,E_GEOM_CUTOFF)))
+inline E_Float ratioMax2(E_Float v, E_Float v1, E_Float v2)
+{
+  return K_FUNC::E_max(ratioMax1(v, v1), ratioMax1(v, v2));
+}
+
+inline E_Float ratioMax3(E_Float v, E_Float v1, E_Float v2, E_Float v3)
+{
+  return K_FUNC::E_max(ratioMax2(v, v1, v2), ratioMax1(v, v3));
+}
+
+inline E_Float ratioMax4(E_Float v, E_Float v1, E_Float v2, E_Float v3, E_Float v4)
+{
+  return K_FUNC::E_max(ratioMax2(v, v1, v2), ratioMax2(v, v3, v4));
+}
+
+inline E_Float ratioMax5(E_Float v, E_Float v1, E_Float v2, E_Float v3, E_Float v4, E_Float v5)
+{
+  return K_FUNC::E_max(ratioMax3(v, v1, v2, v3), ratioMax2(v, v4, v5));
+}
+
+inline E_Float ratioMax6(E_Float v, E_Float v1, E_Float v2, E_Float v3, E_Float v4, E_Float v5, E_Float v6)
+{
+  return K_FUNC::E_max(ratioMax3(v, v1, v2, v3), ratioMax3(v, v4, v5, v6));
+}
 
 extern "C"
 {
@@ -65,7 +84,10 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
     return NULL;
   }
 
+  E_Int api = f->getApi();
+  E_Int npts = f->getSize();
   PyObject* tpl = NULL;
+  FldArrayF* f2;
   
   posx = K_ARRAY::isCoordinateXPresent(varString);
   posy = K_ARRAY::isCoordinateYPresent(varString);
@@ -83,9 +105,6 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
   E_Float* xp = f->begin(posx);
   E_Float* yp = f->begin(posy);
   E_Float* zp = f->begin(posz);
-
-  E_Int api = f->getApi();
-  E_Int npts = f->getSize();
   
   if (res == 1) // cas structure
   {
@@ -98,55 +117,56 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
     E_Int im1 = im-1;
     E_Int jm1 = jm-1;
     E_Int km1 = km-1;
-    E_Int dirI=2;
-    E_Int dirJ=3;
-    E_Int dirK=4;
-    if (im == 1) dirI=1;
-    if (jm == 1) dirJ=1;
-    if (km == 1) dirK=1;
+    E_Int dirI = 2;
+    E_Int dirJ = 3;
+    E_Int dirK = 4;
+    if (im == 1) dirI = 1;
+    if (jm == 1) dirJ = 1;
+    if (km == 1) dirK = 1;
     E_Int dir = dirI*dirJ*dirK;
-    E_Int ni,nj,nk;
+    E_Int ni, nj, nk;
     ni = im; nj = jm; nk = km;
     switch (dir)
     {
-      case  2: // dim 1 - dir I
-          ni = im; dim = 1; dimC = 1;
-          break;
-      case  3: // dim 1 - dir J
-          ni = jm; dim = 1; dimC = 1;
-          break;
-      case  4: // dim 1 - dir K
-          ni = km; dim = 1; dimC = 1;
-          break;
-      case  6: // dim 2 - dir IJ
-          ni = im;
-          nj = jm;
-          dim = 2;
-          dimC = 2;
-          if (im == 2) { dimC = 1; ni = jm; nj = 1; }
-          if (jm == 2) { dimC = 1; ni = im; nj = 1; }
-          break;
-      case  8: // dim 2 - dir IK
-          ni = im;
-          nj = km;
-          dim = 2;
-          dimC = 2;
-          if (im == 2) { dimC = 1; ni = km; nj = 1; }
-          if (km == 2) { dimC = 1; ni = im; nj = 1; }
-          break;
+      case 2: // dim 1 - dir I
+        ni = im; dim = 1; dimC = 1;
+        break;
+      case 3: // dim 1 - dir J
+        ni = jm; dim = 1; dimC = 1;
+        break;
+      case 4: // dim 1 - dir K
+        ni = km; dim = 1; dimC = 1;
+        break;
+      case 6: // dim 2 - dir IJ
+        ni = im;
+        nj = jm;
+        dim = 2;
+        dimC = 2;
+        if (im == 2) { dimC = 1; ni = jm; nj = 1; }
+        if (jm == 2) { dimC = 1; ni = im; nj = 1; }
+        break;
+      case 8: // dim 2 - dir IK
+        ni = im;
+        nj = km;
+        dim = 2;
+        dimC = 2;
+        if (im == 2) { dimC = 1; ni = km; nj = 1; }
+        if (km == 2) { dimC = 1; ni = im; nj = 1; }
+        break;
       case 12: // dim 2 - dir JK
-          ni = jm;
-          nj = km;
-          dim = 2;
-          dimC = 2;
-          if (im == 2) { dimC = 1; ni = km; nj = 1; }
-          if (km == 2) { dimC = 1; ni = jm; nj = 1; }
-          break;
-    default:
-      if (im == 2) { dimC = 2; ni = jm; nj = km; }
-      if (jm == 2) { dimC = 2; ni = im; nj = km; }
-      if (km == 2) { dimC = 2; ni = im; nj = jm; }
+        ni = jm;
+        nj = km;
+        dim = 2;
+        dimC = 2;
+        if (im == 2) { dimC = 1; ni = km; nj = 1; }
+        if (km == 2) { dimC = 1; ni = jm; nj = 1; }
+        break;
+      default:
+        if (im == 2) { dimC = 2; ni = jm; nj = km; }
+        if (jm == 2) { dimC = 2; ni = im; nj = km; }
+        if (km == 2) { dimC = 2; ni = im; nj = jm; }
     }
+
     if (im == 1) im1 = 1;
     if (jm == 1) jm1 = 1;
     if (km == 1) km1 = 1;
@@ -163,8 +183,6 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
     // Construction du tableau numpy stockant les champs 
     // definissant la regularite
     tpl = K_ARRAY::buildArray3(1, "regularity", im1, jm1, km1, api);
-    // pointeur sur le tableau
-    FldArrayF* f2;
     K_ARRAY::getFromArray3(tpl, f2);
     E_Float* reg = f2->begin(1);
       
@@ -187,26 +205,34 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
         centerInt.begin(1), centerInt.begin(2), centerInt.begin(3));
     }
 
-    // calcul de la regularite	
+    if (ncells == 1) // mono cell mesh -> early exit
+    {
+      reg[0] = 0.;
+      RELEASESHAREDS(tpl, f2);
+      RELEASESHAREDS(array, f);
+      return tpl;
+    }
+
+    // calcul de la regularite
     #pragma omp parallel
     {
       E_Int ithread = __CURRENT_THREAD__;
       // variables locales pour les indices
-      E_Int ind,ind1,ind2,ind3,ind4,ind5,ind6;
+      E_Int ind, ind1, ind2, ind3, ind4, ind5, ind6;
       if (dimC == 1) // dimension 1D
       {
         // Aux frontieres, traitement degenere.
         if (ithread == 0)
         {
-          reg[0] = E_abs(vol[1]-vol[0])/E_max(vol[0],E_GEOM_CUTOFF);
-          reg[ni1-1] = E_abs(vol[ni1-2]-vol[ni1-1])/E_max(vol[ni1-1],E_GEOM_CUTOFF);
+          reg[0] = ratioMax1(vol[0], vol[1]);
+          reg[ni1-1] = ratioMax1(vol[ni1-1], vol[ni1-2]);
         }
 
         // Boucle sur les indices
-        #pragma omp for schedule(static)
+        #pragma omp for
         for (E_Int i = 1; i < ni1-1; i++)
         {
-          reg[i] = RATIOMAX2(vol[i],vol[i-1],vol[i+1]);
+          reg[i] = ratioMax2(vol[i], vol[i-1], vol[i+1]);
         }
       }
       else if (dimC == 2) // dimension = 2D
@@ -216,26 +242,26 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
         if (ithread == 0)
         {
           // imin, jmin
-          reg[0] = RATIOMAX2(vol[0],vol[1],vol[ni1]);
+          reg[0] = ratioMax2(vol[0], vol[1], vol[ni1]);
           // imax, jmin
           ind  = ni1-1;
           ind1 = ind-1;
           ind2 = ind+ni1;
-          reg[ind] = RATIOMAX2(vol[ind],vol[ind1],vol[ind2]);
+          reg[ind] = ratioMax2(vol[ind], vol[ind1], vol[ind2]);
           // imin, jmax
           ind  = (nj1-1)*ni1;
           ind1 = ind+1;
           ind2 = ind-ni1;
-          reg[ind] = RATIOMAX2(vol[ind],vol[ind1],vol[ind2]);
+          reg[ind] = ratioMax2(vol[ind], vol[ind1], vol[ind2]);
           // imax, jmax
           ind  = nj1*ni1-1;
           ind1 = ind-1;
           ind2 = ind-ni1;
-          reg[ind] = RATIOMAX2(vol[ind],vol[ind1],vol[ind2]);
+          reg[ind] = ratioMax2(vol[ind], vol[ind1], vol[ind2]);
         }
         
         // Aux aretes, traitement degenere.
-        #pragma omp for schedule(static)
+        #pragma omp for nowait
         for (E_Int i = 1; i < ni1-1; i++)
         {
           // jmin
@@ -244,17 +270,17 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind2 = ind+1;
           ind3 = ind + ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol, vol[ind1], vol[ind2], vol[ind3]);
           // jmax
           ind  = (nj1-1)*ni1 + i;
           ind1 = ind-1;
           ind2 = ind+1;
           ind3 = ind - ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol, vol[ind1], vol[ind2], vol[ind3]);
         }
 
-        #pragma omp for schedule(static)
+        #pragma omp for nowait
         for (E_Int j = 1; j < nj1-1; j++)
         {
           // imin
@@ -263,30 +289,28 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind2 = ind - ni1;
           ind3 = ind + ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol, vol[ind1], vol[ind2], vol[ind3]);
           // imax
           ind  = j*ni1 + ni1-1;
           ind1 = ind - 1;
           ind2 = ind - ni1;
           ind3 = ind + ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol, vol[ind1], vol[ind2], vol[ind3]);
         }
 
         // Boucle generale sur les indices des cellules interieures
+        #pragma omp for collapse(2)
         for (E_Int j = 1; j < nj1-1; j++)
+        for (E_Int i = 1; i < ni1-1; i++)
         {
-          #pragma omp for schedule(static)
-          for (E_Int i = 1; i < ni1-1; i++)
-          {
-            ind  = j*ni1 + i;
-            ind1 = ind - 1;
-            ind2 = ind + 1;
-            ind3 = ind - ni1;
-            ind4 = ind + ni1;
-            etVol = vol[ind];
-            reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
-          }
+          ind  = j*ni1 + i;
+          ind1 = ind - 1;
+          ind2 = ind + 1;
+          ind3 = ind - ni1;
+          ind4 = ind + ni1;
+          etVol = vol[ind];
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
         }
       }
       else if (dimC == 3)  // dimension = 3D
@@ -302,60 +326,60 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind2 = ind + ni1;
           ind3 = ind + ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol,vol[ind1],vol[ind2],vol[ind3]);
           // imax, jmin, kmin
           ind  = ni1 - 1;
           ind1 = ind - 1;
           ind2 = ind + ni1;
           ind3 = ind + ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol,vol[ind1],vol[ind2],vol[ind3]);
           // imin, jmax, kmin
           ind  = (nj1-1)*ni1;
           ind1 = ind + 1;
           ind2 = ind - ni1;
           ind3 = ind + ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol,vol[ind1],vol[ind2],vol[ind3]);
           // imax, jmax, kmin
           ind  = ni1nj1 - 1;
           ind1 = ind - 1;
           ind2 = ind - ni1;
           ind3 = ind + ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol,vol[ind1],vol[ind2],vol[ind3]);
           // imin, jmin, kmax
           ind  = ni1nj1*(nk1-1);
           ind1 = ind + 1;
           ind2 = ind + ni1;
           ind3 = ind - ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol,vol[ind1],vol[ind2],vol[ind3]);
           // imax, jmin, kmax
           ind  = ni1nj1*(nk1-1)+ni1-1;
           ind1 = ind - 1;
           ind2 = ind + ni1;
           ind3 = ind - ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol,vol[ind1],vol[ind2],vol[ind3]);
           // imin, jmax, kmax
           ind  = ni1nj1*(nk1-1)+(nj1-1)*ni1;
           ind1 = ind + 1;
           ind2 = ind - ni1;
           ind3 = ind - ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol,vol[ind1],vol[ind2],vol[ind3]);
           // imax, jmax, kmax
           ind  = ni1nj1*(nk1-1)+ni1nj1 - 1;
           ind1 = ind - 1;
           ind2 = ind - ni1;
           ind3 = ind - ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX3(etVol,vol[ind1],vol[ind2],vol[ind3]);
+          reg[ind] = ratioMax3(etVol,vol[ind1],vol[ind2],vol[ind3]);
         }
     
         // Aux aretes, traitement degenere.
-        #pragma omp for schedule(static)
+        #pragma omp for nowait
         for (E_Int i=1; i<ni1-1; i++)
         {
           // jmin, kmin
@@ -365,7 +389,7 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind + ni1nj1;
           ind4 = ind + ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
           // jmax, kmin
           ind  = (nj1-1)*ni1+i;
           ind1 = ind + 1;
@@ -373,7 +397,7 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind + ni1nj1;
           ind4 = ind - ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
           // jmin, kmax
           ind  = ni1nj1*(nk1-1)+i;
           ind1 = ind + 1;
@@ -381,7 +405,7 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind - ni1nj1;
           ind4 = ind + ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
           // jmax, kmax
           ind  = ni1nj1*(nk1-1)+(nj1-1)*ni1+i;
           ind1 = ind + 1;
@@ -389,10 +413,10 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind - ni1nj1;
           ind4 = ind - ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
         }
 
-        #pragma omp for schedule(static)
+        #pragma omp for nowait
         for (E_Int j=1; j< nj1-1; j++)
         {
           // imin, kmin
@@ -402,7 +426,7 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind - ni1;
           ind4 = ind + ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
           // imax, kmin
           ind  = j*ni1 + ni1-1;
           ind1 = ind - 1;
@@ -410,7 +434,7 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind - ni1;
           ind4 = ind + ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
           // imin, kmax
           ind  = ni1nj1*(nk1-1)+j*ni1;
           ind1 = ind + 1;
@@ -418,7 +442,7 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind - ni1;
           ind4 = ind + ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
           // imax, kmax
           ind  = ni1nj1*(nk1-1)+j*ni1 + ni1-1;
           ind1 = ind - 1;
@@ -426,10 +450,10 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind - ni1;
           ind4 = ind + ni1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
         }
 
-        #pragma omp for schedule(static)
+        #pragma omp for nowait
         for (E_Int k = 1; k < nk1-1; k++)
         {
           // imin, jmin
@@ -439,7 +463,7 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind - ni1nj1;
           ind4 = ind + ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
           // imax, jmin
           ind = k*ni1nj1 + ni1-1;
           ind1 = ind - 1;
@@ -447,7 +471,7 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind - ni1nj1;
           ind4 = ind + ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
           // imin, jmax
           ind = k*ni1nj1+ni1*(nj1-1);
           ind1 = ind + 1;
@@ -455,7 +479,7 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind - ni1nj1;
           ind4 = ind + ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
           // imax, jmax
           ind = k*ni1nj1+ni1nj1 -1;
           ind1 = ind - 1;
@@ -463,110 +487,100 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
           ind3 = ind - ni1nj1;
           ind4 = ind + ni1nj1;
           etVol = vol[ind];
-          reg[ind] = RATIOMAX4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
+          reg[ind] = ratioMax4(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4]);
         }
 
         // Aux faces, traitement degenere.
+        #pragma omp for nowait collapse(2)
         for (E_Int k=1; k < nk1-1; k++)
+        for (E_Int j=1; j < nj1-1; j++)
         {
-          #pragma omp for schedule(static)
-          for (E_Int j=1; j < nj1-1; j++)
-          {
-            // face imin
-            ind  = k*ni1nj1 + j*ni1;
-            ind1 = ind + 1;
-            ind2 = ind + ni1;
-            ind3 = ind - ni1;
-            ind4 = ind + ni1nj1;
-            ind5 = ind - ni1nj1;
-            etVol = vol[ind];
-            reg[ind] = RATIOMAX5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
+          // face imin
+          ind  = k*ni1nj1 + j*ni1;
+          ind1 = ind + 1;
+          ind2 = ind + ni1;
+          ind3 = ind - ni1;
+          ind4 = ind + ni1nj1;
+          ind5 = ind - ni1nj1;
+          etVol = vol[ind];
+          reg[ind] = ratioMax5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
 
-            // face imax
-            ind  = k*ni1nj1 + j*ni1 + ni1 - 1;
-            ind1 = ind - 1;
-            ind2 = ind + ni1;
-            ind3 = ind - ni1;
-            ind4 = ind + ni1nj1;
-            ind5 = ind - ni1nj1;
-            etVol = vol[ind];
-            reg[ind] = RATIOMAX5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
-          }
+          // face imax
+          ind  = k*ni1nj1 + j*ni1 + ni1 - 1;
+          ind1 = ind - 1;
+          ind2 = ind + ni1;
+          ind3 = ind - ni1;
+          ind4 = ind + ni1nj1;
+          ind5 = ind - ni1nj1;
+          etVol = vol[ind];
+          reg[ind] = ratioMax5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
         }
 
-        for (E_Int k=1;k<nk1-1;k++)
+        #pragma omp for nowait collapse(2)
+        for (E_Int k = 1; k < nk1-1; k++)
+        for (E_Int i = 1; i < ni1-1; i++)
         {
-          #pragma omp for schedule(static)
-          for (E_Int i=1;i<ni1-1;i++)
-          {
-            // face jmin
-            ind  = k*ni1nj1 + i;
-            ind1 = ind - 1;
-            ind2 = ind + 1;
-            ind3 = ind + ni1;
-            ind4 = ind - ni1nj1;
-            ind5 = ind + ni1nj1;
-            etVol = vol[ind];
-            reg[ind] = RATIOMAX5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
+          // face jmin
+          ind  = k*ni1nj1 + i;
+          ind1 = ind - 1;
+          ind2 = ind + 1;
+          ind3 = ind + ni1;
+          ind4 = ind - ni1nj1;
+          ind5 = ind + ni1nj1;
+          etVol = vol[ind];
+          reg[ind] = ratioMax5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
 
-            // face jmax
-            ind  = k*ni1nj1 + (nj1-1)*ni1 + i;
-            ind1 = ind - 1;
-            ind2 = ind + 1;
-            ind3 = ind - ni1;
-            ind4 = ind - ni1nj1;
-            ind5 = ind + ni1nj1;
-            etVol = vol[ind];
-            reg[ind] = RATIOMAX5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
-          }
+          // face jmax
+          ind  = k*ni1nj1 + (nj1-1)*ni1 + i;
+          ind1 = ind - 1;
+          ind2 = ind + 1;
+          ind3 = ind - ni1;
+          ind4 = ind - ni1nj1;
+          ind5 = ind + ni1nj1;
+          etVol = vol[ind];
+          reg[ind] = ratioMax5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
         }
 
-        for (E_Int j=1;j<nj1-1;j++)
+        #pragma omp for nowait collapse(2)
+        for (E_Int j = 1; j < nj1-1; j++)
+        for (E_Int i = 1; i < ni1-1; i++)
         {
-          #pragma omp for schedule(static)
-          for (E_Int i=1;i<ni1-1;i++)
-          {
-            // face kmin
-            ind  =  j*ni1 + i;
-            ind1 = ind - 1;
-            ind2 = ind + 1;
-            ind3 = ind - ni1;
-            ind4 = ind + ni1;
-            ind5 = ind + ni1nj1;
-            etVol = vol[ind];
-            reg[ind] = RATIOMAX5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
+          // face kmin
+          ind  =  j*ni1 + i;
+          ind1 = ind - 1;
+          ind2 = ind + 1;
+          ind3 = ind - ni1;
+          ind4 = ind + ni1;
+          ind5 = ind + ni1nj1;
+          etVol = vol[ind];
+          reg[ind] = ratioMax5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
 
-            // face kmax
-            ind  = (nk1-1)*ni1nj1 + j*ni1 + i;
-            ind1 = ind - 1;
-            ind2 = ind + 1;
-            ind3 = ind - ni1;
-            ind4 = ind + ni1;
-            ind5 = ind - ni1nj1;
-            etVol = vol[ind];
-            reg[ind] = RATIOMAX5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
-          }
+          // face kmax
+          ind  = (nk1-1)*ni1nj1 + j*ni1 + i;
+          ind1 = ind - 1;
+          ind2 = ind + 1;
+          ind3 = ind - ni1;
+          ind4 = ind + ni1;
+          ind5 = ind - ni1nj1;
+          etVol = vol[ind];
+          reg[ind] = ratioMax5(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5]);
         }
 
         // Boucle generale sur les indices des cellules interieures
-        for (E_Int k=1;k<nk1-1;k++)
+        #pragma omp for collapse(3)
+        for (E_Int k = 1; k < nk1-1; k++)
+        for (E_Int j = 1; j < nj1-1; j++)
+        for (E_Int i = 1; i < ni1-1; i++)
         {
-          for (E_Int j=1;j<nj1-1;j++)
-          {
-            #pragma omp for schedule(static)
-            for (E_Int i=1;i<ni1-1;i++)
-            {
-              ind  = k*ni1nj1 + j*ni1 + i;
-              ind1 = ind - 1;
-              ind2 = ind + 1;
-              ind3 = ind - ni1;
-              ind4 = ind + ni1;
-              ind5 = ind - ni1nj1;
-              ind6 = ind + ni1nj1;
-              etVol = vol[ind];
-              reg[ind] = RATIOMAX6(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5],vol[ind6]);
-            }
-          }
+          ind  = k*ni1nj1 + j*ni1 + i;
+          ind1 = ind - 1;
+          ind2 = ind + 1;
+          ind3 = ind - ni1;
+          ind4 = ind + ni1;
+          ind5 = ind - ni1nj1;
+          ind6 = ind + ni1nj1;
+          etVol = vol[ind];
+          reg[ind] = ratioMax6(etVol,vol[ind1],vol[ind2],vol[ind3],vol[ind4],vol[ind5],vol[ind6]);
         }
       }
     }
@@ -589,7 +603,7 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
     E_Float* reg = f2->begin(1);
 
     // Calcul de la connectivite vertex->elements
-    vector< vector<E_Int> > cVE(npts); 
+    std::vector< std::vector<E_Int> > cVE(npts); 
     K_CONNECT::connectEV2VE(*cn, cVE);
   
     // Rapport MAX de volumes entre un element et ses voisins. Resultat au "centre"
@@ -623,11 +637,11 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
         {
           E_Int* cni = cn->begin(i+1);
           indi = cni[et]-1;
-          vector<E_Int>& cVEi = cVE[indi]; E_Int sizei = cVEi.size();
+          std::vector<E_Int>& cVEi = cVE[indi]; E_Int sizei = cVEi.size();
           for (E_Int noeti = 0; noeti < sizei; noeti++)
           {
             eti = cVEi[noeti];
-            maxratio = E_max(maxratio,E_abs(vol[eti]-etVol)/E_max(etVol,E_GEOM_CUTOFF));
+            maxratio = K_FUNC::E_max(maxratio,K_FUNC::E_abs(vol[eti]-etVol)/K_FUNC::E_max(etVol,K_CONST::E_GEOM_CUTOFF));
           }
         }
         reg[et] = maxratio;
@@ -664,11 +678,11 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
         {
           E_Int* cni = cn->begin(i+1);
           indi = cni[et]-1;
-          vector<E_Int>& cVEi = cVE[indi]; E_Int sizei = cVEi.size();
+          std::vector<E_Int>& cVEi = cVE[indi]; E_Int sizei = cVEi.size();
           for (E_Int noeti = 0; noeti < sizei; noeti++)
           {
             eti = cVEi[noeti];
-            maxratio = E_max(maxratio,E_abs(vol[eti]-etVol)/E_max(etVol,E_GEOM_CUTOFF));
+            maxratio = K_FUNC::E_max(maxratio,K_FUNC::E_abs(vol[eti]-etVol)/K_FUNC::E_max(etVol,K_CONST::E_GEOM_CUTOFF));
           }
         }
         reg[et] = maxratio;
@@ -705,11 +719,11 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
         {
           E_Int* cni = cn->begin(i+1);
           indi = cni[et]-1;
-          vector<E_Int>& cVEi = cVE[indi]; E_Int sizei = cVEi.size();
+          std::vector<E_Int>& cVEi = cVE[indi]; E_Int sizei = cVEi.size();
           for (E_Int noeti = 0; noeti < sizei; noeti++)
           {
             eti = cVEi[noeti];
-            maxratio = E_max(maxratio,E_abs(vol[eti]-etVol)/E_max(etVol,E_GEOM_CUTOFF));
+            maxratio = K_FUNC::E_max(maxratio,K_FUNC::E_abs(vol[eti]-etVol)/K_FUNC::E_max(etVol,K_CONST::E_GEOM_CUTOFF));
           }
         }
         reg[et] = maxratio;
@@ -756,11 +770,11 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
         {
           E_Int* cni = cn->begin(i+1);
           indi = cni[et]-1;
-          vector<E_Int>& cVEi = cVE[indi]; E_Int sizei = cVEi.size();
+          std::vector<E_Int>& cVEi = cVE[indi]; E_Int sizei = cVEi.size();
           for (E_Int noeti = 0; noeti < sizei; noeti++)
           {
             eti = cVEi[noeti];
-            maxratio = E_max(maxratio,E_abs(vol[eti]-etVol)/E_max(etVol,E_GEOM_CUTOFF));
+            maxratio = K_FUNC::E_max(maxratio,K_FUNC::E_abs(vol[eti]-etVol)/K_FUNC::E_max(etVol,K_CONST::E_GEOM_CUTOFF));
           }
         }
         reg[et] = maxratio;
@@ -797,11 +811,11 @@ PyObject* K_GENERATOR::getRegularityMap(PyObject* self, PyObject* args)
         {
           E_Int* cni = cn->begin(i+1);
           indi = cni[et]-1;
-          vector<E_Int>& cVEi = cVE[indi]; E_Int sizei = cVEi.size();
+          std::vector<E_Int>& cVEi = cVE[indi]; E_Int sizei = cVEi.size();
           for (E_Int noeti = 0; noeti < sizei; noeti++)
           {
             eti = cVEi[noeti];
-            maxratio = E_max(maxratio,E_abs(vol[eti]-etVol)/E_max(etVol,E_GEOM_CUTOFF));
+            maxratio = K_FUNC::E_max(maxratio,K_FUNC::E_abs(vol[eti]-etVol)/K_FUNC::E_max(etVol,K_CONST::E_GEOM_CUTOFF));
           }
         }
         reg[et] = maxratio;
