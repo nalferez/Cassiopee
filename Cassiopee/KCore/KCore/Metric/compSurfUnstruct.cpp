@@ -47,7 +47,11 @@ void K_METRIC::compSurfUnstruct(
     E_Int nelts = cm.getSize();
     E_Int nfpc;  // number of facets per connectivity
 
-    if (strcmp(eltTypes[ic], "TRI") == 0)
+    if (strcmp(eltTypes[ic], "BAR") == 0)
+    {
+      compBarSurf(cm, fctOffset, xt, yt, zt, surface);
+    }
+    else if (strcmp(eltTypes[ic], "TRI") == 0)
     {
       compTriSurf(cm, fctOffset, xt, yt, zt, surfnx, surfny, surfnz, surface);
     }
@@ -827,47 +831,26 @@ void K_METRIC::compHexaSurf(
   }
 }
 
-//=============================================================================
-// Calcul de la longueur entre chaque sommet pour une ligne non structuree
-//=============================================================================
-void K_METRIC::compUnstructSurf1d(
-  K_FLD::FldArrayI& cn, const char* eltType,
+void K_METRIC::compBarSurf(
+  K_FLD::FldArrayI& cm, const E_Int fctOffset,
   const E_Float* xt, const E_Float* yt, const E_Float* zt,
-  E_Float* length
+  E_Float* surface
 )
 {
-  E_Int offset = 0;
-  E_Int ind1, ind2;
+  E_Int nelts = cm.getSize();
+  E_Int ind1, ind2, pos;
   E_Float lx, ly, lz;
-  E_Int nc = cn.getNConnect();
-  std::vector<char*> eltTypes;
-  K_ARRAY::extractVars(eltType, eltTypes);
 
-  for (E_Int ic = 0; ic < nc; ic++)
+  for (E_Int i = 0; i < nelts; i++)
   {
-    K_FLD::FldArrayI& cm = *(cn.getConnect(ic));
-    
-    if (strcmp(eltTypes[ic], "BAR") == 0)
-    {
-      E_Int nelts = cm.getSize();
-      for (E_Int i = 0; i < nelts; i++)
-      {
-        ind1 = cm(i, 1) - 1;
-        ind2 = cm(i, 2) - 1;
-        lx = xt[ind1] - xt[ind2];
-        ly = yt[ind1] - yt[ind2];
-        lz = zt[ind1] - zt[ind2];
-        length[offset+i] = sqrt(lx * lx + ly * ly + lz * lz);
-      }
-      offset += nelts;
-    }
-    else
-    {
-      fprintf(stderr, "Error in K_METRIC::compUnstructSurf1d.\n");
-      fprintf(stderr, "Element type can be BAR only, not %s.\n", eltTypes[ic]);
-      exit(0);
-    }
-  }
+    ind1 = cm(i, 1) - 1;
+    ind2 = cm(i, 2) - 1;
 
-  for (size_t ic = 0; ic < eltTypes.size(); ic++) delete [] eltTypes[ic];
+    lx = xt[ind1] - xt[ind2];
+    ly = yt[ind1] - yt[ind2];
+    lz = zt[ind1] - zt[ind2];
+
+    pos = fctOffset + i;  // fctOffset + i = fctOffset + i * nfpe
+    surface[pos] = sqrt(lx * lx + ly * ly + lz * lz);
+  }
 }

@@ -64,6 +64,7 @@ if adolc:
     env2 = env.Clone()
     env2.Replace(CFLAGS=Dist.getCArgs()+["-DE_ADOUBLE"])
     env2.Replace(CXXFLAGS=Dist.getCppArgs()+["-DE_ADOUBLE"])
+    env.Replace(CPPPATH=["Geom"]+additionalIncludePaths+[pythonIncDir, numpyIncDir, kcoreIncDir, adolcIncDir])
     myMod2 = env.StaticLibrary('dgeom', srcs.adolc_srcs)
     dp2 = env.Install(modDir, myMod2)
     env.Alias(target="install", source=[dp1,dp2])

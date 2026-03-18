@@ -1,14 +1,14 @@
 #based on zlib-1.2.5/CMakeLists.txt
-#
+
 cmake_minimum_required(VERSION 2.6)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 
 project(zlib C)
 
-include(CheckTypeSize)
+include(CheckCSourceCompiles)
 include(CheckFunctionExists)
 include(CheckIncludeFile)
-include(CheckCSourceCompiles)
+include(CheckTypeSize)
 
 CHECK_INCLUDE_FILE(sys/types.h HAVE_SYS_TYPES_H)
 CHECK_INCLUDE_FILE(stdint.h    HAVE_STDINT_H)
@@ -49,13 +49,11 @@ CHECK_INCLUDE_FILE(unistd.h Z_HAVE_UNISTD_H)
 
 include_directories(
  ${CMAKE_CURRENT_SOURCE_DIR}
- ${OPENJPEG_SOURCE_DIR}/thirdparty/include
-)
+ ${OPENJPEG_SOURCE_DIR}/thirdparty/include)
 #
 set(EXT_HDRS
  ${OPENJPEG_SOURCE_DIR}/thirdparty/include/zlib.h
- ${OPENJPEG_SOURCE_DIR}/thirdparty/include/zconf.h
-)
+ ${OPENJPEG_SOURCE_DIR}/thirdparty/include/zconf.h)
 
 set(HDRS
     crc32.h
@@ -66,8 +64,8 @@ set(HDRS
     inflate.h
     inftrees.h
     trees.h
-    zutil.h
-)
+    zutil.h)
+
 set(SRCS
     adler32.c
     compress.c
@@ -83,8 +81,7 @@ set(SRCS
     inffast.c
     trees.c
     uncompr.c
-    zutil.c
-)
+    zutil.c)
 
 set(LIBTARGET "z")
 #
@@ -97,6 +94,5 @@ endif(MSVC)
 set_target_properties(${LIBTARGET}
     PROPERTIES
     OUTPUT_NAME "${LIBTARGET}"
-    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/lib
-)
-#
+    ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/thirdparty/lib)
+

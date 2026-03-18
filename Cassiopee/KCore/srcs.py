@@ -228,6 +228,7 @@ if JPEG:
         'KCore/Images/libjpeg/jmemname.c',
         'KCore/Images/libjpeg/rdswitch.c',
         'KCore/Images/libjpeg/djpeg.c',
+        'KCore/Images/libjpeg/djpegalt.c',
         'KCore/Images/libjpeg/jcmarker.c',
         'KCore/Images/libjpeg/jdcoefct.c',
         'KCore/Images/libjpeg/jerror.c',
@@ -380,32 +381,21 @@ if NUGA:
 # Fichiers fortrans
 #==============================================================================
 for_srcs = [
-    'KCore/CompGeom/CompCEBoxF.for',
-    'KCore/CompGeom/CompMinDistF.for',
-    'KCore/CompGeom/RectifyNormalsF.for',
-    'KCore/Interp/Coord_in_ref_frame_3dF.for',
-    'KCore/Interp/Cp_coord_in_stable_frame_3dF.for',
-    'KCore/Interp/CompInterpolatedPtInRefElementF.for',
-    'KCore/Linear/GaussjF.for',
-    'KCore/Loc/Conv2CenterF.for',
-    'KCore/Loc/Conv2Center2DF.for',
-    'KCore/Loc/Conv2Center1DF.for',
-    'KCore/Loc/Conv2NodeF.for',
-    'KCore/Loc/Conv2Node2DF.for',
-    'KCore/Loc/Conv2Node1DF.for',
-    'KCore/Metric/CompTetraCellCenterF.for',
-    'KCore/Metric/CompStructCellCenterF.for',
-    'KCore/Metric/CompVolOfStructCellF.for',
-    'KCore/Metric/CompVolOfTetraCellF.for',
-    'KCore/Metric/CompMinLengthOfCellF.for',
-    'KCore/Metric/CompIntSurfOfCellF.for',
-    'KCore/Metric/CompIntSurfF.for',
-    'KCore/Metric/CompStructSurfF.for',
-    'KCore/Metric/CompCenterInterfaceF.for',
-    'KCore/Metric/CompStructMetricF.for',
-    'KCore/Metric/CompUnstrSurfF.for',
-    'KCore/Metric/CompUnstrCenterIntF.for',
-    'KCore/Metric/CompUnstrMetricF.for',
-    'KCore/Metric/CompNormStructSurfF.for',
-    'KCore/Metric/CompNormUnstrSurfF.for'
+    'KCore/CompGeom/CompCEBoxF.for', # called in compCartElt.cpp and KMesh.cpp (k6compcartelembox_)
+    'KCore/Interp/Coord_in_ref_frame_3dF.for', # required for Cp_coord_in_stable_frame_3dF.for
+    'KCore/Interp/Cp_coord_in_stable_frame_3dF.for', # required for CompInterpolatedPtInRefElementF.for
+    'KCore/Interp/CompInterpolatedPtInRefElementF.for', # called in Interp2.cpp and BlkInterpWithKMesh.cpp (compinterpolatedptinrefelt_)
+    'KCore/Linear/GaussjF.for', # called in solve.cpp (kgaussj_) / required in CompInterpolatedPtInRefElementF.for
+    'KCore/Loc/Conv2CenterF.for',  # called in OLD version
+    'KCore/Loc/Conv2Center2DF.for', # called in OLD version
+    'KCore/Loc/Conv2Center1DF.for', # called in OLD version
+    'KCore/Loc/Conv2NodeF.for', # called in OLD version
+    'KCore/Loc/Conv2Node2DF.for', # called in OLD version
+    'KCore/Loc/Conv2Node1DF.for', # called in OLD version
+    'KCore/Metric/CompTetraCellCenterF.for', # called in KMesh.cpp (k6comptetracellcenter_)
+    'KCore/Metric/CompStructCellCenterF.for', # called in KMesh.cpp (k6compstructcellcenter_)
+    'KCore/Metric/CompVolOfTetraCellF.for', # called in BlkInterp.cpp, Interp.cpp, and commonTypesForExtrapAndInterp.h (k6compvoloftetracell_)
+    'KCore/Metric/CompUnstrSurfF.for', # required for CompUnstrMetricF.for
+    'KCore/Metric/CompUnstrCenterIntF.for', # required for CompUnstrMetricF.for
+    'KCore/Metric/CompUnstrMetricF.for', # called in getRegularityMap.cpp (k6compunstrmetric_)
 ]

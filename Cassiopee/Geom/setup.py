@@ -37,7 +37,7 @@ libraryDirs += paths; libraries += libs
 ADDITIONALCPPFLAGS = []
 adolc, adolcIncDir, adolcLibDir, adolcLib = Dist.checkAdolc()
 if adolc:
-    libraryDirs += adolcLibDir
+    libraryDirs += [adolcLibDir]
     libraries.append(adolcLib)
     ADDITIONALCPPFLAGS = ["-DE_ADOLC"]
 

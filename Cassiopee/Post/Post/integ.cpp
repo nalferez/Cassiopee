@@ -274,12 +274,11 @@ PyObject* K_POST::integ(PyObject* self, PyObject* args)
       K_ARRAY::extractVars(eltTypec, eltTypecs);
 
       // check if elt is valid (BAR, QUAD, TRI)
-      case1D = 0;
       for (size_t ic = 0; ic < eltTypecs.size(); ic++)
       {
-        if (strcmp(eltTypecs[ic], "BAR") == 0) case1D = 1;
-        else if ((strcmp(eltTypecs[ic], "QUAD") == 0) || (strcmp(eltTypecs[ic], "TRI") == 0)) case1D = 0;
-        else res = 0;
+        if ((strcmp(eltTypecs[ic], "QUAD") != 0) && 
+            (strcmp(eltTypecs[ic], "TRI") != 0) && 
+            (strcmp(eltTypecs[ic], "BAR") != 0)) res = 0;
       }
 
       for (size_t ic = 0; ic < eltTypecs.size(); ic++) delete [] eltTypecs[ic];
@@ -318,13 +317,8 @@ PyObject* K_POST::integ(PyObject* self, PyObject* args)
 
       // integ sur chaque bloc
       res = 0;
-
-      if (case1D == 1)
-        res = integUnstruct1D(center2node, posx, posy, posz, 
-          *cnc, eltTypec, *fc, *ff, *ratio, resultat);
-      else
-        res = integUnstruct2D(center2node, posx, posy, posz, 
-          *cnc, eltTypec, *fc, *ff, *ratio, resultat);
+      res = integUnstruct(center2node, posx, posy, posz, 
+        *cnc, eltTypec, *fc, *ff, *ratio, resultat);
         
       if (res == 0)
       {

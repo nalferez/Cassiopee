@@ -22,8 +22,9 @@
 //=============================================================================
 // Integre les grandeurs de M = OM^F
 // Retourne 1 si success, 0 si echec
+// 1D and 2D
 //=============================================================================
-E_Int K_POST::integMomentUnstruct2D(E_Int center2node,
+E_Int K_POST::integMomentUnstruct(E_Int center2node,
                                     E_Int posx, E_Int posy, E_Int posz,
                                     E_Float cx, E_Float cy, E_Float cz, 
                                     FldArrayI& cn, const char* eltType, FldArrayF& coord, 
@@ -79,64 +80,6 @@ E_Int K_POST::integMomentUnstruct2D(E_Int center2node,
   resultat[1] += res[1];
   resultat[2] += res[2];
    
-  return 1;
-}
-
-//=============================================================================
-// Integre les grandeurs de M = OM^F
-// Retourne 1 si success, 0 si echec
-//=============================================================================
-E_Int K_POST::integMomentUnstruct1D(E_Int center2node,
-                                    E_Int posx, E_Int posy, E_Int posz,
-                                    E_Float cx, E_Float cy, E_Float cz, 
-                                    FldArrayI& cn, const char* eltType, FldArrayF& coord, 
-                                    FldArrayF& F, FldArrayF& ratio, 
-                                    FldArrayF& resultat)
-{
-  FldArrayF res(3);
-  E_Int ntotElts = 0;
-  E_Int nc = cn.getNConnect();
-  for (E_Int ic = 0; ic < nc; ic++)
-  {
-    FldArrayI& cm = *(cn.getConnect(ic));
-    E_Int nelts = cm.getSize();
-    ntotElts += nelts;
-  }
-
-  // Compute surface of each "block" i cell, with coordinates coord
-  FldArrayF length(ntotElts);
-  K_METRIC::compUnstructSurf1d(
-    cn, eltType,
-    coord.begin(posx), coord.begin(posy), coord.begin(posz),
-    length.begin()
-  );
-
-  if (center2node == 1) 
-  { 
-    // Compute integral, coordinates defined in node and field F in center 
-    integMomentUnstructCellCenter(
-      cn,
-      cx, cy, cz, ratio.begin(),
-      coord.begin(posx), coord.begin(posy), coord.begin(posz), 
-      length.begin(), F.begin(1), F.begin(2), F.begin(3),
-      res.begin()
-    );
-  }
-  else
-  {
-    integMomentUnstructNodeCenter(
-      cn,
-      cx, cy, cz, ratio.begin(),
-      coord.begin(posx), coord.begin(posy), coord.begin(posz), 
-      length.begin(), F.begin(1), F.begin(2), F.begin(3),
-      res.begin()
-    );
-  }
-
-  resultat[0] += res[0];
-  resultat[1] += res[1];
-  resultat[2] += res[2];   
-
   return 1;
 }
 

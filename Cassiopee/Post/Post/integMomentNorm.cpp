@@ -268,7 +268,8 @@ PyObject* K_POST::integMomentNorm(PyObject* self, PyObject* args)
       // check if elt is valid (QUAD, TRI)
       for (size_t ic = 0; ic < eltTypecs.size(); ic++)
       {
-        if ((strcmp(eltTypecs[ic], "QUAD") != 0) && (strcmp(eltTypecs[ic], "TRI") != 0)) res = 0;
+        if ((strcmp(eltTypecs[ic], "QUAD") != 0) && 
+            (strcmp(eltTypecs[ic], "TRI") != 0)) res = 0;
       }
 
       for (size_t ic = 0; ic < eltTypecs.size(); ic++) delete [] eltTypecs[ic];
@@ -305,7 +306,7 @@ PyObject* K_POST::integMomentNorm(PyObject* self, PyObject* args)
       }
       // integ sur chaque bloc
       res = 0;
-      res = integMomentNormUnstruct2D(center2node, posx, posy, posz, cx, cy, cz, 
+      res = integMomentNormUnstruct(center2node, posx, posy, posz, cx, cy, cz, 
                            *cnc, eltTypec, *fc, *ff, *ratio, resultat); 
       if (res == 0)
       {
