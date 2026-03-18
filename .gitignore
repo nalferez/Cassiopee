@@ -49,6 +49,7 @@ Data*
 *.wav
 *.cgns
 *.png
+*.jpeg
 *.adf
 *.hdf
 *.su2

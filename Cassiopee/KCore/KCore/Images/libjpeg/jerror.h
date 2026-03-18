@@ -2,7 +2,7 @@
  * jerror.h
  *
  * Copyright (C) 1994-1997, Thomas G. Lane.
- * Modified 1997-2012 by Guido Vollbeding.
+ * Modified 1997-2026 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -84,7 +84,7 @@ JMESSAGE(JERR_EOI_EXPECTED, "Didn't expect more than one scan")
 JMESSAGE(JERR_FILE_READ, "Input file read error")
 JMESSAGE(JERR_FILE_WRITE, "Output file write error --- out of disk space?")
 JMESSAGE(JERR_FRACT_SAMPLE_NOTIMPL, "Fractional sampling not implemented yet")
-JMESSAGE(JERR_HUFF_CLEN_OVERFLOW, "Huffman code size table overflow")
+JMESSAGE(JERR_HUFF_CLEN_OUTOFBOUNDS, "Huffman code size table out of bounds")
 JMESSAGE(JERR_HUFF_MISSING_CODE, "Missing Huffman code table entry")
 JMESSAGE(JERR_IMAGE_TOO_BIG, "Maximum supported image dimension is %u pixels")
 JMESSAGE(JERR_INPUT_EMPTY, "Empty input file")
@@ -130,7 +130,7 @@ JMESSAGE(JTRC_ADOBE,
 	 "Adobe APP14 marker: version %d, flags 0x%04x 0x%04x, transform %d")
 JMESSAGE(JTRC_APP0, "Unknown APP0 marker (not JFIF), length %u")
 JMESSAGE(JTRC_APP14, "Unknown APP14 marker (not Adobe), length %u")
-JMESSAGE(JTRC_DAC, "Define Arithmetic Table 0x%02x: 0x%02x")
+JMESSAGE(JTRC_DAC, "Define Arithmetic Conditioning 0x%02x: 0x%02x")
 JMESSAGE(JTRC_DHT, "Define Huffman Table 0x%02x")
 JMESSAGE(JTRC_DQT, "Define Quantization Table %d  precision %d")
 JMESSAGE(JTRC_DRI, "Define Restart Interval %u")
@@ -156,7 +156,7 @@ JMESSAGE(JTRC_SMOOTH_NOTIMPL,
 	 "Smoothing not supported with nonstandard sampling ratios")
 JMESSAGE(JTRC_SOF, "Start Of Frame 0x%02x: width=%u, height=%u, components=%d")
 JMESSAGE(JTRC_SOF_COMPONENT, "    Component %d: %dhx%dv q=%d")
-JMESSAGE(JTRC_SOI, "Start of Image")
+JMESSAGE(JTRC_SOI, "Start Of Image")
 JMESSAGE(JTRC_SOS, "Start Of Scan: %d components")
 JMESSAGE(JTRC_SOS_COMPONENT, "    Component %d: dc=%d ac=%d")
 JMESSAGE(JTRC_SOS_PARAMS, "  Ss=%d, Se=%d, Ah=%d, Al=%d")

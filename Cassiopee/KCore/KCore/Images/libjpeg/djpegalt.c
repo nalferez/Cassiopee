@@ -1,27 +1,14 @@
 /*
- * djpeg.c
+ * alternate djpeg.c
  *
  * Copyright (C) 1991-1997, Thomas G. Lane.
- * Modified 2009-2019 by Guido Vollbeding.
+ * Modified 2009-2023 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
- * This file contains a command-line user interface for the JPEG decompressor.
- * It should work on any system with Unix- or MS-DOS-style command lines.
- *
- * Two different command line styles are permitted, depending on the
- * compile-time switch TWO_FILE_COMMANDLINE:
- *	djpeg [options]  inputfile outputfile
- *	djpeg [options]  [inputfile]
- * In the second style, output is always to standard output, which you'd
- * normally redirect to a file or pipe to some other program.  Input is
- * either from a named file or from standard input (typically redirected).
- * The second style is convenient on Unix but is unhelpful on systems that
- * don't support pipes.  Also, you MUST use the first style if your system
- * doesn't do binary I/O to stdin/stdout.
- * To simplify script writing, the "-outfile" switch is provided.  The syntax
- *	djpeg [options]  -outfile outputfile  inputfile
- * works regardless of which command line style is used.
+ * This file contains an alternate user interface for the JPEG decompressor.
+ * One or more input files are named on the command line, and output file
+ * names are created by substituting an appropriate extension.
  */
 
 #include "cdjpeg.h"		/* Common decls for cjpeg/djpeg applications */
@@ -39,6 +26,10 @@
 #endif
 #endif
 
+#ifndef PATH_MAX		/* ANSI maximum-pathname-length constant */
+#define PATH_MAX 256
+#endif
+
 
 /* Create the add-on message string table. */
 
@@ -48,6 +39,55 @@ static const char * const cdjpeg_message_table[] = {
 #include "cderror.h"
   NULL
 };
+
+
+/*
+ * Automatic determination of available memory.
+ */
+
+static long default_maxmem;	/* saves value determined at startup, or 0 */
+
+#ifndef FREE_MEM_ESTIMATE	/* may be defined from command line */
+
+#ifdef MSDOS			/* For MS-DOS (unless flat-memory model) */
+
+#include <dos.h>		/* for access to intdos() call */
+
+LOCAL(long)
+unused_dos_memory (void)
+/* Obtain total amount of unallocated DOS memory */
+{
+  union REGS regs;
+  long nparas;
+
+  regs.h.ah = 0x48;		/* DOS function Allocate Memory Block */
+  regs.x.bx = 0xFFFF;		/* Ask for more memory than DOS can have */
+  (void) intdos(&regs, &regs);
+  /* DOS will fail and return # of paragraphs actually available in BX. */
+  nparas = (unsigned int) regs.x.bx;
+  /* Times 16 to convert to bytes. */
+  return nparas << 4;
+}
+
+/* The default memory setting is 95% of the available space. */
+#define FREE_MEM_ESTIMATE  ((unused_dos_memory() * 95L) / 100L)
+
+#endif /* MSDOS */
+
+#ifdef ATARI	/* For Atari ST/Mega/STE/TT/Falcon, Pure C or Turbo C */
+
+#include <ext.h>
+
+/* The default memory setting is 90% of the available space. */
+#define FREE_MEM_ESTIMATE  (((long) coreleft() * 90L) / 100L)
+
+#endif /* ATARI */
+
+/* Add memory-estimation procedures for other operating systems here,
+ * with appropriate #ifdef's around them.
+ */
+
+#endif /* !FREE_MEM_ESTIMATE */
 
 
 /*
@@ -69,7 +109,7 @@ typedef enum {
 } IMAGE_FORMATS;
 
 #ifndef DEFAULT_FMT		/* so can override from CFLAGS in Makefile */
-#define DEFAULT_FMT	FMT_PPM
+#define DEFAULT_FMT	FMT_BMP
 #endif
 
 static IMAGE_FORMATS requested_fmt;
@@ -80,7 +120,6 @@ static IMAGE_FORMATS requested_fmt;
  * The switch parser is designed to be useful with DOS-style command line
  * syntax, ie, intermixed switches and file names, where only the switches
  * to the left of a given file name affect processing of that file.
- * The main program in this file doesn't actually use this capability...
  */
 
 
@@ -92,12 +131,9 @@ LOCAL(void)
 usage (void)
 /* complain about bad command line */
 {
-  fprintf(stderr, "usage: %s [switches] ", progname);
-#ifdef TWO_FILE_COMMANDLINE
-  fprintf(stderr, "inputfile outputfile\n");
-#else
-  fprintf(stderr, "[inputfile]\n");
-#endif
+  fprintf(stderr, "usage: %s [switches] inputfile(s)\n", progname);
+  fprintf(stderr, "List of input files may use wildcards (* and ?)\n");
+  fprintf(stderr, "Output filename is same as input filename except for extension\n");
 
   fprintf(stderr, "Switches (names may be abbreviated):\n");
   fprintf(stderr, "  -colors N      Reduce image to no more than N colors\n");
@@ -156,7 +192,9 @@ usage (void)
 #ifdef QUANT_1PASS_SUPPORTED
   fprintf(stderr, "  -onepass       Use 1-pass quantization (fast, low quality)\n");
 #endif
+#ifndef FREE_MEM_ESTIMATE
   fprintf(stderr, "  -maxmemory N   Maximum memory to use (in kbytes)\n");
+#endif
   fprintf(stderr, "  -outfile name  Specify name for output file\n");
   fprintf(stderr, "  -verbose  or  -debug   Emit debug output\n");
   exit(EXIT_FAILURE);
@@ -182,6 +220,8 @@ parse_switches (j_decompress_ptr cinfo, int argc, char **argv,
   requested_fmt = DEFAULT_FMT;	/* set default output file format */
   outfilename = NULL;
   cinfo->err->trace_level = 0;
+  if (default_maxmem > 0)	/* override library's default value */
+    cinfo->mem->max_memory_to_use = default_maxmem;
 
   /* Scan command line options, adjust parameters */
 
@@ -430,31 +470,67 @@ print_text_marker (j_decompress_ptr cinfo)
 
 
 /*
- * The main program.
+ * Check for overwrite of an existing file; clear it with user
  */
 
-int
-main (int argc, char **argv)
+#ifndef NO_OVERWRITE_CHECK
+
+LOCAL(boolean)
+is_write_ok (char * outfname)
+{
+  FILE * ofile;
+  int ch;
+
+  ofile = fopen(outfname, READ_BINARY);
+  if (ofile == NULL)
+    return TRUE;		/* not present */
+  fclose(ofile);		/* oops, it is present */
+
+  for (;;) {
+    fprintf(stderr, "%s already exists, overwrite it? [y/n] ",
+	    outfname);
+    fflush(stderr);
+    ch = getc(stdin);
+    if (ch != '\n')		/* flush rest of line */
+      while (getc(stdin) != '\n')
+	/* nothing */;
+
+    switch (ch) {
+    case 'Y':
+    case 'y':
+      return TRUE;
+    case 'N':
+    case 'n':
+      return FALSE;
+    /* otherwise, ask again */
+    }
+  }
+}
+
+#endif
+
+
+/*
+ * Process a single input file name, and return its index in argv[].
+ * File names at or to left of old_file_index have been processed already.
+ */
+
+LOCAL(int)
+process_one_file (int argc, char **argv, int old_file_index)
 {
   struct jpeg_decompress_struct cinfo;
   struct jpeg_error_mgr jerr;
+  char *infilename;
+  char workfilename[PATH_MAX];
+  const char *default_extension = NULL;
 #ifdef PROGRESS_REPORT
   struct cdjpeg_progress_mgr progress;
 #endif
   int file_index;
   djpeg_dest_ptr dest_mgr = NULL;
-  FILE * input_file;
-  FILE * output_file;
+  FILE * input_file = NULL;
+  FILE * output_file = NULL;
   JDIMENSION num_scanlines;
-
-  /* On Mac, fetch a command line. */
-#ifdef USE_CCOMMAND
-  argc = ccommand(&argv);
-#endif
-
-  progname = argv[0];
-  if (progname == NULL || progname[0] == 0)
-    progname = "djpeg";		/* in case C library doesn't provide it */
 
   /* Initialize the JPEG decompression object with default error handling. */
   cinfo.err = jpeg_std_error(&jerr);
@@ -478,60 +554,25 @@ main (int argc, char **argv)
   enable_signal_catcher((j_common_ptr) &cinfo);
 #endif
 
-  /* Scan command line to find file names. */
-  /* It is convenient to use just one switch-parsing routine, but the switch
+  /* Scan command line to find next file name.
+   * It is convenient to use just one switch-parsing routine, but the switch
    * values read here are ignored; we will rescan the switches after opening
    * the input file.
    * (Exception: tracing level set here controls verbosity for COM markers
    * found during jpeg_read_header...)
    */
 
-  file_index = parse_switches(&cinfo, argc, argv, 0, FALSE);
-
-#ifdef TWO_FILE_COMMANDLINE
-  /* Must have either -outfile switch or explicit output file name */
-  if (outfilename == NULL) {
-    if (file_index != argc-2) {
-      fprintf(stderr, "%s: must name one input and one output file\n",
-	      progname);
-      usage();
-    }
-    outfilename = argv[file_index+1];
-  } else {
-    if (file_index != argc-1) {
-      fprintf(stderr, "%s: must name one input and one output file\n",
-	      progname);
-      usage();
-    }
-  }
-#else
-  /* Unix style: expect zero or one file name */
-  if (file_index < argc-1) {
-    fprintf(stderr, "%s: only one input file\n", progname);
+  file_index = parse_switches(&cinfo, argc, argv, old_file_index, FALSE);
+  if (file_index >= argc) {
+    fprintf(stderr, "%s: missing input file name\n", progname);
     usage();
   }
-#endif /* TWO_FILE_COMMANDLINE */
 
   /* Open the input file. */
-  if (file_index < argc) {
-    if ((input_file = fopen(argv[file_index], READ_BINARY)) == NULL) {
-      fprintf(stderr, "%s: can't open %s\n", progname, argv[file_index]);
-      exit(EXIT_FAILURE);
-    }
-  } else {
-    /* default input file is stdin */
-    input_file = read_stdin();
-  }
-
-  /* Open the output file. */
-  if (outfilename != NULL) {
-    if ((output_file = fopen(outfilename, WRITE_BINARY)) == NULL) {
-      fprintf(stderr, "%s: can't open %s\n", progname, outfilename);
-      exit(EXIT_FAILURE);
-    }
-  } else {
-    /* default output file is stdout */
-    output_file = write_stdout();
+  infilename = argv[file_index];
+  if ((input_file = fopen(infilename, READ_BINARY)) == NULL) {
+    fprintf(stderr, "%s: can't open %s\n", progname, infilename);
+    goto fail;
   }
 
 #ifdef PROGRESS_REPORT
@@ -545,7 +586,7 @@ main (int argc, char **argv)
   (void) jpeg_read_header(&cinfo, TRUE);
 
   /* Adjust default decompression parameters by re-parsing the options */
-  file_index = parse_switches(&cinfo, argc, argv, 0, TRUE);
+  file_index = parse_switches(&cinfo, argc, argv, old_file_index, TRUE);
 
   /* Initialize the output module now to let it override any crucial
    * option settings (for instance, GIF wants to force color quantization).
@@ -554,36 +595,80 @@ main (int argc, char **argv)
 #ifdef BMP_SUPPORTED
   case FMT_BMP:
     dest_mgr = jinit_write_bmp(&cinfo, FALSE);
+    default_extension = ".bmp";
     break;
   case FMT_OS2:
     dest_mgr = jinit_write_bmp(&cinfo, TRUE);
+    default_extension = ".bmp";
     break;
 #endif
 #ifdef GIF_SUPPORTED
   case FMT_GIF:
     dest_mgr = jinit_write_gif(&cinfo, TRUE);
+    default_extension = ".gif";
     break;
   case FMT_GIF0:
     dest_mgr = jinit_write_gif(&cinfo, FALSE);
+    default_extension = ".gif";
     break;
 #endif
 #ifdef PPM_SUPPORTED
   case FMT_PPM:
     dest_mgr = jinit_write_ppm(&cinfo);
+    default_extension = ".ppm";
     break;
 #endif
 #ifdef RLE_SUPPORTED
   case FMT_RLE:
     dest_mgr = jinit_write_rle(&cinfo);
+    default_extension = ".rle";
     break;
 #endif
 #ifdef TARGA_SUPPORTED
   case FMT_TARGA:
     dest_mgr = jinit_write_targa(&cinfo);
+    default_extension = ".tga";
     break;
 #endif
   default:
     ERREXIT(&cinfo, JERR_UNSUPPORTED_FORMAT);
+  }
+
+  /* If user didn't supply -outfile switch, select output file name. */
+  if (outfilename == NULL) {
+    int i;
+
+    outfilename = workfilename;
+    /* Make outfilename be infilename with appropriate extension */
+    strcpy(outfilename, infilename);
+    for (i = (int)strlen(outfilename)-1; i >= 0; i--) {
+      switch (outfilename[i]) {
+      case ':':
+      case '/':
+      case '\\':
+	i = 0;			/* stop scanning */
+	break;
+      case '.':
+	outfilename[i] = '\0';	/* lop off existing extension */
+	i = 0;			/* stop scanning */
+	break;
+      default:
+	break;			/* keep scanning */
+      }
+    }
+    strcat(outfilename, default_extension);
+  }
+
+  fprintf(stderr, "Decompressing %s => %s\n", infilename, outfilename);
+#ifndef NO_OVERWRITE_CHECK
+  if (! is_write_ok(outfilename))
+    goto fail;
+#endif
+
+  /* Open the output file. */
+  if ((output_file = fopen(outfilename, WRITE_BINARY)) == NULL) {
+    fprintf(stderr, "%s: can't create %s\n", progname, outfilename);
+    goto fail;
   }
   dest_mgr->output_file = output_file;
 
@@ -613,19 +698,69 @@ main (int argc, char **argv)
    */
   (*dest_mgr->finish_output) (&cinfo, dest_mgr);
   (void) jpeg_finish_decompress(&cinfo);
+
+  /* Clean up and exit */
+fail:
   jpeg_destroy_decompress(&cinfo);
 
-  /* Close files, if we opened them */
-  if (input_file != stdin)
-    fclose(input_file);
-  if (output_file != stdout)
-    fclose(output_file);
+  if (input_file != NULL) fclose(input_file);
+  if (output_file != NULL) fclose(output_file);
 
 #ifdef PROGRESS_REPORT
   end_progress_monitor((j_common_ptr) &cinfo);
 #endif
 
+  /* Disable signal catcher. */
+#ifdef NEED_SIGNAL_CATCHER
+  enable_signal_catcher((j_common_ptr) NULL);
+#endif
+
+  return file_index;
+}
+
+
+/*
+ * The main program.
+ */
+
+int
+main (int argc, char **argv)
+{
+  int file_index;
+
+  /* On Mac, fetch a command line. */
+#ifdef USE_CCOMMAND
+  argc = ccommand(&argv);
+#endif
+
+#ifdef MSDOS
+  progname = "djpeg";		/* DOS tends to be too verbose about argv[0] */
+#else
+  progname = argv[0];
+  if (progname == NULL || progname[0] == 0)
+    progname = "djpeg";		/* in case C library doesn't provide it */
+#endif
+
+  /* The default maxmem must be computed only once at program startup,
+   * since releasing memory with free() won't give it back to the OS.
+   */
+#ifdef FREE_MEM_ESTIMATE
+  default_maxmem = FREE_MEM_ESTIMATE;
+#else
+  default_maxmem = 0;
+#endif
+
+  /* Scan command line, parse switches and locate input file names */
+
+  if (argc < 2)
+    usage();			/* nothing on the command line?? */
+
+  file_index = 0;
+
+  while (file_index < argc-1)
+    file_index = process_one_file(argc, argv, file_index);
+
   /* All done. */
-  exit(jerr.num_warnings ? EXIT_WARNING : EXIT_SUCCESS);
+  exit(EXIT_SUCCESS);
   return 0;			/* suppress no-return-value warnings */
 }

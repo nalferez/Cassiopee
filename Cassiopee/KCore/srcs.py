@@ -228,6 +228,7 @@ if JPEG:
         'KCore/Images/libjpeg/jmemname.c',
         'KCore/Images/libjpeg/rdswitch.c',
         'KCore/Images/libjpeg/djpeg.c',
+        'KCore/Images/libjpeg/djpegalt.c',
         'KCore/Images/libjpeg/jcmarker.c',
         'KCore/Images/libjpeg/jdcoefct.c',
         'KCore/Images/libjpeg/jerror.c',
