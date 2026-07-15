@@ -19,9 +19,9 @@ installDict = {
     ###############################################################################
     'linux': { 
         'description': 'Alferez Laptop (ubuntu)',
-        'f77compiler': 'ifort',
-        'f90compiler': 'ifort',
-        'Cppcompiler': 'icx',
+        'f77compiler': 'ifort',#'ifort',#'gfortran'
+        'f90compiler': 'ifort',#'ifort',#'gfortran'
+        'Cppcompiler': 'icc'     ,#'icx'  ,#'gcc'     
         'CppAdditionalOptions': [],
         'f77AdditionalOptions': [],
         'useOMP': True,
@@ -633,29 +633,44 @@ installDict = {
         'NvccAdditionalOptions': []
     },
 
+    # 'ubuntu': {
+    #     'description': 'Linux ubuntu 24.04',
+    #     'f77compiler': 'gfortran',
+    #     'f90compiler': 'gfortran',
+    #     'Cppcompiler': 'gcc',
+    #     'CppAdditionalOptions': [],
+    #     'f77AdditionalOptions': [],
+    #     'useOMP': True,
+    #     'static': False,
+    #     'additionalIncludePaths': [
+    #         '/usr/include',
+    #         '/usr/include/hdf5/openmpi',
+    #         '/usr/lib/x86_64-linux-gnu/openmpi/include'
+    #     ],
+    #     'additionalLibs': ['gfortran', 'gomp'],
+    #     'additionalLibPaths': [
+    #         '/usr/lib/x86_64-linux-gnu/hdf5/openmpi',
+    #         '/usr/lib/x86_64-linux-gnu'
+    #     ],
+    #     'useCuda': False,
+    #     'NvccAdditionalOptions': []
+    # },
     'ubuntu': {
-        'description': 'Linux ubuntu 24.04',
+        'description': 'Linux ubuntu 26.04 (gfortran)',
         'f77compiler': 'gfortran',
         'f90compiler': 'gfortran',
         'Cppcompiler': 'gcc',
-        'CppAdditionalOptions': [],
-        'f77AdditionalOptions': [],
+        'CppAdditionalOptions': ['-fno-tree-vectorize', '-Wno-implicit-function-declaration'],
+        'f77AdditionalOptions': ['-fno-tree-vectorize'],
         'useOMP': True,
         'static': False,
-        'additionalIncludePaths': [
-            '/usr/include',
-            '/usr/include/hdf5/openmpi',
-            '/usr/lib/x86_64-linux-gnu/openmpi/include'
-        ],
+        'additionalIncludePaths': ['/home/nalferez/miniforge3/envs/dNami_env/include',],
         'additionalLibs': ['gfortran', 'gomp'],
         'additionalLibPaths': [
-            '/usr/lib/x86_64-linux-gnu/hdf5/openmpi',
-            '/usr/lib/x86_64-linux-gnu'
-        ],
+            '/home/nalferez/miniforge3/envs/dNami_env/lib',],
         'useCuda': False,
         'NvccAdditionalOptions': []
     },
-
     'azure': {
         'description': 'Linux Centos7 - Github Actions',
         'f77compiler': 'gfortran',
