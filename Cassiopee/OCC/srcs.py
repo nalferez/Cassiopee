@@ -38,6 +38,7 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
         'OCC/Atomic/createEmptyCAD.cpp',
         'OCC/Atomic/mergeCAD.cpp',
         'OCC/Atomic/freeHook.cpp',
+        'OCC/Atomic/utils.cpp',
 
         'OCC/Atomic/printOCAF.cpp',
         'OCC/Atomic/getFaceNameInOCAF.cpp',
@@ -79,6 +80,8 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
 
         'OCC/Atomic/analyse.cpp',
         'OCC/Atomic/getFaceArea.cpp',
+        'OCC/Atomic/getFaceVolume.cpp',
+        'OCC/Atomic/getFaceMassCenter.cpp',
         'OCC/Atomic/getBoundingBox.cpp',
         'OCC/Atomic/areEdgeIdentical.cpp',
 
@@ -87,11 +90,13 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
         'OCC/Atomic/mergeFaces.cpp',
         'OCC/Atomic/mergeEdges.cpp',
 
-        'OCC/Atomic/fix.cpp',
+        'OCC/Atomic/fixShape.cpp',
         'OCC/Atomic/sewing.cpp',
         'OCC/Atomic/reverse.cpp',
 
         'OCC/Atomic/removeFaces.cpp',
+        'OCC/Atomic/removeEdges.cpp',
+        'OCC/Atomic/extractFaces.cpp',
         'OCC/Atomic/fillHole.cpp',
         'OCC/Atomic/addFillet.cpp',
         'OCC/Atomic/offset.cpp',
@@ -106,7 +111,10 @@ srcs = ['OCC/import_OCC_CAD_wrapper.cpp',
 
         'OCC/Atomic/intersectEdgeFace.cpp',
         'OCC/Atomic/trimFaces.cpp',
+        'OCC/Atomic/untrimFaces.cpp',
+
         'OCC/Atomic/boolean.cpp',
+        'OCC/Atomic/booleanEdges.cpp',
 
         'OCC/Atomic/getOppData.cpp',
         'OCC/Atomic/identifyTags.cpp']

@@ -24,9 +24,7 @@
 #include "TopTools_IndexedMapOfShape.hxx"
 #include "TopExp.hxx"
 #include "TopExp_Explorer.hxx"
-
 #include "ShapeAnalysis.hxx"
-
 #include "GProp_GProps.hxx"
 #include "BRepGProp.hxx"
 

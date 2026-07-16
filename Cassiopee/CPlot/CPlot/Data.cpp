@@ -275,7 +275,7 @@ void Data::initState()
   ptrState->activePointF = NULL;
 
   // Render
-  ptrState->farClip = 0;
+  ptrState->preClip = 0;
   ptrState->render = 1;
   ptrState->bb = 0;
   ptrState->header = 1;
@@ -374,7 +374,7 @@ void Data::initState()
   ptrState->mouseFirstClicked = 0;
 
   // Export
-  strcpy(ptrState->exportFile, "CPlot");
+  strcpy(ptrState->exportFile, "Image.png");
   ptrState->exportWidth = -1;
   ptrState->exportHeight = -1;
   ptrState->exportAA = 0;
@@ -491,8 +491,9 @@ void Data::initCam()
   dist = MAX(dist, distz);
   dist = dist*1.2;
 
-  if (ptrState->dim == 3)
+  if (ptrState->dim == 3) // 3D
   {
+    // default: put y in distance x and dirCam to z
     _view.xcam = _view.xeye + dist;
     _view.ycam = _view.yeye;
     _view.zcam = _view.zeye;
@@ -502,8 +503,9 @@ void Data::initCam()
     _view.diry = 0.;
     _view.dirz = 1.;
 
-    // Auto set best view (added)
-    if (fabs(xmin+1.e-4) < 1.e-11 && fabs(xmax-1.e-4) < 1.e-11) //YZ
+    // Auto set best view if thickness is 0 (previous)
+    /*
+    if (fabs(xmin+1.e-4) < 1.e-11 && fabs(xmax-1.e-4) < 1.e-11) // YZ
     {
      _view.xcam = _view.xeye + dist;
      _view.ycam = _view.yeye;
@@ -530,14 +532,45 @@ void Data::initCam()
       _view.diry = 1.;
       _view.dirz = 0.;
     }
+    */
+   
+    // chose position from dimensions of bbox
+    E_Float factor = 5.;
+    if (distx <= factor*disty && distx <= factor*distz) // dir x
+    {
+      _view.xcam = _view.xeye + dist;
+      _view.ycam = _view.yeye;
+      _view.zcam = _view.zeye;
+      _view.dirx = 0.;
+      _view.diry = 0.;
+      _view.dirz = 1.;
+    } 
+    else if (disty <= factor*distx && disty <= factor*distz) // dir y
+    {
+      _view.xcam = _view.xeye;
+      _view.ycam = _view.yeye - dist;
+      _view.zcam = _view.zeye;
+      _view.dirx = 0.;
+      _view.diry = 0.;
+      _view.dirz = 1.;
+    }
+    else if (distz <= factor*distx && distz <= factor*disty) // dirz
+    {
+      _view.xcam = _view.xeye;
+      _view.ycam = _view.yeye;
+      _view.zcam = _view.zeye + dist;
+      _view.dirx = 0.;
+      _view.diry = 1.;
+      _view.dirz = 0.;
+    }
   }
-  else
+  else // 2D
   {
     _view.xcam = _view.xeye;
     _view.ycam = _view.yeye;
     _view.zcam = _view.zeye + dist;
 
-    // Camera direction is z axis in 3D mode
+    // Camera direction is y axis in 2D mode
     _view.dirx = 0.;
     _view.diry = 1.;
     _view.dirz = 0.;
@@ -836,16 +869,17 @@ void Data::enforceGivenData2(float xcam, float ycam, float zcam,
                              E_Int shadow, E_Int dof,
                              char* exportFile, char* exportResolution, E_Int exportAA)
 {
-  if (xcam != -999) _view.xcam = xcam;
-  if (ycam != -999) _view.ycam = ycam;
-  if (zcam != -999) _view.zcam = zcam;
-  if (xeye != -999) _view.xeye = xeye;
-  if (yeye != -999) _view.yeye = yeye;
-  if (zeye != -999) _view.zeye = zeye;
-  if (dirx != -999) _view.dirx = dirx;
-  if (diry != -999) _view.diry = diry;
-  if (dirz != -999) _view.dirz = dirz;
-  if (viewAngle != -1) { _view.angle = viewAngle; }
+  if (xcam != -999) { _view.xcam = xcam; ptrState->preClip = 1; }
+  if (ycam != -999) { _view.ycam = ycam; ptrState->preClip = 1; }
+  if (zcam != -999) { _view.zcam = zcam; ptrState->preClip = 1; }
+  if (xeye != -999) { _view.xeye = xeye; ptrState->preClip = 1; }
+  if (yeye != -999) { _view.yeye = yeye; ptrState->preClip = 1; }
+  if (zeye != -999) { _view.zeye = zeye; ptrState->preClip = 1; }
+  if (dirx != -999) { _view.dirx = dirx; ptrState->preClip = 1; }
+  if (diry != -999) { _view.diry = diry; ptrState->preClip = 1; }
+  if (dirz != -999) { _view.dirz = dirz; ptrState->preClip = 1; }
+  if (viewAngle != -1) { _view.angle = viewAngle;  ptrState->preClip = 1; }
+  
   if (meshStyle != -1) ptrState->meshStyle = meshStyle;
   if (solidStyle != -1) ptrState->solidStyle = solidStyle;
   if (colormap != -1)

@@ -35,7 +35,7 @@ if f77compiler is None:
     print("Error: a fortran 77 compiler is required for compiling RigidMotion.")
 args = Dist.getForArgs(); opt = ''
 for c, v in enumerate(args): opt += 'FOPT'+str(c)+'='+v+' '
-os.system("make -e FC="+f77compiler+" WDIR=RigidMotion/Fortran "+opt)
+Dist.runMakeFortran(f77compiler, opt, wdir="RigidMotion/Fortran")
 prod = os.getenv("ELSAPROD") or 'xx'
 
 # Setting libraryDirs and libraries ===========================================
@@ -50,7 +50,7 @@ libraryDirs += paths; libraries += libs
 import srcs
 setup(
     name="RigidMotion",
-    version="4.1",
+    version="4.2",
     description="Rigid motion module.",
     author="ONERA",
     url="https://onera.github.io/Cassiopee/",

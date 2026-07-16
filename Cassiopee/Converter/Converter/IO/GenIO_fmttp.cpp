@@ -72,7 +72,6 @@ E_Int K_IO::GenIO::tpread(
   E_Int np = 0; E_Int ne = 0; E_Int nfaces = 0;
   E_Int sizeElt = 0;
   E_LONG pos = 0;
-  E_Int nheadlines=0;
   char lastSeparator='\0';
   /* Local vector for structured and unstructured zones names */
   vector<char*> structZoneNames, unstructZoneNames;
@@ -135,7 +134,6 @@ E_Int K_IO::GenIO::tpread(
   {
     compressString(keyword);
 
-    nheadlines++;
     pos = KFTELL(ptrFile);
     res = readDataAndKeyword(ptrFile, buf,
                              knownKeywords,
@@ -298,9 +296,9 @@ E_Int K_IO::GenIO::tpread(
       else packing = 1;
     }
     strcpy(keyword, nextKeyword);
-    for (size_t i = 0; i < strlen(prevData); i++)
-      if (prevData[i] == '\n') nheadlines++;
   }
+
+  printf("standard header: nil=%d np=%d nvar=%d\n", nil, np, nvar); fflush(stdout);
 
   // Allocating arrays
   if (nil == 0 && np == 0)
@@ -317,17 +315,22 @@ E_Int K_IO::GenIO::tpread(
         c = fgetc(ptrFile);
         if (c != EOF) buf[i++] = (char)c;
       } while(c != EOF && c != '\n');
-      buf[i]='\0';
+      buf[i] = '\0';
       if (ndatalines == 0) 
       {
         strcpy(firstline,buf);
       } 
-      if ('\n' == c) {
+      if ('\n' == c) 
+      {
         ++ndatalines;
-      } else if (c==EOF) { // Verifie que la derniere ligne est vide sinon ajoute une ligne
-        i=0;
-        while(buf[i]!='\0') {
-          if (buf[i++]!=' ') {
+      } 
+      else if (c == EOF) 
+      { // Verifie que la derniere ligne est vide sinon ajoute une ligne
+        i = 0;
+        while (buf[i]!='\0')
+        {
+          if (buf[i++] != ' ')
+          {
             ndatalines++;
             break;
           }
@@ -335,29 +338,42 @@ E_Int K_IO::GenIO::tpread(
       }
     } while(EOF != c);
     // On compte le nombre de colonne de la premiere ligne
-    i = 0;
     char ch;
-    E_Int ncol=1;
+    E_Int ncol = 0; i = 0;
     do 
     { // read one line
-      do 
+      if (firstline[i] == '\n' || firstline[i] == '\0') break;
+
+      if (firstline[i] != ' ')
       {
-        ch = firstline[i++];
-      } while(ch == ' ');
-      if (firstline[i] == ' ') ncol++;
-    } while(ch != '\n' && ch != '\0');
-    if (nvar == 0) 
+        ncol++;
+        do
+        {
+          ch = firstline[i++];
+        } while (ch != ' ' && ch != '\n' && ch != '\0');
+      }
+      else // blank
+      {
+        do
+        {
+          ch = firstline[i++];
+        } while (ch == ' ' && ch != '\n' && ch != '\0');
+      }
+    } while (ch != '\n' && ch != '\0');
+
+    if (nvar == 0)
     { // Essaie de lire un fichier sans entete (gnuplot/tecplot fmt point)
       nvar = ncol; // Format point par defaut
       ndatalines++;
       for (i=0; i < nvar; i++)
       {
-        varString[i*3]='V';
-        varString[i*3+1]='1'+i; //static_cast<char>(i);
-        varString[i*3+2]=',';
+        varString[i*3] = 'V';
+        varString[i*3+1] = '1'+i; //static_cast<char>(i);
+        varString[i*3+2] = ',';
       }
       varString[strlen(varString)-1]='\0';
     }
+    
     if (ncol == nvar) 
     { // Format point
       nil = ndatalines;
@@ -365,10 +381,10 @@ E_Int K_IO::GenIO::tpread(
     } 
     else 
     {
-      if (ndatalines==nvar) 
+      if (ndatalines == nvar) 
       { // Format block simple
-        nil=ncol;
-        packing=0;
+        nil = ncol;
+        packing = 0;
       }
     }
     if (nil == 0) 
@@ -386,7 +402,8 @@ E_Int K_IO::GenIO::tpread(
   }
 
   if (nil != 0)
-  { ni.push_back(nil);
+  { 
+    ni.push_back(nil);
     if (njl != 0) nj.push_back(njl);
     else nj.push_back(1);
     if (nkl != 0) nk.push_back(nkl);
@@ -563,7 +580,7 @@ E_Int K_IO::GenIO::tpread(
     pos = KFTELL(ptrFile);
     res = readKeyword(ptrFile, keyword);
 
-    if (res!=0) break;
+    if (res != 0) break;
     else
     {
       compressString(keyword);
@@ -624,11 +641,10 @@ E_Int K_IO::GenIO::tpread(
   E_Int np = 0; E_Int ne = 0; E_Int nfaces = 0;
   E_Int ngonDim = -1;
   E_LONG pos = 0;
-  E_Int nheadlines=0;
   char lastSeparator='\0';
   /* Local vector for structured and unstructured zones names */
   vector<char*> structZoneNames, unstructZoneNames;
-  char zoneName[BUFSIZE+1];
+  char zoneName[BUFSIZE+1]; zoneName[0] = '\0';
   E_Int ZONETFound, VARIABLESFound;
 
   knownKeywords.push_back("TITLE");
@@ -687,7 +703,6 @@ E_Int K_IO::GenIO::tpread(
   {
     compressString(keyword);
 
-    nheadlines++;
     pos = KFTELL(ptrFile);
     res = readDataAndKeyword(ptrFile, buf,
                              knownKeywords,
@@ -870,8 +885,6 @@ E_Int K_IO::GenIO::tpread(
       else packing = 1;
     }
     strcpy(keyword, nextKeyword);
-    for (size_t i = 0; i < strlen(prevData); i++)
-      if (prevData[i] == '\n') nheadlines++;
   }
 
   // Allocating arrays
@@ -894,12 +907,16 @@ E_Int K_IO::GenIO::tpread(
       {
         strcpy(firstline,buf);
       } 
-      if ('\n' == c) {
+      if ('\n' == c) 
+      {
         ++ndatalines;
-      } else if (c==EOF) { // Verifie que la derniere ligne est vide sinon ajoute une ligne
-        i=0;
-        while(buf[i]!='\0') {
-          if (buf[i++]!=' ') {
+      } else if (c == EOF) 
+      { // Verifie que la derniere ligne est vide sinon ajoute une ligne
+        i = 0;
+        while (buf[i] != '\0') 
+        {
+          if (buf[i++] != ' ') 
+          {
             ndatalines++;
             break;
           }
@@ -907,29 +924,43 @@ E_Int K_IO::GenIO::tpread(
       }
     } while(EOF != c);
     // On compte le nombre de colonne de la premiere ligne
-    i = 0;
     char ch;
-    E_Int ncol=1;
+
+    E_Int ncol = 0; i = 0;
     do 
     { // read one line
-      do 
+      if (firstline[i] == '\n' || firstline[i] == '\0') break;
+
+      if (firstline[i] != ' ')
       {
-        ch = firstline[i++];
-      } while(ch == ' ');
-      if (firstline[i] == ' ') ncol++;
-    } while(ch != '\n' && ch != '\0');
+        ncol++;
+        do
+        {
+          ch = firstline[i++];
+        } while (ch != ' ' && ch != '\n' && ch != '\0');
+      }
+      else // blank
+      {
+        do
+        {
+          ch = firstline[i++];
+        } while (ch == ' ' && ch != '\n' && ch != '\0');
+      }
+    } while (ch != '\n' && ch != '\0');
+
     if (nvar == 0) 
     { // Essaie de lire un fichier sans entete (gnuplot/tecplot fmt point)
       nvar = ncol; // Format point par defaut
       ndatalines++;
       for (i=0; i < nvar; i++)
       {
-        varString[i*3]='V';
-        varString[i*3+1]='1'+i; //static_cast<char>(i);
-        varString[i*3+2]=',';
+        varString[i*3] = 'V';
+        varString[i*3+1] = '1'+i; //static_cast<char>(i);
+        varString[i*3+2] = ',';
       }
-      varString[strlen(varString)-1]='\0';
+      varString[strlen(varString)-1] = '\0';
     }
+    
     if (ncol == nvar) 
     { // Format point
       nil = ndatalines;
@@ -937,10 +968,10 @@ E_Int K_IO::GenIO::tpread(
     } 
     else 
     {
-      if (ndatalines==nvar) 
+      if (ndatalines == nvar) 
       { // Format block simple
-        nil=ncol;
-        packing=0;
+        nil = ncol;
+        packing = 0;
       }
     }
     if (nil == 0) 
@@ -976,7 +1007,7 @@ E_Int K_IO::GenIO::tpread(
     // put zone name in structured list
     E_Int structSize = structZoneNames.size();
     if (zoneName[0] == '\0') 
-    sprintf(zoneName, "StructZone" SF_D_, structSize);
+      sprintf(zoneName, "StructZone" SF_D_, structSize);
     char* name = new char[BUFSIZE+1]; strcpy(name, zoneName);
     structZoneNames.push_back(name);
     zoneName[0] = '\0';
@@ -986,7 +1017,7 @@ E_Int K_IO::GenIO::tpread(
     // put zone name in unstructured list
     E_Int unstructSize = unstructZoneNames.size();
     if (zoneName[0] == '\0')
-    sprintf(zoneName, "UnstructZone" SF_D_, unstructSize);
+      sprintf(zoneName, "UnstructZone" SF_D_, unstructSize);
     char* name = new char[BUFSIZE+1]; strcpy(name, zoneName);
     unstructZoneNames.push_back(name);
     zoneName[0] = '\0';

@@ -1,5 +1,6 @@
-#version 130
 // Depth of field shader (post shader)
+#version 150 compatibility
+
 uniform sampler2D FrameBuffer;
 uniform sampler2D depthMap;
 

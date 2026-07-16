@@ -30,33 +30,35 @@ def getLocal():
 #=============================================================================
 # Verifie que arrays est egal au arrays de reference stocke dans un fichier
 # number est le no du test dans le script
+# reference est optionel. Si present, utilise comme fichier de reference
+# sinon, utilise Data.
 #=============================================================================
-def testA(arrays, number=1):
+def testA(arrays, number=1, reference=""):
     """Test arrays."""
     import Converter as C
     if not isinstance(arrays[0], list): arrays = [arrays]
 
-    # Check Data directory
-    a = os.access(DATA, os.F_OK)
-    if not a:
-        print("{} directory doesn't exist. Created.".format(DATA))
-        os.mkdir(DATA)
+    # Build reference file path if it is not provided
+    fmt = 'bin_cgns'
+    if not reference:
+        # Check Data directory
+        if not os.access(DATA, os.F_OK):
+            print("{} directory doesn't exist. Created.".format(DATA))
+            os.mkdir(DATA)
+        fileName = sys.argv[0]
+        baseName = os.path.basename(fileName)
+        dirName = os.path.dirname(fileName)
+        fileName = os.path.splitext(baseName)[0]
+        if dirName == '': reference = '%s/%s.ref%d'%(DATA, fileName, number)
+        else: reference = '%s/%s/%s.ref%d'%(dirName, DATA, fileName, number)
+        fmt = 'bin_pickle'
 
-    # Construit le nom du fichier de reference
-    fileName = sys.argv[0]
-    baseName = os.path.basename(fileName)
-    dirName = os.path.dirname(fileName)
-    fileName = os.path.splitext(baseName)[0]
-
-    if dirName == '': reference = '%s/%s.ref%d'%(DATA, fileName, number)
-    else: reference = '%s/%s/%s.ref%d'%(dirName, DATA, fileName, number)
-    a = os.access(reference, os.R_OK)
-    if not a:
-        print("Warning: reference file %s has been created."%reference)
-        C.convertArrays2File(arrays, reference, 'bin_pickle')
+    if not os.access(reference, os.R_OK):
+        print("Warning: reference file %s has been created." % reference)
+        C.convertArrays2File(arrays, reference, fmt)
         return True
     else:
-        old = C.convertFile2Arrays(reference, 'bin_pickle')
+        old = C.convertFile2Arrays(reference, fmt)
         if GEOMETRIC_DIFF:
             # geometrical check
             if all(coord in oldArr[0].split(',') for oldArr in old for coord in 'xyz'):
@@ -79,12 +81,14 @@ def testA(arrays, number=1):
         isSuccessful = True
         varNames = list(dict.fromkeys(','.join(i[0] for i in ret).split(',')))
         nvarNames = len(varNames)
-        l0 = [0. for _ in range(nvarNames)]
-        l2 = [0. for _ in range(nvarNames)]
+        l0 = [0.]*nvarNames
+        l2 = [0.]*nvarNames
+
         for i in ret:
-            for v in i[0].split(','):
-                vidx = varNames.index(v)
-                if C.getNPts(i) > 0:
+            npts = C.getNPts(i)
+            if npts > 0:
+                for v in i[0].split(','):
+                    vidx = varNames.index(v)
                     l0[vidx] = max(l0[vidx], C.getMaxValue(i, v))
                     l2[vidx] = max(l2[vidx], C.normL2(i, v))
 
@@ -106,7 +110,7 @@ def outA(arrays, number=1):
 # Verifie que le pyTree est egal au pyTree de reference stocke dans un fichier
 # number est le no du test dans le script
 #=============================================================================
-def testT(t, number=1):
+def testT(t, number=1, reference=""):
     """Test pyTrees."""
     import Converter.PyTree as C
     import Converter.Internal as Internal
@@ -120,27 +124,27 @@ def testT(t, number=1):
     # Check OWNDATA / copy
     C._ownNumpyArrays(t)
 
-    # Check Data directory
-    a = os.access(DATA, os.F_OK)
-    if not a:
-        print("{} directory doesn't exist. Created.".format(DATA))
-        os.mkdir(DATA)
+    # Build reference file path if it is not provided
+    fmt = 'bin_cgns'
+    if not reference:
+        # Check Data directory
+        if not os.access(DATA, os.F_OK):
+            print("{} directory doesn't exist. Created.".format(DATA))
+            os.mkdir(DATA)
+        fileName = sys.argv[0]
+        baseName = os.path.basename(fileName)
+        dirName = os.path.dirname(fileName)
+        fileName = os.path.splitext(baseName)[0]
+        if dirName == '': reference = '%s/%s.ref%d'%(DATA, fileName, number)
+        else: reference = '%s/%s/%s.ref%d'%(dirName, DATA, fileName, number)
+        fmt = 'bin_pickle'
 
-    # Construit le nom du fichier de reference
-    fileName = sys.argv[0]
-    baseName = os.path.basename(fileName)
-    dirName = os.path.dirname(fileName)
-    fileName = os.path.splitext(baseName)[0]
-
-    if dirName == '': reference = '%s/%s.ref%d'%(DATA, fileName, number)
-    else: reference = '%s/%s/%s.ref%d'%(dirName, DATA, fileName, number)
-    a = os.access(reference, os.R_OK)
-    if not a:
+    if not os.access(reference, os.R_OK):
         print("Warning: reference file %s has been created."%reference)
-        C.convertPyTree2File(t, reference, 'bin_pickle')
+        C.convertPyTree2File(t, reference, fmt)
         return True
     else:
-        old = C.convertFile2PyTree(reference, 'bin_pickle')
+        old = C.convertFile2PyTree(reference, fmt)
         checkTree(t, old)
         if GEOMETRIC_DIFF:
             # geometrical check
@@ -170,8 +174,8 @@ def testT(t, number=1):
         if C.getNPts(ret) > 0:
             for v in mvars:
                 l0 = C.getMaxValue(ret, v)
-                l2 = C.normL2(ret, v)
                 if l0 > TOLERANCE:
+                    l2 = C.normL2(ret, v)
                     print('DIFF: Variable=%s, L0=%.12f, L2=%.12f'%(v, l0, l2))
                     isSuccessful = False
         return isSuccessful
@@ -186,35 +190,37 @@ def outT(t, number=1):
 # Verifie que le fichier est identique au fichier de reference
 # Diff byte to byte
 #=============================================================================
-def testF(infile, number=1):
+def testF(infile, number=1, reference=""):
     # Chek infile
     a = os.access(infile, os.F_OK)
     if not a:
         print("DIFF: file "+infile+" doesnt exist.")
 
-    # Check Data directory
-    a = os.access(DATA, os.F_OK)
-    if not a:
-        print("{} directory doesn't exist. Created.".format(DATA))
-        os.mkdir(DATA)
-    fileName = sys.argv[0]
-    baseName = os.path.basename(fileName)
-    dirName = os.path.dirname(fileName)
-    fileName = os.path.splitext(baseName)[0]
+    # Build reference file path if it is not provided
+    if not reference:
+        # Check Data directory
+        a = os.access(DATA, os.F_OK)
+        if not a:
+            print("{} directory doesn't exist. Created.".format(DATA))
+            os.mkdir(DATA)
+        fileName = sys.argv[0]
+        baseName = os.path.basename(fileName)
+        dirName = os.path.dirname(fileName)
+        fileName = os.path.splitext(baseName)[0]
+        if dirName == '': reference = '%s/%s.ref%d'%(DATA, fileName, number)
+        else: reference = '%s/%s/%s.ref%d'%(dirName, DATA, fileName, number)
 
-    if dirName == '': reference = '%s/%s.ref%d'%(DATA, fileName, number)
-    else: reference = '%s/%s/%s.ref%d'%(dirName, DATA, fileName, number)
     a = os.access(reference, os.R_OK)
     if not a:
         print("Can not open file %s for reading."%reference)
         print("Reference file %s has been created."%reference)
-        os.system("cp "+infile+" "+reference)
+        import shutil
+        shutil.copy(infile, reference)
         return True
     else:
         print("Diffing with '"+reference+"'... done.")
         import filecmp
         ret = filecmp.cmp(reference, infile, shallow=False)
-        #ret = os.system("diff "+reference+" "+infile)
         if not ret:
             print("DIFF: with file "+reference+'.')
             return False
@@ -282,32 +288,31 @@ def checkObject_(objet, refObjet, reference):
 # Verifie que l'objet python est identique a celui stocke dans le
 # fichier de reference
 #=============================================================================
-def testO(objet, number=1):
+def testO(objet, number=1, reference=""):
     """Test python object."""
     if isinstance(objet, dict):
         # perform some sort on dict to be predictible
         from collections import OrderedDict
         objet = OrderedDict(sorted(objet.items(), key=lambda t: t[0]))
 
-    # Check Data directory
-    a = os.access(DATA, os.F_OK)
-    if not a:
-        print("{} directory doesn't exist. Created.".format(DATA))
-        os.mkdir(DATA)
-    fileName = sys.argv[0]
-    baseName = os.path.basename(fileName)
-    dirName = os.path.dirname(fileName)
-    fileName = os.path.splitext(baseName)[0]
-
-    if dirName == '': reference = '%s/%s.ref%d'%(DATA, fileName, number)
-    else: reference = '%s/%s/%s.ref%d'%(dirName, DATA, fileName, number)
-    a = os.access(reference, os.R_OK)
+    # Build reference file path if it is not provided
+    if not reference:
+        # Check Data directory
+        if not os.access(DATA, os.F_OK):
+            print("{} directory doesn't exist. Created.".format(DATA))
+            os.mkdir(DATA)
+        fileName = sys.argv[0]
+        baseName = os.path.basename(fileName)
+        dirName = os.path.dirname(fileName)
+        fileName = os.path.splitext(baseName)[0]
+        if dirName == '': reference = '%s/%s.ref%d'%(DATA, fileName, number)
+        else: reference = '%s/%s/%s.ref%d'%(dirName, DATA, fileName, number)
 
     # OWNDATA check / copy
     if isinstance(objet, numpy.ndarray) and not objet.flags['OWNDATA']:
         objet = numpy.copy(objet)
 
-    if not a:
+    if not os.access(reference, os.R_OK):
         print("Can not open file "+reference+" for reading.")
         print("Reference file "+reference+" has been created.")
         import pickle as pickle
@@ -336,7 +341,7 @@ def testO(objet, number=1):
 # Retourne 0 si differents
 #=============================================================================
 def checkTree(t1, t2):
-    """Check that pyTree t1 and t2 are identical."""
+    """Check that pyTrees t1 and t2 are identical."""
     dict1 = {}
     buildDict__('.', dict1, t1)
     dict1.pop('./CGNSTree/CGNSLibraryVersion', None) # avoid comparison when version change
@@ -344,28 +349,42 @@ def checkTree(t1, t2):
     buildDict__('.', dict2, t2)
     dict2.pop('./CGNSTree/CGNSLibraryVersion', None)
 
-    for k in dict2.keys():
-        node2 = dict2[k]
+    missing = []
+    for k in dict2:
         # cherche le noeud equivalent dans t1
-        if k not in dict1:
-            print('DIFF: node %s existe dans reference mais pas dans courant.'%k)
-        else:
-            node1 = dict1[k]
-            checkTree__(node1, node2)
+        if k in dict1:
+            checkTree__(k, dict1[k], dict2[k])
+        elif not any(k.startswith(p + "/") or k == p for p in missing):
+            # parent node of k was found but k isn't: report as missing in current
+            missing.append(k)
+            print(f"DIFF: node {k.replace('./CGNSTree/', '')} exists in "
+                  "reference but not in current.")
+
+    missing = []
+    for k in dict1:
+        # cherche le noeud equivalent dans t2
+        if k in dict2:
+            pass  # test already done above
+        elif not any(k.startswith(p + "/") or k == p for p in missing):
+            # parent node of k was found but k isn't: report as missing in reference
+            missing.append(k)
+            print(f"DIFF: node {k.replace('./CGNSTree/', '')} exists in "
+                  "current but not in reference.")
 
 def buildDict__(curr, mdict, node):
     d = f"{curr}/{node[0]}"
     mdict[d] = node
     for i in node[2]: buildDict__(d, mdict, i)
 
-def checkTree__(node1, node2):
+def checkTree__(nodePath, node1, node2):
+    nodePathl = nodePath.replace("./CGNSTree/", "")
     if node1[0] != node2[0]: # nom du noeud
         print('DIFF: nom des noeuds differents:')
         print('DIFF: reference: %s.'%node2[0])
         print('DIFF: courant: %s.'%node1[0])
         return 0
     if node1[3] != node2[3]: # type du noeud
-        print('DIFF: type de noeud differents pour le noeud: %s.'%node1[0])
+        print('DIFF: type de noeud differents pour le noeud: %s.'%nodePathl)
         print('DIFF: reference: %s.'%node2[3])
         print('DIFF: courant: %s.'%node1[3])
         return 0
@@ -378,13 +397,13 @@ def checkTree__(node1, node2):
         childNamesSet2 = set(childNames2)
         diffSet12 = childNamesSet1 - childNamesSet2
         diffSet21 = childNamesSet2 - childNamesSet1
-        print('DIFF: longueur des fils differente pour le noeud: %s.'%node1[0])
-        if len(diffSet12) > 0:
-            print('  - Noms des noeuds de courant qui ne sont pas dans '\
-                  'ref:\n{}.'.format(', '.join(f'{i}' for i in diffSet12)))
-        if len(diffSet21) > 0:
-            print('  - Noms des noeuds de ref qui ne sont pas dans '\
-                  'courant:\n{}.'.format(', '.join(f'{i}' for i in diffSet21)))
+        print('DIFF: longueur des fils differente pour le noeud: %s.'%nodePathl)
+        # if len(diffSet12) > 0:
+        #     print('  - Noms des noeuds de courant qui ne sont pas dans '\
+        #           'ref:\n{}.'.format(', '.join(f'{i}' for i in diffSet12)))
+        # if len(diffSet21) > 0:
+        #     print('  - Noms des noeuds de ref qui ne sont pas dans '\
+        #           'courant:\n{}.'.format(', '.join(f'{i}' for i in diffSet21)))
         if len(diffSet12) == 0 and len(diffSet21) == 0:
             from collections import Counter
             if len(childNamesSet1) != len(childNames1):
@@ -401,99 +420,93 @@ def checkTree__(node1, node2):
     val1 = node1[1]; val2 = node2[1]
     if isinstance(val1, str):
         if not isinstance(val2, str):
-            print('DIFF: types de valeurs differents pour le noeud: %s.'%node1[0])
+            print('DIFF: types de valeurs differents pour le noeud: %s.'%nodePathl)
             print('DIFF: reference: {}'.format(type(val2)))
             print('DIFF: courant: str')
             return 0
         if val1 != val2:
-            print('DIFF: valeurs differentes pour le noeud: %s.'%node1[0])
+            print('DIFF: valeurs differentes pour le noeud: %s.'%nodePathl)
             print('DIFF: reference:'+val2)
             print('DIFF: courant:'+val1)
             return 0
     elif isinstance(val1, float):
         if not isinstance(val2, float):
-            print('DIFF: types de valeurs differents pour le noeud: %s.'%node1[0])
+            print('DIFF: types de valeurs differents pour le noeud: %s.'%nodePathl)
             print('DIFF: reference: {}'.format(type(val2)))
             print('DIFF: courant: float')
             return 0
         if val1 != val2:
-            print('DIFF: valeurs differentes pour le noeud: %s.'%node1[0])
+            print('DIFF: valeurs differentes pour le noeud: %s.'%nodePathl)
             print('DIFF: reference: %f'%val2)
             print('DIFF: courant: %f'%val1)
             return 0
     elif isinstance(val1, int):
         if not isinstance(val2, int):
-            print('DIFF: types de valeurs differents pour le noeud: %s.'%node1[0])
+            print('DIFF: types de valeurs differents pour le noeud: %s.'%nodePathl)
             print('DIFF: reference: {}'.format(type(val2)))
             print('DIFF: courant: int')
             return 0
         if val1 != val2:
-            print('DIFF: valeurs differentes au noeud:'%node1[0])
+            print('DIFF: valeurs differentes au noeud:'%nodePathl)
             print('DIFF: reference: %d'%val2)
             print('DIFF: courant: %d'%val1)
             return 0
     elif isinstance(val1, numpy.ndarray):
         if not isinstance(val2, numpy.ndarray):
-            print('DIFF: types numpy de valeurs differents pour le noeud: %s.'%node1[0])
+            print('DIFF: types numpy de valeurs differents pour le noeud: %s.'%nodePathl)
             print('DIFF: reference:', val2.dtype)
             print('DIFF: courant:', val1.dtype)
             print('DIFF: reference:', val2)
             print('DIFF: courant:', val1)
             return 0
-        if val1.dtype == numpy.int32 or val1.dtype == numpy.int64:
-            if val2.dtype != numpy.int32 and val2.dtype != numpy.int64:
-                print('DIFF: types numpy de valeurs differents pour le noeud: %s.'%node1[0])
+        if val1.dtype in [numpy.int32, numpy.int64]:
+            if val2.dtype not in [numpy.int32, numpy.int64]:
+                print('DIFF: types numpy de valeurs differents pour le noeud: %s.'%nodePathl)
                 print('DIFF: reference:', val2)
                 print('DIFF: courant:', val1)
                 return 0
             if val1.shape != val2.shape:
-                print('DIFF: shape differentes pour le noeud: %s.'%node1[0])
+                print('DIFF: shape differentes pour le noeud: %s.'%nodePathl)
                 print('DIFF: reference:', val2.shape)
                 print('DIFF: courant:', val1.shape)
                 print('DIFF: reference:', val2)
                 print('DIFF: courant:', val1)
                 return 0
-            if ((val1 == val2).all()) == False:
-                print('DIFF: valeurs differentes pour le noeud: %s.'%node1[0])
+            if (val1 != val2).any():
+                if node1[0] == "PointList" and (numpy.sort(val1) == numpy.sort(val2)).all():
+                    print("DIFF: valeurs identiques pour le noeud: "
+                          f"{nodePathl} mais rangees differemment.")
+                else:
+                    print('DIFF: valeurs differentes pour le noeud: %s.'%nodePathl)
                 print('DIFF: reference:', val2)
                 print('DIFF: courant:', val1)
                 return 0
-        if val1.dtype == numpy.float64:
-            if val2.dtype != numpy.float64:
-                print('DIFF: types numpy de valeurs differents pour le noeud: %s.'%node1[0])
+        if val1.dtype in [numpy.float32, numpy.float64]:
+            if val2.dtype != val1.dtype:
+                print('DIFF: types numpy de valeurs differents pour le noeud: %s.'%nodePathl)
                 print('DIFF: reference:', val2.dtype)
                 print('DIFF: courant:', val1.dtype)
                 print('DIFF: reference:', val2)
                 print('DIFF: courant:', val1)
                 return 0
             if val1.shape != val2.shape:
-                print('DIFF: shape differentes pour le noeud: %s.'%node1[0])
-                print('DIFF: reference:', val2.shape)
-                print('DIFF: courant:', val1.shape)
-                print('DIFF: reference:', val2)
-                print('DIFF: courant:', val1)
-                return 0
-        if val1.dtype == numpy.float32:
-            if val2.dtype != numpy.float32:
-                print('DIFF: types numpy de valeurs differents pour le noeud: %s.'%node1[0])
-                print('DIFF: reference:', val2.dtype)
-                print('DIFF: courant:', val1.dtype)
-                print('DIFF: reference:', val2)
-                print('DIFF: courant:', val1)
-                return 0
-            if val1.shape != val2.shape:
-                print('DIFF: shape differentes pour le noeud: %s.'%node1[0])
+                print('DIFF: shape differentes pour le noeud: %s.'%nodePathl)
                 print('DIFF: reference:', val2.shape)
                 print('DIFF: courant:', val1.shape)
                 print('DIFF: reference:', val2)
                 print('DIFF: courant:', val1)
                 return 0
 
-        #     if (numpy.abs(val1 -val2)<1.e-6).all() == False:
-        #         print('DIFF: valeurs differentes pour le noeud: %s.'%node1[0])
-        #         delta = numpy.max(numpy.abs(val1 -val2))
-        #         print('DIFF: ', delta)
-        #         return 0
+            # Check fields in BCDataSets only
+            # FlowSolution nodes are taken care of in C.diffArrays
+            if "BCDataSet" in nodePath:
+                absdiff = numpy.abs(val1-val2)
+                if (absdiff > TOLERANCE + RELTOLERANCE*numpy.abs(val2)).any():
+                    mindelta = numpy.min(absdiff)
+                    maxdelta = numpy.max(absdiff)
+                    print('DIFF: valeurs differentes pour le noeud: %s.'%nodePathl)
+                    print(f'      min diff: {mindelta}, max diff: {maxdelta}')
+                    return 0
     return 1
 
 #==============================================================================
@@ -525,19 +538,14 @@ def heavyTestA(F, *keywords):
 # retourne 2: sinon
 #==============================================================================
 def checkType__(a):
-    if isinstance(a, list):
-        l = len(a)
-        if l == 0: return 2
-        if isinstance(a[0], str) and (l == 4 or l == 5):
-            return 0
-        else:
-            b = a[0]
-            if not isinstance(b, list): return 2
-            if len(b) == 0: return 2
-            if isinstance(b[0], str) and (len(b) == 4 or len(b) == 5):
-                return 1
-            else: return 2
-    else: return 2
+    if not isinstance(a, list): return 2
+    l = len(a)
+    if l == 0: return 2
+    if l in (4, 5) and isinstance(a[0], str): return 0
+    if not isinstance(a[0], list): return 2
+    lb = len(a[0])
+    if lb == 0 or not isinstance(a[0][0], str): return 2
+    return 1 if lb in (4, 5) else 2
 
 #==============================================================================
 # IN: output=1: ecrit les fichiers resultats
@@ -975,17 +983,21 @@ def writeCoverage(coverage):
 # Retourne 0 (FAIL), 1 (SUCCESS)
 #==============================================================================
 def checkCGNSlib(t, number=1):
-    import Converter.PyTree as C
-    C.convertPyTree2File(t, '.test%d.cgns'%number)
     import subprocess
-    cmd = "cgnscheck .test%d.cgns"%number
+    import Converter.PyTree as C
+    filename = f".test{number:d}.cgns"
+    C.convertPyTree2File(t, filename)
+    cmd = ["cgnscheck", filename]
     try:
-        s = subprocess.check_output(cmd, shell=True, stderr=subprocess.STDOUT)
-        # Look for errors in output
-        i1 = s.find("ERROR:")
-        if i1 != -1: print("FAILED: CGNSlib check."); return 0
-        return 1
-    except: print("FAILED: CGNSlib check."); return 0
+        s = subprocess.check_output(cmd, stderr=subprocess.STDOUT, text=True)
+    except subprocess.CalledProcessError as e:
+        s = e.output  # capture output on error
+    try: os.remove(filename)
+    except (FileNotFoundError, PermissionError): pass
+    if "ERROR:" in s:
+        print("FAILED: CGNSlib check.")
+        return 0
+    return 1
 
 #==============================================================================
 # Ecrit la memoire prise par le process

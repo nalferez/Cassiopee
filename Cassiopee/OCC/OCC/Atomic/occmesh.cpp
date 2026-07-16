@@ -43,6 +43,10 @@ PyObject* K_OCC::occmesh(PyObject* self, PyObject* args)
   GETPACKET;
   GETSHAPE;
   
+  GETMAPEDGES;
+  GETMAPSURFACES;
+  printf("nedges1=%d\n", edges.Extent());
+
   // Triangulate shape
   E_Float angle = angularDeflection * M_PI / 180.; // en radians
   Standard_Boolean relative = Standard_False;
@@ -50,13 +54,16 @@ PyObject* K_OCC::occmesh(PyObject* self, PyObject* args)
   BRepMesh_IncrementalMesh Mesh(*shape, hausd, relative, angle, Standard_True);
   Mesh.Perform(); 
 
+  printf("nedges2=%d\n", edges.Extent());
+
   //===================
   // Recupere les faces
   //===================
   PyObject* dfaces = PyList_New(0);
-  for (TopExp_Explorer exp(*shape, TopAbs_FACE); exp.More(); exp.Next())
+  E_Int nbFaces = surfaces.Extent();
+  for (E_Int i = 0; i < nbFaces; i++)
   {
-    TopoDS_Face face = TopoDS::Face(exp.Current());
+    TopoDS_Face face = TopoDS::Face(surfaces(i+1));
 
     // get the triangulation
     TopLoc_Location loc;
@@ -133,19 +140,23 @@ PyObject* K_OCC::occmesh(PyObject* self, PyObject* args)
   //====================
   PyObject* dedges = PyList_New(0);
 
-  TopExp_Explorer expEdge;
-  for (expEdge.Init(*shape, TopAbs_EDGE); expEdge.More(); expEdge.Next()) 
-  {
-    TopoDS_Edge edge = TopoDS::Edge(expEdge.Current());
-    PyObject* o = NULL; FldArrayF* f;
+  printf("nedges3=%d\n", edges.Extent());
 
+  TopExp_Explorer expEdge;
+  E_Int count = 0;
+  E_Int nbEdges = edges.Extent();
+  for (E_Int i = 0; i < nbEdges; i++) 
+  {
+    TopoDS_Edge edge = TopoDS::Edge(edges(i+1));
+    PyObject* o = NULL; FldArrayF* f;
+    
     // 1) Essayer d'obtenir le polygone 3D directement
     TopLoc_Location loc;
     Handle(Poly_Polygon3D) poly3d = BRep_Tool::Polygon3D(edge, loc);
     if (!poly3d.IsNull())
     {
       const TColgp_Array1OfPnt& nodes = poly3d->Nodes();
-      std::cout << "Edge discretized points (3D):\n";
+      //std::cout << "Edge discretized points (3D):\n";
       E_Int nbNodes = nodes.Upper()-nodes.Lower()+1;
       o = K_ARRAY::buildArray3(3, "x,y,z", nbNodes, 1, 1, 1);
       K_ARRAY::getFromArray3(o, f);

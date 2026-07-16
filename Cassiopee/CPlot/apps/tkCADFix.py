@@ -188,43 +188,44 @@ def removeFaces(event=None):
 
 #==============================================================================
 # filter lonelyEdges based on color
+#==============================================================================
 def filterLonelyEdges(event=None):
+    dnz = CPlot.updateCPlotGlobalNumbering(CTK.t)
     EDGES = Internal.getNodeFromName1(CTK.t, 'EDGES')
     if EDGES is None: return
     FACES = Internal.getNodeFromName1(CTK.t, 'FACES')
+    if FACES is None: return
     activeMode = 1
     activeList = []
     if FACES is not None:
+        dnzf = dnz['FACES']
         zones = Internal.getZones(FACES)
         if len(zones) > 0:
-            noz = CPlot.getCPlotNumber(CTK.t, 'FACES', zones[0][0])
+            noz = dnzf[zones[0][0]]
             activeMode = CPlot.getActiveStatus(noz)
 
         if activeMode == 0: # previously deactivated
             for z in zones:
-                noz = CPlot.getCPlotNumber(CTK.t, 'FACES', z[0])
-                #CPlot.setActiveZones([(noz,1)])
+                noz = dnzf[z[0]]
                 activeList.append((noz,1))
         else:
             for z in zones:
-                noz = CPlot.getCPlotNumber(CTK.t, 'FACES', z[0])
-                #CPlot.setActiveZones([(noz,0)])
+                noz = dnzf[z[0]]
                 activeList.append((noz,0))
 
+    dnze = dnz['EDGES']
     if activeMode == 1:
         for z in Internal.getZones(EDGES):
-            noz = CPlot.getCPlotNumber(CTK.t, 'EDGES', z[0])
+            noz = dnze[z[0]]
             p = Internal.getNodeFromPath(z, '.RenderInfo/Color')
             active = 0
             if p is not None:
                 if Internal.getValue(p) == 'Red': active = 1
-            #CPlot.setActiveZones([(noz,active)])
             activeList.append((noz,active))
 
     else:
         for z in Internal.getZones(EDGES):
-            noz = CPlot.getCPlotNumber(CTK.t, 'EDGES', z[0])
-            #CPlot.setActiveZones([(noz,1)])
+            noz = dnze[z[0]]
             activeList.append((noz,1))
 
     CPlot.setActiveZones(activeList)
@@ -407,17 +408,13 @@ def checkWatertight(event=None):
 
     VARS[6].set('Components: %d'%(len(ef)))
 
-    isWatertight = False
-    #try:
     isWatertight = True
     for f in ef:
-        try:
-            ext = P.exteriorFaces(f)
-            ext = T.splitConnexity(ext)
-            for i in ext: CTK.add(CTK.t, gnob, -1, i)
-            if len(ext) != 0: isWatertight = False; break
-        except: isWatertight = True
-
+        ext = P.exteriorFaces(f)
+        ext = T.splitConnexity(ext)
+        for i in ext:
+            isWatertight = False
+            CTK.add(CTK.t, gnob, -1, i)
     (CTK.Nb, CTK.Nz) = CPlot.updateCPlotNumbering(CTK.t)
     CTK.TKTREE.updateApp()
     CTK.display(CTK.t)

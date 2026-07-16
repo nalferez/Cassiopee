@@ -62,7 +62,7 @@ VARNAME2CGNS = {
 
 # Known CGNS BC types
 KNOWNBCS = [
-    'BCWall', 'BCWallInviscid','BCWallViscous', 'BCWallViscousIsothermal',
+    'BCWall', 'BCWallInviscid', 'BCWallViscous', 'BCWallViscousIsothermal',
     'BCFarfield', 'BCExtrapolate',
     'BCInflow', 'BCInflowSubsonic', 'BCInflowSupersonic',
     'BCOutflow', 'BCOutflowSubsonic', 'BCOutflowSupersonic',
@@ -164,27 +164,33 @@ def isTopTree(node):
   return False
 
 # -- is node a standard node?
-# Retourne -2 si node n'est pas un noeud standard
-# Retourne -1 si node est un noeud standard de l'arbre
-# Retourne 0 si node est une liste de noeuds standards (meme vide)
+# Return -2 if node is not standard
+# Return -1 if node is standard
+# Return 0 if node is a list of standard nodes (even if empty)
 def isStdNode(node):
   """Return 0 if node is a list of standard pyTree nodes,
   -1 if node is a standard pyTree node, -2 otherwise."""
   if not isinstance(node, list): return -2
+  # Handle empty list case
   if len(node) == 0: return 0
-  node0 = node[0]
-  if isinstance(node0, str) and len(node) == 4 and isinstance(node[2], list): return -1
-  if not isinstance(node0, list): return -2
-  if len(node0) == 4 and isinstance(node0[0], str) and isinstance(node0[2], list): return 0
+  # Check if this is a single standard node [name, value, children, type]
+  # Standard node: len == 4, name is str, children is list
+  if len(node) == 4 and isinstance(node[0], str) and isinstance(node[2], list):
+    return -1
+  # Check if this is a list of standard nodes
+  first = node[0]
+  if (isinstance(first, list) and len(first) == 4 and
+          isinstance(first[0], str) and isinstance(first[2], list)):
+    return 0
   return -2
 
 # -- typeOfNode
-# Retourne 1 si node est une zone
-# Retourne 2 si node est une liste de zones
-# Retourne 3 si node est un arbre
-# Retourne 4 si node est une base
-# Retourne 5 si node est une liste de base
-# Retourne -1 sinon
+# Return 1 if node is a zone
+# Return 2 if node is a list of zones
+# Return 3 if node is a tree
+# Return 4 if node is a base
+# Return 5 if node is a list of bases
+# Return -1 otherwise
 def typeOfNode(node):
   """Return the type of node as an integer."""
   l = len(node)
@@ -214,7 +220,7 @@ def typeOfNode(node):
 def isType(node, ntype):
   """Return True if node is of given type."""
   tnode = node[3]
-  if ('*' in ntype)|('?' in ntype)|('[' in ntype): return fnmatch.fnmatch(tnode, ntype)
+  if any(c in ntype for c in '*?['): return fnmatch.fnmatch(tnode, ntype)
   else: return tnode == ntype
 
 # -- isName
@@ -226,7 +232,7 @@ def isName(node, name):
   if isinstance(name, numpy.ndarray): sname = name.tobytes().decode()
   else: sname = str(name)
   snode = node[0]
-  if ('*' in sname)|('?' in sname)|('[' in sname): return fnmatch.fnmatch(snode, sname)
+  if any(c in sname for c in '*?['): return fnmatch.fnmatch(snode, sname)
   else: return snode == sname
 
 # -- isValue
@@ -956,7 +962,7 @@ def newZoneSubRegion(name='SubRegion', pointRange=None, pointList=None,
     if pointList is not None: newPointList(value=pointList, parent=node)
     if gridLocation is not None: newGridLocation(gridLocation, parent=node)
   if (bcName is not None) and (gcName is not None):
-    raise AttributeError('newZoneSubRegion: bcName and gcName could not be both defined !')
+    raise AttributeError('newZoneSubRegion: bcName and gcName cannot be both defined.')
   if bcName is not None:
     createChild(node, 'BCRegionName', 'Descriptor_t', value=bcName)
   if gcName is not None:
@@ -1313,10 +1319,10 @@ def newParentElementsPosition(value=None, parent=None):
 # -- Node access --
 #==============================================================================
 
-# -- Retourne le path d'un noeud
-# IN: t: noeud de depart (generalement pyTree)
-# IN: node: le noeud dont on cherche le chemin par rapport a t
-# OUT: le chemin du noeud ou None si not found
+# -- Returns the path of a node
+# IN: t: starting node (generally pyTree)
+# IN: node: the node for which we search the path relative to t
+# OUT: the path of the node or None if not found
 def getPath(t, node, pyCGNSLike=False):
   """Return the path of node."""
   if t is node: return ''
@@ -1334,9 +1340,9 @@ def getPath__(n, node, path, found):
   for c in n[2]:
     getPath__(c, node, path, found)
 
-# -- Retourne un noeud d'apres son path
-# IN: node: noeud de depart pour la recherche
-# IN: path: chemin relatif par rapport a ce noeud
+# -- Returns a node from its path
+# IN: node: starting node for the search
+# IN: path: relative path from this node
 def getNodeFromPath(t, path):
   """Return a node from a path."""
   if path == '' or path == '/': return t
@@ -1382,7 +1388,7 @@ def getNodesFromType__(node, ntype, result):
   if node[3] == ntype: result.append(node)
   for c in node[2]: getNodesFromType__(c, ntype, result)
 
-# Parcours 1 niveau de recursivite seulement
+# Traverse only 1 level of recursion
 def getNodesFromType1(node, ntype):
   result = []
   isStd = isStdNode(node)
@@ -1398,7 +1404,7 @@ def getNodesFromType1__(node, ntype, result):
   for c in node[2]:
     if c[3] == ntype: result.append(c)
 
-# Parcours 2 niveaux de recursivite seulement
+# Traverse only 2 levels of recursion
 def getNodesFromType2(node, ntype):
   result = []
   isStd = isStdNode(node)
@@ -1416,7 +1422,7 @@ def getNodesFromType2__(node, ntype, result):
     for d in c[2]:
       if d[3] == ntype: result.append(d)
 
-# Parcours 3 niveaux de recursivite seulement
+# Traverse only 3 levels of recursion
 def getNodesFromType3(node, ntype):
   result = []
   isStd = isStdNode(node)
@@ -2148,6 +2154,7 @@ def rmNode(t, node):
   return None
 
 def _rmNode(t, node):
+  """Remove given node from t."""
   (p, c) = getParentOfNode(t, node)
   if p is not None:
     if isStdNode(t) == 0 and id(p) == id(t): del p[c]
@@ -2164,6 +2171,7 @@ def rmNodeByPath(t, path):
 rmNodeFromPath = rmNodeByPath # alias
 
 def _rmNodeByPath(t, path):
+  """Remove node by specifying its path."""
   if path == '' or path == '/': t = None; return None
   if path[0] == '/': path = path[1:]
   if path[-1] == '/': path = path[:-1]
@@ -2197,6 +2205,7 @@ def rmNodesByName(t, name):
 rmNodesFromName = rmNodesByName # alias
 
 def _rmNodesByName(t, name):
+  """Remove nodes of given name."""
   isStd = isStdNode(t)
   if isStd >= 0:
     for c in t: rmNodesByName__(c, name)
@@ -2213,6 +2222,7 @@ def rmNodesByName__(t, name):
   return None
 
 def _rmNodesByName1(t, name):
+  """Remove nodes of given name (one level)."""
   children = list(range(len(t[2])-1,-1,-1))
   for ichild in children:
     if t[2][ichild][0] == name: t[2].pop(ichild)
@@ -2221,6 +2231,7 @@ def _rmNodesByName1(t, name):
 _rmNodesFromName1 = _rmNodesByName1 # alias
 
 def _rmNodesByName2(t, name):
+  """Remove nodes of given name (two levels)."""
   children = list(range(len(t[2])-1,-1,-1))
   for ichild in children:
     if t[2][ichild][0] == name: t[2].pop(ichild)
@@ -2243,6 +2254,7 @@ def rmNodesByType(t, ntype):
 rmNodesFromType = rmNodesByType # alias
 
 def _rmNodesByType(t, ntype):
+  """Remove nodes of given type."""
   isStd = isStdNode(t)
   if isStd >= 0:
     for c in t: rmNodesByType__(c, ntype)
@@ -2259,6 +2271,7 @@ def rmNodesByType__(t, ntype):
   return None
 
 def _rmNodesByType1(t, ntype):
+  """Remove nodes of given type (one level)."""
   children = list(range(len(t[2])-1,-1,-1))
   for ichild in children:
     if t[2][ichild][3] == ntype: t[2].pop(ichild)
@@ -2267,6 +2280,7 @@ def _rmNodesByType1(t, ntype):
 _rmNodesFromType1 = _rmNodesByType1 # alias
 
 def _rmNodesByType2(t, ntype):
+  """Remove nodes of given type (rwo levels)."""
   children = list(range(len(t[2])-1,-1,-1))
   for ichild in children:
     if t[2][ichild][3] == ntype: t[2].pop(ichild)
@@ -2289,6 +2303,7 @@ def rmNodesByNameAndType(t, name, ntype):
 rmNodesFromPathAndType = rmNodesByNameAndType # alias
 
 def _rmNodesByNameAndType(t, name, ntype):
+  """Remove nodes of that match given name and given type at the same time."""
   isStd = isStdNode(t)
   if isStd >= 0:
     for c in t: rmNodesByNameAndType__(c, name, ntype)
@@ -2322,6 +2337,7 @@ def rmNodesByValue(t, value):
 rmNodesFromValue = rmNodesByValue # alias
 
 def _rmNodesByValue(t, value):
+  """Remove nodes that patch given value."""
   isStd = isStdNode(t)
   if isStd >= 0:
     for c in t: rmNodesByValue__(c, value)
@@ -2512,6 +2528,9 @@ def _adaptZoneNamesForSlash(t):
 #==============================================================================
 
 # -- Duplique un arbre ou un sous-arbre par references
+# IN: node: node to duplicate
+# IN: parent: parent node (if empty list, no parent attachment)
+# OUT: duplicated node/tree
 def duptree__(node, parent):
   d = [node[0], node[1], [], node[3]]
   if len(parent) == 4: parent[2].append(d)
@@ -2519,31 +2538,39 @@ def duptree__(node, parent):
   return d
 
 # -- Copy un arbre en gardant des references sur les numpys
+# Optimized version: direct checks instead of isStdNode for performance
 def copyRef(node):
   """Copy a tree sharing node values."""
-  ret = isStdNode(node)
-  if ret == -1:
-    dup = duptree__(node, []); return dup
-  elif ret == 0:
-    l = list(node); lg = len(l)
-    for i in range(lg): l[i] = duptree__(l[i], [])
-    return l
-  else: return node
+  # Fast path: return as-is if not a list
+  if not isinstance(node, list): return node
+  # Handle empty list case
+  if len(node) == 0: return []
+  # Check if this is a single standard node [name, value, children, type]
+  if len(node) == 4 and isinstance(node[0], str) and isinstance(node[2], list):
+    return duptree__(node, [])
+  # List of nodes case: check first element to determine type
+  first = node[0]
+  if isinstance(first, list) and len(first) == 4 and isinstance(first[0], str) and isinstance(first[2], list):
+    return [duptree__(n, []) for n in node]
+  # Not a standard node, return as-is
+  return node
 
 # -- Copie un arbre ou un sous-arbre en copiant aussi les numpy.array
+# Optimized version: direct checks instead of isStdNode for performance
 def copyTree(node, order='F'):
   """Full copy of a tree."""
-  ret = isStdNode(node)
-  if ret == -1:
-    d = copyTree__(node, order=order)
-    return d
-  elif ret == 0:
-    d = []
-    for n in node:
-      o = copyTree__(n, order=order)
-      d.append(d)
-    return d
-  else: return node
+  # Fast path: return as-is if not a list
+  if not isinstance(node, list): return node
+  # Handle empty list case
+  if len(node) == 0: return []
+  # Check if this is a single standard node
+  if len(node) == 4 and isinstance(node[0], str) and isinstance(node[2], list):
+    return copyTree__(node, order=order)
+  # List of nodes case
+  first = node[0]
+  if isinstance(first, list) and len(first) == 4 and isinstance(first[0], str) and isinstance(first[2], list):
+    return [copyTree__(n, order=order) for n in node]
+  return node
 
 def copyTree__(node, parent=None, order='F'):
   if node[1] is not None and isinstance(node[1], numpy.ndarray):
@@ -2554,25 +2581,29 @@ def copyTree__(node, parent=None, order='F'):
   return d
 
 # -- Copie un noeud (pas de recursivite)
+# Optimized version: direct checks instead of isStdNode for performance
 def copyNode(node):
   """Copy only this node (no recursion). Share children with node."""
-  ret = isStdNode(node)
-  if ret == -1:
+  # Fast path: return as-is if not a list
+  if not isinstance(node, list): return node
+  # Check if this is a single standard node
+  if len(node) == 4 and isinstance(node[0], str) and isinstance(node[2], list):
     if node[1] is not None and isinstance(node[1], numpy.ndarray):
-      d = [node[0], node[1].copy('F'), node[2], node[3]]
-    else: d = [node[0], node[1], node[2], node[3]]
-    return d
-  elif ret == 0:
-    d = []
+      return [node[0], node[1].copy('F'), node[2], node[3]]
+    else:
+      return [node[0], node[1], node[2], node[3]]
+  # List of nodes case
+  if len(node) == 0: return []
+  first = node[0]
+  if isinstance(first, list) and len(first) == 4 and isinstance(first[0], str) and isinstance(first[2], list):
+    result = []
     for n in node:
       if n[1] is not None and isinstance(n[1], numpy.ndarray):
-        o = [n[0], n[1].copy('F'), n[2], n[3]]
-        d.append(o)
+        result.append([n[0], n[1].copy('F'), n[2], n[3]])
       else:
-        o = [n[0], n[1], n[2], n[3]]
-        d.append(o)
-    return d
-  else: return node
+        result.append([n[0], n[1], n[2], n[3]])
+    return result
+  return node
 
 # -- copyOnly(node) --
 # Copie recursivement les noms (si names=True), les types (si types=True)
@@ -2591,14 +2622,18 @@ def duptree1__(node, byName, byType, parent):
 
 def copyValue(node, byName=None, byType=None):
   """Copy the value of nodes specified by byName or byType string."""
-  ret = isStdNode(node)
-  if ret == -1:
-    dup = duptree1__(node, byName, byType, []); return dup
-  elif ret == 0:
-    l = list(node); lg = len(l)
-    for i in range(lg): l[i] = duptree1__(l[i], byName, byType, [])
-    return l
-  else: return node
+  # Fast path: return as-is if not a list
+  if not isinstance(node, list): return node
+  # Handle empty list case
+  if len(node) == 0: return []
+  # Check if this is a single standard node
+  if len(node) == 4 and isinstance(node[0], str) and isinstance(node[2], list):
+    return duptree1__(node, byName, byType, [])
+  # List of nodes case
+  first = node[0]
+  if isinstance(first, list) and len(first) == 4 and isinstance(first[0], str) and isinstance(first[2], list):
+    return [duptree1__(n, byName, byType, []) for n in node]
+  return node
 
 # -- Merge nodes
 # Merge une liste d'arbres en un seul. Noeud a noeud, niveaux a niveaux,
@@ -2673,11 +2708,14 @@ def printTree(node, file=None, stdOut=None, editor=None, color=False):
   if stdOut: stdOut.write(rep)
   if editor:
     from tempfile import mkstemp
-    import os
+    import os, subprocess, shlex
     fd, tmpfl = mkstemp('.py')
     os.write(fd, rep.encode("utf8"))
     os.close(fd)
-    os.system('%s %s ;rm -f %s' %(editor, tmpfl, tmpfl))
+    try:
+      subprocess.run(shlex.split(editor) + [tmpfl], check=False)
+    finally:
+      os.remove(tmpfl)
   if file:
     fi = open(file, 'w')
     fi.write(rep)
@@ -3049,21 +3087,21 @@ def createZoneNode(name, array, array2=[],
   if createFlow:
     vars = array[0].split(',')
     info.append([FlowSolutionNodes, None, [], 'FlowSolution_t'])
-    info = info[len(info)-1]
+    info2 = info[len(info)-1]
     for i in range(nvar):
       if i != px and i != py and i != pz:
         node = createDataNode(vars[i], array, i, cellDim)
-        info[2].append(node)
+        info2[2].append(node)
   if array2 != []:
     if isinstance(array2[1], list): nvar = len(array2[1])
     else: nvar = array2[1].shape[0]
     vars = array2[0].split(',')
     info.append([FlowSolutionCenters, None, [], 'FlowSolution_t'])
-    info = info[len(info)-1]
-    _createChild(info, 'GridLocation', 'GridLocation_t', value='CellCenter')
+    info2 = info[len(info)-1]
+    _createChild(info2, 'GridLocation', 'GridLocation_t', value='CellCenter')
     for i in range(nvar):
       node = createDataNode(vars[i], array2, i, cellDim)
-      info[2].append(node)
+      info2[2].append(node)
   return zone
 
 # -- convert a data node to an array (array1)
@@ -3517,7 +3555,7 @@ def convertDataNodes2Array3(nodes, dim, connects, loc=-1):
       elif lsize == 3: ni = size[0]; nj = size[1]; nk = size[2]
       return [vars, field, ni, nj, nk]
 
-  # unstructured
+  # unstructured NGON - prioritized over BE if both are present
   iBE = 0; isNGon = False; iNGon = None; iNFace = None
   cr = [None,None,None,None,None]; et = []
   for c in connects:
@@ -3540,7 +3578,12 @@ def convertDataNodes2Array3(nodes, dim, connects, loc=-1):
       if pt is not None: cr[3] = pt[1]
       pt = getNodeFromName1(c, 'ElementIndex')
       if pt is not None: cr[3] = pt[1]
-    else: # BE
+
+  # unstructred BE/ME
+  if not isNGon:
+    cr = [None,None,None,None,None]
+    for c in connects:
+      ctype = c[1][0]
       pt = getNodeFromName1(c, 'ElementConnectivity')
       if pt is not None:
         if iBE < 5: cr[iBE] = pt[1]
@@ -3663,7 +3706,7 @@ def getZoneDim(zone):
   # zone type
   info = zone[2]
   for i in info:
-    # Noeud zone type
+    # zone type node
     if i[3] == 'ZoneType_t':
       cellDim = 3
       gtype = getValue(i)
@@ -3729,10 +3772,10 @@ def getZoneDim(zone):
   raise TypeError("getZoneDim: cannot find zone type for zone '%s'."%zone[0])
 
 # -- getZoneType --
-# Retourne 1 si la zone est structuree
-# Retourne 2 si la zone est non structuree
-# Retourne 0 sinon.
-# Cette routine est plus rapide que getZoneDim
+# Return 1 if zone is structured
+# Return 2 if zone is non structured
+# Return 0 otherwise.
+# This routine is faster than getZoneDim
 def getZoneType(zone):
   """Return 1 for structured zones, 2 for unstructured zones."""
   info = zone[2]
@@ -3857,6 +3900,152 @@ def _correctBaseZonesDim(t, splitBases=False):
 # -- BC management --
 #==============================================================================
 
+# -- getFamilyBCs (wildcards possible on familyName)
+def getFamilyBCs(t, familyName):
+  """Return all BC nodes that have this familyName.
+  Usage: getFamilyBCs(t, familyName)"""
+  out = []
+  if isinstance(familyName, str): families = [familyName]
+  else: families = familyName
+  for z in getZones(t):
+    nodes = getNodesFromType2(z, 'BC_t')
+    nodes += getNodesFromType2(z, 'GridConnectivity_t')
+    nodes += getNodesFromType2(z, 'GridConnectivity1to1_t')
+    for n in nodes:
+      res = getNodesFromType1(n, 'FamilyName_t')
+      for i in res:
+        val = getValue(i)
+        val = val.strip()
+        for f in families:
+          if any(c in f for c in ['*', '?', '!', '[']):
+            if fnmatch.fnmatch(val, f): out.append(n)
+          elif val == f: out.append(n)
+  return out
+
+# -- getFamilyBCNamesOfType (wildcards possible on bndType)
+def getFamilyBCNamesOfType(t, bndType=None):
+  """Return the family BC names of a given type.
+  Usage: names = getFamilyBCNamesOfType(t, 'BCWall')"""
+  out = set()
+  nodes = getNodesFromType2(t, 'Family_t')
+  if bndType is None:
+    for n in nodes:
+      p = getNodeFromType1(n, 'FamilyBC_t')
+      if p is not None: out.add(n[0])
+  else:
+    for n in nodes:
+      p = getNodeFromType1(n, 'FamilyBC_t')
+      if p is not None:
+        if isValue(p, bndType): out.add(n[0])
+  return list(out)
+
+# -- getBCNodesFromName
+def getBCNodesFromName(t, bndName=None):
+  """Return all BC nodes matching an input list of BC names. Wildcards are
+  accepted. If bndName is None, return all BC nodes (no filter).
+  """
+  bcs = []
+  zones = getZones(t)
+  if zones == []: zones = [t]  # must be a BC node
+  if bndName is None:
+    for z in zones:
+      bcs.extend(getNodesFromType2(z, 'BC_t'))
+    return bcs
+  if isinstance(bndName, list): bndList = bndName
+  else: bndList = [bndName]
+
+  for z in zones:
+    nodes = getNodesFromType2(z, 'BC_t')
+    for n in nodes:
+      name = getName(n)
+      for bnd in bndList:
+        if any(c in bnd for c in ['*', '?', '!', '[']):
+          if fnmatch.fnmatch(name, bnd): bcs.append(n); break
+        elif name == bnd: bcs.append(n); break
+  return bcs
+
+# -- getBCNodesFromType
+def getBCNodesFromType(t, bndType=None):
+  """Return all BC nodes matching an input list of BC types. Wildcards are
+  accepted. If bndType is None, return all BC nodes (no filter).
+  """
+  bcs = []
+  zones = getZones(t)
+  if zones == []: zones = [t]  # must be a BC node
+  if bndType is None:
+    for z in zones:
+      bcs.extend(getNodesFromType2(z, 'BC_t'))
+    return bcs
+  elif isinstance(bndType, list): bndList = bndType
+  else: bndList = [bndType]
+
+  familyNames = []
+  for bnd in bndList: familyNames.extend(getFamilyBCNamesOfType(t, bnd))
+
+  for z in zones:
+    nodes = getNodesFromType2(z, 'BC_t')
+    for n in nodes:
+      val = getValue(n)
+      if val == 'FamilySpecified':
+        fname = getNodeFromType1(n, 'FamilyName_t')
+        fname = getValue(fname)
+        if fname in familyNames: bcs.append(n)
+      else:
+        for bnd in bndList:
+          if any(c in bnd for c in ['*', '?', '!', '[']):
+            if fnmatch.fnmatch(val, bnd): bcs.append(n); break
+          elif val == bnd: bcs.append(n); break
+  return bcs
+
+# -- getBCNodesFromNameAndType
+def getBCNodesFromNameAndType(t, bndName=None, bndType=None):
+  """Return all BC nodes matching an input list of BC names and BC types.
+  Wildcards are accepted. If bndName and bndType are None, return all BC nodes
+  (no filter).
+  """
+  bcs = []
+  zones = getZones(t)
+  if zones == []: zones = [t]  # must be a BC node
+  if bndName is None and bndType is None:
+    for z in zones:
+      bcs.extend(getNodesFromType2(z, 'BC_t'))
+    return bcs
+  elif bndName is None:
+    return getBCNodesFromType(t, bndType=bndType)
+  elif bndType is None:
+    return getBCNodesFromName(t, bndName=bndName)
+  else:
+    if isinstance(bndName, list): bndNameList = bndName
+    else: bndNameList = [bndName]
+    if isinstance(bndType, list): bndTypeList = bndType
+    else: bndTypeList = [bndType]
+
+    familyNames = []
+    for bnd in bndTypeList: familyNames.extend(getFamilyBCNamesOfType(t, bnd))
+
+    for z in zones:
+      nodes = getNodesFromType2(z, 'BC_t')
+      for n in nodes:
+        name = getName(n)
+        isNameMatching = False
+        for bnd in bndNameList:
+          if any(c in bnd for c in ['*', '?', '!', '[']):
+            if fnmatch.fnmatch(name, bnd): isNameMatching = True; break
+          elif name == bnd: isNameMatching = True; break
+        if not isNameMatching: continue
+
+        val = getValue(n)
+        if val == 'FamilySpecified':
+          fname = getNodeFromType1(n, 'FamilyName_t')
+          fname = getValue(fname)
+          if fname in familyNames: bcs.append(n)
+        else:
+          for bnd in bndTypeList:
+            if any(c in bnd for c in ['*', '?', '!', '[']):
+              if fnmatch.fnmatch(val, bnd): bcs.append(n); break
+            elif val == bnd: bcs.append(n); break
+    return bcs
+
 # -- Add one layer to BCs. dir=1,2,3 (strctured zones)
 def addOneLayer2BC(t, dir, N=1):
   a = copyRef(t)
@@ -3909,6 +4098,7 @@ def groupBCByBCType(t, btype='BCWall', name='FamWall'):
   return a
 
 def _groupBCByBCType(t, btype='BCWall', name='FamWall'):
+  """Tag all BCs of given type with family named FamilyName."""
   for base in getBases(t):
     found = False
     for bc in getNodesFromType3(base,'BC_t'):
@@ -5390,7 +5580,7 @@ def getBCDataSet(z, bcNode, withLoc=False):
       l = 'Vertex'
       l = getNodeFromType1(dataSet, 'GridLocation_t')
       if l is not None: ploc = getValue(l)
-      return datas,ploc
+      return datas, ploc
     else: return datas
 
   # Try from old style etc
@@ -5403,7 +5593,7 @@ def getBCDataSet(z, bcNode, withLoc=False):
       l = 'Vertex'
       l = getNodeFromType1(node, 'GridLocation_t')
       if l is not None: ploc = getValue(l)
-      return datas,ploc
+      return datas, ploc
     else: return datas
 
   # Try from FFD extraction
@@ -5415,7 +5605,7 @@ def getBCDataSet(z, bcNode, withLoc=False):
       l = 'Vertex'
       l = getNodeFromType1(node, 'GridLocation_t')
       if l is not None: ploc = getValue(l)
-      return datas,ploc
+      return datas, ploc
     else: return datas
 
   # Try from other BCDataSet
@@ -5427,7 +5617,7 @@ def getBCDataSet(z, bcNode, withLoc=False):
       l = 'Vertex'
       l = getNodeFromType1(dataSet, 'GridLocation_t')
       if l is not None: ploc = getValue(l)
-      return datas,ploc
+      return datas, ploc
     else: return datas
 
   # Try from ZoneSubRegion
@@ -5443,11 +5633,44 @@ def getBCDataSet(z, bcNode, withLoc=False):
           l = getNodeFromType1(zoneSubRegion, 'GridLocation_t')
           if l is not None: ploc = getValue(l)
           else: ploc = 'Vertex'
-          return datas,ploc
+          return datas, ploc
         else: return datas
 
   if withLoc: return None
   else: return datas
+
+# Returns whether a PyTree or a zone or a list of zones has BCDataSets
+# BCDataSets at a location which can be filtered with loc, None meaning
+# no filtering
+def hasBCDataSets(t, loc=None):
+  if isinstance(loc, str): loc = [loc]
+  zones = getZones(t)
+  for z in zones:
+    zonebc = getNodeFromType1(z, 'ZoneBC_t')
+    if zonebc is None: continue
+    bcs = getNodesFromType1(zonebc, 'BC_t')
+    nodes1 = []
+    for bc in bcs: nodes1 += getNodesFromType1(bc, 'BCDataSet_t')
+    if nodes1 and loc is None: return True
+    for n in nodes1:
+      l = getNodeFromType1(n, 'GridLocation_t')
+      ploc = 'Vertex' if l is None else getValue(l)
+      if ploc in loc: return True
+
+    nodes2 = getNodesFromType1(z, 'ZoneSubRegion_t')
+    for n in nodes2:
+      bcRegionNameNode = getNodeFromName1(n, 'BCRegionName')
+      if bcRegionNameNode is None: continue
+      if loc is None: return True
+      ploc = 'Vertex' if l is None else getValue(l)
+      if ploc in loc: return True
+
+      gcRegionNameNode = getNodeFromName1(n, 'GridConnectivityRegionName')
+      if gcRegionNameNode is None: continue
+      if loc is None: return True
+      ploc = 'Vertex' if l is None else getValue(l)
+      if ploc in loc: return True
+  return False
 
 # Retourne une liste des BCDataSets et BCZoneSubRegions de z
 # Retourne un dictionnaire
@@ -5506,8 +5729,7 @@ def getBCFaceNode(z, bcNode, donor=False):
   r = getNodeFromName1(bcNode, name) # structure maintenant
   ni = dims[1]; nj = dims[2]; nk = dims[3]
   wins = range2Window(r[1])
-  listIndices = converter.range2PointList(wins[0], wins[1], wins[2], wins[3], wins[4], wins[5],
-                                          ni, nj, nk)
+  listIndices = converter.window2FacePointList(*wins, ni, nj, nk)
   return createNode(__FACELIST__, 'DataArray_t', value=listIndices)
 
 # Return a container per variable available in a BCDataSet
@@ -5657,6 +5879,7 @@ def fixVarName(var):
 # IN: soit loc2glob: numpy de 9 entiers
 # IN: soit winloc2glob+sourceDim en listes 6 + 3 entiers
 # Unstructured zones: zone source name, index loc/glob
+#===============================================================================
 def setLoc2Glob(z, source, loc2glob=None, win=None, sourceDim=None):
   zp = copyRef(z)
   _setLoc2Glob(z, source, loc2glob, win, sourceDim)

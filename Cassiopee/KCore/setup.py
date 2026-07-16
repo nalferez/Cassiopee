@@ -20,7 +20,15 @@ def loadModuleFromPath(modname):
 # Compiler settings must be set in installBase.py / installBaseUser.py
 Dist = loadModuleFromPath('Dist')
 installBase = loadModuleFromPath('installBase')
-Dist.setConfigDict(installBase.installDict)
+try:
+    installBaseUser = loadModuleFromPath("installBaseUser")
+    installDict = {
+        **installBaseUser.installDict,
+        **installBase.installDict,
+    }
+except (ModuleNotFoundError, FileNotFoundError):
+    installDict = installBase.installDict
+Dist.setConfigDict(installDict)
 additionalLibPaths = Dist.getAdditionalLibPaths()
 additionalIncludePaths = Dist.getAdditionalIncludePaths()
 additionalLibs = Dist.getAdditionalLibs()
@@ -59,7 +67,7 @@ listExtensions = [
 
 setup(
     name="KCore",
-    version="4.1",
+    version="4.2",
     description="Core for *Cassiopee* modules.",
     author="ONERA",
     url="https://onera.github.io/Cassiopee/",

@@ -1,4 +1,4 @@
-# Parametric Driver
+# Parametric geometry Driver
 import sympy, numpy, re, itertools
 import Converter.Mpi as Cmpi
 import Converter.PyTree as C
@@ -12,12 +12,14 @@ import OCC
 #============================================================
 __NameServer__ = {}
 def getName(proposedName):
+    """Return unique entity name from proposed name."""
     global __NameServer__
     (name, __NameServer__) = getUniqueName(proposedName, __NameServer__)
     return name
 
-# Retourne proposedName#count
+# Returns proposedName#count
 def getUniqueName2(proposedName, server, sep='#'):
+    """Return proposedName#count, incrementing count from server."""
     namespl = proposedName.rsplit(sep, 1)
     if len(namespl) == 2:
         try: c = int(namespl[1]); name = namespl[0]
@@ -40,8 +42,9 @@ def getUniqueName2(proposedName, server, sep='#'):
         server[name] = c
         return (name2, server)
 
-# Retourne proposedNamecount
+# Returns proposedNamecount
 def getUniqueName(proposedName, server):
+    """Return proposedNamecount, incrementing count from server."""
     if proposedName in server:
         c = server[proposedName]+1
     else:
@@ -54,6 +57,7 @@ def getUniqueName(proposedName, server):
 #============================================================
 # from arrays, export zone
 def exportEdges(edges):
+    """From arrays, export zones."""
     t = C.newPyTree(['EDGES'])
     b = Internal.getNodeFromName1(t, 'EDGES')
     for c, e in enumerate(edges):
@@ -66,18 +70,20 @@ def exportEdges(edges):
 
 #============================================================
 class Scalar( sympy.core.symbol.Symbol ):
-    """Define a parametric scalar"""
+    """Define a parametric scalar."""
+
     def __new__(cls, name=None, value=0., **assumptions):
         if name is None: name = getName("scalar")
         obj = sympy.core.symbol.Symbol.__new__(cls, name, **assumptions)
         return obj
 
+    # Create new scalar parameter
+    # IN: name: parameter name (optional, auto-generated if None)
+    # IN: value: initial value of parameter (default: 0.)
     def __init__(self, name=None, value=0.):
         # scalar name is symbol name
         self.name = super().name
-
         # symbol sympy: self by derivation
-
         # instantiated value
         self.v = value
         # range
@@ -85,27 +91,40 @@ class Scalar( sympy.core.symbol.Symbol ):
         # register
         DRIVER.registerScalar(self)
 
-    # return value
+    # Return instantiated value
+    # OUT: current value of scalar parameter
     def v(self):
+        """Get values."""
         return self.v
 
-    # print content
+    # Set value of scalar parameter
+    # IN: value: value to set
+    def setv(self, value):
+        """Set values."""
+        self.x.v = value
+
+    # Print content
+    # IN: shift: number of blank characters left to print (default: 0)
     def print(self, shift=0):
+        """Print scalar parameter informations."""
         #print(" "*shift, "name", self.name)
         print(" "*shift, "value", self.v)
         if self.range is not None:
             print(" "*shift, "range", self.range)
 
-    # check if instantiated value are in range, return 1 if ok, 0 else
+    # Check if instantiated value are in range, return 1 if ok, 0 else
     def check(self):
+        """Check that values are in range."""
         # check if value is in range
         if self.range is not None:
             if self.v < self.range[0]: return 0
             if self.v > self.range[1]: return 0
         return 1
 
-    # is parameter free?
+    # Is parameter free? meaning that it can be set independently
+    # OUT: True if parameter has a range (free), False otherwise
     def isFree(self):
+        """Return true if parameter is free."""
         if self.range is not None: return True
         else: return False
 
@@ -113,7 +132,11 @@ Vec1 = Scalar # alias
 
 #============================================================
 class Vec2:
-    """Define a parametric vector of two components"""
+    """Define a parametric vector of two components."""
+
+    # Create a vector of dim2
+    # IN: name: parameter name (optional, auto-generated if None)
+    # IN: value: initial value of parameter as tuple (default: (0.0,0.0))
     def __init__(self, name=None, value=(0.0,0.0)):
         # name
         if name is not None: self.name = name
@@ -122,19 +145,36 @@ class Vec2:
         self.x = Scalar("x", value[0])
         self.y = Scalar("y", value[1])
 
-    # return value
+    # Return value
+    # OUT: tuple (x, y) of current values
     def v(self):
+        """Get values."""
         return (self.x.v, self.y.v)
 
-    # print content
+    # IN: valuex: x value or tuple of (x,y) if valuey is None
+    # IN: valuey: y value (optional, if None valuex is expected to be a tuple)
+    def setv(self, valuex, valuey=None):
+        """Set values."""
+        if valuey is None:
+            self.x.v = valuex[0]
+            self.y.v = valuey[1]
+        else:
+            self.x.v = valuex
+            self.y.v = valuey
+
+    # Print content
+    # IN: shift: number of blank characters left to print (default: 0)
     def print(self, shift=0):
+        """Print vector informations."""
         print(" "*shift, "x")
         self.x.print(shift+4)
         print(" "*shift, "y")
         self.y.print(shift+4)
 
-    # check instantiated values
+    # Check instantiated values
+    # OUT: 1 if all values are in range, 0 otherwise
     def check(self):
+        """Check that values are in range."""
         ret = self.x.check()
         if ret == 0: return 0
         ret = self.y.check()
@@ -143,7 +183,11 @@ class Vec2:
 
 #============================================================
 class Point:
-    """Define a parametric point"""
+    """Define a parametric point."""
+
+    # Create a parametric point
+    # IN: name: parameter name (optional, auto-generated if None)
+    # IN: value: initial value of parameter as tuple (x,y,z) (default: (0.0,0.0,0.0))
     def __init__(self, name=None, value=(0.0,0.0,0.0)):
         # name
         if name is not None: self.name = name
@@ -155,11 +199,30 @@ class Point:
         # register
         DRIVER.registerPoint(self)
 
-    # return value
+    # Return value
+    # OUT: tuple (x, y, z) of current values
     def v(self):
+        """Get values."""
         return (self.x.v, self.y.v, self.z.v)
 
+    # IN: valuex: x value or tuple of (x,y,z) if valuey/valuez is None
+    # IN: valuey: y value (optional)
+    # IN: valuez: z value (optional)
+    def setv(self, valuex, valuey=None, valuez=None):
+        """Set values."""
+        if valuey is None or valuez is None:
+            self.x.v = valuex[0]
+            self.y.v = valuex[1]
+            self.z.v = valuex[2]
+        else:
+            self.x.v = valuex
+            self.y.v = valuey
+            self.z.v = valuez
+
+    # Print content
+    # IN: shift: number of blank characters left to print (default: 0)
     def print(self, shift=0):
+        """Print information on point."""
         print(" "*shift, self.x.name)
         self.x.print(shift+4)
         print(" "*shift, self.y.name)
@@ -167,7 +230,10 @@ class Point:
         print(" "*shift, self.z.name)
         self.z.print(shift+4)
 
+    # Check instantiated values
+    # OUT: 1 if all values are in range, 0 otherwise
     def check(self):
+        """Check that values are in range."""
         ret = self.x.check()
         if ret == 0: return 0
         ret = self.y.check()
@@ -176,11 +242,51 @@ class Point:
         if ret == 0: return 0
         return 1
 
+    # Create new point shifted from self by a given vector
+    # IN: name: name of the new point (optional)
+    # IN: vector: shift vector (dx, dy, dz) (default: (0.,0.,0.))
+    # OUT: new Point object shifted from self
+    def ShiftPoint(self, name=None, vector=(0.,0.,0.)):
+        """Create new point shifted from self of a given vector."""
+        P = Point(name)
+        Eq(P.x, self.x + vector[0])
+        Eq(P.y, self.y + vector[1])
+        Eq(P.z, self.z + vector[2])
+        return P
+
+    # Create new point that is the symmetric of self considering a plane
+    # IN: name: name of the new point (optional)
+    # IN: plane: symmetry plane ('yz', 'xz', or 'xy') (default: 'xz')
+    # IN: center: center point of the plane (default: (0,0,0))
+    # OUT: new Point object that is the symmetric of self
+    def SymPoint(self, name=None, plane='xz', center=(0,0,0)):
+        """Create new point that is the symetric of self considering a plane."""
+        P = Point(name)
+        if plane == 'yz':
+            Eq(P.x, 2*center[0]-self.x)
+            Eq(P.y, +self.y)
+            Eq(P.z, +self.z)
+        elif plane == 'xz':
+            Eq(P.x, +self.x)
+            Eq(P.y, 2*center[1]-self.y)
+            Eq(P.z, +self.z)
+        elif plane == 'xy':
+            Eq(P.x, +self.x)
+            Eq(P.y, +self.y)
+            Eq(P.z, 2*center[2]-self.z)
+        return P
+
 Vec3 = Point # alias
 
 #============================================================
 class Grid:
-    """Define a parametric grid (cartesian)"""
+    """Define a parametric grid (cartesian)."""
+
+    # Create a parametric cartesian grid
+    # IN: name: grid name (optional, auto-generated if None)
+    # IN: Xo: origin coordinates (x0, y0, z0) (default: (0.0,0.0,0.0))
+    # IN: Xf: final coordinates (xf, yf, zf) (default: (0.0,0.0,0.0))
+    # IN: N: number of points in each direction (ni, nj, nk) (default: (2,2,2))
     def __init__(self, name=None, Xo=(0.0,0.0,0.0), Xf=(0.0,0.0,0.0), N=(2,2,2)):
         # name
         if name is not None: self.name = name
@@ -200,18 +306,27 @@ class Grid:
         # register
         DRIVER.registerGrid(self)
 
-    # return value
+    # Return grid point value at index
+    # IN: T: tuple of indices (i, j, k)
+    # OUT: tuple (x, y, z) of point coordinates at given index
     def v(self, T):
+        """Return grid value."""
         (i,j,k) = T
         return (self.P[i][j][k].x.v, self.P[i][j],[k].y.v, self.P[i][j][k].z.v)
 
+    # Print grid information
+    # IN: shift: number of blank characters left to print (default: 0)
     def print(self, shift=0):
+        """Display information."""
         for k in range(self.nk):
             for j in range(self.nj):
                 for i in range(self.ni):
                     self.P[i][j][k].print(shift+4)
 
+    # Check if all grid points are in range
+    # OUT: 1 if all values are in range, 0 otherwise
     def check(self):
+        """Check if grid is in range."""
         for k in range(self.nk):
             for j in range(self.nj):
                 for i in range(self.ni):
@@ -220,10 +335,16 @@ class Grid:
         return 1
 
 #============================================================
-# Entities
+# Entities (1D, parametric)
 #============================================================
 class Entity:
-    """Define a parametric entity"""
+    """Define a 1D parametric entity."""
+
+    # Create a 1D parametric entity
+    # IN: name: entity name (optional, auto-generated if None)
+    # IN: listP: list of parameters (Scalars, Points, Vec2, Grids, or numeric values)
+    # IN: type: entity type ('line', 'polyline', 'spline1', 'spline2', 'spline3', 'circle', 'arc', 'superellipse', 'naca4')
+    # IN: mesh: optional reference mesh for spline3 type
     def __init__(self, name=None, listP=[], type=None, mesh=None):
         # name
         if name is not None: self.name = name
@@ -234,7 +355,7 @@ class Entity:
         self.type = type
         # optional reference mesh
         self.mesh = mesh
-        # parameters
+        # parameter list
         self.P = []; c = 1
         for P in listP:
             if isinstance(P, Scalar):
@@ -258,15 +379,19 @@ class Entity:
             c += 1
 
         # hook on cad
-        self.update()
+        self.hook = None
 
         # register
         DRIVER.registerEdge(self)
 
+    # Destructor: free CAD hook
     def __del__(self):
         OCC.occ.freeHook(self.hook)
 
+    # Update CAD hook for entity based on entity type and parameters
     def update(self):
+        """Update CAD hook for entity."""
+        if self.hook is not None: OCC.occ.freeHook(self.hook)
         self.hook = OCC.createEmptyCAD()
         if self.type == "line":
             OCC._addLine(self.hook, self.P[0].v(), self.P[1].v())
@@ -325,17 +450,27 @@ class Entity:
         else:
             raise(ValueError, "Unknown entity type %s."%self.type)
 
+    # Print entity information
+    # IN: shift: number of blank characters left to print (default: 0)
     def print(self, shift=0):
+        """Display informations."""
         for c, P in enumerate(self.P):
             print(" "*shift, P.name)
             P.print(shift+4)
 
-    # export CAD to file
+    # Export CAD to file
+    # IN: fileName: output file name
+    # IN: format: file format (default: 'fmt_step')
     def writeCAD(self, fileName, format="fmt_step"):
+        """Write CAD to file."""
+        if self.hook is None:
+            raise ValueError("writeCAD: hook is not instantiated yet.")
         OCC.writeCAD(self.hook, fileName, format)
 
-    # check parameters validity
+    # Check parameters validity
+    # OUT: 1 if all parameters are valid, 0 otherwise
     def check(self):
+        """Check entity validity from ranges."""
         for P in self.P:
             ret = P.check()
             if ret == 0: return 0
@@ -344,43 +479,57 @@ class Entity:
 #============================================================
 # line from two parametric points
 def Line(name=None, P1=(0.,0.,0.), P2=(0.,0.,0.)):
+    """Define a parametric line."""
     return Entity(name, [P1, P2], type="line")
 
 # polyline from list of parametric points
 def Polyline(name=None, Points=[]):
+    """Define a parametric polyline."""
     return Entity(name, Points, type="polyline")
 
 # spline from parametric control points
 def Spline1(name=None, CPs=[]):
+    """Define a parametric spline from control points."""
     return Entity(name, CPs, type="spline1")
 
 # spline from parametric approximated points
 def Spline2(name=None, Ps=[]):
+    """Define parametric spline from approcmiated points."""
     return Entity(name, Ps, type="spline2")
 
 # spline from parametric grid
 def Spline3(name=None, PGrid=None, mesh=None):
+    """Define parametric spline from grid."""
     return Entity(name, [PGrid], mesh=mesh, type="spline3")
 
 # circle from parametric center and radius
 def Circle(name=None, C=(0.,0.,0.), R=1.):
+    """Define parametric circle."""
     return Entity(name, [C, R], type="circle")
 
 # superellipse from parametric center and R1, R2
 def SuperEllipse(name=None, C=(0.,0.,0.), R1=1., R2=1., N=4, samples=36):
+    """Define parametric super ellipse."""
     return Entity(name, [C, R1, R2, N, samples], type="superellipse")
 
 # arc from 3 parametric points
 def Arc(name=None, P1=(0.,0.,0.), P2=(0.,0.,0.), P3=(0.,0.,0.)):
+    """"Define parametric arc."""
     return Entity(name, [P1, P2, P3], type="arc")
 
 # naca from parametric 4 digits
 def Naca(name=None, M=0., P=0., e=12.):
+    """Define parametric NACA profile."""
     return Entity(name, [M, P, e], type="naca4")
 
 #============================================================
 class Sketch():
     """Define a parametric sketch from a list of entities."""
+
+    # Create a parametric sketch from a list of entities
+    # IN: name: sketch name (optional, auto-generated if None)
+    # IN: listEntities: list of Entity objects to include in the sketch
+    # IN: h: meshing parameters tuple (hmin, hmax, hausd) (optional)
     def __init__(self, name=None, listEntities=[], h=None):
         # name
         if name is not None: self.name = name
@@ -405,11 +554,10 @@ class Sketch():
         P = Scalar('%s.rotAngle'%self.name, 0.)
         self.P.append(P)
         self.rotAngle = P
-        # update hook
-        self.update()
         # register
         DRIVER.registerSketch(self)
         # meshing: (hmin,hmax,hausd)
+        self.h = None
         if h is not None: self.h = h
         # meshing: list of distribs for each entity
         self.distribs = None
@@ -417,24 +565,29 @@ class Sketch():
         self.refMesh = None # arrays
         self.RefMesh = None # zone list (pytree)
 
+    # Add an entity to sketch
+    # IN: entity: Entity object to add
     def add(self, entity):
-        """Add an entity to sketch"""
+        """Add an entity to sketch."""
         self.entities.append(entity)
-        self.update()
 
-    # update the CAD hook from parameters
+    # Update CAD hook from parameters
     def update(self):
         """Update CAD hook."""
         if self.hook is not None: OCC.occ.freeHook(self.hook)
         self.hook = OCC.createEmptyCAD('sketch.step')
         hooks = []
-        for e in self.entities: hooks.append(e.hook)
+        for e in self.entities:
+            if e.hook is None:
+                print("sketch.update: %s has null hook."%e.name)
+            else: hooks.append(e.hook)
         self.hook = OCC.mergeCAD(hooks)
         # global positionning
-        OCC._rotate(self.hook, self.P[1].v(), self.P[2].v(), self.P[3].v)
-        OCC._translate(self.hook, self.P[0].v())
+        OCC._rotate(self.hook, self.rotCenter.v(), self.rotAxis.v(), self.rotAngle.v)
+        OCC._translate(self.hook, self.position.v())
 
-    # check if parameters are valid
+    # Check if parameters are valid
+    # OUT: 0 if all parameters are valid, 1 if any parameter is invalid
     def check(self):
         """Check parameters validity."""
         for e in self.entities:
@@ -442,7 +595,8 @@ class Sketch():
             if ret == 1: return 1
         return 0
 
-    # print information
+    # Print sketch information
+    # IN: shift: number of blank characters left to print (default: 0)
     def print(self, shift=0):
         """Print informations."""
         for e in self.entities:
@@ -452,13 +606,19 @@ class Sketch():
             print(" "*shift, e.name)
             e.print(shift+4)
 
-    # export CAD to file
+    # Export CAD to file
+    # IN: fileName: output file name
+    # IN: format: file format (default: 'fmt_step')
     def writeCAD(self, fileName, format="fmt_step"):
         """Write CAD to file."""
+        if self.hook is None:
+            raise ValueError("writeCAD: hook is not instantiated yet.")
         OCC.writeCAD(self.hook, fileName, format)
 
-    # mesh sketch, return arrays
-    def mesh(self):
+    # Mesh sketch, return arrays
+    # IN: method: meshing method (default: 1, unused)
+    # OUT: list of meshed edge arrays
+    def mesh(self, method=1):
         """Mesh edges."""
         if self.distribs is not None:
             edges = []
@@ -471,8 +631,10 @@ class Sketch():
             raise ValueError("mesh: no meshing settings in sketch.")
         return edges
 
-    # mesh sketch, return zones
-    def Mesh(self):
+    # Mesh sketch, return zones
+    # IN: method: meshing method (default: 1, unused)
+    # OUT: list of meshed edges as zone nodes
+    def Mesh(self, method=1):
         """Mesh edges."""
         edges = self.mesh()
         out = []
@@ -484,21 +646,26 @@ class Sketch():
             out.append(z)
         return out
 
-    # mesh sketch (arrays)
+    # Mesh sketch (arrays) and store as reference
+    # OUT: reference meshed edge arrays
     def meshAsReference(self):
         """Mesh and store mesh as reference."""
         self.refMesh = self.mesh()
         return self.refMesh
 
-    # mesh sketch (zones)
+    # Mesh sketch (zones) and store as reference
+    # OUT: reference meshed edge as zone nodes
     def MeshAsReference(self):
         """Mesh and store mesh as reference."""
         self.RefMesh = self.Mesh()
         return self.RefMesh
 
     # Compute a rmesh identically to a reference mesh that is topologically
-    # equivalent (same names). copy distributions, return arrays, remesh on CAD.
+    # equivalent (same names). Copy distributions, return arrays, remesh on CAD.
+    # IN: refEdges: reference edge arrays to copy distributions from
+    # OUT: new edge arrays with same distributions on current CAD
     def rmesh(self, refEdges):
+        """Generate a mesh with same distributions as refEdges but on current CAD (array)."""
         import Geom
         s = Geom.getCurvilinearAbscissa(refEdges)
         for c, e in enumerate(refEdges):
@@ -511,8 +678,11 @@ class Sketch():
         return out
 
     # Compute a rmesh identically to reference mesh that is topologically
-    # equivalent (same names). copy distributions, return arrays
+    # equivalent (same names). Copy distributions, return zones (pyTree)
+    # IN: RefEdges: reference zone nodes to copy distributions from
+    # OUT: new zone nodes with same distributions on current CAD
     def Rmesh(self, RefEdges):
+        """Generate a mesh with same distributions as refEdges but on current CAD (pyTree)."""
         arrays = C.getAllFields(RefEdges, 'nodes', api=3)
         edges = self.rmesh(arrays)
         out = []
@@ -524,10 +694,14 @@ class Sketch():
             out.append(z)
         return out
 
+    # Remesh using reference mesh distributions (arrays)
+    # OUT: remeshed edge arrays
     def dmesh(self):
         """Remesh using reference mesh distributions."""
         return self.rmesh(self.refMesh)
 
+    # Remesh using reference mesh distributions (zones)
+    # OUT: remeshed edge as zone nodes
     def Dmesh(self):
         """Remesh using reference mesh distributions."""
         return self.Rmesh(self.RefMesh)
@@ -535,6 +709,16 @@ class Sketch():
 #============================================================
 class Surface():
     """Define a parametric surface."""
+
+    # Create a parametric surface
+    # IN: name: surface name (optional, auto-generated if None)
+    # IN: listSketches: list of Sketch objects (required for loft, revolve, fill types)
+    # IN: listSketches2: list of optional guide sketches (for loft type)
+    # IN: listSurfaces: list of Surface objects (required for merge, union, inter, sub types)
+    # IN: listSurfaces2: list of optional surfaces (for boolean operations)
+    # IN: data: dictionary of additional parameters (e.g., center, axis, angle, continuity, close)
+    # IN: h: meshing parameters tuple (hmin, hmax, hausd) (optional)
+    # IN: type: surface type ('loft', 'loftSet', 'revolve', 'merge', 'fill', 'mergeEdges', 'union', 'inter', 'sub', 'sphere')
     def __init__(self, name=None, listSketches=[], listSketches2=[], listSurfaces=[], listSurfaces2=[], data={}, h=None, type="loft"):
         # name
         if name is not None: self.name = name
@@ -550,11 +734,40 @@ class Surface():
         # optional surfaces
         self.surfaces2 = listSurfaces2
         # optional data
-        self.data = data
+        self.P = []
+        self.data = {}; c = 1
+        for n in data:
+            P = data[n]
+            if isinstance(P, Scalar):
+                self.data[n] = P
+                self.P.append(P)
+            elif isinstance(P, float):
+                self.data[n] = Scalar(name+'.P%d'%c, P)
+                self.P.append(self.data[n])
+            elif isinstance(P, int):
+                self.data[n] = Scalar(name+'.P%d'%c, P)
+                self.P.append(self.data[n])
+            elif isinstance(P, tuple) and len(P) == 3:
+                self.data[n] = Point(name+'.P%d'%c, P)
+                self.P.append(self.data[n])
+            elif isinstance(P, Point):
+                self.data[n] = P
+                self.P.append(P)
+            elif isinstance(P, tuple) and len(P) == 2:
+                self.data[n] = Vec2(name+'.P%d'%c, P)
+                self.P.append(self.data[n])
+            elif isinstance(P, Vec2):
+                self.data[n] = P
+                self.P.append(P)
+            elif isinstance(P, Grid):
+                self.data[n] = P
+                self.P.append(P)
+            else:
+                self.data[n] = P
+            c += 1
         # hook
         self.hook = None
-        # global parameters (always added)
-        self.P = []
+        # global position parameters (always added)
         P = Vec3('%s.position'%self.name, (0,0,0))
         self.P.append(P)
         self.position = P
@@ -567,11 +780,10 @@ class Surface():
         P = Scalar('%s.rotAngle'%self.name, 0.)
         self.P.append(P)
         self.rotAngle = P
-        # update hook
-        self.update()
         # register
         DRIVER.registerSurface(self)
         # meshing: (hmin,hmax,hausd). supersedes sketch settings.
+        self.h = None
         if h is not None: self.h = h
         # reference mesh for Dmesh
         self.RefMesh = None # mesh (pytree)
@@ -582,16 +794,18 @@ class Surface():
         self.inds2 = None # indices of borders in refMesh BC with kplane
         self.DefTree = None # def tree (pytree)
 
+    # Add a sketch to the surface definition
+    # IN: sketch: Sketch object to add
     def add(self, sketch):
         """Add a sketch to the surface definition."""
         self.sketches.append(sketch)
 
-    # update the CAD from parameters
+    # Update CAD from parameters based on surface type
     def update(self):
         """Update CAD hook from parameters."""
         if self.hook is not None: OCC.occ.freeHook(self.hook)
         self.hook = OCC.createEmptyCAD('surface.step')
-        if self.type == "loft":
+        if self.type == "loft": # by lofting
             hooks = []
             for e in self.sketches: hooks.append(e.hook)
             n1 = len(self.sketches)
@@ -602,12 +816,12 @@ class Surface():
             guideList = [i for i in range(n1+1, n2+1)]
             self.hook = OCC.mergeCAD(hooks)
             OCC._loft(self.hook, edgeList, guideList)
-            if 'close' in self.data and self.data['close']:
+            if 'close' in self.data and self.data['close'].v:
                 h0 = hooks[0]; h1 = hooks[-1]
                 OCC._fillHole(h0, [1], [], 0)
                 OCC._fillHole(h1, [1], [], 0)
-                self.hook = OCC.occ.mergeCAD([h0,self.hook,h1])
-        if self.type == "loftSet":
+                self.hook = OCC.mergeCAD([h0,self.hook,h1])
+        if self.type == "loftSet": # by loft set
             hooks = []
             for e in self.sketches:
                 hooks.append(e.hook)
@@ -622,34 +836,34 @@ class Surface():
             if len(out) > 1:
                 self.hook = OCC.mergeCAD(out)
             else: self.hook = out[0]
-            if 'close' in self.data and self.data['close']:
+            if 'close' in self.data and self.data['close'].v:
                 h0 = hooks[0]; h1 = hooks[-1]
                 OCC._fillHole(h0, [1], [], 0)
                 OCC._fillHole(h1, [1], [], 0)
-                self.hook = OCC.occ.mergeCAD([h0,self.hook,h1])
-        elif self.type == "revolve":
+                self.hook = OCC.mergeCAD([h0,self.hook,h1])
+        elif self.type == "revolve": # by revolving sketch
             hooks = []
             for e in self.sketches: hooks.append(e.hook)
             self.hook = OCC.mergeCAD(hooks)
             nedges = OCC.getNbEdges(self.hook)
             edgeList = [i for i in range(1, nedges+1)]
-            OCC._revolve(self.hook, edgeList, self.data['center'], self.data['axis'], self.data['angle'])
-        elif self.type == "merge":
+            OCC._revolve(self.hook, edgeList, self.data['center'].v(), self.data['axis'].v(), self.data['angle'].v)
+        elif self.type == "merge": # by merging surfaces
             hooks = []
             for e in self.surfaces: hooks.append(e.hook)
-            self.hook = OCC.occ.mergeCAD(hooks)
-        elif self.type == "fill":
+            self.hook = OCC.mergeCAD(hooks)
+        elif self.type == "fill": # by filling sketch
             hooks = []
             for e in self.sketches: hooks.append(e.hook)
-            self.hook = OCC.occ.mergeCAD(hooks)
+            self.hook = OCC.mergeCAD(hooks)
             nedges = OCC.getNbEdges(self.hook)
             edgeList = [i for i in range(1, nedges+1)]
-            OCC._fillHole(self.hook, edgeList, [], self.data['continuity'])
+            OCC._fillHole(self.hook, edgeList, [], self.data['continuity'].v)
         elif self.type == "mergeEdges": # for debug
             hooks = []
             for e in self.sketches: hooks.append(e.hook)
-            self.hook = OCC.occ.mergeCAD(hooks)
-        elif self.type == "union":
+            self.hook = OCC.mergeCAD(hooks)
+        elif self.type == "union": # by boolean union
             hooks = []; n1 = 0; n2 = 0
             for e in self.surfaces:
                 n1 += OCC.getNbFaces(e.hook)
@@ -657,11 +871,13 @@ class Surface():
             for e in self.surfaces2:
                 n2 += OCC.getNbFaces(e.hook)
                 hooks.append(e.hook)
-            self.hook = OCC.occ.mergeCAD(hooks)
-            rev1 = self.data.get('rev1',1)
-            rev2 = self.data.get('rev2',1)
+            self.hook = OCC.mergeCAD(hooks)
+            if 'rev1' in self.data: rev1 = self.data['rev1'].v
+            else: rev1 = 1
+            if 'rev2' in self.data: rev2 = self.data['rev2'].v
+            else: rev2 = 1
             OCC._boolean(self.hook, [i for i in range(1,n1+1)], [i for i in range(n1+1,n1+n2+1)], 0, rev1, rev2)
-        elif self.type == "inter":
+        elif self.type == "inter": # by boolean intersection
             hooks = []; n1 = 0; n2 = 0
             for e in self.surfaces:
                 n1 += OCC.getNbFaces(e.hook)
@@ -669,11 +885,13 @@ class Surface():
             for e in self.surfaces2:
                 n2 += OCC.getNbFaces(e.hook)
                 hooks.append(e.hook)
-            self.hook = OCC.occ.mergeCAD(hooks)
-            rev1 = self.data.get('rev1',1)
-            rev2 = self.data.get('rev2',1)
+            self.hook = OCC.mergeCAD(hooks)
+            if 'rev1' in self.data: rev1 = self.data['rev1'].v
+            else: rev1 = 1
+            if 'rev2' in self.data: rev2 = self.data['rev2'].v
+            else: rev2 = 1
             OCC._boolean(self.hook, [i for i in range(1,n1+1)], [i for i in range(n1+1,n1+n2+1)], 2, rev1, rev2)
-        elif self.type == "sub":
+        elif self.type == "sub": # by boolean substraction
             hooks = []; n1 = 0; n2 = 0
             for e in self.surfaces:
                 n1 += OCC.getNbFaces(e.hook)
@@ -681,47 +899,65 @@ class Surface():
             for e in self.surfaces2:
                 n2 += OCC.getNbFaces(e.hook)
                 hooks.append(e.hook)
-            self.hook = OCC.occ.mergeCAD(hooks)
-            rev1 = self.data.get('rev1',1)
-            rev2 = self.data.get('rev2',1)
+            self.hook = OCC.mergeCAD(hooks)
+            if 'rev1' in self.data: rev1 = self.data['rev1'].v
+            else: rev1 = 1
+            if 'rev2' in self.data: rev2 = self.data['rev2'].v
+            else: rev2 = 1
             OCC._boolean(self.hook, [i for i in range(1,n1+1)], [i for i in range(n1+1,n1+n2+1)], 1, rev1, rev2)
-
+        elif self.type == "sphere":
+            self.hook = OCC.createEmptyCAD()
+            OCC._addSphere(self.hook, self.data['center'].v(), self.data['radius'].v, name=self.name)
         # global positionning
-        OCC._rotate(self.hook, self.P[1].v(), self.P[2].v(), self.P[3].v)
-        OCC._translate(self.hook, self.P[0].v())
+        OCC._rotate(self.hook, self.rotCenter.v(), self.rotAxis.v(), self.rotAngle.v)
+        OCC._translate(self.hook, self.position.v())
 
-    # print information
+    # Print surface information
+    # IN: shift: number of blank characters left to print (default: 0)
     def print(self, shift=0):
         """Print surface information."""
         for e in self.sketches:
             print(" "*shift, e.name)
             e.print(shift+4)
-        for e in [self.position, self.rotCenter, self.rotAxis, self.rotAngle]:
+        for e in self.P:
             print(" "*shift, e.name)
             e.print(shift+4)
 
-    # export CAD to file
+    # Export CAD to file
+    # IN: fileName: output file name
+    # IN: format: file format (default: 'fmt_step')
     def writeCAD(self, fileName, format="fmt_step"):
         """Export to CAD file."""
+        if self.hook is None:
+            raise ValueError("writeCAD: hook is not instantiated yet.")
         OCC.writeCAD(self.hook, fileName, format)
 
-    # mesh surface, return arrays
-    def mesh(self, close=True):
+    # Mesh surface, return arrays
+    # IN: close: whether to close the mesh (default: True)
+    # IN: method: meshing method (default: 1)
+    # OUT: list of meshed face arrays
+    def mesh(self, close=True, method=1):
         """Mesh surface."""
         if self.h is None: raise ValueError("mesh: h settings are undefined.")
         (hmin,hmax,hausd) = self.h
-        edges = OCC.meshAllEdges(self.hook, hmin, hmax, hausd, -1)
-        nbFaces = OCC.getNbFaces(self.hook)
-        faceList = range(1, nbFaces+1)
-        if hausd < 0: hList = [(hmax,hmax,hausd)]*len(faceList)
-        else: hList = [(hmin,hmax,hausd)]*len(faceList)
-        faces = OCC.meshAllFacesTri(self.hook, edges, True, faceList, hList, close)
+        if method == 1: # isotropic hmin,hmax,hausd
+            edges = OCC.meshAllEdges(self.hook, hmin, hmax, hausd, -1)
+            nbFaces = OCC.getNbFaces(self.hook)
+            faceList = range(1, nbFaces+1)
+            if hausd < 0: hList = [(hmax,hmax,hausd)]*len(faceList)
+            else: hList = [(hmin,hmax,hausd)]*len(faceList)
+            faces = OCC.meshAllFacesTri(self.hook, edges, True, faceList, hList, close)
+        else: # anisotropic only hausd
+            edges, faces = OCC.meshAllOCC(self.hook, hausd, 5.)
         return faces
 
-    # mesh surface, return zones
-    def Mesh(self, close=True):
+    # Mesh surface, return zones
+    # IN: close: whether to close the mesh (default: True)
+    # IN: method: meshing method (default: 1)
+    # OUT: list of meshed face zone nodes
+    def Mesh(self, close=True, method=1):
         """Mesh surface."""
-        faces = self.mesh(close)
+        faces = self.mesh(close, method)
         out = []
         for c, e in enumerate(faces):
             z = Internal.createZoneNode('%s%03d'%(self.name, c+1), e, [],
@@ -731,6 +967,8 @@ class Surface():
             out.append(z)
         return out
 
+    # Mesh surface and store the mesh for future Dmesh
+    # OUT: reference mesh zone nodes with additional UV coordinates and deformation tree
     def MeshAsReference(self):
         """Mesh surface and store the mesh for future Dmesh."""
         import Transform.PyTree as T
@@ -744,7 +982,7 @@ class Surface():
         self.refEdges = dedges
 
         # build refMesh in x,y (not closed)
-        self.RefMesh = self.Mesh(close=False)
+        self.RefMesh = self.Mesh(close=False, method=1)
 
         # save refMesh in UV
         self.RefMeshUV = Internal.copyRef(self.RefMesh)
@@ -758,7 +996,7 @@ class Surface():
         self.dy1 = {}
         self.dz1 = {}
         zones = Internal.getZones(self.RefMeshUV)
-        for i, z in enumerate(zones): # pour chaque face
+        for i, z in enumerate(zones): # for each face
 
             # init inds
             self.inds[i+1] = []
@@ -855,6 +1093,8 @@ class Surface():
 
         return self.RefMesh
 
+    # Mesh by deformation using stored reference mesh
+    # OUT: deformed mesh zone nodes
     def Dmesh(self):
         """Mesh by deformation."""
         # build new edges in x,y
@@ -868,7 +1108,7 @@ class Surface():
             nedges.append(b)
 
         zones = Internal.getZones(self.RefMeshUV)
-        for i, z in enumerate(zones): # pour chaque face
+        for i, z in enumerate(zones): # for each face
             self.dx1[i+1][:] = 0.
             self.dy1[i+1][:] = 0.
             self.dz1[i+1][:] = 0.
@@ -900,7 +1140,7 @@ class Surface():
             self.DefTree[i+1].makeSources()
             self.DefTree[i+1].computeMeshDisplacement()
 
-        # copie Displacement#0/DisplacementX dans UV
+        # copy Displacement#0/DisplacementX to UV
         #zones1 = Internal.getZones(self.RefMeshUV)
         zones2 = Internal.getZones(self.RefMeshUV2)
         zones3 = Internal.getZones(self.RefMesh)
@@ -927,7 +1167,6 @@ class Surface():
             a = C.getFields(Internal.__GridCoordinates__, z1, api=3)[0]
             o = OCC.occ.evalFace(self.hook, a, i+1)
             zones3[i] = C.setFields([o], zones3[i], 'nodes')
-
             #C.convertPyTree2File(self.RefMeshUV2, 'out2.cgns')
 
         return self.RefMesh
@@ -981,9 +1220,33 @@ def Inter(name="inter", listSurfaces1=[], listSurfaces2=[], h=None):
                    listSurfaces2=listSurfaces2,
                    type="inter", h=h)
 
+def FillLinear(name="linearFill", listPoints=[], continuity=0, h=None):
+    """Fill a surface by lines between points."""
+    lines = []
+    ls = len(listPoints)
+    for c in range(ls):
+        if c < ls-1:
+            l = Line(None, listPoints[c], listPoints[c+1])
+        else:
+            l = Line(None, listPoints[ls-1], listPoints[0])
+        lines.append(l)
+    sketch1 = Sketch(None, lines)
+    surface1 = Fill(name, sketch1, continuity, h)
+    return surface1
+
+def Sphere(name="sphere", C=(0.,0.,0.), R=1., h=None):
+    """Create a sphere of center C and radius R."""
+    surface1 = Surface(name=name, data={'center': C, 'radius': R}, type="sphere", h=h)
+    return surface1
+
 #============================================================
 class Volume2D():
     """Define a parametric 2D volume."""
+
+    # Create a parametric 2D volume
+    # IN: name: volume name (optional, auto-generated if None)
+    # IN: listSketches: list of Sketch objects defining the bounded volume
+    # IN: orders: optional ordering of sketches (-1 for reversed order)
     def __init__(self, name=None, listSketches=[], orders=[]):
         # name
         if name is not None: self.name = name
@@ -1000,6 +1263,8 @@ class Volume2D():
         self.inds2 = None # indices of borders in refMesh BC with kplane
         self.DefTree = None # def tree (pytree)
 
+    # Call the 2D volume mesher
+    # OUT: meshed 2D volume array
     def mesh(self):
         """Call the volume mesher."""
         import Generator, Transform
@@ -1015,7 +1280,10 @@ class Volume2D():
         m = Transform.reorder(m, (1,))
         return m
 
+    # Mesh 2D volume, return zone node
+    # OUT: meshed volume as zone node
     def Mesh(self):
+        """Mesh suface."""
         m = self.mesh()
         z = Internal.createZoneNode(self.name, m, [],
                                     Internal.__GridCoordinates__,
@@ -1023,6 +1291,8 @@ class Volume2D():
                                     Internal.__FlowSolutionCenters__)
         return z
 
+    # Mesh and store the mesh for future Dmesh
+    # OUT: reference mesh zone node with additional UV coordinates and deformation tree
     def MeshAsReference(self):
         """Mesh and store the mesh for future Dmesh."""
         # keep borders
@@ -1082,6 +1352,8 @@ class Volume2D():
         self.DefTree.set_Amplitude(1.)
         return self.RefMesh
 
+    # Mesh by deformation using stored reference mesh
+    # OUT: deformed mesh zone node
     def Dmesh(self):
         """Mesh by deformation."""
         self.dx1[:] = 0.; self.dy1[:] = 0.; self.dz1[:] = 0.
@@ -1106,7 +1378,7 @@ class Volume2D():
         self.DefTree.makeSources()
         self.DefTree.computeMeshDisplacement()
 
-        # copie Displacement#0/DisplacementX dans Coordinates
+        # copy Displacement#0/DisplacementX to Coordinates
         zones = Internal.getZones(self.RefMesh)
         z1 = zones[0]
         cont = Internal.getNodeFromName1(z1, "GridCoordinates#Init")
@@ -1134,6 +1406,11 @@ class Volume2D():
 #============================================================
 class Volume3D():
     """Define a parametric 3D volume."""
+
+    # Create a parametric 3D volume
+    # IN: name: volume name (optional, auto-generated if None)
+    # IN: listSurfaces: list of Surface objects defining the bounded volume
+    # IN: orders: optional ordering of surfaces (-1 for reversed order)
     def __init__(self, name=None, listSurfaces=[], orders=[]):
         # name
         if name is not None: self.name = name
@@ -1143,6 +1420,8 @@ class Volume3D():
         # optional ordering of surfaces
         self.orders = orders
 
+    # Call the 3D volume mesher
+    # OUT: meshed 3D volume array
     def mesh(self):
         """Call the volume mesher."""
         import Generator, Transform
@@ -1153,10 +1432,14 @@ class Volume3D():
             if c < len(self.orders) and self.orders[c] == -1: m = Transform.reorder(m, (-1,))
             borders += m
         borders = Transform.join(borders)
+        # call volume mesher
         m = Generator.TetraMesher(borders)
         return m
 
+    # Mesh 3D volume, return zone node
+    # OUT: meshed volume as zone node
     def Mesh(self):
+        """Call the volume mesher."""
         m = self.mesh()
         z = Internal.createZoneNode(self.name, m, [],
                                     Internal.__GridCoordinates__,
@@ -1166,18 +1449,25 @@ class Volume3D():
 
 #============================================================
 class Eq:
-    """Equation"""
+    """Define an equation."""
+
+    # Create an equation
+    # IN: expr1: left side of the equation (sympy expression or Scalar)
+    # IN: expr2: right side of the equation (optional, defaults to None)
+    # in expressions, you can use standard math functions (e.g. D.sympy.cos, D.sympy.exp, ...)
     def __init__(self, expr1, expr2=None):
-        # references sur l'equation sympy
+        # references to the sympy equation
         self.s = sympy.Eq(expr1, expr2)
         DRIVER.registerEquation(self)
 
+    # Analyse equation to return vars and symbols
+    # OUT: tuple (vars: list of variable names, out: formatted expression string)
     def analyse(self):
         """Analyse equation to return vars and symbols."""
-        keywords = ["=", "length", "\*", "\+", "\-", "\/", "cos", "sin", "\(", "\)"]
+        keywords = ["=", "length", "*", "+", "-", "/", "cos", "sin", "(", ")"]
         pattern = f"({'|'.join(keywords)})"
         segments = re.split(pattern, self.expr)
-        segments = [s.strip() for s in segments if s]  # nettoyage
+        segments = [s.strip() for s in segments if s]  # cleanup
         # replace by their id
         out = ''; vars = []
         for s in segments:
@@ -1190,47 +1480,67 @@ class Eq:
 
 #============================================================
 class Lt:
-    """Constraint inequation"""
+    """Define constraint inequation (less than)."""
+
+    # Create a less-than constraint inequation
+    # IN: expr1: left side of the inequality (sympy expression or Scalar)
+    # IN: expr2: right side of the inequality (optional, defaults to None)
     def __init__(self, expr1, expr2=None):
-        # references sur l'inequation sympy
+        # references to the sympy inequality
         self.s = sympy.Lt(expr1, expr2)
         DRIVER.registerInequation(self)
 
 #============================================================
 class Le:
-    """Constraint inequation"""
+    """Define a constraint inequation (less than or equal)."""
+
+    # Create a less-than-or-equal constraint inequation
+    # IN: expr1: left side of the inequality (sympy expression or Scalar)
+    # IN: expr2: right side of the inequality (optional, defaults to None)
     def __init__(self, expr1, expr2=None):
-        # references sur l'inequation sympy
+        # references to the sympy inequality
         self.s = sympy.Le(expr1, expr2)
         DRIVER.registerInequation(self)
 
 #============================================================
 class Gt:
-    """Constraint inequation"""
+    """Define a constraint inequation (greater than)."""
+
+    # Create a greater-than constraint inequation
+    # IN: expr1: left side of the inequality (sympy expression or Scalar)
+    # IN: expr2: right side of the inequality (optional, defaults to None)
     def __init__(self, expr1, expr2=None):
-        # references sur l'inequation sympy
+        # references to the sympy inequality
         self.s = sympy.Gt(expr1, expr2)
         DRIVER.registerInequation(self)
 
 #============================================================
 class Ge:
-    """Constraint inequation"""
+    """Define a constraint inequation (greater than or equal)."""
+
+    # Create a greater-than-or-equal constraint inequation
+    # IN: expr1: left side of the inequality (sympy expression or Scalar)
+    # IN: expr2: right side of the inequality (optional, defaults to None)
     def __init__(self, expr1, expr2=None):
-        # references sur l'inequation sympy
+        # references to the sympy inequality
         self.s = sympy.Ge(expr1, expr2)
         DRIVER.registerInequation(self)
 
 #============================================================
 class Ne:
-    """Constraint inequation"""
+    """Define a constraint inequation (not equal)."""
+
+    # Create a not-equal constraint inequation
+    # IN: expr1: left side of the inequality (sympy expression or Scalar)
+    # IN: expr2: right side of the inequality (optional, defaults to None)
     def __init__(self, expr1, expr2=None):
-        # references sur l'inequation sympy
+        # references to the sympy inequality
         self.s = sympy.Ne(expr1, expr2)
         DRIVER.registerInequation(self)
 
 #============================================================
 class Driver:
-    """Driver is Model"""
+    """Driver is parametric model."""
     def __init__(self):
         # all parameters
         self.scalars = {} # id -> scalar
@@ -1264,30 +1574,44 @@ class Driver:
         self.Phi = None # POD vectors
         self.ak = None # POD coefficients of each mesh in doe
 
+    # Register parametric scalar
+    # IN: s: Scalar object to register
     def registerScalar(self, s):
         """Register parametric scalar."""
         self.scalars[s.name] = s # name -> scalar
 
+    # Register parametric point
+    # IN: p: Point object to register
     def registerPoint(self, p):
         """Register parametric point."""
         self.points[p.name] = p
 
+    # Register parametric grid
+    # IN: p: Grid object to register
     def registerGrid(self, p):
         """Register parametric grid."""
         self.grids[p.name] = p
 
+    # Register parametric entity
+    # IN: e: Entity object to register
     def registerEdge(self, e):
         """Register parametric entity."""
         self.edges[e.name] = e
 
+    # Register parametric sketch
+    # IN: e: Sketch object to register
     def registerSketch(self, e):
         """Register parametric sketch."""
         self.sketches[e.name] = e
 
+    # Register parametric surface
+    # IN: e: Surface object to register
     def registerSurface(self, e):
         """Register parametric surface."""
         self.surfaces[e.name] = e
 
+    # Register equation
+    # IN: eq: Eq object to register
     def registerEquation(self, eq):
         """Register equation."""
         self.equations["EQUATION%04d"%self.equationCount] = eq
@@ -1297,19 +1621,22 @@ class Driver:
         for s in symbols:
             scalar = self.scalars[s.name]
             if scalar.range is None:
-                scalar.range = [-999.99, 999.99] # range ajustable
+                scalar.range = [-999.99, 999.99] # adjustable range
 
+    # Register inequation
+    # IN: eq: Lt/Le/Gt/Ge/Ne object to register
     def registerInequation(self, eq):
         """Register inequation."""
-        self.inequations["INEQUATION%04d"%self.inequationCount] = eq
+        self.inequations["INEQUATION%04d"%self.equationCount] = eq
         self.inequationCount += 1
         # all concerned Scalar are tagged as free parameters
         symbols = eq.s.free_symbols
         for s in symbols:
             scalar = self.scalars[s.name]
             if scalar.range is None:
-                scalar.range = [-999.99, 999.99] # range ajustable
+                scalar.range = [-999.99, 999.99] # adjustable range
 
+    # Print registered entities
     def print(self):
         """Print registered entities."""
         for k in self.scalars: print(k)
@@ -1319,12 +1646,15 @@ class Driver:
         for k in self.surfaces: print(k)
         for k in self.equations: print(k)
 
+    # Update all entities from parameters
     def update(self):
         """Update all entities from parameters."""
         for k in self.edges: self.edges[k].update()
         for k in self.sketches: self.sketches[k].update()
         for k in self.surfaces: self.surfaces[k].update()
 
+    # Solve equations to get free parameters
+    # OUT: tuple (solution: dict of solved values, freeParams: list of remaining free parameters)
     def solve(self):
         """Solve equations to get free parameters."""
         # get params
@@ -1381,9 +1711,9 @@ class Driver:
 
         return solution, freeParams
 
-    # instantiation of free parameters
-    # IN: paramValues: dict of free parameters given values
-    # OUT: return True if valid, False if invalid
+    # Instantiate all parameters from given values
+    # IN: paramValues: dict of free parameters with their values
+    # OUT: True if all values are valid (in range and satisfy inequations), False otherwise
     def instantiate(self, paramValues):
         """Instantiate all from given paramValues."""
         valid = True # return
@@ -1435,9 +1765,29 @@ class Driver:
         # return True if valid in range and inequation constraints
         return valid
 
-    # FD of free parameters on discrete mesh
-    # if freevars is None, derivate for all free parameters else derivate for given parameters
-    def _dXdmu(self, entity, mesh, freeParams=None, deps=1.e-10):
+    # Display an interactive GUI for given entity
+    # IN: entity: Entity/Sketch/Surface object to visualize
+    def plot(self, entity):
+        """Trigger the GUI enabling interactive manipulation and visualization."""
+        import CPlot.Tk as CTK
+        (win, menu, file, tools) = CTK.minimal("Driver", mode=1)
+        module = __import__("tkDriver")
+        CTK.TKMODULES["tkDriver"] = module
+        tools.add_command(label="tkDriver", command=module.showApp)
+        module.setDriver(self, entity)
+        module.createApp(win)
+        module.showApp()
+        win.deiconify(); win.focus_set()
+        win.mainloop()
+
+    # Finite difference of free parameters on discrete mesh
+    # Compute derivatives dX/dmu on entity
+    # IN: entity: Entity/Sketch/Surface object to compute derivatives on
+    # IN: mesh: optional mesh array (for rmesh-based differentiation)
+    # IN: Mesh: optional mesh zone node (for deformation-based differentiation)
+    # IN: freeParams: optional free parameter(s) to differentiate (str, list, or None for all)
+    # IN: deps: finite difference step size (default: 1.e-6)
+    def _dXdmu(self, entity, mesh=None, Mesh=None, freeParams=None, deps=1.e-6):
         """Compute derivatives dX/dmu on entity."""
         import KCore
 
@@ -1458,33 +1808,90 @@ class Driver:
         else:
             raise TypeError("Warning: dXdmu: incorrect freevars.")
 
-        mesho = Converter.copy(mesh)
+        if mesh is not None: # array (by rmesh)
+            #mesho = Converter.copy(mesh)
+            for c, f in enumerate(listVars):
+                # free vars value dict
+                d = {}
+                for q in self.freeParams:
+                    d[q.name] = self.scalars[q.name].v
+                d[f.name] += deps
+                print("DIFF on: ", f.name)
+                # update CAD at param+eps
+                self.instantiate(d)
+                mesho = entity.rmesh(mesh)
+                # get derivatives
+                Converter._addVars(mesh, ['dXd%d'%c, 'dYd%d'%c, 'dZd%d'%c])
+                for p, m in enumerate(mesh):
+                    pos1 = KCore.isNamePresent(m, 'dXd%d'%c)
+                    pos2 = KCore.isNamePresent(m, 'dYd%d'%c)
+                    pos3 = KCore.isNamePresent(m, 'dZd%d'%c)
+                    p1x = m[1]
+                    p2x = mesho[p][1]
+                    p1x[pos1,:] = (p2x[0,:]-p1x[0,:])/deps
+                    p1x[pos2,:] = (p2x[1,:]-p1x[1,:])/deps
+                    p1x[pos3,:] = (p2x[2,:]-p1x[2,:])/deps
+                #Converter.convertArrays2File(mesh, "out1.plt")
+                #Converter.convertArrays2File(mesho, "out2.plt")
 
-        for c, f in enumerate(listVars):
-            # free vars value dict
-            d = {}
-            for q in self.freeParams:
-                d[q.name] = self.scalars[q.name].v
-            d[f.name] += deps
+        else: # pyTree (by deformation)
+            Mesho = Internal.copyTree(Mesh)
+            zoneso = Internal.getZones(Mesho)
+            for c, f in enumerate(listVars):
+                # free vars value dict
+                d = {}
+                for q in self.freeParams:
+                    d[q.name] = self.scalars[q.name].v
+                d[f.name] += deps
+                print("DIFF on: ", f.name)
+                # update CAD at param+eps
+                self.instantiate(d)
+                # deform reference mesh to match parameters
+                # if entity is sketch, new mesh
+                # if entity is surface, ref surface deformed
+                Meshd = entity.Dmesh()
+                #C.convertPyTree2File(Meshd, 'out1.cgns')
+                #C.convertPyTree2File(Mesho, 'out2.cgns')
 
-            print("DIFF on: ", f.name)
+                C._initVars(Mesh, 'dXd%d'%c, 0.)
+                C._initVars(Mesh, 'dYd%d'%c, 0.)
+                C._initVars(Mesh, 'dZd%d'%c, 0.)
+                zones1 = Internal.getZones(Mesh)
+                zones2 = Internal.getZones(Meshd)
+                for i, z1 in enumerate(zones1): # Mesh
+                    z2 = zoneso[i] # Mesho
+                    z3 = zones2[i] # Meshd
+                    cont1 = Internal.getNodeFromName1(z1, 'GridCoordinates')
+                    cont2 = Internal.getNodeFromName1(z2, 'GridCoordinates')
+                    cont3 = Internal.getNodeFromName1(z3, 'GridCoordinates')
+                    p1x = Internal.getNodeFromName2(cont3, 'CoordinateX')[1]
+                    p2x = Internal.getNodeFromName2(cont2, 'CoordinateX')[1]
+                    dx = Internal.getNodeFromName2(z1, 'dXd%d'%c)[1]
+                    dx[:] = (p1x[:]-p2x[:])/deps
+                    p1y = Internal.getNodeFromName2(cont3, 'CoordinateY')[1]
+                    p2y = Internal.getNodeFromName2(cont2, 'CoordinateY')[1]
+                    dy = Internal.getNodeFromName2(z1, 'dYd%d'%c)[1]
+                    dy[:] = (p1y[:]-p2y[:])/deps
+                    p1z = Internal.getNodeFromName2(cont3, 'CoordinateZ')[1]
+                    p2z = Internal.getNodeFromName2(cont2, 'CoordinateZ')[1]
+                    dz = Internal.getNodeFromName2(z1, 'dZd%d'%c)[1]
+                    dz[:] = (p1z[:]-p2z[:])/deps
+                # restore initital coordinates in mesh
+                for i, z1 in enumerate(zones1):
+                    z2 = zoneso[i]
+                    cont1 = Internal.getNodeFromName1(z1, 'GridCoordinates')
+                    cont2 = Internal.getNodeFromName1(z2, 'GridCoordinates')
+                    p1x = Internal.getNodeFromName2(cont1, 'CoordinateX')[1]
+                    p2x = Internal.getNodeFromName2(cont2, 'CoordinateX')[1]
+                    p1x[:] = p2x[:]
+                    p1y = Internal.getNodeFromName2(cont1, 'CoordinateY')[1]
+                    p2y = Internal.getNodeFromName2(cont2, 'CoordinateY')[1]
+                    p1y[:] = p2y[:]
+                    p1z = Internal.getNodeFromName2(cont1, 'CoordinateZ')[1]
+                    p2z = Internal.getNodeFromName2(cont2, 'CoordinateZ')[1]
+                    p1z[:] = p2z[:]
 
-            # update CAD at param+eps
-            self.instantiate(d)
-            mesho = entity.rmesh(mesh)
-            # get derivatives
-            Converter._addVars(mesh, ['dXd%d'%c, 'dYd%d'%c, 'dZd%d'%c])
-            for p, m in enumerate(mesh):
-                pos1 = KCore.isNamePresent(m, 'dXd%d'%c)
-                pos2 = KCore.isNamePresent(m, 'dYd%d'%c)
-                pos3 = KCore.isNamePresent(m, 'dZd%d'%c)
-                p1x = m[1]
-                p2x = mesho[p][1]
-                p1x[pos1,:] = (p2x[0,:]-p1x[0,:])/deps
-                p1x[pos2,:] = (p2x[1,:]-p1x[1,:])/deps
-                p1x[pos3,:] = (p2x[2,:]-p1x[2,:])/deps
-
-        # remet le hook original
+        # restore original hook
         d = {}
         for q in self.freeParams:
             d[q.name] = self.scalars[q.name].v
@@ -1492,15 +1899,86 @@ class Driver:
 
         return None
 
-    # connect driver to db
+    # Finite difference derivative of distance on mesh
+    # IN: entity: Entity/Sketch/Surface object to compute derivatives on
+    # IN: mesh: optional mesh array (for rmesh-based differentiation)
+    # IN: Mesh: optional mesh zone node (for deformation-based differentiation)
+    # IN: freeParams: optional free parameter(s) to differentiate (str, list, or None for all)
+    # IN: deps: finite difference step size (default: 1.e-6)
+    # OUT: list of distance derivative arrays (one per free parameter)
+    def dDdmu(self, entity, mesh=None, Mesh=None, freeParams=None, deps=1.e-6):
+        """Compute derivatives dD/dmu on entity."""
+
+        if len(self.freeParams) == 0:
+            print("Warning: dDdmu: no free vars.")
+            return None
+
+        if freeParams is None: # no param given
+            listVars = self.freeParams
+        elif isinstance(freeParams, str): # free param given by name
+            listVars = []
+            for f in self.freeParams:
+                if self.scalars[f.name].name == freeParams: listVars.append(f)
+        elif isinstance(freeParams, list): # suppose list of names
+            listVars = []
+            for f in self.freeParams:
+                if self.scalars[f.name].name in freeParams: listVars.append(f)
+        else:
+            raise TypeError("Warning: dXdmu: incorrect freevars.")
+
+        dDdmu = []
+        if mesh is not None: # array (by rmesh)
+            import Geom
+            for c, f in enumerate(listVars):
+                # free vars value dict
+                d = {}
+                for q in self.freeParams:
+                    d[q.name] = self.scalars[q.name].v
+                d[f.name] += deps
+                print("DIFF on: ", f.name)
+                # update CAD at param+eps
+                self.instantiate(d)
+                mesho = entity.rmesh(mesh)
+                dist = Geom.distance(mesh, mesho)/deps
+                dDdmu.append(dist)
+
+        else: # pyTree (by remesh)
+            import Geom.PyTree as Geom
+            Mesho = Internal.copyTree(Mesh)
+            #zoneso = Internal.getZones(Mesho)
+            for c, f in enumerate(listVars):
+                # free vars value dict
+                d = {}
+                for q in self.freeParams:
+                    d[q.name] = self.scalars[q.name].v
+                d[f.name] += deps
+                print("DIFF on: ", f.name)
+                # update CAD at param+eps
+                self.instantiate(d)
+                # deform reference mesh to match parameters
+                # if entity is sketch, new mesh
+                # if entity is surface, ref surface deformed
+                Meshd = entity.Dmesh()
+                dist = Geom.distance(Mesh, Meshd)/deps
+                dDdmu.append(dist)
+
+        # restore original hook
+        d = {}
+        for q in self.freeParams:
+            d[q.name] = self.scalars[q.name].v
+        self.instantiate(d)
+        return dDdmu
+
+    # Connect driver to database
+    # IN: db: database object to connect to
     def connect(self, db):
         """Connect driver to db."""
         self.db = db
 
-    # set DOE deltas for free parameters
+    # Set DOE deltas for free parameters
     # It is better to set them in scalar.range
-    # IN: dict of deltas for each desired free parameter
-    # OUT: arange dict
+    # IN: deltas: dict of deltas for each desired free parameter (default: {})
+    # OUT: None (modifies self.doeRange and self.doeSize)
     def setDOE(self, deltas={}):
         # set default
         self.doeRange = []; self.doeSize = []
@@ -1526,8 +2004,9 @@ class Driver:
                     self.doeSize[c] = deltas[k]
         return None
 
-    # walk DOE (iterateur), instantiate
-    # return the next valid free parameters point
+    # Walk DOE (iterator), instantiate
+    # Return the next valid free parameters point
+    # OUT: dict of free parameter values (valid point) or None if DOE is exhausted
     def walkDOE(self):
         if self.iter is None:
             # set range
@@ -1563,7 +2042,8 @@ class Driver:
             else: return pt
         else: return self.walkDOE()
 
-    # walk DOE1, instantiate, parallel CFD but sequential on parameters
+    # Walk DOE1, instantiate, parallel CFD but sequential on parameters
+    # OUT: dict of free parameter values (valid point) or None if DOE is exhausted
     def walkDOE1(self):
         if Cmpi.rank == 0:
             pt = self.walkDOE()
@@ -1571,7 +2051,8 @@ class Driver:
             pt = self.walkDOE()
         return pt
 
-    # walk DOE2, instantiate, parallel tasks (no on proc 0)
+    # Walk DOE2, instantiate, parallel tasks (not on proc 0)
+    # OUT: dict of free parameter values (valid point) or None if DOE is exhausted
     def walkDOE2(self):
         if Cmpi.rank == 0:
             if Cmpi.size > 1:
@@ -1593,14 +2074,15 @@ class Driver:
             pt = Cmpi.recv(source=0) # wait for task
         return pt
 
-    # walk DOE, instantiate, mesh, append snapshots to file, parallel
+    # Walk DOE, instantiate, mesh, append snapshots to file, parallel
+    # IN: entity: Entity/Sketch/Surface object to mesh
     def walkDOE3(self, entity):
         self.setDOE()
         ranges = []; size = 0
         for k in self.doeRange:
             ranges.append(range(k.size))
             size += k.size
-        raf = size - size%Cmpi.size # seq reste a faire
+        raf = size - size%Cmpi.size # remaining sequence to do
 
         for indexes in itertools.product(*ranges):
             # create value dict
@@ -1629,8 +2111,9 @@ class Driver:
                 mesh = entity.mesh()
                 self.addSnapshot(hash, mesh)
 
-    # IN: list of indexes (i,j,k,...) one for each param
-    # OUT: single hash integer (flatten)
+    # Convert list of indexes to single hash integer (flatten)
+    # IN: indexes: list of indexes (i,j,k,...) one for each parameter
+    # OUT: single hash integer (flattened index)
     def getHash(self, indexes):
         hash = 0
         for c, i in enumerate(indexes):
@@ -1638,8 +2121,9 @@ class Driver:
             else: hash += i*self.doeSize[c-1]
         return hash
 
-    # IN: hash
-    # OUT: return (i,j,k,...)
+    # Convert hash to list of indexes
+    # IN: hash: single hash integer
+    # OUT: tuple of indexes (i,j,k,...) for each parameter
     def getInd(self, hash):
         hashcode = hash
         np = len(self.doeSize)
@@ -1652,8 +2136,10 @@ class Driver:
             hashcode = hashcode - h*prod
         return out
 
-    # remesh input mesh to match nv points using refine
-    # used nly in snapshots read (obsolete)
+    # Remesh input mesh to match nv points using refine (obsolete)
+    # IN: mesh: input mesh array
+    # IN: nv: target number of vertices
+    # OUT: remeshed mesh array
     def remesh(self, mesh, nv):
         import Generator
         nm = mesh[1].shape[1]
@@ -1663,7 +2149,8 @@ class Driver:
         else: m = mesh
         return m
 
-    # DOE in file (to be replaced by DB)
+    # Create DOE file (to be replaced by DB)
+    # IN: fileName: output file name
     def createDOE(self, fileName):
         self.doeFileName = fileName
         if Cmpi.rank > 0: return None
@@ -1674,7 +2161,9 @@ class Driver:
         C.convertPyTree2File(t, self.doeFileName)
         return None
 
-    # add snapshot to file (to be replaced by DB)
+    # Add snapshot to file (to be replaced by DB)
+    # IN: hashcode: hash code for the snapshot
+    # IN: msh: mesh array to add as snapshot
     def addSnapshot(self, hashcode, msh):
         import Converter.Distributed as Distributed
         import Transform
@@ -1685,7 +2174,9 @@ class Driver:
         print("ADD: snapshot %d added."%hashcode, flush=True)
         return None
 
-    # read a snapshot, return a mesh array (to be replaced by DB)
+    # Read a snapshot, return a mesh array (to be replaced by DB)
+    # IN: hashcode: hash code of the snapshot to read
+    # OUT: mesh array
     def readSnaphot(self, hashcode):
         import Converter.Distributed as Distributed
         nodes = Distributed.readNodesFromPaths(self.doeFileName, ['CGNSTree/Snapshots/%05d'%hashcode])
@@ -1693,8 +2184,9 @@ class Driver:
         msh = ['x,y,z', msh, msh.shape[1], 1, 1]
         return msh
 
-    # read all snapshots, return a flatten matrix
-    # IN: paramSlab: optional ( (5,120), (3,20), ...) for each parameters
+    # Read all snapshots, return a flatten matrix
+    # IN: paramSlab: optional tuple of (start, end) ranges for each parameter
+    # OUT: flattened matrix of all snapshot coordinates
     def readAllSnapshots(self, paramSlab=None):
         ranges = []; np = 0
         if paramSlab is None: # full range
@@ -1717,7 +2209,8 @@ class Driver:
             F[:,hash] = m[:]
         return F
 
-    # ROM (Model)
+    # Write ROM (Reduced Order Model) to file
+    # IN: fileName: output file name
     def writeROM(self, fileName):
         self.romFileName = fileName
         if Cmpi.rank > 0: return None
@@ -1727,11 +2220,14 @@ class Driver:
         C.convertPyTree2File(t, self.romFileName)
         return None
 
-    # build POD from full matrix F, keep K modes
+    # Build POD (Proper Orthogonal Decomposition) from full matrix F, keep K modes
+    # IN: F: full matrix of snapshot coordinates (nv*3 x np)
+    # IN: K: number of modes to keep (default: -1 for all)
+    # OUT: tuple (Phi: POD vectors, S: singular values, Vt: transposed right singular vectors)
     def createROM(self, F, K=-1):
         # on deformation from
         mean = numpy.mean(F, axis=1, keepdims=True)
-        self.mean = mean # maillage moyen
+        self.mean = mean # average mesh
         #F = F - mean
         Phi, S, Vt = numpy.linalg.svd(F, full_matrices=False)
         # energy of each modes
@@ -1741,7 +2237,9 @@ class Driver:
         self.Phi = Phi[:, 0:self.K]
         return Phi, S, Vt
 
-    # get modes as meshes
+    # Get POD mode as mesh
+    # IN: i: mode index
+    # OUT: mesh array for the specified mode
     def getMode(self, i):
         m = self.Phi[:,i]
         np = m.size//3
@@ -1749,7 +2247,10 @@ class Driver:
         m = ['x,y,z', m, np, 1, 1]
         return m
 
-    # get coords of mesh on POD
+    # Get coordinates of mesh on POD basis and add to file
+    # IN: hashcode: hash code for the snapshot
+    # IN: msh: mesh array to project onto POD basis
+    # OUT: coordinates (coefficients) of mesh on POD basis
     def addCoefs(self, hashcode, msh):
         import Converter.Distributed as Distributed
         coords = numpy.empty( (self.K), dtype=numpy.float64 )
@@ -1762,12 +2263,13 @@ class Driver:
         print("ADD: coeffs %d added."%hashcode)
         return coords
 
+    # Add all coefficients for all DOE snapshots
     def addAllCoefs(self):
         ranges = []; size = 0
         for k in self.doeRange:
             ranges.append(range(k.size))
             size += k.size
-        raf = size - size%Cmpi.size # seq reste a faire
+        raf = size - size%Cmpi.size # remaining sequence to do
 
         m = self.readSnaphot(0)
         nv = m[1].shape[1]
@@ -1790,19 +2292,29 @@ class Driver:
                 m = self.remesh(m, nv)
                 self.addCoefs(hash, m)
 
+    # Evaluate ROM from coordinates
+    # IN: coords: POD coefficients (array of length K)
+    # OUT: reconstructed mesh array
     def evalROM(self, coords):
         m = self.Phi @ coords
         m = m.reshape((3, m.size//3))
         msh = ['x,y,z', m, m.shape[1], 1, 1]
         return msh
 
+    # Read coefficients from file
+    # IN: hashcode: hash code of the snapshot
+    # OUT: coordinates (coefficients) array
     def readCoefs(self, hashcode):
         import Converter.Distributed as Distributed
         nodes = Distributed.readNodesFromPaths(self.romFileName, ['CGNSTree/POD/%05d'%hashcode])
         coord = nodes[0][1]
         return coord
 
-    # rebuild samples from POD
+    # Rebuild samples from POD
+    # IN: Phi: POD vectors matrix
+    # IN: S: singular values
+    # IN: Vt: transposed right singular vectors
+    # OUT: rebuilt matrix from POD
     def rebuildF(self, Phi, S, Vt):
         # Convert S to a diagonal matrix
         Sigma = numpy.diag(S)

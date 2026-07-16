@@ -168,6 +168,7 @@ fileTypes=[('converter', '*.3DS'),
            ('converter', '*.dat'),
            ('converter', '*.fv3d'),
            ('converter', '*.grid'),
+           ('converter', '*.cdf'),
            ('converter', '*.h5'),
            ('converter', '*.hdf'),
            ('converter', '*.hdf5'),
@@ -211,6 +212,8 @@ fileTypes=[('converter', '*.3DS'),
            ('fmt v3d', '*.fv3d'),
            ('fmt tau', '*.grid'),
            ('fmt tau', '*.GRID'),
+           ('fmt tau', '*.cdf'),
+           ('fmt tau', '*.CDF'),
            ('fmt fsdm', '*.h5'),
            ('fmt fsdm', '*.H5'),
            ('All files', '*')
@@ -1202,11 +1205,14 @@ def toggleSelectAll():
     selected = []
     s = -1
 
+    dnz = CPlot.updateCPlotGlobalNumbering(t)
+
     for b in bases:
         baseName = b[0]
+        dnzb = dnz[baseName]
         nodes = Internal.getNodesFromType1(b, 'Zone_t')
         if nodes != []:
-            noz = CPlot.getCPlotNumber(t, baseName, nodes[0][0])
+            noz = dnzb[nodes[0][0]]
             if s == -1:
                 sp = CPlot.getSelectedStatus(noz)
                 if sp == 0: s = 1
@@ -1335,6 +1341,7 @@ def stt__(s, mode=0):
 # type=0 -> string; type=1 -> float; type=2 -> int; type=3 -> indices
 #==============================================================================
 def varsFromWidget(varString, type=0):
+    """Return a value from a string widget."""
     if type == 0: # string
         return stt__(varString)
     elif type == 1: # float
@@ -1536,6 +1543,7 @@ def minimal(title, show=True, mode=0):
     win.rowconfigure(2, weight=0)
     win.rowconfigure(3, weight=1)
     win.resizable(0,0) # fixed size window
+    win.geometry("+0+0")
     #win.minsize(325, 325)
 
     menu = TK.Menu(win, bg=TTK.BACKGROUNDCOLOR, fg=TTK.FOREGROUNDCOLOR)

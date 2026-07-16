@@ -172,7 +172,8 @@ namespace K_CONNECT
 
   /* Get all facets of a basic element*/
   E_Int getEVFacets(std::vector<std::vector<E_Int> >& facets,
-                    const char* eltType, E_Bool allow_degenerated=true);
+                    const char* eltType, E_Bool allow_degenerated=true,
+                    E_Bool expandToLowerDim=true);
   
   /* Change a Elts-Vertex connectivity to a Vertex-Elts connectivity.
      cVE doit deja etre alloue au nombre de noeuds. */
@@ -217,7 +218,13 @@ namespace K_CONNECT
    (commencant a 0) et nof la numero local de la face 0,1,2,...
   */
   void connectEV2VF(K_FLD::FldArrayI& cEV, const char* eltType,
-                    std::vector< std::vector<E_Int> >& cVF);
+                    std::vector<std::vector<E_Int> >& cVF);
+  /* Change a Elts-Vertex connectivity to a Face-Element connectivity.
+      IN: eltType: type d'element (TRI, QUAD,...).
+      IN: cEV: Elts-Vertex connectivity.
+      IN: keepDuplicates: whether to keep duplicates of internal faces.*/
+  E_Int connectEV2FE(const char* eltType, K_FLD::FldArrayI& cEV,
+                      K_FLD::FldArrayI& cFE, E_Bool keepDuplicates=true);
   /* Change HO EV connectivity to LO EV connectivity.
      mode=0: sub-select, mode=1: tesselate */
   E_Int connectHO2LO(const char* eltTypeHO, K_FLD::FldArrayI& cEVHO,
@@ -523,9 +530,22 @@ namespace K_CONNECT
   E_Int colorConnexParts(E_Int *, E_Int *, E_Int, E_Int *);
 
   /* Miscellenous */
+  // Given a sorted array of global indices belonging to consecutive buckets,
+  // compute the starting offset in the array for each bucket using binary
+  // search.
+  void computeStartOffsets(const E_Int* sortedIndices, E_Int nindices,
+                           const std::vector<E_Int>& bucketSizes,
+                           std::vector<E_Int>& offsets);
+
   // Perform an exclusive prefix sum on an array that is a mask comprised solely
   // of zeros and ones. Return the total number of ones, that is the total number
   // of tagged elements.
   E_Int prefixSum(std::vector<E_Int>& a);
+
+  // Perform an exclusive prefix sum on an array that is a mask comprised solely
+  // of zeros and ones, for each bucket. Return the total number of ones per
+  // bucket, that is the total number of tagged elements per bucket.
+  std::vector<E_Int> prefixSum(std::vector<E_Int>& a,
+                               const std::vector<E_Int>& buckets);
 }
 #endif

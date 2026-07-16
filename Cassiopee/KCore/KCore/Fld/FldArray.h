@@ -22,6 +22,8 @@
 #include "Def/DefTypes.h"
 #include <assert.h>
 #include <vector>
+#include <algorithm>
+#include <random>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -263,13 +265,13 @@ class FldArray
     /// pushBack a std::vector for a one-row FldArray
     void pushBack(const std::vector<value_type>& a);
     /// Set the sizeLoc to 0. Do not clear the memory.
-    void clear(){_sizeLoc = _nfldLoc= 0;}
+    void clear() {_sizeLoc = _nfldLoc= 0;}
     // copy (static and dynamic interface)
     void copy(const FldArray& rhs, E_Int beg, E_Int end);
     /// Compacts the array using the input flag vector.
     /** Any column with a flag to false(true) is removed(kept). */
     template <typename Vector1, typename Vector2>
-    static E_Int compact (FldArray& a, const Vector1& keep, Vector2& new_Ids);
+    static E_Int compact(FldArray& a, const Vector1& keep, Vector2& new_Ids);
 
   public:
     ///+ 8- Specific to FldArrayF
@@ -291,12 +293,20 @@ class FldArray
     /* void matMultVec(const FldArray& array); */
     /** Sqrt of each element */
     void sqrt();
+    /** Shuffle array */
+    void shuffle();
     ///-
 
   public:
     ///+ 9- Specific to FldArrayI
     ///- Adds val to all values.
     void shift(T val);
+
+    // used in etc
+    T& getitems(int i, int j);
+    T& getitem(int i);
+    void setitem(int i, T value);
+    void setitems(int i, int j, T value);
 
   private:
     // set all elements to val
@@ -461,6 +471,35 @@ const T* FldArray<T>::end(E_Int fld) const
   assert (fld <= _nfldLoc);
   return _rake[fld-1]+_sizeLoc*_stride;
 }
+
+//OK============================================================================
+TEMPLATE_T
+inline T& FldArray<T>::getitems(int i, int j)
+{
+  return this->operator()(i,j);
+}
+
+//OK============================================================================
+TEMPLATE_T
+inline T& FldArray<T>::getitem(int i)
+{
+  return this->operator[](i);
+}
+
+//OK============================================================================
+TEMPLATE_T
+void FldArray<T>::setitem(int i, T value)
+{
+  this->operator[](i) = value;
+}
+
+//OK============================================================================
+TEMPLATE_T
+void FldArray<T>::setitems(int i, int j, T value)
+{
+  this->operator()(i,j) = value;
+}
+
 //==============================================================================
 TEMPLATE_T
 E_Int FldArray<T>::getNFaces()
@@ -1023,6 +1062,33 @@ void FldArray<T>::sqrt()
       for (E_Int i = 0; i < _sizeLoc; i++) pt[i*_stride] = std::sqrt(pt[i*_stride]);
     }
   }
+}
+
+//----------------------------------------------------------------------------
+TEMPLATE_T
+void FldArray<T>::shuffle()
+{
+  std::vector<E_Int> ind(_sizeLoc);
+  for (E_Int i = 0; i < _sizeLoc; i++) ind[i] = i;
+
+  std::random_device rd;
+  std::mt19937 gen(rd());
+  std::shuffle(ind.begin(), ind.end(), gen);
+
+  E_Float* tmp = new E_Float [_sizeLoc];
+
+  #pragma omp parallel
+  {
+    for (E_Int n = 0; n < _nfldLoc; n++)
+    {
+      T* pt = _rake[n];
+      #pragma omp for
+      for (E_Int i = 0; i < _sizeLoc; i++) tmp[i] = pt[i*_stride];
+      #pragma omp for
+      for (E_Int i = 0; i < _sizeLoc; i++) pt[ind[i]*_stride] = tmp[i];
+    }
+  }
+  delete [] tmp;
 }
 
 //OK---------------------------------------------------------------------------

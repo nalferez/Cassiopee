@@ -382,7 +382,7 @@ typedef struct {
 
   /* Calcule la distance minimale entre deux blocs structurés 
      et retourne les indices correspondants */
-  void compMeanDist(const E_Int ni1, const E_Int nj1,
+  void compMinDist(const E_Int ni1, const E_Int nj1,
     const E_Float* x1, const E_Float* y1, const E_Float* z1,
     const E_Int ni2, const E_Int nj2,
     const E_Float* x2, const E_Float* y2, const E_Float* z2,
@@ -402,13 +402,38 @@ typedef struct {
      Retourne 0. si triangle degenere */
   E_Float compTriangleArea(const E_Float a, const E_Float b, const E_Float c);
 
+  /* Computes an angle formed by three points (P1,P2,P3) or two vectors (u,v)
+      Returns a float between 0 and pi
+      Returns 0 if two points are superimposed */
+  E_Float computeAngle(
+    E_Float x1, E_Float y1, E_Float z1,
+    E_Float x2, E_Float y2, E_Float z2,
+    E_Float x3, E_Float y3, E_Float z3);
+
+  E_Float computeAngle(
+    E_Float ux, E_Float uy, E_Float uz,
+    E_Float vx, E_Float vy, E_Float vz);
+  
+  /* Computes a skewness value from three points (P1,P2,P3) and a reference angle
+      Returns a skewness angle or a float if normalized=1
+      Returns 0 if two points are superimposed */
+  E_Float computeSkewness(
+    E_Float x1, E_Float y1, E_Float z1,
+    E_Float x2, E_Float y2, E_Float z2,
+    E_Float x3, E_Float y3, E_Float z3,
+    E_Float refAngle, E_Int normalized=0);
+
+  E_Float computeSkewness(
+    const E_Float* x, const E_Float* y, const E_Float* z,
+    E_Int ind1, E_Int ind2, E_Int ind3,
+    E_Float refAngle, E_Int normalized=0);
+
   /* Calcul le cercle circonscrit a un triangle du plan (x,y)
      IN: p1, p2, p3: triangles coordinates (in plane x,y)
      OUT: pc, R: center and radius of circum-center
      Retourne:
      0: OK
-     -1: Failed
-  */
+     -1: Failed */
   E_Int circumCircle(E_Float* p1, E_Float* p2, E_Float* p3,
                      E_Float* pc, E_Float& R);
 

@@ -1,13 +1,16 @@
 """Geometry definition module.
 """
-__version__ = '4.1'
+__version__ = '4.2'
 __author__ = "Stephanie Peron, Christophe Benoit, Pascal Raud, Sam Landier"
 
 from . import geom
 import numpy
 import KCore.Vector as Vector
 
-from .MapEdge import enforceh, uniformize, refine, setH, setF, enforce, distrib1, distrib2, smooth, mapCurvature, enforceh3D
+from .MapEdge import (
+    enforceh, uniformize, refine, setH, setF, enforce, distrib1, distrib2,
+    smooth, mapCurvature, enforceh3D
+)
 
 # - Basic entities -
 def point(P):
@@ -167,27 +170,27 @@ def sphereYinYang(C, R, N=100, ntype='STRUCT'):
     m = [a, b]
     return export__(m, ntype)
 
-# IN: liste de maillages struct
+# IN: list of structured meshes
 def export__(a, ntype='STRUCT'):
-    try: import Converter as C; import Transform as T; import Generator as G
+    try: import Converter; import Transform; import Generator
     except ImportError:
         raise ImportError("export: requires Converter, Generator and Transform modules.")
     if ntype == 'STRUCT': return a
     elif ntype == 'QUAD':
-        a = C.convertArray2Hexa(a)
-        a = T.join(a)
-        a = G.close(a)
+        a = Converter.convertArray2Hexa(a)
+        a = Transform.join(a)
+        a = Generator.close(a)
         return a
     elif ntype == 'TRI':
-        a = C.convertArray2Tetra(a)
-        a = T.join(a)
-        a = G.close(a)
+        a = Converter.convertArray2Tetra(a)
+        a = Transform.join(a)
+        a = Generator.close(a)
         return a
 
 def disc(C, R, N=100, ntype='STRUCT'):
     """Create a disc of center C and radius R made of 5 parts.
     Usage: a = disc((xc,yc,zc), R, N)"""
-    try: import Generator as G; import Transform as T; import math
+    try: import Generator; import Transform; import math
     except ImportError:
         raise ImportError("disc: requires Generator and Transform module.")
     coeff = R*math.sqrt(2.)*0.25
@@ -196,36 +199,36 @@ def disc(C, R, N=100, ntype='STRUCT'):
     l1 = line((x+coeff,y-coeff,z), (x+coeff,y+coeff,z), N=N)
     l2 = line((x+coeff,y-coeff,z), (x+2*coeff,y-2*coeff,z), N=N)
     l3 = line((x+coeff,y+coeff,z), (x+2*coeff,y+2*coeff,z), N=N)
-    m1 = G.TFI([c, l1, l2, l3])
+    m1 = Generator.TFI([c, l1, l2, l3])
 
     c = circle(C, R, tetas=45., tetae=45.+90., N=N)
     l1 = line((x+coeff,y+coeff,z), (x-coeff,y+coeff,z), N=N)
     l2 = line((x+coeff,y+coeff,z), (x+2*coeff,y+2*coeff,z), N=N)
     l3 = line((x-coeff,y+coeff,z), (x-2*coeff,y+2*coeff,z), N=N)
-    m2 = G.TFI([c, l1, l2, l3])
+    m2 = Generator.TFI([c, l1, l2, l3])
 
     c = circle(C, R, tetas=45.+90, tetae=45.+180., N=N)
     l1 = line((x-coeff,y+coeff,z), (x-coeff,y-coeff,z), N=N)
     l2 = line((x-coeff,y+coeff,z), (x-2*coeff,y+2*coeff,z), N=N)
     l3 = line((x-coeff,y-coeff,z), (x-2*coeff,y-2*coeff,z), N=N)
-    m3 = G.TFI([c, l1, l2, l3])
+    m3 = Generator.TFI([c, l1, l2, l3])
 
     c = circle(C, R, tetas=45.+180, tetae=45.+270., N=N)
     l1 = line((x-coeff,y-coeff,z), (x+coeff,y-coeff,z), N=N)
     l2 = line((x-coeff,y-coeff,z), (x-2*coeff,y-2*coeff,z), N=N)
     l3 = line((x+coeff,y-coeff,z), (x+2*coeff,y-2*coeff,z), N=N)
-    m4 = G.TFI([c, l1, l2, l3])
+    m4 = Generator.TFI([c, l1, l2, l3])
 
     h = 2*coeff/(N-1)
-    m5 = G.cart((x-coeff,y-coeff,z), (h,h,h), (N, N, 1))
-    m5 = T.reorder(m5, (-1,2,3))
+    m5 = Generator.cart((x-coeff,y-coeff,z), (h,h,h), (N, N, 1))
+    m5 = Transform.reorder(m5, (-1,2,3))
     m = [m1,m2,m3,m4,m5]
     return export__(m, ntype)
 
 def quadrangle(P1, P2, P3, P4, N=0, ntype='QUAD'):
     """Create a single quadrangle with points P1, P2, P3, P4.
     Usage: a = quadrangle((x1,y,1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4))"""
-    try: import Generator as G
+    try: import Generator
     except ImportError:
         raise ImportError("quadrangle: requires Generator module.")
     if N == 0 and ntype == 'QUAD': return geom.quadrangle(P1, P2, P3, P4)
@@ -233,7 +236,7 @@ def quadrangle(P1, P2, P3, P4, N=0, ntype='QUAD'):
     l2 = line(P2, P3, N)
     l3 = line(P3, P4, N)
     l4 = line(P4, P1, N)
-    m = [G.TFI([l1, l2, l3, l4])]
+    m = [Generator.TFI([l1, l2, l3, l4])]
     return export__(m, ntype)
 
 def triangle(P0, P1, P2, N=0, ntype='TRI'):
@@ -243,7 +246,7 @@ def triangle(P0, P1, P2, N=0, ntype='TRI'):
     if len(P1) == 2: P1 = (P1[0],P1[1],0.)
     if len(P2) == 2: P2 = (P2[0],P2[1],0.)
     if N == 0 and ntype == 'TRI': return geom.triangle(P0, P1, P2)
-    try: import Generator as G; import Transform as T
+    try: import Generator; import Transform
     except ImportError:
         raise ImportError("triangle: requires Generator and Transform module.")
     C01 = (0.5*(P0[0]+P1[0]), 0.5*(P0[1]+P1[1]), 0.5*(P0[2]+P1[2]))
@@ -257,28 +260,28 @@ def triangle(P0, P1, P2, N=0, ntype='TRI'):
     l2 = line(C01, C, N)
     l3 = line(C, C02, N)
     l4 = line(C02, P0, N)
-    m1 = G.TFI([l1, l2, l3, l4])
-    m1 = T.reorder(m1, (-1,2,3))
+    m1 = Generator.TFI([l1, l2, l3, l4])
+    m1 = Transform.reorder(m1, (-1,2,3))
 
     l1 = line(C01, P1, N)
     l2 = line(P1, C12, N)
     l3 = line(C12, C, N)
     l4 = line(C, C01, N)
-    m2 = G.TFI([l1, l2, l3, l4])
-    m2 = T.reorder(m2, (-1,2,3))
+    m2 = Generator.TFI([l1, l2, l3, l4])
+    m2 = Transform.reorder(m2, (-1,2,3))
 
     l1 = line(C, C12, N)
     l2 = line(C12, P2, N)
     l3 = line(P2, C02, N)
     l4 = line(C02, C, N)
-    m3 = G.TFI([l1, l2, l3, l4])
-    m3 = T.reorder(m3, (-1,2,3))
+    m3 = Generator.TFI([l1, l2, l3, l4])
+    m3 = Transform.reorder(m3, (-1,2,3))
     m = [m1, m2, m3]
     return export__(m, ntype)
 
 def box(Pmin, Pmax, N=100, ntype='STRUCT'):
     """Create a box passing by Pmin and Pmax (axis aligned)."""
-    try: import Generator as G; import Transform as T
+    try: import Generator; import Transform
     except ImportError:
         raise ImportError("box: requires Generator and Transform module.")
     N = max(N, 2)
@@ -287,29 +290,28 @@ def box(Pmin, Pmax, N=100, ntype='STRUCT'):
     hx = abs(xmax-xmin)/(N-1.)
     hy = abs(ymax-ymin)/(N-1.)
     hz = abs(zmax-zmin)/(N-1.)
-
-    s1 = G.cart(Pmin, (hx,hy,hz), (N, N, 1))
-    s1 = T.reorder(s1, (-1,2,3))
-    s2 = G.cart((xmin,ymin,zmax), (hx,hy,hz), (N, N, 1))
-    s3 = G.cart( Pmin, (hx,hy,hz), (N, 1, N) )
-    s3 = T.reorder(s3, (2,1,3))
-    s4 = G.cart((xmin,ymax,zmin), (hx,hy,hz), (N, 1, N))
-    s4 = T.reorder(s4, (-2,1,3))
-    s5 = G.cart(Pmin, (hx,hy,hz), (1, N, N))
-    s5 = T.reorder(s5, (1,-2,3))
-    s6 = G.cart((xmax,ymin,zmin), (hx,hy,hz), (1, N, N))
+    s1 = Generator.cart(Pmin, (hx,hy,hz), (N, N, 1))
+    s1 = Transform.reorder(s1, (-1,2,3))
+    s2 = Generator.cart((xmin,ymin,zmax), (hx,hy,hz), (N, N, 1))
+    s3 = Generator.cart( Pmin, (hx,hy,hz), (N, 1, N) )
+    s3 = Transform.reorder(s3, (2,1,3))
+    s4 = Generator.cart((xmin,ymax,zmin), (hx,hy,hz), (N, 1, N))
+    s4 = Transform.reorder(s4, (-2,1,3))
+    s5 = Generator.cart(Pmin, (hx,hy,hz), (1, N, N))
+    s5 = Transform.reorder(s5, (1,-2,3))
+    s6 = Generator.cart((xmax,ymin,zmin), (hx,hy,hz), (1, N, N))
     s = [s1, s2, s3, s4, s5, s6]
     return export__(s, ntype)
 
 def cylinder(C, R, H, N=100, ntype='STRUCT'):
     """Create a cylinder of center C, radius R and height H."""
-    try: import Transform as T
+    try: import Transform
     except ImportError:
         raise ImportError("cylinder: requires Generator and Transform module.")
     (x0,y0,z0) = C
     m0 = disc(C, R, N)
     m1 = disc((x0,y0,z0+H), R, N)
-    m1 = T.reorder(m1, (-1,2,3))
+    m1 = Transform.reorder(m1, (-1,2,3))
     m2 = circle(C, R, tetas=-45, tetae=-45+360, N=4*N-3)
     l = line(C, (x0,y0,z0+H), N=N)
     m2 = lineDrive(m2, l)
@@ -338,8 +340,9 @@ def curve(f, N=100):
     if isinstance(f, str): return curve_(f, N)
     else: return curve__(f, N)
 
-# Courbe parametree a partir d'une formule
+# Parametric curve from a formula
 def curve_(f, N):
+    """Create a curve from a user defined parametric function or a formula."""
     import Converter; import Generator
     a = Generator.cart( (0,0,0), (1./(N-1),1,1), (N,1,1))
     a[0] = 't,y,z'
@@ -347,7 +350,7 @@ def curve_(f, N):
     a = Converter.extractVars(a, ['x','y','z'])
     return a
 
-# Courbe parametree a partir d'une fonction
+# Parametric curve from a function
 def curve__(f, N):
     a = numpy.zeros((3, N), dtype=numpy.float64)
     r = f(0)
@@ -366,8 +369,9 @@ def surface(f, N=100, isVectorized=False):
     if isinstance(f, str): return surface_(f, N)
     else: return surface__(f, N, isVectorized)
 
-# Surface parametree a partir d'une formule
+# Parametric surface from a formula
 def surface_(f, N):
+    """Create a surface from a user defined parametric function or a formula."""
     import Converter; import Generator
     a = Generator.cart((0,0,0), (1./(N-1),1./(N-1),1), (N,N,1))
     a[0] = 't,u,z'
@@ -375,7 +379,7 @@ def surface_(f, N):
     a = Converter.extractVars(a, ['x','y','z'])
     return a
 
-# Surface parametree a partir d'une fonction
+# Parametric surface from a function
 def surface__(f, N, isVectorized=False):
     import Generator
     a = numpy.zeros((3, N*N), dtype=numpy.float64)
@@ -399,10 +403,9 @@ def surface__(f, N, isVectorized=False):
                 a[2,ind] = r[2]
     return ['x,y,z', a, N, N, 1]
 
-# - informations -
+# - informations on geometries -
 def getLength(a):
-    """Return the length of 1D-mesh.
-    Usage: l = getLength(a)"""
+    """Return the length of 1D-mesh."""
     if isinstance(a[0], list):
         l = 0.
         for i in a: l += geom.getLength(i)
@@ -411,6 +414,8 @@ def getLength(a):
 
 def dLength(a):
     """Return dlength of 1D-mesh."""
+    import KCore.Dist as Dist
+    if not Dist.checkAdolc()[0]: return
     if isinstance(a[0], list):
         b = []
         for i in a: b.append(geom.dLength(i))
@@ -427,7 +432,6 @@ def getNearestPointIndex(a, pointList):
     Usage: getNearestPointIndex(a, pointList)"""
     if isinstance(pointList, tuple): pL = [pointList]
     else: pL = pointList
-
     if isinstance(a[0], list):
         # keep nearest
         npts = len(pL)
@@ -537,13 +541,98 @@ def getTangent(a):
         OrientationRelative = OrientationAbsolute/Norm
         t[1] = OrientationRelative
         b.append(t)
-    if len(b)==1: return b[0]
+    if len(b) == 1: return b[0]
     else: return b
 
-# Obsolete (use lineDrive)
-def lineGenerate(a, d):
-    return lineDrive(a, d)
+def getArea(a):
+    """Get area of surface a."""
+    import Post, Converter
+    b = Converter.initVars(a, 'F=1.')
+    b = Converter.extractVars(b, 'F')
+    if isinstance(a[0], list): area = Post.integ(a, b, [])
+    else: area = Post.integ([a], [b], [])
+    return area[0]
 
+def getVolume(a):
+    """Get volume of a closed surface a."""
+    import Post, Converter
+    if Converter.isNamePresent(a, 'x') >= 0: b = Converter.initVars(a, 'F={x}')
+    else: b = Converter.initVars(a, 'F={CoordinateX}')
+    b = Converter.extractVars(b, 'F')
+    if isinstance(a[0], list): volx = Post.integNorm(a, b, [])
+    else: volx = Post.integNorm([a], [b], [])
+    volx = volx[0][0]
+    if Converter.isNamePresent(a, 'y') >= 0: b = Converter.initVars(a, 'F={y}')
+    else: b = Converter.initVars(a, 'F={CoordinateY}')
+    b = Converter.extractVars(b, 'F')
+    if isinstance(a[0], list): voly = Post.integNorm(a, b, [])
+    else: voly = Post.integNorm([a], [b], [])
+    voly = voly[0][1]
+    if Converter.isNamePresent(a, 'z') >= 0: b = Converter.initVars(a, 'F={z}')
+    else: b = Converter.initVars(a, 'F={CoordinateZ}')
+    b = Converter.extractVars(b, 'F')
+    if isinstance(a[0], list): volz = Post.integNorm(a, b, [])
+    else: volz = Post.integNorm([a], [b], [])
+    volz = volz[0][2]
+    vol = volx+voly+volz
+    return vol/3.
+
+def getMassCenter(a):
+    """Get center of mass of a closed surface a."""
+    import Post, Converter
+    vol = getVolume(a)
+    if Converter.isNamePresent(a, 'x') >= 0: b = Converter.initVars(a, 'F={x}*{x}')
+    else: b = Converter.initVars(a, 'F={CoordinateX}*{CoordinateX}')
+    b = Converter.extractVars(b, 'F')
+    if isinstance(a[0], list): xc = Post.integNorm(a, b, [])
+    else: xc = Post.integNorm([a], [b], [])
+    xc = xc[0][0]*0.5/vol
+    if Converter.isNamePresent(a, 'y') >= 0: b = Converter.initVars(a, 'F={y}*{y}')
+    else: b = Converter.initVars(a, 'F={CoordinateY}*{CoordinateY}')
+    b = Converter.extractVars(b, 'F')
+    if isinstance(a[0], list): yc = Post.integNorm(a, b, [])
+    else: yc = Post.integNorm([a], [b], [])
+    yc = yc[0][1]*0.5/vol
+    if Converter.isNamePresent(a, 'z') >= 0: b = Converter.initVars(a, 'F={z}*{z}')
+    else: b = Converter.initVars(a, 'F={CoordinateZ}*{CoordinateZ}')
+    b = Converter.extractVars(b, 'F')
+    if isinstance(a[0], list): zc = Post.integNorm(a, b, [])
+    else: zc = Post.integNorm([a], [b], [])
+    zc = zc[0][2]*0.5/vol
+    return (xc,yc,zc)
+
+def distance(a, b):
+    """Get the distance from one curve or surface to another."""
+    import Dist2Walls, Post, Converter, numpy
+    if not isinstance(b[0], list): b = [b]
+    d = Dist2Walls.distance2Walls(a, b, type='ortho', loc='nodes')
+    #maxValue = 0.
+    #if isinstance(d[0], list):
+    #    for e in d: maxValue = max(maxValue, numpy.max(e[1]))
+    #else:
+    #    maxValue = numpy.max(d[1])
+    allcoords = []; allfields = []
+    if isinstance(a[0], list):
+        for i, b in enumerate(a):
+            if Converter.isNamePresent(a, 'x') >= 0:
+                coord = Converter.extractVars(b, ['x','y','z'])
+            else:
+                coord = Converter.extractVars(b, ['CoordinateX','CoordinateY','CoordinateZ'])
+            field = Converter.extractVars(d[i], ['TurbulentDistance'])
+            allcoords.append(coord)
+            allfields.append(field)
+    else:
+        if Converter.isNamePresent(a, 'x') >= 0:
+            coord = Converter.extractVars(a, ['x','y','z'])
+        else:
+            coord = Converter.extractVars(a, ['CoordinateX','CoordinateY','CoordinateZ'])
+        field = Converter.extractVars(d, ['TurbulentDistance'])
+        allcoords.append(coord)
+        allfields.append(field)
+    dist = Post.integ(allcoords, allfields)
+    return dist[0]
+
+# - generate surfaces from curves
 def lineDrive(a, d):
     """Generate a surface mesh starting from a curve and a driving curve defined by d.
     Usage: lineDrive(a, d)"""
@@ -564,9 +653,13 @@ def lineDrive(a, d):
         else:
             return geom.lineGenerate(a, d)
 
+# Obsolete (use lineDrive)
+def lineGenerate(a, d):
+    return lineDrive(a, d)
+
 def lineGenerate2__(array, drivingCurves):
     import Converter; import Generator
-    # Copie la distribution de 0 sur les autres courbes
+    # Copy the distribution from 0 to the other curves
     d = []
     ref = drivingCurves[0]; d += [ref]
     #l = getLength(ref)
@@ -576,8 +669,8 @@ def lineGenerate2__(array, drivingCurves):
         d += [Generator.map(i, distrib)]
     return geom.lineGenerate2(array, d)
 
-# Ortho drive avec copy ou avec stack
-# IN: a et d doivent etre orthogonals
+# Ortho drive with copy or with stack
+# IN: a and d must be orthogonal
 # IN: mode=0 (stack), mode=1 (copy)
 def orthoDrive(a, d, mode=0):
     """Generate a surface mesh starting from a curve and a driving orthogonally to curve defined by d.
@@ -619,11 +712,11 @@ def orthoDrive(a, d, mode=0):
             Pi = [coord[0,i],coord[1,i],coord[2,i]]
             Pip = [coord[0,i+1],coord[1,i+1],coord[2,i+1]]
             v = Vector.sub(Pi, P0)
-        # vecteur e1 (transformation de S)
+        # vector e1 (transformation of S)
         e1 = Vector.sub(Pip, Pi)
         e1 = Vector.normalize(e1)
-        # vecteur e2 (intersection plan)
-        # intersection du plan normal a e1 avec le plan x,y
+        # vector e2 (plane intersection)
+        # intersection of the plane normal to e1 with the x,y plane
         if abs(S[1]) > 1.e-12 and abs(S[2]) > 1.e-12: # x,S plane
             alpha = -e1[0]
             e2 = Vector.mul(alpha, e1)
@@ -677,7 +770,7 @@ def volumeFromCrossSections(contours):
         raise ImportError("volumeFromCrossSections: require Converter, Transform and Generator.")
 
     c = {}
-    # Dictionnaire des contours suivant z
+    # Dictionary of contours by z
     for i in contours:
         posz = KCore.isNamePresent(i, "z")
         if posz == -1:
@@ -731,84 +824,29 @@ def text1D(string, font='vera', smooth=0, offset=0.5):
         raise ImportError("text1D: requires Transform.")
     retour = []
     offx = 0.; offy = 0.; s = 6
+    asciiLetters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    numbers = "0123456789"
+    charMap = {
+        ".": "POINT",
+        ",": "COMMA",
+        ";": "POINTCOMMA",
+        ":": "TWOPOINTS",
+        "!": "EXCLAMATION",
+        "?": "INTERROGATION",
+        "+": "PLUS",
+        "-": "MINUS",
+        "=": "EQUAL",
+        "(": "LEFTBRACE",
+        ")": "RIGHTBRACE",
+        "é": "EACUTE",
+        "è": "ELOW",
+        "à": "ALOW",
+        "ç": "CCEDILLE"
+    }
     for i in string:
-        if i == 'A': a, s = Text.A()
-        elif i == 'a': a, s = Text.a()
-        elif i == 'B': a, s = Text.B()
-        elif i == 'b': a, s = Text.b()
-        elif i == 'C': a, s = Text.C()
-        elif i == 'c': a, s = Text.c()
-        elif i == 'D': a, s = Text.D()
-        elif i == 'd': a, s = Text.d()
-        elif i == 'E': a, s = Text.E()
-        elif i == 'e': a, s = Text.e()
-        elif i == 'F': a, s = Text.F()
-        elif i == 'f': a, s = Text.f()
-        elif i == 'G': a, s = Text.G()
-        elif i == 'g': a, s = Text.g()
-        elif i == 'H': a, s = Text.H()
-        elif i == 'h': a, s = Text.h()
-        elif i == 'I': a, s = Text.I()
-        elif i == 'i': a, s = Text.i()
-        elif i == 'J': a, s = Text.J()
-        elif i == 'j': a, s = Text.j()
-        elif i == 'K': a, s = Text.K()
-        elif i == 'k': a, s = Text.k()
-        elif i == 'L': a, s = Text.L()
-        elif i == 'l': a, s = Text.l()
-        elif i == 'M': a, s = Text.M()
-        elif i == 'm': a, s = Text.m()
-        elif i == 'N': a, s = Text.N()
-        elif i == 'n': a, s = Text.n()
-        elif i == 'O': a, s = Text.O()
-        elif i == 'o': a, s = Text.o()
-        elif i == 'P': a, s = Text.P()
-        elif i == 'p': a, s = Text.p()
-        elif i == 'Q': a, s = Text.Q()
-        elif i == 'q': a, s = Text.q()
-        elif i == 'R': a, s = Text.R()
-        elif i == 'r': a, s = Text.r()
-        elif i == 'S': a, s = Text.S()
-        elif i == 's': a, s = Text.s()
-        elif i == 'T': a, s = Text.T()
-        elif i == 't': a, s = Text.t()
-        elif i == 'U': a, s = Text.U()
-        elif i == 'u': a, s = Text.u()
-        elif i == 'V': a, s = Text.V()
-        elif i == 'v': a, s = Text.v()
-        elif i == 'W': a, s = Text.W()
-        elif i == 'w': a, s = Text.w()
-        elif i == 'X': a, s = Text.X()
-        elif i == 'x': a, s = Text.x()
-        elif i == 'Y': a, s = Text.Y()
-        elif i == 'y': a, s = Text.y()
-        elif i == 'Z': a, s = Text.Z()
-        elif i == 'z': a, s = Text.z()
-        elif i == '0': a, s = Text.C0()
-        elif i == '1': a, s = Text.C1()
-        elif i == '2': a, s = Text.C2()
-        elif i == '3': a, s = Text.C3()
-        elif i == '4': a, s = Text.C4()
-        elif i == '5': a, s = Text.C5()
-        elif i == '6': a, s = Text.C6()
-        elif i == '7': a, s = Text.C7()
-        elif i == '8': a, s = Text.C8()
-        elif i == '9': a, s = Text.C9()
-        elif i == '.': a, s = Text.POINT()
-        elif i == ',': a, s = Text.COMMA()
-        elif i == ';': a, s = Text.POINTCOMMA()
-        elif i == ':': a, s = Text.TWOPOINTS()
-        elif i == '!': a, s = Text.EXCLAMATION()
-        elif i == '?': a, s = Text.INTERROGATION()
-        elif i == '+': a, s = Text.PLUS()
-        elif i == '-': a, s = Text.MINUS()
-        elif i == '=': a, s = Text.EQUAL()
-        elif i == '(': a, s = Text.LEFTBRACE()
-        elif i == ')': a, s = Text.RIGHTBRACE()
-        elif i == 'é': a, s = Text.EACUTE()
-        elif i == 'è': a, s = Text.ELOW()
-        elif i == 'à': a, s = Text.ALOW()
-        elif i == 'ç': a, s = Text.CCEDILLE()
+        if i in asciiLetters: a, s = getattr(Text, i)()
+        elif i in numbers: a, s = getattr(Text, "C" + i)()
+        elif i in charMap: a, s = getattr(Text, charMap[i])()
         elif i == '\n':
             offy = offy - 8 - offset
             offx = -6 - offset
@@ -878,9 +916,9 @@ def text3D(string, font='vera', smooth=0, offset=0.5, thickness=8.):
 
 #======================================================================
 # connect 1D curves
-# IN: sharpness=0: par des lignes, =1 par des splines
-# IN: N: nbre de pts dans les raccords
-# IN: lengthFactor: enleve les raccords trop longs
+# IN: sharpness=0: by lines, =1 by splines
+# IN: N: number of points in the connections
+# IN: lengthFactor: removes connections that are too long
 #======================================================================
 def connect1D(curves, sharpness=0, N=10, lengthFactor=1.):
     """Connect 1D curves in a single curve.
@@ -948,8 +986,8 @@ def connect1D(curves, sharpness=0, N=10, lengthFactor=1.):
     out = G.close(out)
     return out
 
-# Pt d'intersection par minimal distance
-def intersectionPoint__(P1,n1,P2,n2):
+# Intersection point by minimal distance
+def intersectionPoint__(P1, n1, P2, n2):
     s = Vector.dot(n1, n2)
     s2 = max(1.-s*s, 1.e-12)
     dP1P2 = Vector.sub(P1, P2)
@@ -964,11 +1002,11 @@ def intersectionPoint__(P1,n1,P2,n2):
     PI = Vector.mul(0.5,PI)
     return PI
 
-# trouve le pt le plus proche de Pt dans Pts mais different de c
+# finds the nearest point to Pt in Pts but different from c
 def findNearest__(Pt, Pts, c):
     minDist = 1.e6; nearest = None; dmin = -1; ext=0
     for d in range(len(Pts)):
-        if d <= c: # possible sur lui meme !!
+        if d <= c: # possible on itself !!
             e2a = Pts[d][0]; e2b = Pts[d][1]
             d1 = Vector.squareDist(Pt, e2a)
             d2 = Vector.squareDist(Pt, e2b)
@@ -985,7 +1023,7 @@ def getUV(a, normalDeviationWeight=2., texResolution=1920, fields=None):
     a = Converter.initVars(a, '_v_', 0.)
     return geom.getUV(a, normalDeviationWeight, texResolution, fields)
 
-# Init _u_ et _v_ from i,j (struct surface)
+# Init _u_ and _v_ from i,j (struct surface)
 def getUVFromIJ(a):
     """Return uv of structured surface."""
     import Converter
@@ -996,8 +1034,8 @@ def getUVFromIJ(a):
     else: # array1
         pu = a[1][3].ravel('k'); pv = a[1][4].ravel('k')
     ni = a[2]; nj = a[3]
-    for j in range(nj):
-        for i in range(ni):
-            pu[i+j*ni] = j*1./(nj-1)
-            pv[i+j*ni] = i*1./(ni-1)
+    u = numpy.arange(nj, dtype=numpy.float64)/(nj-1)
+    v = numpy.arange(ni, dtype=numpy.float64)/(ni-1)
+    pu[:] = numpy.repeat(u, ni)
+    pv[:] = numpy.tile(v, nj)
     return a

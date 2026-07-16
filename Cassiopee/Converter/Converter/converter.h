@@ -82,9 +82,7 @@ namespace K_CONVERTER
   PyObject* convertStrand2Penta(PyObject* self, PyObject* args);
   PyObject* convertPenta2Strand(PyObject* self, PyObject* args);
   PyObject* center2Node(PyObject* self, PyObject* args);
-  PyObject* center2Node_OLD(PyObject* self, PyObject* args);
   PyObject* node2Center(PyObject* self, PyObject* args);
-  PyObject* node2Center_OLD(PyObject* self, PyObject* args);
   PyObject* node2ExtCenter(PyObject* self, PyObject* args);
   PyObject* extCenter2Node(PyObject* self, PyObject* args);
   PyObject* center2ExtCenter(PyObject* self, PyObject* args);
@@ -137,16 +135,17 @@ namespace K_CONVERTER
   PyObject* registerAllElements(PyObject* self, PyObject* args);
   // free hook
   PyObject* freeHook(PyObject* self, PyObject* args);
-  // identification
+  // geometric identification
   PyObject* identifyElements(PyObject* self, PyObject* args);
   PyObject* identifyFaces(PyObject* self, PyObject* args);
   PyObject* identifyNodes(PyObject* self, PyObject* args);
-  PyObject* identifySolutions( PyObject* self, PyObject* args );
+  PyObject* identifySolutions(PyObject* self, PyObject* args);
   // voisin le plus proche
   PyObject* nearestElements(PyObject* self, PyObject* args);
   PyObject* nearestFaces(PyObject* self, PyObject* args);
   PyObject* nearestNodes(PyObject* self, PyObject* args);
   // topological identification
+  PyObject* identifyFacesTopo(PyObject* self, PyObject* args);
   PyObject* createGlobalIndex(PyObject* self, PyObject* args);
   PyObject* recoverGlobalIndex(PyObject* self, PyObject* args);
   // Adapter
@@ -171,7 +170,8 @@ namespace K_CONVERTER
   PyObject* diffIndex(PyObject* self, PyObject* args);
   PyObject* pointList2Ranges(PyObject* self, PyObject* args);
   PyObject* pointList2SPL(PyObject* self, PyObject* args);
-  PyObject* range2PointList(PyObject* self, PyObject* args);
+  PyObject* window2FacePointList(PyObject* self, PyObject* args);
+  PyObject* window2VertexPointList(PyObject* self, PyObject* args);
   PyObject* PR2VL(PyObject* self, PyObject* args);
   // Extraction d'infos ou de champs
   PyObject* extractFields(PyObject* self, PyObject* args); 
@@ -192,7 +192,8 @@ namespace K_CONVERTER
 
   // Adapt BC face point list to vertex point list and vice versa, NGON and ME
   PyObject* adaptBCFacePL2VertexPL_NGON(FldArrayI* cn, FldArrayI* fpl);
-  PyObject* adaptBCFacePL2VertexPL_ME(FldArrayI* cn, FldArrayI* fpl);
+  PyObject* adaptBCFacePL2VertexPL_ME(FldArrayI* cn, const char* eltType,
+                                      const E_Int npts, FldArrayI* fpl);
   PyObject* adaptBCVertexPL2FacePL_NGON(FldArrayI* cn, FldArrayI* vpl, E_Int npts);
   PyObject* adaptBCVertexPL2FacePL_ME(FldArrayI* cn, FldArrayI* vpl, E_Int npts);
   
@@ -207,11 +208,6 @@ namespace K_CONVERTER
                            E_Int neltsAdd,
                            E_Int sizeFN2, E_Int sizeEF2, std::vector<E_Int>& facesExt,
                            K_FLD::FldArrayF*& f2, K_FLD::FldArrayI*& cn2);
-
-  // Conformisation topologique d'un NGON
-  void conformizeNGon(K_FLD::FldArrayF& f, E_Int posx, E_Int posy, E_Int posz,
-                      K_FLD::FldArrayI& cn, E_Float tol,
-                      K_FLD::FldArrayI*& cno);
 
   // a mettre ensuite dans K_CONNECT
   void orderBAR2Struct(E_Int posx, E_Int posy, E_Int posz,

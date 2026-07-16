@@ -1,4 +1,4 @@
-# test driver
+# generate a simple geometry
 import Roms.Driver as D
 import Roms.DB.DataBase as DataBase
 
@@ -47,7 +47,7 @@ t = db.fetchTree(q)[0]
 import Converter.PyTree as C
 C.convertPyTree2File(t, 'out.cgns')
 
-# Create Model
+# Build full matrix from db
 q = db.query()
 A = db.fetchMatrix(q, variables=['dx','dy','dz'])
 print(A.shape)

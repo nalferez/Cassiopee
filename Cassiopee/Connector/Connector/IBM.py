@@ -1498,7 +1498,7 @@ def _setInterpDataIBM(t, tc, tb, front, front2=None, dimPb=3, frontType=1, IBCTy
         dictOfInterpPtsByIBCType2   ={}
     interDictIBM2={}
 
-    if dictOfCorrectedPtsByIBCType!={}:
+    if dictOfCorrectedPtsByIBCType:
         for ibcTypeL in dictOfCorrectedPtsByIBCType:
             allCorrectedPts = dictOfCorrectedPtsByIBCType[ibcTypeL]
             allWallPts      = dictOfWallPtsByIBCType[ibcTypeL]
@@ -1572,7 +1572,7 @@ def _setInterpDataIBM(t, tc, tb, front, front2=None, dimPb=3, frontType=1, IBCTy
 
     for i in range(Cmpi.size): datas[i] = [] # force
 
-    if dictOfCorrectedPtsByIBCType!={}:
+    if dictOfCorrectedPtsByIBCType:
         for ibcTypeL in dictOfCorrectedPtsByIBCType:
             if '#' in ibcTypeL: ibcNameL = 'IBCD_'+'_'.join(ibcTypeL.split('#')) #ibctype with familyname
             else: ibcNameL = 'IBCD_'+ibcTypeL #regular ibctype
@@ -1614,7 +1614,7 @@ def _setInterpDataIBM(t, tc, tb, front, front2=None, dimPb=3, frontType=1, IBCTy
                         else:
                             if destProc not in datas: datas[destProc] = []
 
-    if dictOfCorrectedPtsByIBCType2!={}:
+    if dictOfCorrectedPtsByIBCType2:
         for ibcTypeL in dictOfCorrectedPtsByIBCType2:
             if '#' in ibcTypeL: ibcNameL = '2_IBCD_'+'_'.join(ibcTypeL.split('#'))
             else: ibcNameL = '2_IBCD_'+ibcTypeL
@@ -2649,7 +2649,7 @@ def createWallAdapt(tc):
         # Creation d une seule zone
         zsize = numpy.empty((1,3), Internal.E_NpyInt, order='F')
         zsize[0,0] = xcNP.shape[0]; zsize[0,1] = 0; zsize[0,2] = 0
-        z = Internal.newZone(name=zname,zsize=zsize,ztype='Unstructured')
+        z = Internal.newZone(name=zname, zsize=zsize, ztype='Unstructured')
         gc = Internal.newGridCoordinates(parent=z)
         coordx = ['CoordinateX',xcNP,[],'DataArray_t']
         coordy = ['CoordinateY',ycNP,[],'DataArray_t']

@@ -16,9 +16,9 @@
     You should have received a copy of the GNU General Public License
     along with Cassiopee.  If not, see <http://www.gnu.org/licenses/>.
 */
-# include "metric.h"
+#include "metric.h"
+#include "kadolc.h"
 #include <math.h>
-
 
 //=============================================================================
 // Calcul de la surface pour une grille surfacique structuree
@@ -26,11 +26,10 @@
 // IN: xt, yt, zt: Vertex coordinates
 // OUT: surface: Mesh area
 //=============================================================================
-void K_METRIC::compSurfStruct2D(
+void K_METRIC::__AD(compSurfStruct2D)(
   const E_Int ni, const E_Int nj, const E_Int nk,
   const E_Float* xt, const E_Float* yt, const E_Float* zt,
-  E_Float* surface
-)
+  E_Float* surface)
 {
   E_Int ni1, nj1, nk1;
   E_Int ind1, ind2, ind3, ind4, indcell;
@@ -168,7 +167,7 @@ void K_METRIC::compSurfStruct2D(
 // IN: xt, yt, zt: Vertex coordinates
 // OUT: length: Longueur entre chaque sommet
 //=============================================================================
-void K_METRIC::compSurfStruct1D(
+void K_METRIC::__AD(compSurfStruct1D)(
   const E_Int ni, const E_Int nj, const E_Int nk,
   const E_Float* xt, const E_Float* yt, const E_Float* zt,
   E_Float* length
@@ -231,7 +230,7 @@ void K_METRIC::compSurfStruct1D(
 // IN: xt, yt, zt: Vertex coordinates
 // OUT: surface: Aire
 //=============================================================================
-void K_METRIC::compSurfOfStructCell(
+void K_METRIC::__AD(compSurfOfStructCell)(
   const E_Int ni, const E_Int nj, const E_Int nk, const E_Int indcell,
   const E_Float* xt, const E_Float* yt, const E_Float* zt,
   E_Float& surface

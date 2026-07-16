@@ -565,7 +565,7 @@ def getBCPtListOfType(z, typesList, families=[]):
     nodes = []
     for btyp in typesList:
         nodes += Internal.getNodesFromValue(z, btyp)
-        if families != []:nodes += C.getFamilyBCs(z, families)
+        if families != []:nodes += Internal.getFamilyBCs(z, families)
 
     #print(nodes)
     ptList = []
@@ -1286,7 +1286,7 @@ def _XcellN_(t, priorities, output_type=0, rtol=0.05):
 
     for z in Internal.getZones(tNG):
         for btyp in WALLBCS:
-            wallfamilies += C.getFamilyBCNamesOfType(t, btyp)
+            wallfamilies += Internal.getFamilyBCNamesOfType(t, btyp)
 
     wallfamilies = list(set(wallfamilies)) # make unique occurences
     #print(wallfamilies)
@@ -2926,7 +2926,7 @@ def _conformizeHMesh(t, hooks, conformize=1):
 
         zone_to_rid_to_list_owned[zid] = rid_to_ptlist #dico z_to_rid_to_ptlist_owned est mis à jour avant de le donner à exchangePointList
 
-        if rid_to_ptlist != {}:
+        if rid_to_ptlist:
             updateJoinsPointLists3(z, zidDict, rid_to_ptlist, 'PointList')
 
         # MAJ FIELDS

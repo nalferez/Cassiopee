@@ -291,6 +291,31 @@ def getTangent(t):
     C._TZGC1(tp, 'nodes', True, Geom.getTangent)
     return tp
 
+def getArea(a):
+    """Get area of surface a."""
+    a = C.getFields(Internal.__GridCoordinates__, a, api=3)
+    area = Geom.getArea(a)
+    return area
+
+def getVolume(a):
+    """Get volume of closed surface a."""
+    a = C.getFields(Internal.__GridCoordinates__, a, api=3)
+    vol = Geom.getVolume(a)
+    return vol
+
+def getMassCenter(a):
+    """Get center of mass of closed surface a."""
+    a = C.getFields(Internal.__GridCoordinates__, a, api=3)
+    Xc = Geom.getMassCenter(a)
+    return Xc
+
+def distance(a, b):
+    """Get the distance from one curve or surface to another."""
+    a = C.getFields(Internal.__GridCoordinates__, a, api=3)
+    b = C.getFields(Internal.__GridCoordinates__, b, api=3)
+    maxValue = Geom.distance(a, b)
+    return maxValue
+
 def addSeparationLine(t, line0):
     """Add a separation line defined in line0 to a mesh defined in t.
     Usage: addSeparationLine(t, line0)"""
@@ -504,6 +529,7 @@ def getUVFromIJ(t):
 
 def _getUVFromIJ(a):
     """Return uv of structured surface."""
+    import numpy
     zones = Internal.getZones(a)
     for z in zones:
         C._initVars(z, '_u_=0.')
@@ -515,10 +541,10 @@ def _getUVFromIJ(a):
         dim = Internal.getZoneDim(z)
         if dim[0] == 'Structured':
             ni = dim[1]; nj = dim[2]
-            for j in range(nj):
-                for i in range(ni):
-                    pu[i+j*ni] = j*1./(nj-1)
-                    pv[i+j*ni] = i*1./(ni-1)
+            u = numpy.arange(nj, dtype=numpy.float64)/(nj-1)
+            v = numpy.arange(ni, dtype=numpy.float64)/(ni-1)
+            pu[:] = numpy.repeat(u, ni)
+            pv[:] = numpy.tile(v, nj)
     return None
 
 def offsetSurface(a, offset=1., pointsPerUnitLength=1., algo=0, dim=3):

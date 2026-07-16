@@ -58,7 +58,7 @@ def connectNearMatch(a, ratio=2, tol=1.e-6, dim=3):
         iratio = ratio
     else:
         iratio = 1
-        for r in ratio: iratio=max(iratio,r)
+        for r in ratio: iratio = max(iratio,r)
 
     # Ajout des bandelettes
     Cmpi._addBXZones(a, depth=iratio+1)
@@ -119,6 +119,9 @@ def _connectMatchNGon(z, tol=1.e-6):
     import Transform.PyTree as T
     if Cmpi.size == 1: return None
 
+    if z[3] != 'Zone_t':
+        raise TypeError("connectMatchNGon: only for one zone.")
+
     # get exterior faces and indirection
     indicesF = []
     zf = P.exteriorFaces(z, indices=indicesF)
@@ -154,38 +157,169 @@ def _connectMatchNGon(z, tol=1.e-6):
 
     for trip in range(Cmpi.size-1):
 
+        #print("trip number ", trip, flush=True)
         data = [zu, indicesE]
         data = Cmpi.passNext(data)
         (zu, indicesE) = data
-        #print(Cmpi.rank, "receive done", zu[0], flush=True)
+        if zu is None: continue
+
+        #if Cmpi.rank == trip: C.convertPyTree2File(zu, "%d-%dout.cgns"%(trip,Cmpi.rank))
+        #if Cmpi.rank == trip: print(trip,Cmpi.rank,indicesE)
+        #print(Cmpi.rank, "receive ", zu[0], flush=True)
 
         # identify faces and build matches
-        ids = C.identifyElements(hook, zu, tol)
+        #print(Cmpi.rank, "identifying face of npts ", C.getNPts(zu), flush=True)
+        ids = C.identifyElements(hook, zu, tol, rtol=0.)
+        #print(Cmpi.rank, "done", flush=True)
 
-        # get the indices of ids where ids is not -1
-        # since they correspond to indices in zu
-        ids2 = numpy.copy(ids)
-        #if Cmpi.rank == 0: print(ids2.ravel('k'))
-        ids2[:] += 1
-        ids2 = numpy.argwhere(ids2)
-        #if Cmpi.rank == 0: print(ids2.ravel('k'))
+        # get indices where ids != -1
+        mask = ids >= 0
+        ids2 = numpy.flatnonzero(mask)
+        ids2 = ids2.astype(Internal.E_NpyInt)
 
         # keep non -1 indices
-        ids = ids[ids[:]>=0]
+        idsValid = ids[mask] # indices de z
+        sizebc = idsValid.size
 
-        sizebc = ids.size
         if sizebc > 0:
-            id2 = numpy.empty(sizebc, dtype=Internal.E_NpyInt)
-            id2[:] = indicesF[ids[:]-1]
-            #id1 = numpy.empty(sizebc, dtype=Internal.E_NpyInt)
-            #id1[:] = indicesE[ids2[:]]
-            id1 = indicesE[ids2[:]]
+            id2 = indicesF[idsValid - 1]
+            id1 = indicesE[ids2]
+
             #print(Cmpi.rank, 'source', id2.shape, id2.ravel('k'))
             #print(Cmpi.rank, 'donor', id1.shape, id1.ravel('k'))
             C._addBC2Zone(z, 'match', 'BCMatch', faceList=id2, zoneDonor=zu[0], faceListDonor=id1)
 
+            # reduce zu
+            #if Cmpi.rank == trip: print(trip, Cmpi.rank, "ids", ids, flush=True)
+            mask2 = ~mask
+            indices = numpy.flatnonzero(mask2)
+            indices = indices.astype(Internal.E_NpyInt)
+            #if Cmpi.rank == trip: print(trip, Cmpi.rank, "indices(-1)", indices, flush=True)
+            #if Cmpi.rank == trip: print(trip, Cmpi.rank, "indicesE", indicesE, flush=True)
+
+            if indices.size == 0: zu = None; indicesE = []
+            else:
+                zoneName = zu[0]
+                #if Cmpi.rank == trip: print(trip, Cmpi.rank, indices, flush=True)
+                zu = T.subzone(zu, indices, type='elements')
+                #if Cmpi.rank == trip: C.convertPyTree2File(zu, "%d-%dend.cgns"%(trip,Cmpi.rank))
+                zu[0] = zoneName
+                indicesE = indicesE[mask2]
+                #if Cmpi.rank == trip: print(Cmpi.rank, "indicesE2(sans-1)", indicesE, flush=True)
+            #if trip == Cmpi.size-2 and zu is not None:
+            #    print("Warning: %d: remaining unidentified points=%d"%(Cmpi.rank, indices.size), flush=True)
+
     C.freeHook(hook)
     return None
+
+#=============================================================================
+# Exchange BCMatch data
+#=============================================================================
+def exchangeBCMatchData(t, varList):
+    # Compute graph of match
+    procDict = Cmpi.getProcDict(t)
+    graph = Cmpi.computeGraph(t, type='match', procDict=procDict)
+    zones = Internal.getZones(t)
+    export = {}
+    nvars = len(varList)
+
+    for z in zones:
+        dim = Internal.getZoneDim(z)
+        if dim[0] == 'Structured':
+            fields = C.getFields("centers", z, vars=varList, api=3)[0]
+            # get face values
+            GCs = Internal.getNodesFromType2(z, 'GridConnectivity1to1_t')
+            for gc in GCs:
+                donor = Internal.getValue(gc)
+                PL = Internal.getBCFaceNode(z, gc)[1] # PointRange
+                PLD = Internal.getBCFaceNode(z, gc, donor=True)[1] # PointRangeDonor
+                prr = Internal.getNodeFromName1(gc, 'PointRange')
+                prd = Internal.getNodeFromName1(gc, 'PointRangeDonor')
+                wr = Internal.range2Window(prr[1])
+                wd = Internal.range2Window(prd[1])
+                iminR, imaxR, jminR, jmaxR, kminR, kmaxR = wr
+                iminD, imaxD, jminD, jmaxD, kminD, kmaxD = wd
+                niR = dim[1]; njR = dim[2]; nkR = dim[3] # TODO
+                tri = Internal.getNodeFromName1(gc, 'Transform')
+                tri = Internal.getValue(tri)
+                t1, t2, t3 = tri
+                indR, fld = Converter.converter.extractBCMatchStruct(
+                    fields,
+                    (iminD, jminD, kminD, imaxD, jmaxD, kmaxD),
+                    (iminR, jminR, kminR, imaxR, jmaxR, kmaxR),
+                    (niR, njR, nkR),
+                    (t1, t2, t3)
+                )
+                oppNode = procDict[donor]
+                n = [donor, z[0], fld, PLD.ravel('k')]
+                if oppNode not in export: export[oppNode] = [n]
+                else: export[oppNode] += [n]
+        elif dim[0] == 'Unstructured':
+            if dim[3] == 'NGON':
+                Internal._adaptNFace2PE(z, remove=False)
+                # get face values
+                GCs = Internal.getNodesFromType2(z, 'GridConnectivity_t')
+                for gc in GCs:
+                    donor = Internal.getValue(gc)
+                    PL = Internal.getBCFaceNode(z, gc)[1] # PointList
+                    PLD = Internal.getBCFaceNode(z, gc, donor=True)[1] # PointListDonor
+                    fld = Converter.converter.extractBCMatchNG(
+                        z, PL, varList,
+                        Internal.__GridCoordinates__,
+                        Internal.__FlowSolutionNodes__,
+                        Internal.__FlowSolutionCenters__
+                    )
+                    oppNode = procDict[donor]
+                    n = [donor, z[0], fld, PLD.ravel('k')]
+                    if oppNode not in export: export[oppNode] = [n]
+                    else: export[oppNode] += [n]
+            else:
+                raise NotImplementedError("exchangeBCMatchData: Element "
+                                          f"type {dim[3]} not supported")
+
+    # sendrecv
+    recvDatas = Cmpi.sendRecv(export, graph)
+
+    # Mean on faces (we must find the opposite face from donor name)
+    indices = {}
+    BCField = [{} for _ in range(nvars)]
+
+    for i in recvDatas:
+        for n in recvDatas[i]:
+            # donor is supposed to have a unique matching match
+            donor, _, fld, PLD = n
+            z = Internal.getNodeFromName2(t, donor)
+            zn = z[0]
+            dim = Internal.getZoneDim(z)
+            if dim[0] == 'Structured':
+                fields = C.getFields('centers', z, vars=varList, api=3)[0]
+                fld1 = Converter.converter.buildBCMatchFieldStruct(fields, PLD, fld, None)
+            elif dim[0] == 'Unstructured':
+                if dim[3] == 'NGON':
+                    fld1 = Converter.converter.buildBCMatchFieldNG(
+                        z, PLD, fld, varList,
+                        Internal.__GridCoordinates__,
+                        Internal.__FlowSolutionNodes__,
+                        Internal.__FlowSolutionCenters__
+                    )
+                else:
+                    raise NotImplementedError("exchangeBCMatchData: Element "
+                                              f"type {dim[3]} not supported")
+
+            if zn not in indices: indices[zn] = PLD
+            else: indices[zn] = numpy.concatenate((indices[zn], PLD))
+            fldNames = fld1[0].split(",")
+            for v, var in enumerate(varList):
+                if var not in fldNames: continue
+                pos = fldNames.index(var)
+                BCFieldv = BCField[v]
+                if zn not in BCFieldv: BCFieldv[zn] = fld1[1][pos].ravel('k')
+                else:
+                    BCFieldv[zn] = numpy.concatenate(
+                        (BCFieldv[zn], fld1[1][pos].ravel('k'))
+                    )
+
+    return indices, BCField
 
 #==============================================================================
 # setHoleInterpolatedPoints
@@ -726,7 +860,7 @@ def _transfer2(t, tc, variables, graph, intersectionDict, dictOfADT,
     # 2. envoie data interpolation globale en asynchrone
         #Cmpi.trace("2. transfer2")
         reqs = []
-        if graph != {}:
+        if graph:
             if Cmpi.rank in graph:
                 g = graph[Cmpi.rank] # graph du proc courant
                 for oppNode in g:
@@ -774,7 +908,7 @@ def _transfer2(t, tc, variables, graph, intersectionDict, dictOfADT,
     # 4. reception des donnees d'interpolation globales
     #Cmpi.trace("4. transfer2")
     if hook is not None and len(hook) == 0:
-        if graph != {}:
+        if graph:
             for node in graph:
                 if Cmpi.rank in graph[node]:
                     rec = Converter.converter.recv(node, Cmpi.rank, Cmpi.KCOMM)

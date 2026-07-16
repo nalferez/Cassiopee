@@ -240,9 +240,6 @@ def _connectMatchStruct__(a, tol, dim, glob):
                 if topp0[2] > 0: topp[topp0[2]-1] = 3
                 else: topp[-topp0[2]-1] = -3
 
-            #print('match from ', zones[noz1][0], 'et ', zones[noz2][0])
-            #print(topp, topp0, info[3])
-
             #------------------------------------------
             # addBC2Zone...
             name1 = 'match%d_%d'%(noz1+1,glob); glob += 1
@@ -329,7 +326,7 @@ def getEmptyWindowsInfoHybrid__(t, dim=3):
                 C._initVars(winp,'centers:tag1',-1.) # defines the opposite window
                 C._initVars(winp,'centers:tag2',-2.) # defines the opp index in opp window
                 allTags += [winp]; indirBlkOfWins += [noz]
-                ind = Converter.converter.range2PointList(r[0],r[1],r[2],r[3],r[4],r[5],dimZ[1],dimZ[2],dimZ[3])
+                ind = Converter.converter.window2FacePointList(*r, dimZ[1], dimZ[2], dimZ[3])
                 allExtIndices += [ind]
     return allTags, indirBlkOfWins, allExtIndices
 
@@ -423,6 +420,7 @@ def getEmptyWindowsInfoStruct__(t, dim=3):
 # 3. structured/NGON
 #=============================================================================
 def connectMatch(t, tol=1.e-6, dim=3, type='all'):
+    """Find matching boundaries in t."""
     a,typen = Internal.node2PyTree(t)
     glob = 0
     if type == 'structured':
@@ -940,6 +938,7 @@ def blankIntersectingCells(t, tol=1.e-10, depth=2):
 def blankCells(t, bodies, blankingMatrix=[], depth=2,
                blankingType='cell_intersect', delta=1.e-10, dim=3,
                tol=1.e-8, XRaydim1=1000, XRaydim2=1000, cellNName='cellN'):
+    """Set the cellN at 0 for points inside bodies."""
     try: import Transform as T
     except: raise ImportError("blankCells: requires Transform module.")
     if depth != 1 and depth != 2:
@@ -1007,6 +1006,7 @@ def blankCells(t, bodies, blankingMatrix=[], depth=2,
 def _blankCells(a, bodies, blankingMatrix=[], depth=2,
                 blankingType='cell_intersect', delta=1.e-10, dim=3,
                 tol=1.e-8, XRaydim1=1000, XRaydim2=1000, cellNName='cellN'):
+    """Set the cellN at 0 for points inside bodies."""
     try: import Transform as T
     except: raise ImportError("_blankCells: requires Transform module.")
     if depth != 1 and depth != 2:
@@ -1077,6 +1077,7 @@ def _blankCells(a, bodies, blankingMatrix=[], depth=2,
 #==============================================================================
 def blankCellsTetra(t, mT4, blankingMatrix=[], blankingType='node_in',
                     tol=1.e-12, cellnval=0, overwrite=0, cellNName='cellN'):
+    """Set the cellN at 0 for points inside a tetra mesh."""
     try: import Transform as T
     except: raise ImportError("blankCells: requires Transform module.")
 
@@ -1135,6 +1136,7 @@ def blankCellsTetra(t, mT4, blankingMatrix=[], blankingType='node_in',
 #==============================================================================
 def blankCellsTri(t, mT3, blankingMatrix=[], blankingType='node_in',
                   tol=1.e-12, cellnval=0, overwrite=0, cellNName='cellN'):
+    """Set the cellN at 0 for points inside a triangular surface."""
     try: import Transform as T
     except: raise ImportError("blankCellsTri: requires Transform module.")
 
@@ -1190,6 +1192,7 @@ def blankCellsTri(t, mT3, blankingMatrix=[], blankingType='node_in',
 
 def _blankCellsTri(a, mT3, blankingMatrix=[], blankingType='node_in',
                    tol=1.e-12, cellnval=0, overwrite=0, cellNName='cellN'):
+    """Set the cellN at 0 for points inside a triangular surface."""
     try: import Transform as T
     except: raise ImportError("blankCellsTri: requires Transform module.")
 
@@ -1546,7 +1549,6 @@ def _maximizeBlankedCells(t, depth=2, dir=1, loc='centers', cellNName='cellN', a
 # compatible avec une rangee de cellules d'interpolation
 # Seulement pour les grilles structurees (no check)
 #==============================================================================
-# version in place (getFromArray2)
 def _applyBCOverlapsStructured(z, depth, loc, val=2, cellNName='cellN', oversetFamNames=[]):
     varc = cellNName
     if loc == 'centers': varc = 'centers:'+varc; shift = 0
@@ -1833,7 +1835,7 @@ def setDoublyDefinedBC(t, depth=2):
     _addCellN__(a, loc='centers')
     C._initVars(a, 'centers:cellN_dd', 1.)
     #=======================================================================
-    # 2 - Recherche des periodicites :
+    # 2 - Recherche des periodicites:
     #     duplication des blocs periodiques dans les bases associees
     #     creation d un noeud fils au niveau de la zone dupliquee de nom 'TemporaryPeriodicZone'
     #=======================================================================
@@ -1989,10 +1991,10 @@ def _doubleWall(t, tc, familyBC1, familyBC2, ghostCells=False, check=False, surf
     for b in Internal.getBases(t):
         for z in Internal.getZones(b):
             for f1 in familyBC1:
-                wall1 = C.getFamilyBCs(z, f1)
+                wall1 = Internal.getFamilyBCs(z, f1)
                 for w in wall1: listOfMismatch1.append(b[0]+'/'+z[0]+'/'+w[0])
             for f2 in familyBC2:
-                wall2 = C.getFamilyBCs(z, f2)
+                wall2 = Internal.getFamilyBCs(z, f2)
                 for w in wall2: listOfMismatch2.append(b[0]+'/'+z[0]+'/'+w[0])
 
     # project interpolated points (cellN=2) from listOfMismatch2 onto listOfMismatch1
@@ -2013,7 +2015,7 @@ def initDoubleWall(t, familyBC1, check=False):
     for b in Internal.getBases(t):
         for z in Internal.getZones(b):
             for f1 in familyBC1:
-                wall1 = C.getFamilyBCs(z, f1)
+                wall1 = Internal.getFamilyBCs(z, f1)
                 for w in wall1: listOfMismatch1.append(b[0]+'/'+z[0]+'/'+w[0])
 
     return DoubleWall.getProjSurfaceForDoubleWall(t, listOfMismatch1, '_'.join(familyBC1), check)

@@ -31,36 +31,36 @@ using namespace K_SEARCH;
 
 namespace K_GENERATOR 
 {
-struct stackData3
-{
+  struct stackData3
+  {
     OctreeNode* current;
-};
+  };
 
-OctreeNode* splitNode27(OctreeNode* current, E_Int levelMax, E_Int dim, E_Int& split);
-OctreeNode* splitNode9(OctreeNode* current, E_Int levelMax, E_Int& split);
+  OctreeNode* splitNode27(OctreeNode* current, E_Int levelMax, E_Int dim, E_Int& split);
+  OctreeNode* splitNode9(OctreeNode* current, E_Int levelMax, E_Int& split);
 
-OctreeNode* splitVoisinBoth(OctreeNode* node, E_Int levelMax, E_Int dim, stack<stackData3>& stack);
-OctreeNode* splitVoisin9(OctreeNode* node, E_Int levelMax, stack<stackData3>& stack);
-OctreeNode* splitVoisin27(OctreeNode* node, E_Int levelMax, 
+  OctreeNode* splitVoisinBoth(OctreeNode* node, E_Int levelMax, E_Int dim, stack<stackData3>& stack);
+  OctreeNode* splitVoisin9(OctreeNode* node, E_Int levelMax, stack<stackData3>& stack);
+  OctreeNode* splitVoisin27(OctreeNode* node, E_Int levelMax, 
                           stack<stackData3>& stack);
 
-OctreeNode* addSplitVoisin9(OctreeNode* voisin, E_Int l0, E_Int levelMax, 
+  OctreeNode* addSplitVoisin9(OctreeNode* voisin, E_Int l0, E_Int levelMax, 
                              stack<stackData3>& stack);
-OctreeNode* addSplitVoisin27(OctreeNode* voisin, E_Int l0, E_Int levelMax, 
+  OctreeNode* addSplitVoisin27(OctreeNode* voisin, E_Int l0, E_Int levelMax, 
                              stack<stackData3>& stack);
 
-OctreeNode* updateVoisin1_9(OctreeNode* node);
-OctreeNode* updateVoisin2_9(OctreeNode* node);
-OctreeNode* updateVoisin3_9(OctreeNode* node);
-OctreeNode* updateVoisin4_9(OctreeNode* node);
-OctreeNode* updateVoisin5_9(OctreeNode* node);
-OctreeNode* updateVoisin6_9(OctreeNode* node);
-OctreeNode* updateVoisin1_27(OctreeNode* node);
-OctreeNode* updateVoisin2_27(OctreeNode* node);
-OctreeNode* updateVoisin3_27(OctreeNode* node);
-OctreeNode* updateVoisin4_27(OctreeNode* node);
-OctreeNode* updateVoisin5_27(OctreeNode* node);
-OctreeNode* updateVoisin6_27(OctreeNode* node);
+  OctreeNode* updateVoisin1_9(OctreeNode* node);
+  OctreeNode* updateVoisin2_9(OctreeNode* node);
+  OctreeNode* updateVoisin3_9(OctreeNode* node);
+  OctreeNode* updateVoisin4_9(OctreeNode* node);
+  OctreeNode* updateVoisin5_9(OctreeNode* node);
+  OctreeNode* updateVoisin6_9(OctreeNode* node);
+  OctreeNode* updateVoisin1_27(OctreeNode* node);
+  OctreeNode* updateVoisin2_27(OctreeNode* node);
+  OctreeNode* updateVoisin3_27(OctreeNode* node);
+  OctreeNode* updateVoisin4_27(OctreeNode* node);
+  OctreeNode* updateVoisin5_27(OctreeNode* node);
+  OctreeNode* updateVoisin6_27(OctreeNode* node);
 
 //============================================================================
 /* Generation d'un octree � 27 branches 
@@ -126,10 +126,10 @@ PyObject* octree3(PyObject* self, PyObject* args)
   E_Int dim = -1;
   for (E_Int i = 0; i < nzones; i++)
   {
-    if ( strcmp(eltTypet[i],"TRI") == 0 ) 
+    if ( strcmp(eltTypet[i], "TRI") == 0 ) 
     {
-      if ( dim == -1 ) dim = 3;
-      else if ( dim != 3) 
+      if (dim == -1) dim = 3;
+      else if (dim != 3) 
       {
         for (size_t v = 0; v < structF.size(); v++) RELEASESHAREDS(objst[v], structF[v]);
         for (size_t v = 0; v < unstrF.size(); v++) RELEASESHAREDU(objut[v], unstrF[v], cnt[v]);                
@@ -328,7 +328,7 @@ PyObject* octree3(PyObject* self, PyObject* args)
     }
 
     l0 = current->getLevel();
-    if ( found == 1 && l0 < levelMax) //decouper la cellule en 27 si dh > snear
+    if (found == 1 && l0 < levelMax) //decouper la cellule en 27 si dh > snear
     {
       current = splitNode27(current, levelMax, dim, split);
       if ( split != 1 ) goto next;
@@ -460,7 +460,7 @@ PyObject* octree3(PyObject* self, PyObject* args)
       dataForStack.current = current->getNext8(); stack.push(dataForStack);
       dataForStack.current = current->getNext9(); stack.push(dataForStack);
 
-      if ( dim == 3 ) 
+      if (dim == 3) 
       {
         dataForStack.current = current->getNext10(); stack.push(dataForStack);
         dataForStack.current = current->getNext11(); stack.push(dataForStack);

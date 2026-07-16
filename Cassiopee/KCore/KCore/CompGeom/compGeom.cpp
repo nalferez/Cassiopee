@@ -205,10 +205,10 @@ void K_COMPGEOM::rectifyNormals(const E_Int ni1, const E_Int nj1, const E_Int in
 }
 
 // ============================================================================
-// Compute the minimum squared distance between 2 blocks and return
+// Computes the minimum squared distance between 2 blocks and return
 // the corresponding cell indices
 // ============================================================================
-void K_COMPGEOM::compMeanDist(const E_Int ni1, const E_Int nj1,
+void K_COMPGEOM::compMinDist(const E_Int ni1, const E_Int nj1,
   const E_Float* x1, const E_Float* y1, const E_Float* z1,
   const E_Int ni2, const E_Int nj2,
   const E_Float* x2, const E_Float* y2, const E_Float* z2,
@@ -361,6 +361,91 @@ void K_COMPGEOM::compMeanDist(const E_Int ni1, const E_Int nj1,
   return;
 }
 
+// ============================================================================
+// Computes an angle formed by three points (P1,P2,P3) or two vectors (u,v)
+// Returns a float between 0 and pi
+// Returns 0 if two points are superimposed
+// ============================================================================
+E_Float K_COMPGEOM::computeAngle(
+  E_Float x1, E_Float y1, E_Float z1,
+  E_Float x2, E_Float y2, E_Float z2,
+  E_Float x3, E_Float y3, E_Float z3
+)
+{
+  E_Float a2 = (x2-x1)*(x2-x1)+(y2-y1)*(y2-y1)+(z2-z1)*(z2-z1);
+  E_Float b2 = (x3-x2)*(x3-x2)+(y3-y2)*(y3-y2)+(z3-z2)*(z3-z2);
+  E_Float c2 = (x3-x1)*(x3-x1)+(y3-y1)*(y3-y1)+(z3-z1)*(z3-z1);
+
+  if (a2 < K_CONST::E_GEOM_CUTOFF || b2 < K_CONST::E_GEOM_CUTOFF) // security check
+  { 
+    return 0.;
+  }
+
+  E_Float a = sqrt(a2);
+  E_Float b = sqrt(b2);
+  E_Float cosalpha = K_FUNC::E_max(K_FUNC::E_min((a2+b2-c2)/(2.*a*b),1.),-1.); // law of cosines
+
+  return acos(cosalpha);
+}
+
+E_Float K_COMPGEOM::computeAngle(
+  E_Float ux, E_Float uy, E_Float uz,
+  E_Float vx, E_Float vy, E_Float vz
+)
+{
+  E_Float normu = sqrt(ux*ux + uy*uy + uz*uz);
+  E_Float normv = sqrt(vx*vx + vy*vy + vz*vz);
+
+  if (normu < K_CONST::E_GEOM_CUTOFF || normv < K_CONST::E_GEOM_CUTOFF) // security check
+  { 
+    return 0.;
+  }
+
+  E_Float cosalpha = K_FUNC::E_max(K_FUNC::E_min((ux*vx + uy*vy + uz*vz)/(normu*normv),1.),-1.);
+
+  return acos(cosalpha);
+}
+
+// ============================================================================
+// Computes a skewness value from three points (P1,P2,P3) and a reference angle
+// Returns a skewness angle or a float if normalized=1
+// Returns 0 if two points are superimposed
+// ============================================================================
+E_Float K_COMPGEOM::computeSkewness(
+  E_Float x1, E_Float y1, E_Float z1,
+  E_Float x2, E_Float y2, E_Float z2,
+  E_Float x3, E_Float y3, E_Float z3,
+  E_Float refAngle, E_Int normalized
+)
+{
+  E_Float degconst = 180.0 / K_CONST::E_PI;
+  E_Float alpha = K_COMPGEOM::computeAngle(x1,y1,z1,x2,y2,z2,x3,y3,z3);
+
+  if (alpha < K_CONST::E_GEOM_CUTOFF) return 0.; // security check
+  
+  E_Float skewness = K_FUNC::E_abs(alpha*degconst - refAngle);
+  if (normalized) // skewness in [0,1] range
+  {  
+    if (alpha > refAngle) skewness = skewness/(180.-refAngle);
+    else skewness = skewness/refAngle;
+  }
+
+  return skewness;
+}
+
+E_Float K_COMPGEOM::computeSkewness(
+  const E_Float* x, const E_Float* y, const E_Float* z,
+  E_Int ind1, E_Int ind2, E_Int ind3,
+  E_Float refAngle, E_Int normalized
+)
+{
+  E_Float x1 = x[ind1], x2 = x[ind2], x3 = x[ind3];
+  E_Float y1 = y[ind1], y2 = y[ind2], y3 = y[ind3];
+  E_Float z1 = z[ind1], z2 = z[ind2], z3 = z[ind3];
+
+  return K_COMPGEOM::computeSkewness(x1,y1,z1,x2,y2,z2,x3,y3,z3,refAngle,normalized);
+}
+
 //===========================================================================
 // Calcul de l'aire d un triangle ABC a partir des longueurs de ses 3 cotes
 // par la formule de Heron
@@ -374,7 +459,7 @@ E_Float K_COMPGEOM::compTriangleArea(
 }
 
 //===========================================================================
-// Calcul de la bounding box d'un array structure
+// Calcul de la bounding box d'un array non structuree
 //===========================================================================
 void K_COMPGEOM::boundingBoxUnstruct(
   const E_Int npts, const E_Float* xt, const E_Float* yt, const E_Float* zt,
@@ -382,62 +467,55 @@ void K_COMPGEOM::boundingBoxUnstruct(
   E_Float& xmax, E_Float& ymax, E_Float& zmax
 )
 {
-  xmin =  K_CONST::E_MAX_FLOAT;
-  ymin =  K_CONST::E_MAX_FLOAT;
-  zmin =  K_CONST::E_MAX_FLOAT;
-  xmax = -K_CONST::E_MAX_FLOAT;
-  ymax = -K_CONST::E_MAX_FLOAT;
-  zmax = -K_CONST::E_MAX_FLOAT;
+  xmin = K_CONST::E_MAX_FLOAT; xmax = -K_CONST::E_MAX_FLOAT;
+  ymin = K_CONST::E_MAX_FLOAT; ymax = -K_CONST::E_MAX_FLOAT;
+  zmin = K_CONST::E_MAX_FLOAT; zmax = -K_CONST::E_MAX_FLOAT;
 
-  E_Int nthreads = __NUMTHREADS__;
-  E_Float* xminl = new E_Float [nthreads];
-  E_Float* yminl = new E_Float [nthreads];
-  E_Float* zminl = new E_Float [nthreads];
-  E_Float* xmaxl = new E_Float [nthreads];
-  E_Float* ymaxl = new E_Float [nthreads];
-  E_Float* zmaxl = new E_Float [nthreads];
+  const E_Int nthreads = __NUMTHREADS__;
+  E_Float* txmin = new E_Float [nthreads];
+  E_Float* txmax = new E_Float [nthreads];
+  E_Float* tymin = new E_Float [nthreads];
+  E_Float* tymax = new E_Float [nthreads];
+  E_Float* tzmin = new E_Float [nthreads];
+  E_Float* tzmax = new E_Float [nthreads];
+
+  for (E_Int tid = 0; tid < nthreads; tid++)
+  {
+    txmin[tid] = K_CONST::E_MAX_FLOAT; txmax[tid] = -K_CONST::E_MAX_FLOAT;
+    tymin[tid] = K_CONST::E_MAX_FLOAT; tymax[tid] = -K_CONST::E_MAX_FLOAT;
+    tzmin[tid] = K_CONST::E_MAX_FLOAT; tzmax[tid] = -K_CONST::E_MAX_FLOAT;
+  }
 
   #pragma omp parallel
   {
-    E_Int ithread = __CURRENT_THREAD__;
-
-    xminl[ithread] =  K_CONST::E_MAX_FLOAT;
-    yminl[ithread] =  K_CONST::E_MAX_FLOAT;
-    zminl[ithread] =  K_CONST::E_MAX_FLOAT;
-    xmaxl[ithread] = -K_CONST::E_MAX_FLOAT;
-    ymaxl[ithread] = -K_CONST::E_MAX_FLOAT;
-    zmaxl[ithread] = -K_CONST::E_MAX_FLOAT;
-
+    const E_Int tid = __CURRENT_THREAD__;
     #pragma omp for
-    for (E_Int ind = 0; ind < npts; ind++)
+    for (E_Int i = 0; i < npts; i++)
     {
-      xminl[ithread] = K_FUNC::E_min(xminl[ithread], xt[ind]);
-      yminl[ithread] = K_FUNC::E_min(yminl[ithread], yt[ind]);
-      zminl[ithread] = K_FUNC::E_min(zminl[ithread], zt[ind]);
-      xmaxl[ithread] = K_FUNC::E_max(xmaxl[ithread], xt[ind]);
-      ymaxl[ithread] = K_FUNC::E_max(ymaxl[ithread], yt[ind]);
-      zmaxl[ithread] = K_FUNC::E_max(zmaxl[ithread], zt[ind]);
+      txmin[tid] = K_FUNC::E_min(txmin[tid], xt[i]);
+      txmax[tid] = K_FUNC::E_max(txmax[tid], xt[i]);
+      tymin[tid] = K_FUNC::E_min(tymin[tid], yt[i]);
+      tymax[tid] = K_FUNC::E_max(tymax[tid], yt[i]);
+      tzmin[tid] = K_FUNC::E_min(tzmin[tid], zt[i]);
+      tzmax[tid] = K_FUNC::E_max(tzmax[tid], zt[i]);
     }
   }
 
-  //final reduction
-  for (E_Int ithread = 0; ithread < nthreads; ithread++) 
+  // final reduction
+  for (E_Int tid = 0; tid < nthreads; tid++)
   {
-    xmax = K_FUNC::E_max(xmaxl[ithread], xmax);
-    ymax = K_FUNC::E_max(ymaxl[ithread], ymax);
-    zmax = K_FUNC::E_max(zmaxl[ithread], zmax);
-    xmin = K_FUNC::E_min(xminl[ithread], xmin);
-    ymin = K_FUNC::E_min(yminl[ithread], ymin);
-    zmin = K_FUNC::E_min(zminl[ithread], zmin);
+    xmin = K_FUNC::E_min(txmin[tid], xmin);
+    xmax = K_FUNC::E_max(txmax[tid], xmax);
+    ymin = K_FUNC::E_min(tymin[tid], ymin);
+    ymax = K_FUNC::E_max(tymax[tid], ymax);
+    zmin = K_FUNC::E_min(tzmin[tid], zmin);
+    zmax = K_FUNC::E_max(tzmax[tid], zmax);
   }
 
-  //clean
-  delete [] xminl;
-  delete [] xmaxl;
-  delete [] yminl;
-  delete [] ymaxl;
-  delete [] zminl;
-  delete [] zmaxl;
+  // clean
+  delete[] txmin; delete[] txmax;
+  delete[] tymin; delete[] tymax;
+  delete[] tzmin; delete[] tzmax;
 }
 
 //=============================================================================
