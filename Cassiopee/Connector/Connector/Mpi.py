@@ -122,13 +122,13 @@ def _connectMatchNGon(z, tol=1.e-6):
     if z[3] != 'Zone_t':
         raise TypeError("connectMatchNGon: only for one zone.")
 
-    # get exterior faces and indirection
+    # Get exterior faces and indirection, indicesF
     indicesF = []
     zf = P.exteriorFaces(z, indices=indicesF)
     indicesF = indicesF[0]
     hook = C.createHook(zf, function='elementCenters')
 
-    # get undefined BC faces of self
+    # Get BC face indices of self, indicesBC
     bnds = Internal.getNodesFromType2(z, 'BC_t')
     bnds += Internal.getNodesFromType2(z, 'GridConnectivity1to1_t')
     bnds += Internal.getNodesFromType2(z, 'GridConnectivity_t')
@@ -136,78 +136,59 @@ def _connectMatchNGon(z, tol=1.e-6):
     for b in bnds:
         f = Internal.getNodeFromName1(b, 'PointList')
         indicesBC.append(f[1].ravel("k"))
-    undefBC = False
-    if indicesBC != []:
+
+    if indicesBC == []:
+        indicesE = indicesF
+    else:
         indicesBC = numpy.concatenate(indicesBC)
         nfacesExt = indicesF.shape[0]
         nfacesDef = indicesBC.shape[0]
-        if nfacesExt < nfacesDef:
-            print('Warning: zone %s: number of faces defined by BCs is greater than the number of external faces. Try to reduce the matching tolerance.'%(z[0]))
-        elif nfacesExt > nfacesDef:
-            indicesBC = indicesBC.reshape( (indicesBC.size) )
+        if nfacesExt == nfacesDef:
+            print('Warning: all exterior faces are already assigned a BC.'
+                  'Check if BCMatch are present.')
+            C.freeHook(hook)
+            return None
+        elif nfacesExt < nfacesDef:
+            print('Warning: zone %s: number of faces defined by BCs is greater '
+                  'than the number of external faces. Try to reduce the '
+                  'matching tolerance.'%(z[0]))
+            C.freeHook(hook)
+            return None
+        else:
+            # Get undefined BC face indices, indicesE, as the set difference
+            # between indicesF and indicesBC
             indicesE = Converter.converter.diffIndex(indicesF, indicesBC)
-            undefBC = True
-    else:
-        undefBC = True
-        indicesE = indicesF
-    if undefBC:
-        zu = T.subzone(z, indicesE, type='faces')
-        zu[0] = z[0]
-    else: zu = None; indicesE = []
+
+    zu = T.subzone(z, indicesE, type='faces')
+    zu[0] = z[0]
 
     for trip in range(Cmpi.size-1):
+        data = None
+        zu, indicesE = Cmpi.passNext([zu, indicesE])
 
-        #print("trip number ", trip, flush=True)
-        data = [zu, indicesE]
-        data = Cmpi.passNext(data)
-        (zu, indicesE) = data
-        if zu is None: continue
+        if zu is not None:
+            # Identify faces and build matches
+            ids = C.identifyElements(hook, zu, tol, rtol=0.)
 
-        #if Cmpi.rank == trip: C.convertPyTree2File(zu, "%d-%dout.cgns"%(trip,Cmpi.rank))
-        #if Cmpi.rank == trip: print(trip,Cmpi.rank,indicesE)
-        #print(Cmpi.rank, "receive ", zu[0], flush=True)
-
-        # identify faces and build matches
-        #print(Cmpi.rank, "identifying face of npts ", C.getNPts(zu), flush=True)
-        ids = C.identifyElements(hook, zu, tol, rtol=0.)
-        #print(Cmpi.rank, "done", flush=True)
-
-        # get indices where ids != -1
-        mask = ids >= 0
-        ids2 = numpy.flatnonzero(mask)
-        ids2 = ids2.astype(Internal.E_NpyInt)
-
-        # keep non -1 indices
-        idsValid = ids[mask] # indices de z
-        sizebc = idsValid.size
-
-        if sizebc > 0:
-            id2 = indicesF[idsValid - 1]
-            id1 = indicesE[ids2]
-
-            #print(Cmpi.rank, 'source', id2.shape, id2.ravel('k'))
-            #print(Cmpi.rank, 'donor', id1.shape, id1.ravel('k'))
-            C._addBC2Zone(z, 'match', 'BCMatch', faceList=id2, zoneDonor=zu[0], faceListDonor=id1)
-
-            # reduce zu
-            #if Cmpi.rank == trip: print(trip, Cmpi.rank, "ids", ids, flush=True)
-            mask2 = ~mask
-            indices = numpy.flatnonzero(mask2)
-            indices = indices.astype(Internal.E_NpyInt)
-            #if Cmpi.rank == trip: print(trip, Cmpi.rank, "indices(-1)", indices, flush=True)
-            #if Cmpi.rank == trip: print(trip, Cmpi.rank, "indicesE", indicesE, flush=True)
-
-            if indices.size == 0: zu = None; indicesE = []
-            else:
-                zoneName = zu[0]
-                #if Cmpi.rank == trip: print(trip, Cmpi.rank, indices, flush=True)
-                zu = T.subzone(zu, indices, type='elements')
-                #if Cmpi.rank == trip: C.convertPyTree2File(zu, "%d-%dend.cgns"%(trip,Cmpi.rank))
-                zu[0] = zoneName
-                indicesE = indicesE[mask2]
-                #if Cmpi.rank == trip: print(Cmpi.rank, "indicesE2(sans-1)", indicesE, flush=True)
-            #if trip == Cmpi.size-2 and zu is not None:
-            #    print("Warning: %d: remaining unidentified points=%d"%(Cmpi.rank, indices.size), flush=True)
+            # Get positions where ids != -1
+            mask = ids >= 0
+            ids2 = numpy.nonzero(mask)[0].astype(Internal.E_NpyInt)
+            sizebc = ids2.size
+            if sizebc > 0:
+                # keep non -1 indices
+                idsValid = ids[mask] - 1  # indices de z
+                faceList = indicesF[idsValid]
+                faceListDonor = indicesE[ids2]
+                C._addBC2Zone(z, 'match', 'BCMatch', faceList=faceList,
+                              zoneDonor=zu[0], faceListDonor=faceListDonor)
+                mask2 = ~mask
+                indices = numpy.nonzero(mask2)[0].astype(Internal.E_NpyInt)
+                if indices.size:
+                    zoneName = zu[0]
+                    zu = T.subzone(zu, indices, type='elements')
+                    zu[0] = zoneName
+                    indicesE = indicesE[mask2]
+                else: zu = None; indicesE = []
 
     C.freeHook(hook)
     return None
@@ -227,50 +208,58 @@ def exchangeBCMatchData(t, varList):
         dim = Internal.getZoneDim(z)
         if dim[0] == 'Structured':
             fields = C.getFields("centers", z, vars=varList, api=3)[0]
+            if fields == []:
+                print('Warning: exchangeBCMatchData: none of the fields were found ', varList)
+                return None, None
             # get face values
             GCs = Internal.getNodesFromType2(z, 'GridConnectivity1to1_t')
             for gc in GCs:
                 donor = Internal.getValue(gc)
-                PL = Internal.getBCFaceNode(z, gc)[1] # PointRange
-                PLD = Internal.getBCFaceNode(z, gc, donor=True)[1] # PointRangeDonor
                 prr = Internal.getNodeFromName1(gc, 'PointRange')
                 prd = Internal.getNodeFromName1(gc, 'PointRangeDonor')
                 wr = Internal.range2Window(prr[1])
                 wd = Internal.range2Window(prd[1])
                 iminR, imaxR, jminR, jmaxR, kminR, kmaxR = wr
                 iminD, imaxD, jminD, jmaxD, kminD, kmaxD = wd
-                niR = dim[1]; njR = dim[2]; nkR = dim[3] # TODO
+                sizeR = (imaxR - iminR + 1)*(jmaxR - jminR + 1)*(kmaxR - kminR + 1)
+                sizeD = (imaxD - iminD + 1)*(jmaxD - jminD + 1)*(kmaxD - kminD + 1)
+                if sizeR != sizeD:
+                    print("Warning: extractBCMatchData: not a coincident match: ", gc[0])
+                    return None, None
+
+                niR = dim[1]; njR = dim[2]; nkR = dim[3]
                 tri = Internal.getNodeFromName1(gc, 'Transform')
                 tri = Internal.getValue(tri)
-                t1, t2, t3 = tri
+                t1 = tri[0]; t2 = tri[1]; t3 = tri[2] if len(tri) == 3 else 0
                 indR, fld = Converter.converter.extractBCMatchStruct(
                     fields,
-                    (iminD, jminD, kminD, imaxD, jmaxD, kmaxD),
                     (iminR, jminR, kminR, imaxR, jmaxR, kmaxR),
+                    (iminD, jminD, kminD, imaxD, jmaxD, kmaxD),
                     (niR, njR, nkR),
                     (t1, t2, t3)
                 )
                 oppNode = procDict[donor]
-                n = [donor, z[0], fld, PLD.ravel('k')]
+                n = [donor, z[0], fld, indR.ravel('k')]
                 if oppNode not in export: export[oppNode] = [n]
                 else: export[oppNode] += [n]
         elif dim[0] == 'Unstructured':
             if dim[3] == 'NGON':
-                Internal._adaptNFace2PE(z, remove=False)
+                PE = Internal.getNodeFromName2(z, 'ParentElements')
+                if PE is None: Internal._adaptNFace2PE(z, remove=False)
                 # get face values
                 GCs = Internal.getNodesFromType2(z, 'GridConnectivity_t')
                 for gc in GCs:
                     donor = Internal.getValue(gc)
-                    PL = Internal.getBCFaceNode(z, gc)[1] # PointList
-                    PLD = Internal.getBCFaceNode(z, gc, donor=True)[1] # PointListDonor
+                    indR = Internal.getBCFaceNode(z, gc)[1] # PointList
+                    indD = Internal.getBCFaceNode(z, gc, donor=True)[1] # PointListDonor
                     fld = Converter.converter.extractBCMatchNG(
-                        z, PL, varList,
+                        z, indR, varList,
                         Internal.__GridCoordinates__,
                         Internal.__FlowSolutionNodes__,
                         Internal.__FlowSolutionCenters__
                     )
                     oppNode = procDict[donor]
-                    n = [donor, z[0], fld, PLD.ravel('k')]
+                    n = [donor, z[0], fld, indD.ravel('k')]
                     if oppNode not in export: export[oppNode] = [n]
                     else: export[oppNode] += [n]
             else:
@@ -306,108 +295,168 @@ def exchangeBCMatchData(t, varList):
                     raise NotImplementedError("exchangeBCMatchData: Element "
                                               f"type {dim[3]} not supported")
 
-            if zn not in indices: indices[zn] = PLD
-            else: indices[zn] = numpy.concatenate((indices[zn], PLD))
+            indices.setdefault(zn, []).append(PLD)
             fldNames = fld1[0].split(",")
             for v, var in enumerate(varList):
                 if var not in fldNames: continue
                 pos = fldNames.index(var)
                 BCFieldv = BCField[v]
-                if zn not in BCFieldv: BCFieldv[zn] = fld1[1][pos].ravel('k')
-                else:
-                    BCFieldv[zn] = numpy.concatenate(
-                        (BCFieldv[zn], fld1[1][pos].ravel('k'))
-                    )
+                BCFieldv.setdefault(zn, []).append(fld1[1][pos].ravel(order='K'))
 
     return indices, BCField
 
 #==============================================================================
 # setHoleInterpolatedPoints
-# NGON, centered cellN, depth=1
+# NGON, centered cellN
 # BCMatch must be set in t
 #==============================================================================
-def _setHoleInterpolatedPoints(t):
-    """Set cellN=2 around cellN=0."""
+def setHoleInterpolatedPoints(t, depth=1, dir=0, cellNName="cellN"):
+    """Set cellN=2. around cellN=0."""
+    if Cmpi.size == 1:
+        return X.setHoleInterpolatedPoints(t, depth=depth, dir=dir,
+                                           cellNName=cellNName, loc='centers')
 
-    # Compute graph of match
-    procDict = Cmpi.getProcDict(t)
-    graph = Cmpi.computeGraph(t, type='match', procDict=procDict)
-    zones = Internal.getZones(t)
-    export = {}
+    if depth == 1:
+        _setHoleInterpolatedPoints__(t, dir=dir, cellNName=cellNName)
+    else: # loop
+        dummyCellNWoLoc = "_dummyXmpisHIP"  # internal
+        dummyCellN = "centers:" + dummyCellNWoLoc
+        cellNNameWLoc = "centers:" + cellNName
+        if depth > 0:
+            t = C.initVars(t, "{{{var}}}={{{tag}}}".format(var=dummyCellN, tag=cellNNameWLoc))
+        else:
+            t = C.initVars(t, "{{{var}}}=1.-{{{tag}}}".format(var=dummyCellN, tag=cellNNameWLoc))
 
-    for z in zones:
-        dim = Internal.getZoneDim(z)
-        if dim[0] == 'Unstructured' and dim[3] == 'NGON':
-            # adaptation needed by actual setHoleInterpolatedPoints
-            Internal._adaptNGon42NGon3(z)
-            Internal._adaptNFace2PE(z, remove=False)
+        for _ in range(abs(depth)):
+            _setHoleInterpolatedPoints__(t, dir=dir, cellNName=dummyCellNWoLoc)
+            t = C.initVars(t, "{{{var}}}=({{{var}}}==1.)".format(var=dummyCellN))
 
-            # get face values
-            GCs = Internal.getNodesFromType2(z, 'GridConnectivity_t')
-            for gc in GCs:
-                donor = Internal.getValue(gc)
-                PL = Internal.getBCFaceNode(z, gc)[1] # PointList
-                PLD = Internal.getBCFaceNode(z, gc, donor=True)[1] # PointListDonor
-                fld = Converter.converter.extractBCMatchNG(z, PL, ['cellN'],
-                                                           Internal.__GridCoordinates__,
-                                                           Internal.__FlowSolutionNodes__,
-                                                           Internal.__FlowSolutionCenters__)
-                oppNode = procDict[donor]
-                n = [donor, z[0], fld, PLD.ravel('k')]
-                if oppNode not in export: export[oppNode] = [n]
-                else: export[oppNode] += [n]
+        if depth > 0:
+            t = C.initVars(t, "{tag}=2.*{{{tag}}}-{{{var}}}".format(var=dummyCellN, tag=cellNNameWLoc))
+        else:
+            t = C.initVars(t, "{tag}=2.-{{{tag}}}-2.*{{{var}}}".format(var=dummyCellN, tag=cellNNameWLoc))
 
-    # sendrecv
-    recvDatas = Cmpi.sendRecv(export, graph)
+        t = C.rmVars(t, [dummyCellN])
+    return t
 
-    # Mean on faces (we must find the opposite face from donor name)
-    indices = {}; BCField = {}
-    for i in recvDatas:
-        for n in recvDatas[i]:
-            # donor is supposed to have a unique matching match
-            (donor, source, fld, PLD) = n
-            z = Internal.getNodeFromName2(t, donor)
-            zn = z[0]
-            dim = Internal.getZoneDim(z)
-            if dim[0] == 'Unstructured' and dim[3] == 'NGON':
-                fld1 = Converter.converter.buildBCMatchFieldNG(z, PLD, fld, ['cellN'],
-                                                               Internal.__GridCoordinates__,
-                                                               Internal.__FlowSolutionNodes__,
-                                                               Internal.__FlowSolutionCenters__)
-            if zn not in indices: indices[zn] = PLD
-            else: indices[zn] = numpy.concatenate((indices[zn], PLD))
-            if zn not in BCField: BCField[zn] = fld1[1][0].ravel('k')
-            else: BCField[zn] = numpy.concatenate((BCField[zn], fld1[1][0].ravel('k')))
+def _setHoleInterpolatedPoints(t, depth=1, dir=0, cellNName="cellN"):
+    """Set cellN=2. around cellN=0."""
+    if Cmpi.size == 1:
+        return X._setHoleInterpolatedPoints(t, depth=depth, dir=dir,
+                                            cellNName=cellNName, loc='centers')
 
-    for z in zones:
+    if depth == 1:
+        _setHoleInterpolatedPoints__(t, dir=dir, cellNName=cellNName)
+    else: # loop
+        dummyCellNWoLoc = "_dummyXmpisHIP"  # internal
+        dummyCellN = "centers:" + dummyCellNWoLoc
+        cellNNameWLoc = "centers:" + cellNName
+        if depth > 0:
+            C._initVars(t, "{{{var}}}={{{tag}}}".format(var=dummyCellN, tag=cellNNameWLoc))
+        else:
+            C._initVars(t, "{{{var}}}=1.-{{{tag}}}".format(var=dummyCellN, tag=cellNNameWLoc))
+
+        for _ in range(abs(depth)):
+            _setHoleInterpolatedPoints__(t, dir=dir, cellNName=dummyCellNWoLoc)
+            C._initVars(t, "{{{var}}}=({{{var}}}==1.)".format(var=dummyCellN))
+
+        if depth > 0:
+            C._initVars(t, "{tag}=2.*{{{tag}}}-{{{var}}}".format(var=dummyCellN, tag=cellNNameWLoc))
+        else:
+            C._initVars(t, "{tag}=2.-{{{tag}}}-2.*{{{var}}}".format(var=dummyCellN, tag=cellNNameWLoc))
+
+        C._rmVars(t, [dummyCellN])
+    return None
+
+# internal function - depth=1
+def _setHoleInterpolatedPoints__(t, dir=0, cellNName="_dummyXmpisHIP"):
+    indices, BCField = exchangeBCMatchData(t, [cellNName])
+    for z in Internal.getZones(t):
         zn = z[0]
-        f = C.getField('centers:cellN', z, api=1)[0]
+        f = C.getField(f'centers:{cellNName}', z, api=1)[0]
         if f != []:
-            if zn in indices: inds = indices[zn]
-            else: inds = None
-            if zn in BCField: bcf = BCField[zn]
-            else: bcf = None
+            # Concatenate list of numpy arrays once
+            if zn in indices:
+                if len(indices[zn]) == 1: indices[zn] = indices[zn][0]
+                else: indices[zn] = numpy.concatenate(indices[zn], axis=0)
+                for BCFieldv in BCField:
+                    if zn in BCFieldv:
+                        if len(BCFieldv[zn]) == 1: BCFieldv[zn] = BCFieldv[zn][0]
+                        else: BCFieldv[zn] = numpy.concatenate(BCFieldv[zn], axis=0)
 
-            centers = connector.getOversetHolesInterpCellCenters(f, 1, 0, 'cellN', inds, bcf)
+            inds = indices.get(zn, None)
+            bcf = BCField[0].get(zn, None)
+            centers = connector.getOversetHolesInterpCellCenters(f, 1, dir, cellNName, inds, bcf)
             C.setFields([centers], z, 'centers')
-
     return None
 
 #==============================================================================
-def giveName2Window(p, zname, zopp):
-    if p[0] == p[1]:
-        if p[0] == 1: pos = zname+'_imin_'+zopp
-        else: pos = zname+'_imax_'+zopp
-    elif p[2] == p[3]:
-        if p[2] == 1: pos = zname+'_jmin_'+zopp
-        else: pos = zname+'_jmax_'+zopp
-    elif p[4] == p[5]:
-        if p[4] == 1: pos = zname+'_kmin_'+zopp
-        else: pos = zname+'_kmax_'+zopp
-    return pos
+# addLayers
+# NGON, centered cellN
+# BCMatch must be set in t
+#==============================================================================
+def addLayers(t, depth=1, dir=0, cellNName="centers:cellN"):
+    """Add layers around a volume defined by cellN=0, with positive or
+    negative depth controlling the side of the mask to expand."""
+    if depth == 0: return t
+    if Cmpi.size == 1:
+        return X.addLayers(t, depth=depth, dir=dir, cellNName=cellNName)
+
+    if not cellNName.startswith("centers:"):
+        cellNName = "centers:" + cellNName
+
+    if depth < 0:
+        tmpCellN = "_dummyXmpiaL"  # internal
+        tmpCellNWLoc = "centers:" + tmpCellN
+        t = C.initVars(t, "{{{var}}}=1.-{{{tag}}}".format(var=tmpCellNWLoc, tag=cellNName))
+    else:
+        tmpCellNWLoc = cellNName
+        tmpCellN = cellNName.split(':')[-1]
+    for _ in range(abs(depth)):
+        t = setHoleInterpolatedPoints(t, depth=1, dir=dir, cellNName=tmpCellN)
+        t = C.initVars(t, "{{{var}}}=({{{var}}}==1.)".format(var=tmpCellNWLoc))
+    if depth < 0:
+        t = C.initVars(t, "{tag}=1.-{{{var}}}".format(var=tmpCellNWLoc, tag=cellNName))
+        t = C.rmVars(t, [tmpCellNWLoc])
+    return t
+
+def _addLayers(t, depth=1, dir=0, cellNName="centers:cellN"):
+    if depth == 0: return None
+    if Cmpi.size == 1:
+        return X._addLayers(t, depth=depth, dir=dir, cellNName=cellNName)
+
+    if not cellNName.startswith("centers:"):
+        cellNName = "centers:" + cellNName
+
+    if depth < 0:
+        tmpCellN = "_dummyXmpiaL"  # internal
+        tmpCellNWLoc = "centers:" + tmpCellN
+        C._initVars(t, "{{{var}}}=1.-{{{tag}}}".format(var=tmpCellNWLoc, tag=cellNName))
+    else:
+        tmpCellNWLoc = cellNName
+        tmpCellN = cellNName.split(':')[-1]
+    for _ in range(abs(depth)):
+        _setHoleInterpolatedPoints(t, depth=1, dir=dir, cellNName=tmpCellN)
+        C._initVars(t, "{{{var}}}=({{{var}}}==1.)".format(var=tmpCellNWLoc))
+    if depth < 0:
+        C._initVars(t, "{tag}=1.-{{{var}}}".format(var=tmpCellNWLoc, tag=cellNName))
+        C._rmVars(t, [tmpCellNWLoc])
+    return None
 
 #==============================================================================
 def mergeWindows(t):
+    def giveName2Window(p, zname, zopp):
+        if p[0] == p[1]:
+            if p[0] == 1: pos = zname+'_imin_'+zopp
+            else: pos = zname+'_imax_'+zopp
+        elif p[2] == p[3]:
+            if p[2] == 1: pos = zname+'_jmin_'+zopp
+            else: pos = zname+'_jmax_'+zopp
+        elif p[4] == p[5]:
+            if p[4] == 1: pos = zname+'_kmin_'+zopp
+            else: pos = zname+'_kmax_'+zopp
+        return pos
+
     # Merge grid connectivities created after addBXZones
     zones = Internal.getZones(t)
     for z in zones:

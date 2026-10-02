@@ -35,6 +35,7 @@ if 'MPIRUN' in os.environ: # si MPIRUN=0, force sequentiel
         def allgatherZones(a, coord=True, variables=[]): return a
         def allgatherTree(a): return a
         def allgatherDict(a): return a
+        def allgatherDict2(a): return a
         def allgatherNext(a): return [a]
         def send(a, dest=0, tag=0): return None
         def isend(a, dest=0, tag=0): return None
@@ -47,6 +48,7 @@ if 'MPIRUN' in os.environ: # si MPIRUN=0, force sequentiel
         def allreduce(a, op=None): return a
         def Allreduce(a, b, op=None): b[...] = a; return None
         def getSizeOf(a): return Internal.getSizeOf(a)
+        def passPrevious(a): return a
         def passNext(a): return a
         def seq(F, *args): F(*args)
         def convertFile2PyTree(fileName, format=None, proc=None):
@@ -90,6 +92,7 @@ else: # try import (may fail - core or hang)
         def allgatherZones(a, coord=True, variables=[]): return a
         def allgatherTree(a): return a
         def allgatherDict(a): return a
+        def allgatherDict2(a): return a
         def allgatherNext(a): return [a]
         def send(a, dest=0, tag=0): return None
         def isend(a, dest=0, tag=0): return None
@@ -102,6 +105,7 @@ else: # try import (may fail - core or hang)
         def allreduce(a, op=None): return a
         def Allreduce(a, b, op=None): b[...] = a; return None
         def getSizeOf(a): return Internal.getSizeOf(a)
+        def passPrevious(a): return a
         def passNext(a): return a
         def seq(F, *args): F(*args)
         def convertFile2PyTree(fileName, format=None, proc=None):
@@ -129,6 +133,34 @@ TRACESTATE = { 'prevFullTime': None, 'method': 0, 'fileName': 'stdout', 'mem': T
 #==============================================================================
 def center2Node(t, var=None, cellNType=0, graph=None):
     """Convert zone/fields defined at centers to nodes."""
+
+    if var == Internal.__FlowSolutionCenters__:
+        # varList = getVarNames(t, excludeXYZ=True, loc='centers')[0]
+        # varList = [v.split(':')[-1] for v in varList]
+        varList = [] # temporary patch
+    elif isinstance(var, list):
+        varList = [v.split(':')[-1] for v in var]
+    elif isinstance(var, str):
+        varList = [var.split(':')[-1]]
+    else:
+        varList = []
+
+    zones = Internal.getZones(t)
+    ztype = 'STRUCT'
+    if len(zones) > 0:
+        z = Internal.getZones(t)[0] # get unique zone
+        dim = Internal.getZoneDim(z)
+        if dim[0] == 'Unstructured': ztype = dim[3]
+    else:
+        return t
+
+    # get BCMatch // data for NGON arrays
+    if varList != [] and ztype == 'NGON':
+        import Connector.Mpi as Xmpi
+        indices, BCField = Xmpi.exchangeBCMatchData(t, varList)
+    else:
+        indices, BCField = None, None
+
     allstructured = 1
     for z in Internal.getZones(t):
         type = Internal.getZoneType(z)
@@ -137,7 +169,10 @@ def center2Node(t, var=None, cellNType=0, graph=None):
     if allstructured == size: # all zones are structured
         return center2Node1__(t, var, cellNType) # to be changed to 2
     else: # mixed or unstructured
-        return center2Node1__(t, var, cellNType, graph)
+        if indices == {}:
+            return center2Node1__(t, var, cellNType, graph) # use addXZones (default)
+        else:
+            return C.center2Node(t, var, cellNType, indices=indices, BCField=BCField) # use BCMatch data (NGON)
 
 # generic, use addXZones
 def center2Node1__(t, var=None, cellNType=0, graph=None):

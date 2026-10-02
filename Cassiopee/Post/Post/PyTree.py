@@ -482,9 +482,7 @@ def selectCells2(t, tagName, strict=0, cleanConnectivity=True):
 
     zones = Internal.getZones(tp)
     for z in zones:
-
-        # Get ParentElement node if any
-        # =============================
+        # Get ParentElement node if it exists
         GEl = Internal.getElementNodes(z)
         NGON = 0; found = False; PE = None
         for c in GEl:
@@ -495,11 +493,11 @@ def selectCells2(t, tagName, strict=0, cleanConnectivity=True):
             PE = Internal.getNodeFromName1(node, 'ParentElements')
 
         if loc == 0: # noeuds
-            fb   = C.getFields(Internal.__FlowSolutionCenters__, z, api=1)[0]
+            fb = C.getFields(Internal.__FlowSolutionCenters__, z, api=1)[0]
             taga = C.getFields(Internal.__FlowSolutionNodes__, z, api=1)
             taga = Converter.extractVars(taga, [tagName])[0]
         else:
-            fb   = C.getFields(Internal.__FlowSolutionCenters__, z, api=1)[0]
+            fb = C.getFields(Internal.__FlowSolutionCenters__, z, api=1)[0]
             taga = Converter.extractVars(fb, [res[1]])
 
         fc = C.getFields(Internal.__GridCoordinates__, z, api=1)[0]
@@ -515,10 +513,9 @@ def selectCells2(t, tagName, strict=0, cleanConnectivity=True):
 
             if fb != [] and fb is not None: # il y a des champs en centres
                 if PE is not None:
-                    (PE2, fp,fq) = Post.selectCells2(f, taga, fb, strict, loc, PE[1], cleanConnectivity)
+                    PE2, fp, fq = Post.selectCells2(f, taga, fb, strict, loc, PE[1], cleanConnectivity)
                 else:
-                    (fp,fq) = Post.selectCells2(f, taga, fb, strict, loc, None, cleanConnectivity)
-
+                    fp, fq = Post.selectCells2(f, taga, fb, strict, loc, None, cleanConnectivity)
                 C._deleteFlowSolutions__(z, 'centers')
                 C.setFields([fq], z, 'centers')
 
@@ -527,41 +524,38 @@ def selectCells2(t, tagName, strict=0, cleanConnectivity=True):
                     (PE2, fp) = Post.selectCells2(f, taga, [], strict, loc, PE[1], cleanConnectivity)
                 else:
                     fp = Post.selectCells2(f, taga, [], strict, loc, None, cleanConnectivity)
-
                 Internal._rmNodesFromName(z,Internal.__FlowSolutionCenters__)
-
             C.setFields([fp], z, 'nodes')
 
         elif fa != []:
             if fb != [] and fb is not None: # il y a des champs en centres
                 if PE is not None:
-                    (PE2, fp,fq) = Post.selectCells2(fa, taga, fb, strict, loc, PE[1], cleanConnectivity)
+                    PE2, fp, fq = Post.selectCells2(fa, taga, fb, strict, loc, PE[1], cleanConnectivity)
                 else:
-                    (fp,fq) = Post.selectCells2(fa, taga, fb, strict, loc, None, cleanConnectivity)
+                    fp, fq = Post.selectCells2(fa, taga, fb, strict, loc, None, cleanConnectivity)
                 C.setFields([fq], z, 'centers')
-            else:        # pas de champ en centres
+            else:  # pas de champ en centres
                 if PE is not None:
-                    (PE2, fp) = Post.selectCells2(fa, taga, [], strict, loc, PE[1], cleanConnectivity)
+                    PE2, fp = Post.selectCells2(fa, taga, [], strict, loc, PE[1], cleanConnectivity)
                 else:
                     fp = Post.selectCells2(fa, taga, [], strict, loc, None, cleanConnectivity)
-                Internal._rmNodesFromName(z,Internal.__FlowSolutionCenters__)
+                Internal._rmNodesFromName(z, Internal.__FlowSolutionCenters__)
             C.setFields([fp], z, 'nodes')
 
         elif fc != []:
             if fb != [] and fb is not None: # il y a des champs en centres
                 if PE is not None:
-                    (PE2, fp,fq) = Post.selectCells2(fc, taga, fb, strict, loc, PE[1], cleanConnectivity)
+                    PE2, fp, fq = Post.selectCells2(fc, taga, fb, strict, loc, PE[1], cleanConnectivity)
                 else:
-                    (fp,fq) = Post.selectCells2(fc, taga, fb, strict, loc, None, cleanConnectivity)
+                    fp, fq = Post.selectCells2(fc, taga, fb, strict, loc, None, cleanConnectivity)
 
                 C.setFields([fq], z, 'centers')
-            else:        # pas de champ en centres
-
+            else:  # pas de champ en centres
                 if PE is not None:
-                    (PE2, fp) = Post.selectCells2(fc, taga, [], strict, loc, PE[1], cleanConnectivity)
+                    PE2, fp = Post.selectCells2(fc, taga, [], strict, loc, PE[1], cleanConnectivity)
                 else:
                     fp = Post.selectCells2(fc, taga, [], strict, loc, None, cleanConnectivity)
-                Internal._rmNodesFromName(z,Internal.__FlowSolutionCenters__)
+                Internal._rmNodesFromName(z, Internal.__FlowSolutionCenters__)
             C.setFields([fp], z, 'nodes')
 
         # Set ParentElement
@@ -592,10 +586,12 @@ def selectCells3(t, tagName):
         c = 0
         for z in b[2]:
             if z[3] == 'Zone_t':
-                centers = Internal.getNodeFromName(z, Internal.__FlowSolutionCenters__)
-                if centers is not None:
-                    taga = Internal.getNodeFromName(centers, name)
-                    if taga is not None:
+                fsc = Internal.getNodeFromName1(z, Internal.__FlowSolutionCenters__)
+                if fsc is not None:
+                    taga = Internal.getNodeFromName1(fsc, name)
+                    if taga is None:
+                        raise NameError(f"Tag name {tagName} not found in {b[0]}/{z[0]}.")
+                    else:
                         ret = post.selectCells3(taga[1], 1)
                         ret = T.subzone(z, ret, type='elements')
                         b[2][c] = ret
@@ -678,7 +674,7 @@ def exteriorFaces(t, indices=None):
 def _exteriorFaces(t, indices=None):
     C._deleteZoneBC__(t)
     C._deleteFlowSolutions__(t, 'centers')
-    C._TZA1(t, 'nodes', 'nodes', True, Post.exteriorFaces, indices)
+    C._TZA3(t, 'nodes', 'nodes', True, Post.exteriorFaces, indices)
     return None
 
 def exteriorElts(t):
@@ -1472,13 +1468,11 @@ def _addBCDataSet2BCData__(z, varList, indices, BCField):
             bcf[v] = i
         if any(bcfv is not None for bcfv in bcf):
             indsp = inds[1].ravel(order='K')
-            if zn not in indices: indices[zn] = indsp
-            else: indices[zn] = numpy.concatenate((indices[zn], indsp))
+            indices.setdefault(zn, []).append(indsp)
             for v, bcfv in enumerate(bcf):
                 if bcfv is None: continue  # variable skipped
                 BCFieldv = BCField[v]
-                if zn not in BCFieldv: BCFieldv[zn] = bcfv[1].ravel(order='K')
-                else: BCFieldv[zn] = numpy.concatenate((BCFieldv[zn], bcfv[1].ravel(order='K')))
+                BCFieldv.setdefault(zn, []).append(bcfv[1].ravel(order='K'))
     return None
 
 def _addBCMatchData2BCData__(z, varList, bcMatchDict, indices, BCField):
@@ -1501,14 +1495,12 @@ def _addBCMatchData2BCData__(z, varList, bcMatchDict, indices, BCField):
             else: fldp[i] = numpy.concatenate((fldp[i], fgcv), axis=1)
 
     if any(fldpv is not None for fldpv in fldp):
-        indp = indFace.ravel(order='K')
-        if zn not in indices: indices[zn] = indp
-        else: indices[zn] = numpy.concatenate((indices[zn], indp))
+        indsp = indFace.ravel(order='K')
+        indices.setdefault(zn, []).append(indsp)
         for v, fldpv in enumerate(fldp):
             if fldpv is None: continue  # variable skipped
             BCFieldv = BCField[v]
-            if zn not in BCFieldv: BCFieldv[zn] = fldpv.ravel(order='K')
-            else: BCFieldv[zn] = numpy.concatenate((BCFieldv[zn], fldpv.ravel(order='K'))) #, axis=1)
+            BCFieldv.setdefault(zn, []).append(fldpv.ravel(order='K'))
     return None
 
 def computeGrad(t, var):
@@ -1634,6 +1626,15 @@ def _computeGrad2(t, var, ghostCells=False, withCellN=True, withTNC=False,
         # Compute field on BCMatchTNC and add it to indices and BCField
         _addBCMatchData2BCData__(z, varList, allMatchTNC, indices, BCField)
 
+        # Concatenate list of numpy arrays once
+        if zn in indices:
+            if len(indices[zn]) == 1: indices[zn] = indices[zn][0]
+            else: indices[zn] = numpy.concatenate(indices[zn], axis=0)
+            for BCFieldv in BCField:
+                if zn in BCFieldv:
+                    if len(BCFieldv[zn]) == 1: BCFieldv[zn] = BCFieldv[zn][0]
+                    else: BCFieldv[zn] = numpy.concatenate(BCFieldv[zn], axis=0)
+
         coords = C.getFields(Internal.__GridCoordinates__, z, api=3)[0]
         inds = indices.get(zn, None)
         bcf = BCField[0].get(zn, None)
@@ -1756,6 +1757,15 @@ def _computeDiv2(t, var, ghostCells=False, withTNC=False, rmVar=False,
 
         # Compute field on BCMatchTNC and add it to indices and BCField
         _addBCMatchData2BCData__(z, varList, allMatchTNC, indices, BCField)
+
+        # Concatenate list of numpy arrays once
+        if zn in indices:
+            if len(indices[zn]) == 1: indices[zn] = indices[zn][0]
+            else: indices[zn] = numpy.concatenate(indices[zn], axis=0)
+            for BCFieldv in BCField:
+                if zn in BCFieldv:
+                    if len(BCFieldv[zn]) == 1: BCFieldv[zn] = BCFieldv[zn][0]
+                    else: BCFieldv[zn] = numpy.concatenate(BCFieldv[zn], axis=0)
 
         coords = C.getFields(Internal.__GridCoordinates__, z, api=3)[0]
         BCFieldX = BCField[0::3]; BCFieldY = BCField[1::3]; BCFieldZ = BCField[2::3]

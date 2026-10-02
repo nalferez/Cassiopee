@@ -17,9 +17,12 @@ import numpy
 from OCC import readCAD, writeCAD, createEmptyCAD, freeHook, \
     getNbEdges, getNbFaces, getFileAndFormat, \
     printOCAF, getFaceNameInOCAF, getEdgeNameInOCAF, \
-    getFaceNos, getEdgeNos, \
+    getFaceNos, getEdgeNos, getEdgesByFace, \
+    getEdgeLength, getMinMaxEdgeLength, \
     getFaceArea, getFaceVolume, getFaceMassCenter, getBoundingBox, \
-    _translate, _rotate, _scale, _fixShape, _sewing, _reverse, _splitFaces, \
+    checkFaceOverlap, \
+    _translate, _rotate, _scale, _fixShape, \
+    _sewing, _reverse, _mergeEdges, _splitFaces, \
     _mergeFaces, _trimFaces, _removeFaces, _removeEdges, \
     _extractFaces, _fillHole, \
     _addFillet, _offset, mergeCAD, _splitEdge, \
@@ -67,7 +70,7 @@ def convertCAD2PyTree(fileName, format=None, h=0., chordal_err=0.,
                                             Internal.__FlowSolutionNodes__,
                                             Internal.__FlowSolutionCenters__)
                 t[2][base3][2].append(z)
-        else: # non structure
+        else: # non-structure
             if i[3] == 'BAR':
                 if not base1:
                     t = C.addBase2PyTree(t, 'Base1', 1); base1 = base; base += 1
@@ -326,7 +329,7 @@ class CAD:
         return self.faces[no-1]
 
 #========================
-#=== nouvelle vision ====
+#=== new vision ===
 #========================
 def _linkCAD2Tree(hook, t):
     """Put hook in CAD/hook for each zone."""
@@ -369,7 +372,7 @@ def getTree(hook, N=11, hmin=-1., hmax=-1., hausd=-1.):
                                     Internal.__GridCoordinates__,
                                     Internal.__FlowSolutionNodes__,
                                     Internal.__FlowSolutionCenters__)
-        # Conserve name, type et no de l'edge dans la CAD
+        # Preserve name, type and edge number in the CAD
         r = Internal.createChild(z, "CAD", "UserDefinedData_t")
         Internal._createChild(r, "name", "DataArray_t", value="edge%03d"%(c+1))
         Internal._createChild(r, "type", "DataArray_t", value="edge")
@@ -420,7 +423,7 @@ def remeshTreeFromEdges(hook, tp):
                                     Internal.__GridCoordinates__,
                                     Internal.__FlowSolutionNodes__,
                                     Internal.__FlowSolutionCenters__)
-        # Conserve name, type et no de l'edge dans la CAD
+        # Preserve name, type and edge number in the CAD
         r = Internal.createChild(z, "CAD", "UserDefinedData_t")
         Internal._createChild(r, "name", "DataArray_t", value="edge%03d"%(c+1))
         Internal._createChild(r, "type", "DataArray_t", value="edge")
@@ -536,7 +539,7 @@ def meshAll(hook, hmin=-1., hmax=-1., hausd=-1., faceList=None, aniso=False, ord
                                     Internal.__GridCoordinates__,
                                     Internal.__FlowSolutionNodes__,
                                     Internal.__FlowSolutionCenters__)
-        # Conserve hook, name, type et no de l'edge dans la CAD
+        # Preserve hook, name, type and edge number in the CAD
         r = Internal.createChild(z, "CAD", "UserDefinedData_t")
         Internal._createChild(r, "name", "DataArray_t", value="edge%03d"%(c+1))
         Internal._createChild(r, "type", "DataArray_t", value="edge")
@@ -609,7 +612,7 @@ def meshAllPara(hook, hmin=-1., hmax=-1., hausd=-1.):
     D2._addProcNode(t, Cmpi.rank)
     return t
 
-#=============================
+#==================================================
 def meshAllOCC(hook, hausd, angularDeflection=28.):
     t = C.newPyTree(['EDGES', 'FACES'])
 
@@ -747,9 +750,38 @@ def _remeshTreeFromEdges(hook, t, edges):
 
     return None
 
+# remesh automatically for quality enhancement or FAILED faces
+def _remeshTree4Qual(hook, t):
+    nbFaces = getNbFaces(hook)
+    # find missing faces
+    found = numpy.array((nbFaces), dtype=numpy.int32)
+    found[:] = False
+    FACES = Internal.getNodeFromName1(t, 'FACES')
+    zones = Internal.getZones(FACES)
+    for z in zones:
+        CAD = Internal.getNodeFromName1(z, 'CAD')
+        no = Internal.getNodeFromName1(CAD, 'no')
+        no = Internal.getValue(no)
+        found[no-1] = True
+    w = numpy.where(found == False)
+    nedges = []
+    for i in w: # all failed faces
+        edgeno = OCC.getEdgesByFace(hook, i+1)
+        for e in edgeno:
+            if e not in nedges: nedges.append(e)
+    edges = []
+    EDGES = Internal.getNodeFromName1(t, 'EDGES')
+    zones = Internal.getZones(EDGES)
+    for e in nedges:
+        z = zones[e-1]
+        z = G.refine(z, 0.5)
+        edges.append(z)
+    _remeshTreeFromEdges(hook, t, edges)
+    return None
+
 # modify hsize for faces from hlist
-# IN: faceList: liste d'entiers start 1
-# IN: hList: liste de (hmin,hmax,hausd)
+# IN: faceList: list of integers starting at 1
+# IN: hList: list of (hmin,hmax,hausd)
 def _modifyHSizeForFaces(t, faceList, hList):
     b = Internal.getNodeFromName1(t, 'FACES')
     for c, i in enumerate(faceList):
@@ -955,7 +987,6 @@ def _meshAllFacesTri(hook, t, metric=True, faceList=None, hList=[], hmin=-1., hm
 
 # mesh all faces or a subset from edges U
 def _meshAllFacesStruct(hook, t, faceList=None):
-
     b = Internal.getNodeFromName1(t, 'EDGES')
     dedges = []
     for z in Internal.getZones(b):
@@ -1059,7 +1090,7 @@ def _meshDeviation1(hook, t, loc='nodes'):
     #EDGES = Internal.getNodeFromName1(t, 'EDGES')
     #zones = Internal.getZones(EDGES)
     #for z in zones:
-    #    # no de l'edge
+    #    # edge number
     #    try:
     #        no = getNo(z)
     #        edgeList = [no]
@@ -1079,7 +1110,7 @@ def _meshDeviation1(hook, t, loc='nodes'):
             faceList = [no]
         except: faceList = None
         if loc == "centers":
-            # recupere le maillage en centre
+            # retrieve the mesh at centers
             zc = C.node2Center(z)
             _meshDeviation__(z, zc, _projectOnFaces, hook, faceList, no)
         else: # nodes
@@ -1095,7 +1126,7 @@ def _meshDeviation2(hook, t, loc="nodes"):
         else: F = _projectOnFaces
 
         if loc == "centers":
-            # recupere le maillage en centre
+            # retrieve the mesh at centers
             zc = C.node2Center(z)
             _meshDeviation__(z, zc, F, hook, None, no)
         else:
@@ -1205,21 +1236,21 @@ def _setInterpData(t, tc):
                                     ptList=ptList-1, ptListDonor=ptListDonor-1)
     return None
 
-# Retourne l'edge a partir de edgeNo (numero global CAD)
+# Return edge from edgeNo (global CAD number)
 def getEdge(t, pos, edgeNo):
     """Return edge from no."""
     be = Internal.getNodeFromName1(t, 'EDGES')
     ze = be[2][pos[0][edgeNo]]
     return ze
 
-# Retourne les edges a partir d'une liste de edgeNos (numero global CAD)
+# Return edges from a list of edgeNos (global CAD numbers)
 def getEdges(t, pos, edgeNos):
     be = Internal.getNodeFromName1(t, 'EDGES')
     locEdgeNos = [pos[0].get(k) for k in edgeNos]
     ze = [be[2][i] for i in locEdgeNos]
     return ze
 
-# Retourne la face de faceNo (numero global CAD)
+# Return face from faceNo (global CAD number)
 def getFace(t, pos, faceNo):
     """Return face from no."""
     bf = Internal.getNodeFromName1(t, 'FACES')
@@ -1344,9 +1375,9 @@ def _updateConnectivityTree(tc, name, nameDonor, ptList, ptListDonor):
     Internal.createNode('GridLocation', 'GridLocation_t', value='Vertex', parent=zsr)
 
     npts = len(ptList)
-    # indices des points receveur
+    # receiver point indices
     Internal.createNode('PointList', 'IndexArray_t', value=ptListDonor, parent=zsr)
-    # indices des points donneur
+    # donor point indices
     Internal.createNode('PointListDonor', 'IndexArray_t', value=ptList, parent=zsr)
     # coefficient a 1 (injection)
     data = numpy.ones((npts), dtype=numpy.float64)
@@ -1512,15 +1543,16 @@ def _updateTree(t, oldNbEdges, oldNbFaces, new2OldEdgeMap, new2OldFaceMap):
     _setLonelyEdgesColor(t)
     return None
 
+# internal function
 def identifyTags__(a):
     array = C.getFields(Internal.__FlowSolutionNodes__, a, "__tag__", api=3)[0]
     return OCC.identifyTags__(array)
 
-# add family name on faces taken from OCAF compounds
+# add family name on faces taken from OCAF labels
 def _addOCAFCompoundNames(hook, t):
     # FACES
-    ret = getFaceNameInOCAF(hook)
     pos = getAllPos(t)
+    ret = getFaceNameInOCAF(hook)
     r = len(ret)//2
     b = Internal.getNodeFromName1(t, 'FACES')
     for i in range(r):
@@ -1532,10 +1564,8 @@ def _addOCAFCompoundNames(hook, t):
                 C._tagWithFamily(z, name, add=True)
             except: pass
         C._addFamily2Base(b, name)
-
     # EDGES
-    ret = OCC.occ.getEdgeNameInOCAF2(hook)
-    pos = getAllPos(t)
+    ret = OCC.getEdgeNameInOCAF(hook)
     r = len(ret)//2
     b = Internal.getNodeFromName1(t, 'EDGES')
     for i in range(r):
@@ -1550,11 +1580,17 @@ def _addOCAFCompoundNames(hook, t):
 
     return None
 
-def getComponents(t):
+# get components
+# IN: t: meshed tree
+# IN: tol: tolerance for face zipping
+# IN: byOCAFLabels: if true, make component following OCAF
+# return components with a field tag corresponding to face number
+def getComponents(t, tol=1.e-12, byOCAFLabels=False):
     """Return the number of components in t, taggings faces with component number."""
     import Transform.PyTree as T
-    # init FACES with a tag
     FACES = Internal.getNodeFromName1(t, 'FACES')
+
+    # add the no to FACES as __tag__ field
     zones = Internal.getZones(FACES)
     for z in zones:
         # Get face number
@@ -1564,11 +1600,41 @@ def getComponents(t):
         # init tag
         C._initVars(z, '__tag__ = %d'%no)
 
-    # join all zones
-    G._zip(zones, 1.e-10) # volontairement in place, maybe useless
-    a = T.join(zones)
-    #a = T.splitConnexity(a)
-    a = T.splitManifold(a)
+    if byOCAFLabels: # by OCAF Labels components
+        # Find components by OCAF names if possible
+        zones = Internal.getZones(FACES)
+        families = C.getFamilyZoneNames(FACES)
+        found = {}
+        for z in zones: found[z[0]] = False
+        compounds = {}
+        for f in families:
+            zs = C.getFamilyZones(FACES, f)
+            for z in zs: found[z[0]] = True
+            compounds[f] = zs
+        rest = []
+        for n in found:
+            if not found[n]:
+                z = Internal.getNodeFromName1(FACES, n)
+                rest.append(z)
+        compounds['noLabels'] = rest
+        a = []
+        for c in compounds:
+            print(f"INFO: building component {c}...", flush=True)
+            zs = compounds[c]
+            if zs == []: continue
+            G._zip(zs, tol) # deliberately in place, maybe useless
+            b = T.join(zs, tol=tol) # for self closing not done by zip
+            #b = T.splitConnexity(b)
+            b = T.splitManifold(b)
+            a += b
+        for c, z in enumerate(a): z[0] = f"component{c}"
+    else:
+        # join all zones
+        G._zip(zones, tol) # deliberately in place, maybe useless
+        a = T.join(zones, tol=tol) # for self closing not done by zip
+        #a = T.splitConnexity(a)
+        a = T.splitManifold(a)
+        for c, z in enumerate(a): z[0] = f"component{c}"
 
     # Identify faces in component
     tags = {}
@@ -1578,21 +1644,26 @@ def getComponents(t):
     # Get the component number for each zone
     pos = getAllPos(t)
     for k in tags:
-        C._addFamily2Base(FACES, 'Component%02d'%k)
+        C._addFamily2Base(FACES, 'Component%03d'%k)
         faces = tags[k]
         for f in faces:
             z = getFace(t, pos, f)
-            C._tagWithFamily(z, 'Component%02d'%k, add=True)
+            C._tagWithFamily(z, 'Component%03d'%k, add=True)
 
     return a
 
 # tell if component (as obtained by getComponent) is watertight
-def isWatertight(component, leaks=[]):
-    """Tell if componenent is watertight."""
+# IN: component: one zone component
+# IN: tol: tol to discard degenerated exterior faces check
+# OUT: leaks: leaks corresponding to exterior faces
+def isWatertight(component, leaks=[], tol=1.e-12):
+    """Tell if component is watertight."""
     import Post.PyTree as P
     import Transform.PyTree as T
+    import Geom.PyTree as D
     ext = P.exteriorFaces(component)
     ext = T.splitConnexity(ext)
-    leaks += ext
+    for e in ext: # check if exterior are not degenerated
+        if D.getLength(e) > tol: leaks += [e]
     if leaks != []: return False
     else: return True

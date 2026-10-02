@@ -63,7 +63,7 @@ VARNAME2CGNS = {
 # Known CGNS BC types
 KNOWNBCS = [
     'BCWall', 'BCWallInviscid', 'BCWallViscous', 'BCWallViscousIsothermal',
-    'BCFarfield', 'BCExtrapolate',
+    'BCFarfield', 'BCExtrapolate', 'BCPeriodic',
     'BCInflow', 'BCInflowSubsonic', 'BCInflowSupersonic',
     'BCOutflow', 'BCOutflowSubsonic', 'BCOutflowSupersonic',
     'BCMatch', 'BCNearMatch', 'BCOverlap', 'BCSymmetryPlane',
@@ -3690,6 +3690,38 @@ def groupByFamily(t, familyChilds=None, unique=False):
 # -- Get zone dims --
 #==============================================================================
 
+# -- retourne la dimension d'une grille NGON
+# Retourne -1 si la grille n'est pas NGON
+def getCellDimNGon(zone):
+  def getCellDimNGon__(ngon):
+    # NGON4
+    data = getNodeFromName1(ngon, 'ElementStartOffset')
+    if data is not None:
+      offsets = data[1]
+      if offsets is not None and offsets.size > 1:
+        if offsets[1] == 1: return 1
+        if offsets[1] == 2: return 2
+      return 3
+    # NGON3
+    data = getNodeFromName1(ngon, 'ElementConnectivity')
+    if data is not None:
+      conn = data[1]
+      if conn is not None and conn.size > 0:
+        if conn[0] == 1: return 1
+        if conn[0] == 2: return 2
+      return 3
+    return 3
+
+  c = getElementNodes(zone)
+  if not c: return 3
+  elif len(c) == 1:
+    if c[0][1][0] not in [22, 23]: return -1
+    return getCellDimNGon__(c[0])
+  eltNames = [eltNo2EltName(e[1][0])[0] for e in c]
+  if "NGON" in eltNames and "NFACE" in eltNames:
+    return getCellDimNGon__(c[eltNames.index("NGON")])
+  return -1
+
 # -- retourne les dimensions et le type de la grille
 # pour un noeud de Zone donne --
 # Retourne ['Structured', ni, nj, nk, celldim] pour une grille structuree
@@ -3726,40 +3758,16 @@ def getZoneDim(zone):
         elif lc == 1:
           elt = c[0][1][0]
           eltName, _, cellDim = eltNo2EltInfo(elt)
-          if elt == 22 or elt == 23: # NGON or NFACE
+          if elt in [22, 23]: # NGON or NFACE
             eltName = 'NGON'
-            data = getNodeFromName1(c[0], 'ElementStartOffset')
-            if data is not None: # NGON4
-              datar = data[1]
-              if datar is not None and len(datar)>1:
-                if datar[1] == 1: cellDim = 1
-                elif datar[1] == 2: cellDim = 2
-            else: # NGON3
-              data = getNodeFromName1(c[0], 'ElementConnectivity')
-              if data is not None and len(data)>0: datar = data[1]
-              if datar is not None and datar.size>0:
-                if datar[0] == 1: cellDim = 1
-                elif datar[0] == 2: cellDim = 2
+            cellDim = getCellDimNGon(zone)
           return [gtype, np, ne, eltName, cellDim]
         else: # lc >= 2:
           # Y a t-il NGON et NFACE? Si oui, renvoie NGON meme si il
           # y a des BEs
           eltNames = [eltNo2EltName(i[1][0])[0] for i in c]
           if "NGON" in eltNames and "NFACE" in eltNames:
-            NGONp = c[eltNames.index("NGON")]
-            data = getNodeFromName1(NGONp, 'ElementStartOffset')
-            if data is not None and len(data)>0: datar = data[1]
-            else: datar = None
-            if datar is not None and datar.size>1:
-              if datar[1] == 1: cellDim = 1
-              elif datar[1] == 2: cellDim = 2
-              return [gtype, np, ne, 'NGON', cellDim]
-            data = getNodeFromName1(NGONp, 'ElementConnectivity')
-            if data is not None and len(data)>0: datar = data[1]
-            else: datar = None
-            if datar is not None and datar.size>0:
-              if datar[0] == 1: cellDim = 1
-              elif datar[0] == 2: cellDim = 2
+            cellDim = getCellDimNGon(zone)
             return [gtype, np, ne, 'NGON', cellDim]
           else: # BE/ME
             cellDim = 0
@@ -3884,11 +3892,11 @@ def checkSize(t, sizeMax=100000000):
   from . import Check
   return Check.checkSize(t, sizeMax)
 
-# -- correctBCElementNodes
-def _correctBCElementNodes(t):
+# -- correctElementBoundaryNodes
+def _correctElementBoundaryNodes(t):
   """Correct element nodes to tag them as BC."""
   from . import Check
-  return Check._correctBCElementNodes(t)
+  return Check._correctElementBoundaryNodes(t)
 
 # -- correctBaseZonesDim
 def _correctBaseZonesDim(t, splitBases=False):
@@ -4305,7 +4313,7 @@ def setElementConnectivity(z, array):
 def setElementConnectivity2(z, array):
   estring = array[3]
   estring = estring.split(',')
-  etype0, stype = eltName2EltNo(estring[0])
+  etype0, _ = eltName2EltNo(estring[0])
   GENodes = getElementNodes(z)
   cnames = {}
   for nc, gc in enumerate(GENodes): cnames[nc] = gc[0]
@@ -4314,7 +4322,7 @@ def setElementConnectivity2(z, array):
   #if GENodes == []: # la connectivite n'existe pas
   if etype0 != 22 and etype0 != 23: # Elements->Nodes connectivities
     for nc, gc in enumerate(array[2]):
-      etype, stype = eltName2EltNo(estring[nc])
+      etype, _ = eltName2EltNo(estring[nc])
       i = numpy.empty((2), E_NpyInt); i[0] = etype; i[1] = 0
       #i = numpy.empty((2), numpy.int32); i[0] = etype; i[1] = 0 # force I4
       if nc in cnames: cname = cnames[nc]
@@ -4325,7 +4333,7 @@ def setElementConnectivity2(z, array):
       i = numpy.empty((2), E_NpyInt); i[0] = 1; i[1] = gc.shape[0]
       info[2].append(['ElementRange', i, [], 'IndexRange_t'])
       info[2].append(['ElementConnectivity', gc.ravel("k"), [], 'DataArray_t'])
-      _updateElementRange(z)
+    _updateElementRange(z)
   else: # Faces->Nodes and Elements->Faces connectivities (NGON or NFACE)
     i = numpy.empty((2), E_NpyInt); i[0] = etype0; i[1] = 0
     #i = numpy.empty((2), numpy.int32); i[0] = etype0; i[1] = 0 # force I4
@@ -4334,26 +4342,28 @@ def setElementConnectivity2(z, array):
     info.append(['NGonElements', i, [], 'Elements_t'])
     info2 = info[len(info)-1][2]
     # Size of ElementRange: nb de faces
-    if array[2][2][-1] == array[2][0].size: nfaces = array[2][2].size-1
+    if array[2][2].size > 0 and array[2][2][-1] == array[2][0].size:
+      nfaces = array[2][2].size-1
     else: nfaces = array[2][2].size
     i = numpy.empty((2), E_NpyInt); i[0] = 1; i[1] = nfaces
     info2.append(['ElementRange', i, [], 'IndexRange_t'])
     # Tableau de connectivite Face/Noeuds
     info2.append(['ElementConnectivity', array[2][0], [], 'DataArray_t'])
     # Tableau FaceIndex (PH)
-    if array[2][2][-1] == array[2][0].size:
+    if array[2][2].size > 0 and array[2][2][-1] == array[2][0].size:
       info2.append(['ElementStartOffset', array[2][2], [], 'DataArray_t'])
     else:
       info2.append(['FaceIndex', array[2][2], [], 'DataArray_t'])
     _updateElementRange(z)
     # Creation du noeud NFACE_n: connectivite Elements->Faces
-    etype,stype = eltName2EltNo('NFACE')
+    etype, _ = eltName2EltNo('NFACE')
     i2 = numpy.empty((2), E_NpyInt); i2[0] = etype; i2[1] = 0
     #i2 = numpy.empty((2), numpy.int32); i2[0] = etype; i2[1] = 0 # force I4
     info.append(['NFaceElements', i2, [], 'Elements_t'])
     info2 = info[len(info)-1][2]
     # Size of ElementRange
-    if array[2][3].size > 0 and array[2][3][-1] == array[2][1].size: nelts = array[2][3].size-1
+    if array[2][3].size > 0 and array[2][3][-1] == array[2][1].size:
+      nelts = array[2][3].size-1
     else: nelts = array[2][3].size
     i = numpy.empty((2), E_NpyInt)
     i[0] = nfaces+1; i[1] = nfaces+nelts
@@ -4424,12 +4434,13 @@ def setElementConnectivity2(z, array):
 # Sert de reference a Cassiopee pour savoir si un Elements_t est volumique ou non
 def _setElementDim(z):
   GEl = getNodesFromType1(z, 'Elements_t')
-  if GEl == []: return []
-  dimElt = [eltNo2Dim(i[1][0]) for i in GEl]
+  if GEl == []: return
+  dimElt = [-1 if i[1][0] in [22, 23] else eltNo2Dim(i[1][0]) for i in GEl]
   maxdim = max(dimElt)
   for c, GE in enumerate(GEl):
-    if dimElt[c] == maxdim: GE[1][1] = 0
-    else: GE[1][1] = 1
+    if dimElt[c] == -1: continue  # skip NGon
+    elif dimElt[c] == maxdim: GE[1][1] = 0  # volumic
+    elif GE[1][1] == 0: GE[1][1] = 1  # surfacic, was yet unset
 
 # -- Retourne une liste des noeuds Elements_t volumiques d'une zone
 # Retourne [] si il n'y en a pas.
@@ -4463,6 +4474,11 @@ def getElementBoundaryNodes(z):
     if dimElt < dim: out.append(GE)
   return out
 
+def _rmElementBoundaryNodes(z):
+  bcConnects = getElementBoundaryNodes(z)
+  for n in bcConnects: _rmNode(z, n)
+  return None
+
 # -- Retourne le noeud Element_t NGon si il existe
 def getNGonNode(z):
   GEl = getNodesFromType1(z, 'Elements_t')
@@ -4477,14 +4493,45 @@ def getNFaceNode(z):
     if GE[1][0] == 23: return GE
   return None
 
-# -- Update la numerotation des ElementRanges dans l'ordre des connectivites
+# -- Update ElementRange numbering:
+#     - volume connectivities followed by surface connectivities
+#     - update the ElementRanges of the corresponding BCs
+#     - update the number of volume elements of BE/ME meshes in zoneDim
 def _updateElementRange(z):
+  _setElementDim(z)
   GEl = getNodesFromType1(z, 'Elements_t')
+  BCs = getNodesFromType2(z, 'BC_t')
+  dim = getZoneDim(z)
+
+  iGEv = []; iGEs = []
+  for i, GE in enumerate(GEl):
+    if GE[1][1] == 0: iGEv.append(i)
+    else: iGEs.append(i)
+
   c = 0
-  for GE in GEl:
-    r = getNodeFromName1(GE, 'ElementRange')
+  for i in iGEv:
+    r = getNodeFromName1(GEl[i], 'ElementRange')
     r[1] = numpy.copy(r[1]); a = r[1]
     size = a[1]-a[0]+1
+    a[0] = c+1; c += size; a[1] = c
+  if dim[0] == "Unstructured" and dim[3] != "NGON":
+    z[1] = numpy.copy(z[1])
+    z[1][0][1] = c  # Update the number of volume elements
+
+  for i in iGEs:
+    r = getNodeFromName1(GEl[i], 'ElementRange')
+    r[1] = numpy.copy(r[1]); a = r[1]
+    size = a[1]-a[0]+1
+
+    for b in BCs:
+      rbc = getNodeFromType1(b, 'IndexRange_t')
+      if rbc is not None:
+        rbc[1] = numpy.copy(rbc[1]); abc = rbc[1]
+        abc = abc.ravel('k')
+        if abc[0] == a[0] and abc[1] == a[1]:
+          abc[0] = c+1; abc[1] = c+size
+          break
+
     a[0] = c+1; c += size; a[1] = c
   return None
 
@@ -4943,7 +4990,7 @@ def _adaptZoneBCEltRange2EltList(t):
   return None
 
 # input dict, t
-def getElementRangeDict(t, d):
+def _getElementRangeDict(t, d):
   zones = getZones(t)
   for z in zones:
     if z[0] not in d: d[z[0]] = {}
@@ -4952,6 +4999,7 @@ def getElementRangeDict(t, d):
       n = getNodeFromName1(e, 'ElementRange')
       if n is not None and n[1] is not None: d[z[0]][e[0]] = (n[1][0],n[1][1])
       else: d[z[0]][e[0]] = (1,1)
+  return None
 
 # input dict, index of a Elements of z
 # trouve la connectivite de zname referencee par ind
@@ -4987,7 +5035,7 @@ def _fixNGon(t, remove=False, breakBE=True, convertMIXED=True, addNFace=True, ap
     dictOfZTypes[z[0]] = stype
 
   shift0 = {}
-  getElementRangeDict(t, shift0)
+  _getElementRangeDict(t, shift0)
   for z in zones:
     stype = dictOfZTypes[z[0]]
     if stype == 2: # Unstructured
@@ -5049,8 +5097,7 @@ def _fixNGon(t, remove=False, breakBE=True, convertMIXED=True, addNFace=True, ap
           for c in connects:
             if c[1][0] != 22 and c[1][0] != 23:
               _rmNode(z, c)
-          connects = getElementBoundaryNodes(z)
-          for c in connects: _rmNode(z, c)
+          _rmElementBoundaryNodes(z)
         else: # swap
           if NGON != -1 and NGON > BE: # swap BE and NGON
             # swap un BE et NGON
@@ -5083,7 +5130,7 @@ def _fixNGon(t, remove=False, breakBE=True, convertMIXED=True, addNFace=True, ap
 
   # Remet les BCs d'aplomb (en fonction de la renumerotation shift0->shift1)
   shift1 = {}
-  getElementRangeDict(t, shift1)
+  _getElementRangeDict(t, shift1)
   for z in zones:
     stype = dictOfZTypes[z[0]]
     if stype == 2: # Unstructured

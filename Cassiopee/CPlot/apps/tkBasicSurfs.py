@@ -159,16 +159,16 @@ def generate(event=None):
 
     if eltType == 'TRI':
         s = C.convertArray2Tetra(s)
-        s = T.join(s); s = G.close(s)
+        s = T.join(s)
     elif eltType == 'QUAD':
         s = C.convertArray2Hexa(s)
-        s = T.join(s); s = G.close(s)
+        s = T.join(s)
 
     posCam = CPlot.getState('posCam')
     posEye = CPlot.getState('posEye')
     dirCam = CPlot.getState('dirCam')
 
-    s = T.translate(s, (posEye[0]-xc, posEye[1]-yc, posEye[2]-zc) )
+    s = T.translate(s, (posEye[0]-xc, posEye[1]-yc, posEye[2]-zc))
     lx = posEye[0]-posCam[0]
     ly = posEye[1]-posCam[1]
     lz = posEye[2]-posCam[2]

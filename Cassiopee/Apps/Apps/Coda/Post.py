@@ -135,9 +135,19 @@ def interpolationDonorPoints(fsmesh, clac, discParaDict, discSelectionParaDict, 
         fsmeshDonorPnt.ExportMeshTECPLOT(Filename='pointMesh_AugState.dat', FileFormat='ASCII', PrefixDatasetName=True) or FSError.PrintAndExit()
     nodeDonorPoints = fsmeshDonorPnt.GetUnstructDataset("DonorPoints").GetValues()
     nodeWallPoints  = fsmeshDonorPnt.GetUnstructDataset("WallPoints").GetValues()
-    augStateData    = fsmeshDonorPnt.GetUnstructDataset("CODAAugState").GetValues()
-    augStateNames   = fsmeshDonorPnt.GetUnstructDataset("CODAAugState").GetNames()
-
+    #Check to see if they changed the names of the variables again.
+    #datasets = set(str(d) for d in fsmeshDonorPnt.GetUnstructDatasetNames())
+    #print(datasets,flush=True)
+    #exit()
+    if fsmeshDonorPnt.HasUnstructDataset('CODAAugmentedStateGradientFree'):
+        augStateData = fsmeshDonorPnt.GetUnstructDataset('CODAAugmentedStateGradientFree').GetValues()
+        augStateNames= fsmeshDonorPnt.GetUnstructDataset("CODAAugmentedStateGradientFree").GetNames()
+    elif fsmeshDonorPnt.HasUnstructDataset('CODAAugState'): # legacy name for old meshes
+        augStateData = fsmeshDonorPnt.GetUnstructDataset('CODAAugState').GetValues()
+        augStateNames= fsmeshDonorPnt.GetUnstructDataset("CODAAugState").GetNames()
+    else:
+        raise ValueError('Augmented state dataset is missing')
+        Cmpi.abort(errorcode=1)
     nodeDonorPoints = Cmpi.allgather(numpy.array(nodeDonorPoints.Buffer(), copy=True))
     nodeWallPoints  = Cmpi.allgather(numpy.array(nodeWallPoints.Buffer() , copy=True))
     augStateData    = Cmpi.allgather(numpy.array(augStateData.Buffer()   , copy=True))
@@ -226,7 +236,7 @@ def computeSurfValues(fileNameResultIn, tb, CODAInputs, dim=3, fileNameIBMPnts=N
 
 
 def computeSurfValuesFSUI(fileNameResultIn, tb, fileNameRelations, dim=3, fileNameIBMPnts=None, fileNameResultOut=None, fileNameCoefOut='coefLiftDrag.txt',
-                          check=False, verbose=False, isRevertToOld=False, GeomName='DDDMesh'):
+                          check=False, verbose=False, isRevertToOld=False, GeomName='DDDMesh', bcInput=None):
     """ Surface quantity post-processing for CODA IBM computation using FSUI-CODA.
     Usage: computeSurfValues(fileNameResultIn, tb, fileNameRelations, dim, fileNameIBMPnts, fileNameResultOut, fileNameCoefOut, check, verbose, isRevertToOld, GeomName)"""
     import json
@@ -253,24 +263,37 @@ def computeSurfValuesFSUI(fileNameResultIn, tb, fileNameRelations, dim=3, fileNa
     # Convert domain to boundary treatments
     IBMMarkers = []
     bndy_treat  = []
-    for boundary_name, boundary_data in domain.items():
-        treatment = {
-            "treatment type": boundary_data["FlowSolverBCType"],
-            "boundary markers": boundary_data["CADGroupID"]
-        }
-        if 'Immersed' in boundary_data["FlowSolverBCType"]:
-            IBMMarkers.append(boundary_data["CADGroupID"][0])
-        # Check if there's a wall model in the CFD section
-        if "CFD" in boundary_data and "wall model" in boundary_data["CFD"]:
-            treatment["wall model"] = boundary_data["CFD"]["wall model"]
-        bndy_treat.append(treatment)
+    if bcInput is None:
+        for boundary_name, boundary_data in domain.items():
+            treatment = {
+                "treatment type": boundary_data["FlowSolverBCType"],
+                "boundary markers": boundary_data["CADGroupID"]
+            }
+            if 'Immersed' in boundary_data["FlowSolverBCType"]:
+                IBMMarkers.append(boundary_data["CADGroupID"][0])
+            # Check if there's a wall model in the CFD section
+            if "CFD" in boundary_data and "wall model" in boundary_data["CFD"]:
+                treatment["wall model"] = boundary_data["CFD"]["wall model"]
+            bndy_treat.append(treatment)
+    else:
+        bndy_treat = bcInput[0]
+        IBMMarkers = bcInput[1]
+
     discParaDict = {
         **discParaDictTmp,
         "boundary treatments": bndy_treat
     }
 
-    alpha    = discParaDict["reference state"]["flow direction specification"]["angle of attack"]
-    beta     = discParaDict["reference state"]["flow direction specification"]["angle of sideslip"]
+    if discParaDict["reference state"]["flow direction specification"]["type"] == 'aerodynamic flow angles':
+        alpha    = discParaDict["reference state"]["flow direction specification"]["angle of attack"]
+        beta     = discParaDict["reference state"]["flow direction specification"]["angle of sideslip"]
+    else:
+        cartVec = discParaDict["reference state"]["flow direction specification"]["vector"]
+        magnTmp = math.sqrt(sum(x**2 for x in cartVec))
+        cartVec = [x / magnTmp for x in cartVec]
+        alpha = math.degrees(math.asin(abs(cartVec[1])))
+        beta = math.degrees(math.asin(abs(cartVec[2])))
+
     Mach     = discParaDict["reference state"]["flow speed specification"]["Mach"]
     Reynolds = discParaDict["reference state"]["viscosity specification"]["Reynolds"]
     Lref     = discParaDict["reference state"]["viscosity specification"]["Reynolds_Length"]

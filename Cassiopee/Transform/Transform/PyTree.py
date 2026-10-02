@@ -206,13 +206,13 @@ def _smooth(t, eps=0.5, niter=4, type=0, fixedConstraints=[],
     C.setFields(coordsp, t, 'nodes', writeDim=False)
     return None
 
-def consSmooth(t, sweeps, twoWays=False, step=1):
+def consSmooth(t, sweeps, twoWays=False, step=1, omega=0.2):
     """Conservative smoothing."""
-    return C.TZGC3(t, 'nodes', False, Transform.consSmooth, sweeps, twoWays, step)
+    return C.TZGC3(t, 'nodes', False, Transform.consSmooth, sweeps, twoWays, step, omega)
 
-def _consSmooth(t, sweeps, twoWays=False, step=1):
+def _consSmooth(t, sweeps, twoWays=False, step=1, omega=0.2):
     """Conservative smoothing."""
-    return C._TZGC3(t, 'nodes', False, Transform.consSmooth, sweeps, twoWays, step)
+    return C._TZGC3(t, 'nodes', False, Transform.consSmooth, sweeps, twoWays, step, omega)
 
 def deform(t, vector=['dx','dy','dz']):
     """Deform surface by moving surface of the vector (dx, dy, dz).
@@ -296,9 +296,9 @@ def join(t, t2=None, tol=1.e-10):
         allBCInfos += C.extractBCInfo(t2)
     Internal._orderFlowSolution(nodes, loc='both')
 
-    fieldn = C.getAllFields(nodes, 'nodes', api=1)
+    fieldn = C.getAllFields(nodes, 'nodes', api=3)
     fieldc = []
-    for f in C.getAllFields(nodes, 'centers', api=1):
+    for f in C.getAllFields(nodes, 'centers', api=3):
         if f != []: fieldc.append(f)
     res = Transform.join(fieldn, arrayc=fieldc, tol=tol)
     if not isinstance(res[0], list): # join sans les centres
@@ -644,12 +644,12 @@ def subzone(t, minIndex, maxIndex=None, type=None, dimOut=None):
 
 def subzoneUnstruct__(t, indices, type, dimOut=None):
     tp = Internal.copyRef(t)
-    nodes = Internal.getZones(tp)
-    for z in nodes:
+    zones = Internal.getZones(tp)
+    for z in zones:
         dimz = Internal.getZoneDim(z)
-        fc = C.getFields(Internal.__GridCoordinates__, z, api=1)[0]
-        fa = C.getFields(Internal.__FlowSolutionNodes__, z, api=1)[0]
-        fb = C.getFields(Internal.__FlowSolutionCenters__, z, api=1)[0]
+        fc = C.getFields(Internal.__GridCoordinates__, z, api=3)[0]
+        fa = C.getFields(Internal.__FlowSolutionNodes__, z, api=3)[0]
+        fb = C.getFields(Internal.__FlowSolutionCenters__, z, api=3)[0]
         C._deleteZoneBC__(z)
         if fa != []: fc = Converter.addVars([fc, fa])
         if fb == []: # no flow sol at centers
@@ -665,17 +665,18 @@ def subzoneUnstruct__(t, indices, type, dimOut=None):
                     raise TypeError("subzone with list (loc='both'): not yet implemented for structured zones.")
             else:
                 if type == 'faces':
-                    [nodes, centers] = Transform.transform.subzoneFacesBoth(fc, fb, indices)
+                    [nodes, centers] = Transform.transform.subzoneFaces(fc, fb, indices)
                     C.setFields([nodes], z, 'nodes')
                     C.setFields([centers], z, 'centers')
                 elif type == 'elements':
-                    [nodes, centers] = Transform.transform.subzoneElementsBoth(fc, fb, indices)
+                    [nodes, centers] = Transform.transform.subzoneElements(fc, fb, indices)
                     C.setFields([nodes], z, 'nodes')
                     C.setFields([centers], z, 'centers')
                 else:
-                    [nodes, centers] = Transform.transform.subzoneUnstructBoth(fc, fb, indices)
+                    [nodes, centers] = Transform.transform.subzoneUnstruct(fc, fb, indices, dimOut)
                     C.setFields([nodes], z, 'nodes')
-                    C.setFields([centers], z, 'centers')
+                    if centers is None: C._deleteFlowSolutions__(z, 'centers')
+                    else: C.setFields([centers], z, 'centers')
         z[0] = C.getZoneName(z[0])
     return tp
 
@@ -1729,19 +1730,19 @@ def _reorderStruct__(t, order, topTree):
         for z in zones: zoneNames.append(z[0])
         _reorderBCMatch__(t, order, zoneNames)
         _reorderBCNearMatch__(t, order, zoneNames)
-        C._TZA1(t, loc, loc, True, Transform.reorder, order)
+        C._TZA3(t, loc, loc, True, Transform.reorder, order)
         return None
     else:
         istoptree = Internal.isTopTree(topTree)
         if not istoptree: # pas de modif des zoneDonors dans les BCMatch !
             _reorderBC__(t, order)
             _reorderGC__(t, order)
-            C._TZA1(t, loc, loc, True, Transform.reorder, order)
+            C._TZA3(t, loc, loc, True, Transform.reorder, order)
             return None
         else: # toptree fourni
             _reorderBC__(t, order)
             _reorderBCOverlap__(t, order)
-            C._TZA1(t, loc, loc, True, Transform.reorder, order)
+            C._TZA3(t, loc, loc, True, Transform.reorder, order)
             zones = Internal.getZones(t)
             zoneNames = []
             for z in zones: zoneNames.append(z[0])

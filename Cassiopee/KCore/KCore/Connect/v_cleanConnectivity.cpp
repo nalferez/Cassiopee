@@ -41,7 +41,8 @@ PyObject* K_CONNECT::V_cleanConnectivity(
   E_Float tol, E_Bool rmOverlappingPts,
   E_Bool rmOrphanPts, E_Bool rmDuplicatedFaces,
   E_Bool rmDuplicatedElts, E_Bool rmDegeneratedFaces,
-  E_Bool rmDegeneratedElts, E_Bool exportIndirPts
+  E_Bool rmDegeneratedElts, E_Bool exportIndirPts,
+  E_Bool* modified
 )
 {
   E_Int posx = K_ARRAY::isCoordinateXPresent(varString);
@@ -56,20 +57,20 @@ PyObject* K_CONNECT::V_cleanConnectivity(
   posx++; posy++; posz++;
   
   PyObject* o = NULL;
-  if (K_STRING::cmp(eltType, "NGON") == 0 || K_STRING::cmp(eltType, "NGON*") == 0)
+  if (K_STRING::cmp(eltType, 4, "NGON") == 0)
   {
     o = V_cleanConnectivityNGon(posx, posy, posz, varString, f, cn,
                                 tol, rmOverlappingPts, rmOrphanPts,
                                 rmDuplicatedFaces, rmDuplicatedElts,
                                 rmDegeneratedFaces, rmDegeneratedElts,
-                                exportIndirPts);
+                                exportIndirPts, modified);
   }
   else
   {
     o = V_cleanConnectivityME(posx, posy, posz, varString, f, cn,
                               eltType, tol, rmOverlappingPts, rmOrphanPts,
                               rmDuplicatedElts, rmDegeneratedElts,
-                              exportIndirPts);
+                              exportIndirPts, modified);
   }
   return o;
 }
@@ -81,7 +82,7 @@ PyObject* K_CONNECT::V_cleanConnectivityNGon(
   E_Float tol, E_Bool rmOverlappingPts, E_Bool rmOrphanPts,
   E_Bool rmDuplicatedFaces, E_Bool rmDuplicatedElts,
   E_Bool rmDegeneratedFaces, E_Bool rmDegeneratedElts,
-  E_Bool exportIndirPts
+  E_Bool exportIndirPts, E_Bool* modified
 )
 {
   E_Bool rmDirtyFaces = (rmDuplicatedFaces || rmDegeneratedFaces);
@@ -376,10 +377,12 @@ PyObject* K_CONNECT::V_cleanConnectivityNGon(
     }
 
     RELEASESHAREDU(tpl, f2, cn2);
+    if (modified != NULL) *modified = true;
   }
   else  // nothing to do, copy input connectivity
   {
     tpl = K_ARRAY::buildArray3(f, varString, cn, "NGON", api);
+    if (modified != NULL) *modified = false;
   }
   if (exportIndirPts)
   {
@@ -731,33 +734,43 @@ PyObject* K_CONNECT::V_cleanConnectivityME(
   FldArrayF& f, FldArrayI& cn, const char* eltType,
   E_Float tol, E_Bool rmOverlappingPts, E_Bool rmOrphanPts,
   E_Bool rmDuplicatedElts, E_Bool rmDegeneratedElts,
-  E_Bool exportIndirPts
+  E_Bool exportIndirPts, E_Bool* modified
 )
 {
   PyObject* tpl = NULL;
-  E_Int nc = cn.getNConnect();
   E_Int vidx;
   E_Int nfld = f.getNfld(), npts = f.getSize(), api = f.getApi();
+  E_Int nc = 0;
+  E_Int ntotElts = 0;
+  std::vector<E_Int> nepc; // initial number of elements per connectivity
 
   // Get dimensionality
   E_Int dim = K_CONNECT::getDimME(eltType);
-
-  // Compute total number of elements
-  E_Int ntotElts = 0;
-  std::vector<E_Int> nepc(nc); // initial number of elements per connectivity
-  for (E_Int ic = 0; ic < nc; ic++)
+  if (dim == 0)
   {
-    FldArrayI& cm = *(cn.getConnect(ic));
-    E_Int nelts = cm.getSize();
-    nepc[ic] = nelts;
-    ntotElts += nelts;
+    // Overrule user inputs
+    rmOrphanPts = false;
+    rmDegeneratedElts = false;
+    rmDuplicatedElts = false;
   }
-  
+  else
+  {
+    // Compute total number of elements
+    nc = cn.getNConnect();
+    nepc.resize(nc);
+    for (E_Int ic = 0; ic < nc; ic++)
+    {
+      FldArrayI& cm = *(cn.getConnect(ic));
+      E_Int nelts = cm.getSize();
+      nepc[ic] = nelts;
+      ntotElts += nelts;
+    }
+  }
+
   // --- 1. Points ---
   // 1a. Identify orphan points, ie, initialise indirection table used in 1b
-  E_Int nuniquePts = 0;
+  E_Int nuniquePts = npts;
   std::vector<E_Int> indir;
-  if (dim == 0) rmOrphanPts = false;
   if (rmOrphanPts)
   {
     indir.resize(npts, -1);
@@ -775,15 +788,16 @@ PyObject* K_CONNECT::V_cleanConnectivityME(
         }
       }
     }
-    
-    rmOrphanPts = false;
-    for (E_Int i = 0; i < npts; i++)
+
+    if (!rmOverlappingPts)
     {
-      if (indir[i] == -1)
+      E_Int norphans = 0;
+      for (E_Int i = 0; i < npts; i++)
       {
-        rmOrphanPts = true;
-        break;
+        if (indir[i] == -1) norphans++;
+        else indir[i] -= norphans;
       }
+      nuniquePts -= norphans;
     }
   }
 
@@ -894,11 +908,23 @@ PyObject* K_CONNECT::V_cleanConnectivityME(
   // --- 4. Create resized connectivity ---
   if (rmDirtyPts || rmDirtyElts)
   {
+    E_Int res2;
     E_Bool center = false;
-    tpl = K_ARRAY::buildArray3(nfld, varString, nuniquePts, nuniqueElts,
-                               eltType, center, api);
     FldArrayF* f2; FldArrayI* cn2;
-    K_ARRAY::getFromArray3(tpl, f2, cn2);
+    if (dim == 0)
+    {
+      res2 = 1;
+      tpl = K_ARRAY::buildArray3(nfld, varString, nuniquePts, 0,
+                                 eltType, center, api);
+      K_ARRAY::getFromArray3(tpl, f2);
+    }
+    else
+    {
+      res2 = 2;
+      tpl = K_ARRAY::buildArray3(nfld, varString, nuniquePts, nuniqueElts,
+                                 eltType, center, api);
+      K_ARRAY::getFromArray3(tpl, f2, cn2);
+    }
 
     #pragma omp parallel
     {
@@ -922,11 +948,13 @@ PyObject* K_CONNECT::V_cleanConnectivityME(
           for (E_Int j = 1; j <= nvpe; j++) cm2(i,j) = cm(i,j);
       }
     }
-    RELEASESHAREDU(tpl, f2, cn2);
+    RELEASESHAREDB(res2, tpl, f2, cn2);
+    if (modified != NULL) *modified = true;
   }
   else  // nothing to do, copy input connectivity
   {
     tpl = K_ARRAY::buildArray3(f, varString, cn, eltType, api);
+    if (modified != NULL) *modified = false;
   }
   
   if (exportIndirPts)

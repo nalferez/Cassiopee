@@ -847,8 +847,7 @@ def _deleteZoneBC__(a, type='None'):
             bcs = Internal.getNodesFromType1(z, 'ZoneBC_t')
             for bc in bcs: Internal._rmNodeByPath(z, bc[0])
             # remove associated Elements_t corresponding to BCs
-            elts = Internal.getElementBoundaryNodes(z)
-            for e in elts: Internal._rmNodeByPath(z, e[0])
+            Internal._rmElementBoundaryNodes(z)
     else: _rmBCOfType(a, type)
     return None
 
@@ -883,6 +882,23 @@ def _deleteSolverNodes__(a):
     Internal._rmNodesByName(a, '.Solver#ownData') # Fast
     Internal._rmNodesByName(a, 'maia#Renumbering') # Sonics
     Internal._rmNodesByType(a, 'ZoneSubRegion_t') # Sonics
+    return None
+
+# -- deleteEmptyBases
+def deleteEmptyBases(t):
+    """Delete bases that do not contain a single zone."""
+    tp = Internal.copyRef(t)
+    _deleteEmptyBases(tp)
+    return tp
+
+def _deleteEmptyBases(t):
+    emptyBaseNames = []
+    bases = Internal.getBases(t)
+    for b in bases:
+        zones = Internal.getZones(b)
+        if not zones: emptyBaseNames.append(b[0])
+    for name in emptyBaseNames:
+        Internal._rmNodesByNameAndType(t, name, "CGNSBase_t")
     return None
 
 # -- deleteEmptyZones
@@ -948,7 +964,7 @@ def _upgradeTree(t, uncompress=True, upgradeNGon=True):
     Internal._correctPyTree(t, level=2) # force unique name
     Internal._correctPyTree(t, level=7) # create familyNames
 
-    #Internal._correctBCElementNodes(t) # boundary connectivity
+    #Internal._correctElementBoundaryNodes(t) # boundary connectivity
     #Internal._correctPyTree(t, level=9) # boundary connectivity, addNFace
     #Converter.Check._shiftParentElements(t, shift=-1) # shift -nface in PE
 
@@ -1099,10 +1115,14 @@ def convertFile2PyTree(fileName, format=None, nptsCurve=20, nptsLine=2,
                 fmt = Internal.getNodeFromName1(CAD, 'format')
                 if fmt is not None: fmt = Internal.getValue(fmt)
                 if file is not None and fmt is not None:
-                    import OCC.PyTree as OCC
-                    import CPlot.Tk as CTK
-                    hook = OCC.readCAD(file, fmt)
-                    CTK.CADHOOK = hook
+                    exists = os.path.exists(file)
+                    if exists:
+                        import OCC.PyTree as OCC
+                        import CPlot.Tk as CTK
+                        hook = OCC.readCAD(file, fmt)
+                        CTK.CADHOOK = hook
+                    else:
+                        print(f"Warning: convertFile2PyTree: CAD file {file} not found.")
             return t
         except:
             if format == 'bin_cgns' or format == 'bin_adf':
@@ -1530,7 +1550,7 @@ def getFields(containerName, t, vars=None, api=1):
             #np = dim[1]
             connects = Internal.getElementNodes(z)
 
-        info = z[2]; out = []; loc = 0
+        info = z[2]; data = {}; out = []; loc = 0
         for i in info:
             if i[0] in names:
                 locf = Internal.getNodeFromType1(i, 'GridLocation_t')
@@ -1541,9 +1561,17 @@ def getFields(containerName, t, vars=None, api=1):
                         #if j[0] == 'CoordinateX' or j[0] == 'CoordinateY' or j[0] == 'CoordinateZ':
                         #  if i[0] == Internal.__GridCoordinates__: out.append(j)
                         #else: out.append(j)
-                        if vars is None: out.append(j)
-                        else:
-                            if j[0] in vars: out.append(j)
+                        if vars is None or j[0] in vars: data[j[0]] = j
+
+        if vars is None: out = list(data.values())
+        elif len(data) != len(vars):
+            raise ValueError(
+                f"getFields: number of fields, {len(data)}, does not match the "
+                f"number of vars, {len(vars)}."
+            )
+        else:
+            # the order of the variables is that of vars
+            out = [data[v] for v in vars]
 
         if out != []:
             if api==1: array = Internal.convertDataNodes2Array(out, dim, connects, loc)
@@ -2783,7 +2811,7 @@ def _mergeBCDataSets(t):
     for z in zones:
         bcs = Internal.getNodesFromType2(z, 'BC_t')
         for b in bcs:
-            Internal._mergeBCDataSets__(z,b)
+            Internal._mergeBCDataSets__(z, b)
     return None
 
 # Nullify field in BCDataSet
@@ -2883,9 +2911,9 @@ def _createBCDataSetOfType(t, bndType, loc='FaceCenter', update=True, vectors=[]
         bcs = Internal.getNodesFromValue(allbcs, bndType)
         bcs += Internal.getFamilyBCs(z, families)
         FSNode = Internal.getNodeFromName1(z, FSCont)
-        varnames=[]
+        varnames = []
         for fs in FSNode[2]:
-            if fs[3]=='DataArray_t': varnames.append(fs[0])
+            if fs[3] == 'DataArray_t': varnames.append(fs[0])
         for bc in bcs:
             PR = Internal.getNodeFromName1(bc, 'PointRange')
             PL = Internal.getNodeFromName1(bc, 'PointList')
@@ -2914,7 +2942,7 @@ def _createBCDataSetOfType(t, bndType, loc='FaceCenter', update=True, vectors=[]
                 d = Internal.newBCData('BCDirichlet', parent=d)
                 cont, noc = Internal.getParentOfNode(z, d)
                 for fs in FSNode[2]:
-                    if fs[3]=='DataArray_t':
+                    if fs[3] == 'DataArray_t':
                         varname = fs[0]
                         fInt = numpy.zeros((np),numpy.float64)
                         if PR is not None:
@@ -2980,7 +3008,7 @@ def _initBCDataSet(t, varNameString, v1=None, v2=None,
                         np = max(imax-imin, 1)*max(jmax-jmin, 1)*max(kmax-kmin, 1)
                     elif np2[1].size == 2: # element range
                         npr = np2[1].ravel("k")
-                        np = npr[1] - npr[0]
+                        np = npr[1] - npr[0]+1
                 elif np3 is not None:
                     if np3[1].size == 6: # structured range
                         win = Internal.range2Window(np3[1])
@@ -2988,7 +3016,7 @@ def _initBCDataSet(t, varNameString, v1=None, v2=None,
                         np = max(imax-imin, 1)*max(jmax-jmin, 1)*max(kmax-kmin, 1)
                     elif np3[1].size == 2: # element range
                         npr = np3[1].ravel("k")
-                        np = npr[1] - npr[0]
+                        np = npr[1] - npr[0]+1
                 else: raise ValueError('initBCDataSet: no PointRange or PointList in BC.')
                 fields = Converter.array('empty', np, 1, 1)
             fn = Converter.initVars(fields, varNameString, v1, v2, isVectorized=isVectorized)
@@ -3619,9 +3647,9 @@ def _convertArray2NGon(t, recoverBC=True, api=1, method="geometric"):
             if gbcs[c] != [] and len(gbcs[c][0]) > 0:
                 if indices is None: _recoverBCs(z, gbcs[c])
                 else: _recoverBCs(z, gbcs[c], indices=indices[c])
+
             # Delete BC Element connectivities
-            bcConnects = Internal.getElementBoundaryNodes(z)
-            for n in bcConnects: Internal._rmNode(z, n)
+            Internal._rmElementBoundaryNodes(z)
     return None
 
 # -- convertPenta2Strand
@@ -4049,8 +4077,13 @@ def _addBC2StructZone__(z, bndName, bndType, wrange=[], faceList=[],
 
         # Ajoute les Data si necessaire (donnees Dirichlet)
         if data is not None:
-            node1 = Internal.createNode('State', 'DataArray_t', value=data)
-            node2 = Internal.createNode('DirichletData', 'BCData_t', children=[node1])
+            nodes = []
+            if isinstance(data, numpy.ndarray):
+                nodes.append(Internal.createNode('State', 'DataArray_t', value=data))
+            elif isinstance(data, list): # list of DataArray_t nodes
+                for d in data:
+                    nodes.append(Internal.createNode(d[0], 'DataArray_t', value=d[1]))
+            node2 = Internal.createNode('DirichletData', 'BCData_t', children=nodes)
             node3 = Internal.createNode('BCDataSet', 'BCDataSet_t', children=[node2])
             info[2].append(node3)
     return None
@@ -4173,10 +4206,15 @@ def _addBC2NGonZone__(z, bndName, bndType, faceList, data, subzone,
         if bndType1 == 'FamilySpecified':
             Internal.createChild(info, 'FamilyName', 'FamilyName_t', bndType2)
 
-        # Ajoute les Data si necessaire (donnees Dirichlet)
+        # Ajoute les DataSet si necessaire (donnees Dirichlet)
         if data is not None:
-            node1 = Internal.createNode('State', 'DataArray_t', value=data)
-            node2 = Internal.createNode('DirichletData', 'BCData_t', children=[node1])
+            nodes = []
+            if isinstance(data, numpy.ndarray):
+                nodes.append(Internal.createNode('State', 'DataArray_t', value=data))
+            elif isinstance(data, list): # list of DataArray_t nodes
+                for d in data:
+                    nodes.append(Internal.createNode(d[0], 'DataArray_t', value=d[1]))
+            node2 = Internal.createNode('DirichletData', 'BCData_t', children=nodes)
             node3 = Internal.createNode('BCDataSet', 'BCDataSet_t', children=[node2])
             info[2].append(node3)
     return None
@@ -4322,8 +4360,13 @@ def _addBC2UnstructZone__(z, bndName, bndType, elementList, elementRange,
 
         # Ajoute les Data si necessaire (donnees Dirichlet)
         if data is not None:
-            node1 = Internal.createNode('State', 'DataArray_t', value=data)
-            node2 = Internal.createNode('DirichletData', 'BCData_t', children=[node1])
+            nodes = []
+            if isinstance(data, numpy.ndarray):
+                nodes.append(Internal.createNode('State', 'DataArray_t', value=data))
+            elif isinstance(data, list): # list of DataArray_t nodes
+                for d in data:
+                    nodes.append(Internal.createNode(d[0], 'DataArray_t', value=d[1]))
+            node2 = Internal.createNode('DirichletData', 'BCData_t', children=nodes)
             node3 = Internal.createNode('BCDataSet', 'BCDataSet_t', children=[node2])
             info[2].append(node3)
     return None
@@ -4436,31 +4479,35 @@ def getNMRatio__(win, winopp, trirac):
 # Identifie des subzones comme BC Faces
 # IN: liste de geometries de BC, liste de leur nom, liste de leur type
 # OUT: a modifie avec des BCs ajoutees en BCFaces
-def recoverBCs(a, BCInfo, tol=1.e-11, removeBC=True):
+# OUT: if missingBCInfo is an empty list, return missing BCInfo data for later
+# reidentification in the same format as BCInfo
+def recoverBCs(a, BCInfo, tol=1.e-11, removeBC=True, missingBCInfo=None):
     """Recover given BCs on a tree.
-    Usage: recoverBCs(a, (BCs, BCNames, BCTypes), tol, removeBC)"""
+    Usage: recoverBCs(a, (BCs, BCNames, BCTypes), tol, removeBC, missingBCInfo=None)"""
     tp = Internal.copyRef(a)
-    _recoverBCs(tp, BCInfo, tol, removeBC)
+    _recoverBCs(tp, BCInfo, tol, removeBC, missingBCInfo)
     return tp
 
-def _recoverBCs(t, BCInfo, tol=1.e-11, removeBC=True, indices=None):
+def _recoverBCs(t, BCInfo, tol=1.e-11, removeBC=True, indices=None, missingBCInfo=None):
     method = "geometric" if indices is None else "topologic"
     if method == "geometric":
-        _recoverBCsGeometric(t, BCInfo, tol, removeBC)
+        _recoverBCsGeometric(t, BCInfo, tol, removeBC, missingBCInfo)
     else:
-        _recoverBCsTopologic(t, BCInfo, removeBC, indices)
+        _recoverBCsTopologic(t, BCInfo, removeBC, indices, missingBCInfo=None)
 
-def _recoverBCsGeometric(t, BCInfo, tol=1.e-11, removeBC=True):
+def _recoverBCsGeometric(t, BCInfo, tol=1.e-11, removeBC=True, missingBCInfo=None):
     try: import Post.PyTree as P
     except: raise ImportError("_recoverBCsGeometric: requires Post module.")
+    try: import Transform.PyTree as T
+    except: raise ImportError("_recoverBCsGeometric: requires Transform module.")
     if removeBC: _deleteZoneBC__(t)
     else:
-        try: import Transform.PyTree as T
-        except: raise ImportError("_recoverBCsGeometric: requires Transform module.")
         try: import Generator.PyTree as G
         except: raise ImportError("_recoverBCsGeometric: requires Generator module.")
     zones = Internal.getZones(t)
     BCs, BCNames, BCTypes = BCInfo
+    storeMissing = isinstance(missingBCInfo, list) and not missingBCInfo
+    if storeMissing: missingBCInfo.extend([[], [], []])
 
     for z in zones:
         dim = Internal.getZoneDim(z)
@@ -4513,8 +4560,22 @@ def _recoverBCsGeometric(t, BCInfo, tol=1.e-11, removeBC=True):
                 if Internal.getZoneType(b) == 1: b = convertArray2Hexa(b)
                 if not removeBC and G.bboxIntersection(zf, b) != 1: continue
                 ids = identifyElements(hook, b, tol)
-                # Cree les BCs
+                # Check if some faces were not found
                 validIds = ids > -1
+                invalidPos = numpy.nonzero(~validIds)[0]
+                ninvalidPos = invalidPos.size
+                if ninvalidPos > 0:
+                    print(
+                        f"Warning: _recoverBCsGeometric: {ninvalidPos} face "
+                        f"indices were not found in BC {b[0]}"
+                    )
+                    if storeMissing:
+                        invalidPos = invalidPos.astype(Internal.E_NpyInt)
+                        zu = T.subzone(b, invalidPos, type='elements')
+                        missingBCInfo[0].append(zu)
+                        missingBCInfo[1].append(BCNames[c])
+                        missingBCInfo[2].append(BCTypes[c])
+                # Create BCs
                 ids = ids[validIds]
                 sizebc = ids.size
                 if sizebc == 0: continue
@@ -4522,8 +4583,15 @@ def _recoverBCsGeometric(t, BCInfo, tol=1.e-11, removeBC=True):
                     id2 = numpy.empty(sizebc, dtype=Internal.E_NpyInt)
                     id2[:] = indicesF[ids[:]-1]
                     _addBC2Zone(z, BCNames[c], BCTypes[c], faceList=id2)
-                else:
-                    _addBC2Zone(z, BCNames[c], BCTypes[c], subzone=b)
+                else:  # BE / ME
+                    b[0] = BCNames[c]
+                    if invalidPos.size > 0:
+                        validPos = numpy.nonzero(validIds)[0]
+                        validPos = validPos.astype(Internal.E_NpyInt)
+                        sz = T.subzone(b, validPos, type='elements')
+                        _addBC2Zone(z, BCNames[c], BCTypes[c], subzone=sz)
+                    else:
+                        _addBC2Zone(z, BCNames[c], BCTypes[c], subzone=b)
 
                 # Recover BCDataSets
                 fsc = Internal.getNodeFromName(b, Internal.__FlowSolutionCenters__)
@@ -4546,8 +4614,23 @@ def _recoverBCsGeometric(t, BCInfo, tol=1.e-11, removeBC=True):
         freeHook(hook)
     return None
 
-def _recoverBCsTopologic(t, BCInfo, removeBC=True, indices=None):
-    if removeBC: _deleteZoneBC__(t)
+def _recoverBCsTopologic(t, BCInfo, removeBC=True, indices=None, missingBCInfo=None):
+    if BCInfo is None and indices is not None:
+        # Vertex reindexing only
+        zones = Internal.getZones(t)
+        for z in zones:
+            dim = Internal.getZoneDim(z)
+            if dim[0] == 'Structured':
+                raise TypeError("recoverBC: not for structured grids.")
+            if dim[3] == 'NGON':
+                pass
+            else:  # BE / ME
+                elts = Internal.getElementBoundaryNodes(z)
+                for elt in elts:
+                    ec = Internal.getNodeFromName(elt, 'ElementConnectivity')[1]
+                    ec[:] = numpy.copy(indices[ec-1] + 1)
+        return None
+    elif removeBC: _deleteZoneBC__(t)
     else:
         raise NotImplementedError("_recoverBCsTopologic: assignement of new BC "
                                   "topologically not implemented yet when "
@@ -4555,6 +4638,11 @@ def _recoverBCsTopologic(t, BCInfo, removeBC=True, indices=None):
 
     zones = Internal.getZones(t)
     BCs, BCNames, BCTypes = BCInfo
+    storeMissing = isinstance(missingBCInfo, list) and not missingBCInfo
+    if storeMissing:
+        try: import Transform.PyTree as T
+        except: raise ImportError("_recoverBCsTopologic: requires Transform module.")
+        missingBCInfo.extend([[], [], []])
 
     for z in zones:
         dim = Internal.getZoneDim(z)
@@ -4586,9 +4674,13 @@ def _recoverBCsTopologic(t, BCInfo, removeBC=True, indices=None):
                     bcEC = Internal.getNodeFromName2(bcElt, "ElementConnectivity")
                     pointList = bcEC[1] - 1
                     #print("pointList", pointList)
-                pointList = indices[pointList] + 1
+                if indices is None:
+                    pointList += 1
+                else:  # vertex reindexing
+                    pointList = indices[pointList] + 1
                 pointList = numpy.unique(pointList)
                 pointList = pointList.reshape(1, pointList.size, order='F')
+                validIds = []
                 # print("pointList", pointList)
                 if dim[3] == 'NGON':
                     faceList = converter.adaptBCVertexPL2FacePL(array, pointList)
@@ -4600,23 +4692,31 @@ def _recoverBCsTopologic(t, BCInfo, removeBC=True, indices=None):
                             array, array2,
                             indices, faceList
                         )
-                        nmissing = numpy.sum(fmap == -1)
-                        if nmissing:
-                            raise ValueError(
-                                "_recoverBCsTopologic: topologic identication of "
-                                f"{nmissing} boundary faces failed."
+                        # Check if some faces were not found
+                        validIds = fmap > -1
+                        invalidPos = numpy.nonzero(~validIds)[0]
+                        ninvalidPos = invalidPos.size
+                        if ninvalidPos > 0:
+                            print(
+                                f"Warning: _recoverBCsTopologic: {ninvalidPos} "
+                                f"face indices were not found in BC {z[0]}"
                             )
-                        orderedFaceList = faceList[fmap]
+                            if storeMissing:
+                                invalidPos = invalidPos.astype(Internal.E_NpyInt)
+                                zu = T.subzone(z, invalidPos, type='elements')
+                                missingBCInfo[0].append(zu)
+                                missingBCInfo[1].append(BCNames[c])
+                                missingBCInfo[2].append(BCTypes[c])
+                        orderedFaceList = faceList[fmap[validIds]]
                     # print("faceList[fmap]", orderedFaceList)
                     _addBC2Zone(z, BCNames[c], BCTypes[c], faceList=orderedFaceList)
                 else:  # BE/ME
                     _addBC2Zone(z, BCNames[c], BCTypes[c], pointList=pointList)
 
-                # Recover BCDataSets
-                # TODO:
+                # Recover BCDataSets, TODO:
                 # - do not delete faceCenter BCDatasets
                 # - will also preserve non-Neumann datasets
-                # - at last, no need to pass a zone using selectConnectivity, just an array
+                # - at last, no need to pass a zone using selectOneConnectivity, just an array
                 if isCustomTuple and b[0] == 'tuple':
                     fsc = Internal.getNodeFromName(b[1][0], Internal.__FlowSolutionCenters__)
                     if fsc is not None:
@@ -4635,7 +4735,8 @@ def _recoverBCsTopologic(t, BCInfo, removeBC=True, indices=None):
                                 # No need to map val0 since face ordering
                                 # in PointList using fmap is consistent with
                                 # the BC storage order
-                                Internal._createUniqueChild(d, node[0], 'DataArray_t', value=val0)
+                                val1 = val0[validIds]
+                                Internal._createUniqueChild(d, node[0], 'DataArray_t', value=val1)
 
     return None
 
@@ -5558,14 +5659,14 @@ def getBC__(i, z, T, res, reorder=True, extrapFlow=True, shift=0, method="geomet
                         eltCn = Internal.getNodeFromName1(e, 'ElementConnectivity')
                         if eltCn is None: continue
                         # if Internal.hasBCDataSets(z): TODO optimize in a second pass
-                        zp = selectConnectivity(z, irange=[r[0,0], r[0,1]])
+                        zp = selectOneConnectivity(z, irange=[r[0,0], r[0,1]])
                         _prepRes__(i, z, zp, res, extrapFlow)
                         ## array = getFields('GridCoordinates', zp, api=3)[0]
                         res.append(("tuple", (zp, e)))
                         # else:
                         #     res.append(("VertexList", eltCn[1]))
                         return None
-            zp = selectConnectivity(z, irange=[r[0,0], r[0,1]])
+            zp = selectOneConnectivity(z, irange=[r[0,0], r[0,1]])
             _prepRes__(i, z, zp, res, extrapFlow)
             res.append(zp)
         return None
@@ -6059,36 +6160,31 @@ def extractBCMatch(zdonor, gc, dimzR, variables=None):
         if fields == []:
             print('Warning: extractBCMatch: none of the fields were found ', varList)
             return None, None
-        else:
-            # Connection info
-            prr = Internal.getNodeFromName1(gc, 'PointRange')
-            prd = Internal.getNodeFromName1(gc, 'PointRangeDonor')
-            tri = Internal.getNodeFromName1(gc, 'Transform')
-            tri = Internal.getValue(tri)
-            wr = Internal.range2Window(prr[1])
-            wd = Internal.range2Window(prd[1])
-            iminR, imaxR, jminR, jmaxR, kminR, kmaxR = wr
-            iminD, imaxD, jminD, jmaxD, kminD, kmaxD = wd
-            sizeR = (imaxR - iminR + 1)*(jmaxR - jminR + 1)*(kmaxR - kminR + 1)
-            sizeD = (imaxD - iminD + 1)*(jmaxD - jminD + 1)*(kmaxD - kminD + 1)
-            if sizeR != sizeD:
-                print("Warning: extractBCMatch: not a coincident match: ", gc[0])
-                return None, None
+        # Connection info
+        prr = Internal.getNodeFromName1(gc, 'PointRange')
+        prd = Internal.getNodeFromName1(gc, 'PointRangeDonor')
+        tri = Internal.getNodeFromName1(gc, 'Transform')
+        tri = Internal.getValue(tri)
+        wr = Internal.range2Window(prr[1])
+        wd = Internal.range2Window(prd[1])
+        iminR, imaxR, jminR, jmaxR, kminR, kmaxR = wr
+        iminD, imaxD, jminD, jmaxD, kminD, kmaxD = wd
+        sizeR = (imaxR - iminR + 1)*(jmaxR - jminR + 1)*(kmaxR - kminR + 1)
+        sizeD = (imaxD - iminD + 1)*(jmaxD - jminD + 1)*(kmaxD - kminD + 1)
+        if sizeR != sizeD:
+            print("Warning: extractBCMatch: not a coincident match: ", gc[0])
+            return None, None
 
-            niR = dimzR[1] - 1
-            njR = dimzR[2] - 1
-            nkR = dimzR[3] - 1
-            t1 = tri[0]
-            t2 = tri[1]
-            if len(tri) == 3: t3 = tri[2]
-            else: t3 = 0
+        niR = dimzR[1]; njR = dimzR[2]; nkR = dimzR[3]
+        t1 = tri[0]; t2 = tri[1]; t3 = tri[2] if len(tri) == 3 else 0
 
-            indR, fldD = converter.extractBCMatchStruct(
-                fields,
-                (iminD, jminD, kminD, imaxD, jmaxD, kmaxD),
-                (iminR, jminR, kminR, imaxR, jmaxR, kmaxR),
-                (niR, njR, nkR), (t1, t2, t3)
-            )
+        indR, fldD = converter.extractBCMatchStruct(
+            fields,
+            (iminD, jminD, kminD, imaxD, jmaxD, kmaxD),
+            (iminR, jminR, kminR, imaxR, jmaxR, kmaxR),
+            (niR, njR, nkR),
+            (t1, t2, t3)
+        )
 
     else:  # NGON
         indR = Internal.getNodeFromName1(gc, 'PointList')[1][0]
@@ -6600,9 +6696,8 @@ def node2Center(t, var='', accurate=0):
                     f = fieldc[0]
                     if f != []: f[3] = f[3].replace('*', '')
                     try: import Transform
-                    except: pass
-                    else:
-                        z = TZA1(z, 'nodes', 'nodes', True, Transform.dual, 0)
+                    except ImportError: pass
+                    else: z = TZA1(z, 'nodes', 'nodes', True, Transform.dual, 0)
                 else:
                     z = TZA1(z, 'nodes', 'nodes', True, Converter.node2Center, accurate)
                 setFields(fieldc, z, 'nodes', writeDim=False)
@@ -6690,19 +6785,62 @@ def _patchArrayForCenter2NodeNK1__(fields, a):
 # Convert a zone defining centers to nodes or convert a field in a
 # base/tree/zone located at centers to nodes
 # if useGhost: first addGhostCells before center2Node
-def center2Node(t, var=None, cellNType=0, useGhost=True):
+def center2Node(t, var=None, cellNType=0, useGhost=True, indices=None, BCField=None):
     """Converts array defined at centers to an array defined at nodes.
     Usage: center2Node(t, var, cellNType)"""
 
-# Preparation for topTree
-#     istoptree = Internal.isTopTree(t)
-#     if not istoptree and topTree != []:
-#       zones = C.getConnectedZones(t, topTree=topTree)
-#       tp = C.newPyTree(['Base'])
-#       zonest = Internal.getZones(t)
-#       tp[2][1][2] += zonest; tp[2][1][2] += zones
-#       tp = C.center2Node(tp, Internal.__FlowSolutionCenters__)
-#       zone = tp[2][1][2][0]
+    # Preparation for topTree
+    #     istoptree = Internal.isTopTree(t)
+    #     if not istoptree and topTree != []:
+    #       zones = C.getConnectedZones(t, topTree=topTree)
+    #       tp = C.newPyTree(['Base'])
+    #       zonest = Internal.getZones(t)
+    #       tp[2][1][2] += zonest; tp[2][1][2] += zones
+    #       tp = C.center2Node(tp, Internal.__FlowSolutionCenters__)
+    #       zone = tp[2][1][2][0]
+
+    if var == Internal.__FlowSolutionCenters__:
+        # varList = getVarNames(t, excludeXYZ=True, loc='centers')[0]
+        # varList = [v.split(':')[-1] for v in varList]
+        varList = [] # temporary patch
+    elif isinstance(var, list):
+        varList = [v.split(':')[-1] for v in var]
+    elif isinstance(var, str):
+        varList = [var.split(':')[-1]]
+    else:
+        varList = []
+
+    if indices is None: indices = {}
+    if BCField is None: BCField = [{} for _ in varList]
+
+    zones = Internal.getZones(t)
+    ztype = 'STRUCT'
+    if len(zones) > 0:
+        z = Internal.getZones(t)[0] # get unique zone
+        zn = z[0] # get unique zone name
+        dim = Internal.getZoneDim(z)
+        if dim[0] == 'Unstructured': ztype = dim[3]
+    else:
+        return t
+
+    # BCField treatment for NGON arrays only
+    # inter-zone communication (Xmpi.exchangeBCMatchData)
+    # intra-zone communication (P._addBCDataSet2BCData__)
+    # one zone per proc
+    if varList != [] and ztype == 'NGON':
+        from Post.PyTree import _addBCDataSet2BCData__
+        _addBCDataSet2BCData__(z, varList, indices, BCField)
+
+        # Concatenate list of numpy arrays once
+        if zn in indices:
+            if len(indices[zn]) == 1: indices[zn] = indices[zn][0]
+            else: indices[zn] = numpy.concatenate(indices[zn], axis=0)
+            for BCFieldv in BCField: # BCField is a list of dicts
+                if zn in BCFieldv: # BCFieldv can be an empty dict
+                    if len(BCFieldv[zn]) == 1: BCFieldv[zn] = BCFieldv[zn][0]
+                    else: BCFieldv[zn] = numpy.concatenate(BCFieldv[zn], axis=0)
+
+    indices = indices.get(zn, None)
 
     ghost = Internal.getNodeFromName(t, 'ZoneRind')
     if var is None: # all grid
@@ -6766,7 +6904,10 @@ def center2Node(t, var=None, cellNType=0, useGhost=True):
         if ghost is None and useGhost:
             a = Internal.addGhostCells(t, t, 1, adaptBCs=0, modified=vars)
         else: a = Internal.copyRef(t)
-        for v in vars: _center2Node__(a, v, cellNType)
+        for i, v in enumerate(vars):
+            # get the local BCField dict for the current var (NGON only)
+            BCFieldLoc = BCField[i].get(zn, None)
+            _center2Node__(a, v, cellNType, indices=indices, BCField=BCFieldLoc)
         # if there are center vars in the list, add equivalent node vars because
         # they have been created by center2Node
         ghost2 = Internal.getNodeFromName(a, 'ZoneRind')
@@ -6785,11 +6926,11 @@ def center2Node__(a, var, cellNType):
     _center2Node__(a, var, cellNType)
     return a
 
-def _center2Node__(a, var, cellNType):
+def _center2Node__(a, var, cellNType, indices=None, BCField=None):
     fieldc = getField(var, a, api=3)
     fieldn = []
     for i in fieldc:
-        if i != []: i = Converter.center2Node(i, cellNType)
+        if i != []: i = Converter.center2Node(i, cellNType, indices, BCField)
         fieldn.append(i)
     _patchArrayForCenter2NodeNK1__(fieldn, a)
     setFields(fieldn, a, 'nodes', writeDim=False)
@@ -6962,13 +7103,14 @@ def isFinite(a, var=None):
                 for n in nodes:
                     if var is None or n[0] == var:
                         array = n[1]
-                        #b = numpy.isfinite(array)
-                        #res = numpy.all(b)
-                        array = array.ravel(order="K")
-                        res = converter.isFinite(array)
-                        if res > 0:
-                            ret = False
-                            print('Warning: NAN or INF value in %s (%s)'%(n[0],z[0]))
+                        if array is not None:
+                            #b = numpy.isfinite(array)
+                            #res = numpy.all(b)
+                            array = array.ravel(order="K")
+                            res = converter.isFinite(array)
+                            if res > 0:
+                                ret = False
+                                print(f'Warning: NAN or INF value in {n[0]} ({z[0]})')
     return ret
 
 def setNANValuesAt(a, var=None, value=0.):
@@ -6993,8 +7135,9 @@ def _setNANValuesAt(a, var=None, value=0.):
                 for n in nodes:
                     if var is None or n[0] == var:
                         array = n[1]
-                        array = array.ravel(order="K")
-                        converter.setNANValuesAt(array, value)
+                        if array is not None:
+                            array = array.ravel(order="K")
+                            converter.setNANValuesAt(array, value)
     return None
 
 #==============================================================================
@@ -7315,7 +7458,6 @@ def mergeTrees(t1, t2):
     for n in t2[2]:
         if n[3] != 'CGNSBase_t' and n[3] != 'CGNSLibraryVersion_t': nodes.append(n)
 
-    for n in nodes: print(n[0])
     t1p[2] += nodes
 
     return t1p
@@ -8082,22 +8224,6 @@ def breakConnectivity(t):
     if typen == 1: typen = 2 # une zone renvoie une liste de zones
     return Internal.pyTree2Node(tp, typen)
 
-#==============================================================================
-# renumbers ElementRanges so they are in contiguous order
-# including for BCCs
-#==============================================================================
-def _renumberElementConnectivity(t):
-    zones = Internal.getZones(t)
-    for z in zones:
-        elts = Internal.getNodesFromType1(z, 'Elements_t')
-        c = 1
-        for e in elts:
-            r = Internal.getNodeFromName1(e, 'ElementRange')
-            r[1] = numpy.copy(r[1]); r = r[1]
-            delta = r[1]-r[0]+1
-            r[0] = c; r[1] = c+delta-1; c += delta
-    return None
-
 # -- selectOneConnectivity
 # Returns a new zone with only one of its connectivities
 # (passed as volumetric connectivity)
@@ -8110,94 +8236,95 @@ def selectOneConnectivity(z, name=None, number=None, irange=None):
     return zp
 
 def _selectOneConnectivity(zp, name=None, number=None, irange=None):
-    elts = Internal.getNodesFromType1(zp, 'Elements_t')
-    if name is not None:
-        for e in elts:
-            if e[0] != name: Internal._rmNodesByName(zp, e[0])
-            else: e[1] = numpy.copy(e[1]); e[1][1] = 0 # force volumetric
-    elif number is not None:
-        c = 0
-        for e in elts:
-            if c != number: Internal._rmNodesByName(zp, e[0])
-            else: e[1] = numpy.copy(e[1]); e[1][1] = 0 # force volumetric
-            c += 1
-    elif irange is not None:
-        for e in elts:
-            r = Internal.getNodeFromName1(e, 'ElementRange')
-            if r is not None:
-                r = r[1]
-                if r[0] > irange[0] or r[1] < irange[1]:
-                    Internal._rmNodesByName(zp, e[0])
+    # Helper function for selectOneConnectivity
+    def _processElementNode__(zp, e, bcs, irange=None):
+        r = Internal.getNodeFromName1(e, 'ElementRange')
+        if r is None:
+            Internal._rmNodesByName(zp, e[0])
+            return
+        name, nvpe = Internal.eltNo2EltName(e[1][0])
+        if e[1][1] == 0: _deleteZoneBC__(zp)  # was volumic, delete BCs
+        else:
+            e[1] = numpy.copy(e[1])
+            e[1][1] = 0  # was surfacic, force volumetric
+            # Edit the one matching BC_t ElementRange and delete others
+            for bc in bcs:
+                rbc = Internal.getNodeFromName1(bc, 'ElementRange')
+                if rbc is None:
+                    Internal._rmNodesByName(zp, bc[0])
+                    continue
+                rbc[1] = numpy.copy(rbc[1])
+                if irange is None:  # by name or number
+                    if rbc[1][0][0] == r[1][0] and rbc[1][0][1] == r[1][1]:  # full
+                        rbc[1][0][1] = rbc[1][0][1] - rbc[1][0][0] + 1
+                        rbc[1][0][0] = 1
+                    else:
+                        Internal._rmNodesByName(zp, bc[0])
                 else:
-                    if r[0] == irange[0] and r[1] == irange[1]: # full
-                        e[1] = numpy.copy(e[1]); e[1][1] = 0 # force volumetric
-                    else: # slice
-                        (name, nnodes) = Internal.eltNo2EltName(e[1][0])
-                        if name != 'NGON' and name != 'NFACE' and name != 'MIXED':
-                            e[1] = numpy.copy(e[1]); e[1][1] = 0 # force volumetric
-                            r = Internal.getNodeFromName1(e, 'ElementRange')
-                            r[1] = numpy.copy(r[1]); r[1][0] = 1; r[1][1] = irange[1]-irange[0]+1
-                            c = Internal.getNodeFromName1(e, 'ElementConnectivity')
-                            c[1] = c[1][nnodes*(irange[0]-1):nnodes*(irange[1])+1]
-                        else: print ('Warning: selectOneConnectivity: slice impossible.')
-            else: Internal._rmNodesByName(zp, e[0])
-    _renumberElementConnectivity(zp)
-    return None
+                    if irange[0] == rbc[1][0][0] and rbc[1][0][1] == irange[1]:  # full
+                        rbc[1][0][0] = 1
+                        rbc[1][0][1] = irange[1] - irange[0] + 1
+                    elif rbc[1][0][0] <= irange[0] and irange[1] <= rbc[1][0][1]:  # slice
+                        if nvpe != -1:  # BE / ME only
+                            rbc[1][0][0] = 1
+                            rbc[1][0][1] = irange[1] - irange[0] + 1
+                        else:  # default back to full
+                            print ("Warning: selectOneConnectivity: slice "
+                                   f"impossible for {name}.")
+                            rbc[1][0][1] = rbc[1][0][1] - rbc[1][0][0] + 1
+                            rbc[1][0][0] = 1
+                    else:  # no overlap permitted
+                        Internal._rmNodesByName(zp, bc[0])
 
-# -- selectConnectivity
-# Returns a new zone with only one of its connectivities
-# (passed as volumetric connectivity)
-# IN: name: name of ElementConnectivity to keep
-# or IN: number: number of ElementConnectivity to keep (first=0)
-# or IN: irange=[min,max]
-def selectConnectivity(z, name=None, number=None, irange=None):
-    zp = Internal.copyRef(z)
+        # Edit boundary Elements_t ElementRange
+        r[1] = numpy.copy(r[1])
+        if irange is None:  # full, by name or number
+            r[1][1] = r[1][1] - r[1][0] + 1; r[1][0] = 1
+        else:
+            if r[1][0] == irange[0] and irange[1] == r[1][1]:  # full
+                r[1][1] = r[1][1] - r[1][0] + 1; r[1][0] = 1
+            elif r[1][0] <= irange[0] and irange[1] <= r[1][1]:  # slice
+                if nvpe != -1:  # BE / ME only
+                    offset = r[1][0] - 1
+                    c = Internal.getNodeFromName1(e, 'ElementConnectivity')
+                    c[1] = numpy.copy(c[1])
+                    c[1] = c[1][nvpe*(irange[0]-1-offset):nvpe*(irange[1]-offset)]
+                    r[1][0] = 1; r[1][1] = irange[1] - irange[0] + 1
+                else:  # default back to full
+                    print ("Warning: selectOneConnectivity: slice impossible "
+                           f"for {name}.")
+                    r[1][1] = r[1][1] - r[1][0] + 1; r[1][0] = 1
+            else:  # no overlap permitted
+                Internal._rmNodesByName(zp, e[0])
+        return None
+
     elts = Internal.getNodesFromType1(zp, 'Elements_t')
-
+    bcs = Internal.getNodesFromType2(zp, 'BC_t')
     if name is not None:
         for e in elts:
             if e[0] != name: Internal._rmNodesByName(zp, e[0])
-            else: e[1] = numpy.copy(e[1]); e[1][1] = 0 # force volumetric
+            else: _processElementNode__(zp, e, bcs)  # full
     elif number is not None:
-        c = 0
-        for e in elts:
+        for c, e in enumerate(elts):
             if c != number: Internal._rmNodesByName(zp, e[0])
-            else: e[1] = numpy.copy(e[1]); e[1][1] = 0 # force volumetric
-            c += 1
+            else: _processElementNode__(zp, e, bcs)  # full
     elif irange is not None:
         for e in elts:
             r = Internal.getNodeFromName1(e, 'ElementRange')
-            if r is not None:
-                r = r[1]
-                if r[0] != irange[0] and r[1] != irange[1]:
+            if r is None: Internal._rmNodesByName(zp, e[0])
+            else:
+                if irange[0] < r[1][0] or r[1][1] < irange[1]:
                     Internal._rmNodesByName(zp, e[0])
-                if r[0] == irange[0] and r[1] == irange[1]: # full
-                    e[1] = numpy.copy(e[1]); e[1][1] = 0 # force volumetric
-                if r[0] == irange[0] and r[1] < irange[1]: # full
-                    (name, nnodes) = Internal.eltNo2EltName(e[1][0])
-                    if name != 'NGON' and name != 'NFACE' and name != 'MIXED':
-                        e[1] = numpy.copy(e[1]); e[1][1] = 0 # force volumetric
-                        r0 = r[0]; r1 = r[1]
-                        r = Internal.getNodeFromName1(e, 'ElementRange')
-                        r[1] = numpy.copy(r[1]); r[1][0] = 1; r[1][1] = r1-r0+1
-                        c = Internal.getNodeFromName1(e, 'ElementConnectivity')
-                        r = r[1]
-                        c[1] = c[1][nnodes*(r[0]-1):nnodes*(r[1])+1]
-                    else: print('Warning: selectConnectivity: slice impossible.')
-                if r[0] > irange[0] and r[1] == irange[1]: # full
-                    (name, nnodes) = Internal.eltNo2EltName(e[1][0])
-                    if name != 'NGON' and name != 'NFACE' and name != 'MIXED':
-                        e[1] = numpy.copy(e[1]); e[1][1] = 0 # force volumetric
-                        r0 = r[0]; r1 = r[1]
-                        r = Internal.getNodeFromName1(e, 'ElementRange')
-                        r[1] = numpy.copy(r[1]); r[1][0] = 1; r[1][1] = r1-r0+1
-                        c = Internal.getNodeFromName1(e, 'ElementConnectivity')
-                        r = r[1]
-                        c[1] = c[1][nnodes*(r[0]-1):nnodes*(r[1])+1]
-                    else: print('Warning: selectConnectivity: slice impossible.')
-            else: Internal._rmNodesByName(zp, e[0])
-    _renumberElementConnectivity(zp)
-    return zp
+                else: _processElementNode__(zp, e, bcs, irange)  # full or slice
+    _deleteFlowSolutions__(zp, loc='centers')
+    Internal._updateElementRange(zp)
+    # Check if there are any Elements_t nodes left
+    elts = Internal.getElementNodes(zp)
+    if not elts:  # now a NODE zone
+        _deleteZoneBC__(zp)
+        Internal.newElements(etype='NODE', parent=zp,
+                             erange=numpy.array([1, 0], dtype=Internal.E_NpyInt))
+    return None
 
 #=============================================================================
 # Rm duplicated periodic zones in a according to the node 'TempPeriodicZone'

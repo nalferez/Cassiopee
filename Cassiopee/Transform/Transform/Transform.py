@@ -422,13 +422,13 @@ def smooth(a, eps=0.5, niter=4, type=0, fixedConstraints=[],
         return transform.smooth(a, eps, niter, type, fixedConstraint,
                                 projConstraint, delta, point, radius)
 
-def consSmooth(a, sweeps, twoWays=False, step=1):
+def consSmooth(a, sweeps, twoWays=False, step=1, omega=0.2):
     """Conservative smoothing."""
     if isinstance(a[0], list):
         for i in a:
-            transform.consSmooth(i, sweeps, twoWays, step)
+            transform.consSmooth(i, sweeps, twoWays, step, omega)
     else:
-        return transform.consSmooth(a, sweeps, twoWays, step)
+        return transform.consSmooth(a, sweeps, twoWays, step, omega)
     return None
 
 def projectAllDirs(arrays, surfaces, vect=['nx','ny','nz'], oriented=0):
@@ -759,27 +759,27 @@ def joing__(arrays, tol):
 def joingb__(arrays, arraysc, tol):
     if len(arrays) != len(arraysc): raise ValueError("join: arrays and arraysc must be of same length.")
     if len(arrays) > 1: a = arrays[0]; ac = arraysc[0]
-    elif len(arrays) == 1: return arrays[0],arraysc[0]
+    elif len(arrays) == 1: return arrays[0], arraysc[0]
     else: return []
-    if len(a) == 4: return transform.joinAllBoth(arrays, arraysc, tol)
+    if len(a) == 4: return transform.joinAll(arrays, arraysc, tol)
     pool = arrays[:]; poolc = arraysc[:]
     pool.pop(0); poolc.pop(0)
     while len(pool) > 0:
         success = 0; c = 0
         for noi in range(len(pool)):
             try:
-                a,ac = joinsb__(a, pool[noi], ac, poolc[noi], tol)
+                a, ac = joinsb__(a, pool[noi], ac, poolc[noi], tol)
                 pool.pop(c); poolc.pop(c)
                 success = 1
                 break
             except: pass
             c += 1
         if success == 0: raise ValueError("join: cannot join!")
-    return [a,ac]
+    return [a, ac]
 
 def joinsb__(array1, array2, arrayc1, arrayc2, tol):
     if len(array1) == 5 and len(array2) == 5:
-        return transform.joinBoth( array1, array2, arrayc1, arrayc2, tol)
+        return transform.join(array1, array2, arrayc1, arrayc2, tol)
 
     elif len(array1) == 4 and len(array2) == 5:
         if array1[3] == "NGON":
@@ -789,7 +789,7 @@ def joinsb__(array1, array2, arrayc1, arrayc2, tol):
             a = Converter.convertArray2Hexa(array2)
             ac = Converter.convertArray2Hexa(arrayc2)
         cn = a[2]; ac = [ac[0], ac[1], cn, ac[3]+'*']
-        return transform.joinBoth(array1, a, arrayc1, ac, tol)
+        return transform.join(array1, a, arrayc1, ac, tol)
 
     elif len(array1) == 5 and len(array2) == 4:
         if array2[3] == "NGON":
@@ -799,21 +799,21 @@ def joinsb__(array1, array2, arrayc1, arrayc2, tol):
             a = Converter.convertArray2Hexa(array1)
             ac = Converter.convertArray2Hexa(arrayc1)
         cn = a[2]; ac = [ac[0], ac[1], cn, ac[3]+'*']# the conversion of a structured array in centers to unstructured does not give an array of type elt*
-        return transform.joinBoth(a, array2, ac, arrayc2, tol)
+        return transform.join(a, array2, ac, arrayc2, tol)
 
     else:
         if array1[3] == "NGON" and array2[3] != "NGON":
             a = Converter.convertArray2NGon(array2)
             ac = Converter.convertArray2NGon(arrayc2)
             cn = a[2]; ac = [ac[0], ac[1], cn, ac[3]+'*']# the conversion of a structured array in centers to unstructured does not give an array of type elt*
-            return transform.joinBoth(array1, a, arrayc1, ac, tol)
+            return transform.join(array1, a, arrayc1, ac, tol)
 
         elif array1[3] != "NGON" and array2[3] == "NGON":
             a = Converter.convertArray2NGon(array1)
             ac = Converter.convertArray2NGon(arrayc1)
             cn = a[2]; ac = [ac[0], ac[1], cn, ac[3]+'*']# the conversion of a structured array in centers to unstructured does not give an array of type elt*
             return transform.join(a, array2, tol)
-        else: return transform.joinBoth(array1, array2, arrayc1, arrayc2, tol)
+        else: return transform.join(array1, array2, arrayc1, arrayc2, tol)
 
 def joins__(array1, array2, tol):
     if len(array1) == 5 and len(array2) == 5:
@@ -884,7 +884,7 @@ def subzone(array, minIndex, maxIndex=None, type=None, dimOut=None):
         elif type == 'nodes':
             if len(array) == 5:
                 raise TypeError("subzone: subzone with a list of nodes not yet implemented for structured arrays.")
-            return  transform.subzoneUnstruct(array, minIndex, dimOut)
+            return transform.subzoneUnstruct(array, minIndex, dimOut)
         else:
             if len(array) == 5:
                 raise TypeError("subzone: subzone with a list of nodes not yet implemented for structured arrays.")

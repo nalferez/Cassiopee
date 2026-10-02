@@ -12,6 +12,7 @@
 #        python notifyCassiopee.py --valid --prod=<prod_name> --full
 import os
 import sys
+import re
 from glob import glob
 from time import strptime, strftime
 
@@ -40,6 +41,8 @@ IGNORE_TESTS_DBG = [
     "Generator/generateAMRMeshPT_t2.py",
     "Generator/generateAMRMeshCartInPT_t1.py",
     "Generator/generateAMRMeshCartInPT_t2.py",
+    "Generator/generateAMRMeshVariableSnearPT_t1.py",
+    "Generator/generateAMRMeshVarSnearTboxPT_t1.py",
     "XCore/adaptMeshPT_t1.py",
     "XCore/adaptMesh_ExitPT_t1.py"
 ]
@@ -64,6 +67,8 @@ def parseArgs():
                         help="Name of the production.")
     parser.add_argument("-r", "--recipients", type=str, default='',
                         help="Single-quoted space-separated list of recipients")
+    parser.add_argument("-s", "--session-suffix", type=str, default='',
+                        dest="sessionSuffix", help="Session log suffix")
     parser.add_argument("-u", "--update", action="store_true",
                         help="Update valid. log on stck. Default: disabled")
     parser.add_argument("-v", "--valid", action="store_true",
@@ -92,7 +97,7 @@ def readGitInfo(filename):
     return gitInfo
 
 # Find a two session logs of validCassiopee for a given production
-def findLogs(prodname, findRef=True):
+def findLogs(prodname, findRef=True, sessionSuffix=""):
     validDataFolder = f"/stck/cassiope/git/Cassiopee/Cassiopee/ValidData_{prodname}"
     if not os.access(validDataFolder, os.R_OK):
         import KCore.installPath as K
@@ -102,8 +107,8 @@ def findLogs(prodname, findRef=True):
 
     logs = None
     refLogs = []
-    if findRef: refLogs = sorted(glob(os.path.join(validDataFolder, "REF-session-*.log")))
-    sessionLogs = sorted(glob(os.path.join(validDataFolder, "session-*.log")))
+    if findRef: refLogs = sorted(glob(os.path.join(validDataFolder, f"REF-session{sessionSuffix}-*.log")))
+    sessionLogs = sorted(glob(os.path.join(validDataFolder, f"session{sessionSuffix}-*.log")))
     if refLogs: logs = [refLogs[-1], sessionLogs[-1]]
     elif len(sessionLogs) > 1: logs = sessionLogs[-2:]
     return logs
@@ -175,8 +180,40 @@ def tests2Ignore(prod):
         return IGNORE_TESTS_DBG
     return IGNORE_TESTS_NDBG
 
+# Keep the logs of failed test cases only
+def purgeSessionLog(filename):
+    # Filter test cases that contain at least one of these error patterns
+    regError = re.compile(
+        "|".join([
+            'DIFF', 'FAILED',
+            r'\b[A-Z]\w*Error\b', 'Erreur', 'Aborted', 'Abandon', 'Segmentation',
+            'ERROR: AddressSanitizer', 'getFromArray', 'incoherency',
+            'Your MPI job will now abort.',
+            'Attempting to use an MPI routine before initializing MPICH',
+        ]),
+        re.UNICODE
+    )
+    regLeakError = re.compile('ERROR: LeakSanitizer')
+
+    if not os.access(filename, os.R_OK):
+        raise Exception(f"Input log '{filename}' cannot be read.")
+    with open(filename, 'r') as f: log = f.read()
+    # Split log using "Running" as the delimiter
+    testCaseLogs = re.split(r'(?=Running[^\n]*Nprocs=)', log)
+    failedTestLogs = {
+        tlog.split("Running ", maxsplit=1)[1].split(" ")[0].replace(".py", ""): tlog
+        for tlog in testCaseLogs if (
+            "Running " in tlog
+            and any(
+                regexpr.search(tlog) is not None
+                for regexpr in (regLeakError, regError)
+            )
+        )
+    }
+    return failedTestLogs
+
 # Get full test logs for a given list of tests
-def getTestLogs(prodname, testList):
+def getTestLogs(prodname, testList, sessionSuffix="Cassiopee"):
     testLog = ""
     modNames = [test.split('/')[0] for test in testList]
     testNames = [test.split('/')[1] for test in testList]
@@ -185,21 +222,17 @@ def getTestLogs(prodname, testList):
         import KCore.installPath as K
         validDataFolder = os.path.join(K.includePath, "..", f"ValidData_{prodname}")
         if not os.access(validDataFolder, os.R_OK):
-            raise Exception("Session logs can't be retrieved in {}".format(validDataFolder))
+            raise Exception(f"Session logs can't be retrieved in {validDataFolder}")
 
-    # Read the last purged logValidCassiopee.dat file
-    purgedLogs = sorted(glob(os.path.join(validDataFolder, "logValidCassiopee_purged_*.dat")))
-    if not purgedLogs or not os.access(purgedLogs[-1], os.R_OK): return testLog
-    with open(purgedLogs[-1], 'r') as f: log = f.read()
-    # Split log using "Running " as the delimiter
-    failedTests = log.split("Running ")[1:]
-    failedTestNames = [test.split(' ')[0] for test in failedTests]
-    # Add logs of cases that failed
-    for i, name in enumerate(testNames):
-        try:
-            pos = failedTestNames.index(name)
-            testLog += "{}/{}{}\n\n".format(modNames[i], failedTests[pos], 88*'*')
-        except ValueError: pass
+    # Read the last logValid.dat file and remove tests that are OK
+    failedLogDict = purgeSessionLog(
+        os.path.join(validDataFolder,
+                     f"logValid{sessionSuffix}.dat")
+    )
+    # Add logs of cases that were reported as fail by validCassiopee
+    for mod, tname in zip(modNames, testNames):
+        log = failedLogDict.get(tname.replace(".py", ""), "")
+        if log: testLog += f"\n--- {mod}/{tname} ---\n{log}\n{100*'#'}\n"
     return testLog
 
 # Stringify test comparison
@@ -370,9 +403,10 @@ def checkCheckoutStatus(sendEmail=False):
     return messageSubject, messageText
 
 # Check valid status
-def checkValidStatus():
+def checkValidStatus(sessionSuffix=""):
     log_entries = []
-    logAllValids = '/stck/cassiope/git/logs/validation_status.txt'
+    sessionSuffixMod = "_" + sessionSuffix if sessionSuffix else sessionSuffix
+    logAllValids = f'/stck/cassiope/git/logs/validation_status{sessionSuffixMod}.txt'
     if os.access(logAllValids, os.R_OK):
         with open(logAllValids, 'r') as f:
             for line in f:
@@ -387,9 +421,10 @@ def checkValidStatus():
     gitOrigin = Dist.getGitOrigin(cassiopeeIncDir)
     gitInfo = "Git origin: {}".format(gitOrigin)
 
+    if not sessionSuffix: sessionSuffix = "Cassiopee"
     vnvState = 'OK'
-    messageText = "Non-regression testing of Cassiopee and all "\
-        "PModules:\n{}\n\n{}\n\n".format(52*'-', gitInfo)
+    messageText = "Non-regression testing of {}:\n{}\n\n{}\n\n".format(
+        sessionSuffix, (26+len(sessionSuffix))*'-', gitInfo)
     messageText += '{:^22} | {:^6} | {:^7} | {:^24} | {:^10}\n{}\n'.format(
         "PROD.", "BRANCH", "HASH", "DATE", "STATUS", 83*'-')
     for log_machine in log_entries:
@@ -403,18 +438,18 @@ def checkValidStatus():
             prod, gitBranch, gitHash, date, status)
         if 'FAILED' in log_machine: vnvState = 'FAILED'
 
-    messageSubject = "[V&V Cassiopee] State: {}".format(vnvState)
+    messageSubject = f"[V&V {sessionSuffix}] State: {vnvState}"
     if vnvState == 'FAILED':
         messageText += '\n\nIf the prod. you wish to use is marked as FAILED, '\
             'please contact the maintainers:\nchristophe.benoit@onera.fr, '\
             'vincent.casseau@onera.fr\nor list remaining issues with:\n'\
-            'notifyCassiopee --valid --prod=your_prod_name --full'
+            'notifyCassiopee --valid --prod=your_prod_name --full\n'
 
     return messageSubject, messageText
 
 # Compare session logs
 def compareSessionLogs(logFiles=[], showExecTimeDiffs=False,
-                       showTestLogs=False, update=False):
+                       showTestLogs=False, update=False, sessionSuffix=""):
     # Read log files and git info
     refSession = readLog(logFiles[0])
     newSession = readLog(logFiles[1])
@@ -441,8 +476,12 @@ def compareSessionLogs(logFiles=[], showExecTimeDiffs=False,
     # Find deleted tests (tests in refSession but not in newSession)
     deletedTests = sorted(refSet - newSet)
     # Find failed tests in newSession
-    failedTests = sorted([k for k, v in newDict.items() if v[5] != 'OK'])
-    failedTests = [t for t in failedTests if t not in tests2Ignore(prod)]
+    ignoreSet = set(tests2Ignore(prod))
+    failedTests = sorted(
+        k for k, v in newDict.items()
+        if v[5] != 'OK'
+        and not (v[5] == 'MEMLEAK' and k in ignoreSet)
+    )
 
     # Write differences to terminal or send an email
     baseState = 'OK'
@@ -504,12 +543,12 @@ def compareSessionLogs(logFiles=[], showExecTimeDiffs=False,
 
     baseStateMsg = ""
     tlog, tlog2 = getTimeFromLog(logFiles[1])
-    messageSubject = "[validCassiopee - {}] {} - State: {}".format(prod, tlog,
-                                                                   baseState)
+    sessionSuffixMod = sessionSuffix if sessionSuffix else "Cassiopee"
+    messageSubject = f"[V&V {sessionSuffixMod} - {prod}] {tlog} - State: {baseState}"
     messageText = header + compStr + baseStateMsg
 
     if showTestLogs:
-        testLogs = getTestLogs(prod, failedTests)
+        testLogs = getTestLogs(prod, failedTests, sessionSuffixMod)
         if testLogs:
             messageText += f"\n\nFailed test logs:\n{'-'*16}\n{testLogs}"
 
@@ -529,7 +568,8 @@ def compareSessionLogs(logFiles=[], showExecTimeDiffs=False,
         else: exitStatus = 1
 
         # Amend state of the base in logs/validation_status.txt
-        logAllValids = "/stck/cassiope/git/logs/validation_status.txt"
+        if sessionSuffix: sessionSuffix = "_" + sessionSuffix
+        logAllValids = f"/stck/cassiope/git/logs/validation_status{sessionSuffix}.txt"
         if os.access(os.path.dirname(logAllValids), os.W_OK):
             entry = (
                 f"{prod} - {gitInfo['Git branch']} - "
@@ -567,32 +607,60 @@ if __name__ == '__main__':
     elif scriptArgs.checkout:
         messageSubject, messageText = checkCheckoutStatus(sendEmail=scriptArgs.email)
     elif scriptArgs.valid:
-        if scriptArgs.prod:
-            findRef = False if scriptArgs.logs == "latest" else True
-            scriptArgs.logs = findLogs(scriptArgs.prod, findRef=findRef)
-            if not(
-                isinstance(scriptArgs.logs, list) and
-                len(scriptArgs.logs) == 2
-            ):
-                raise Exception("Two session logs were not found for "
-                                "prod. {}".format(scriptArgs.prod))
-            mode = "compare"
-        elif scriptArgs.logs:
-            scriptArgs.logs = scriptArgs.logs.split(' ')
-            if len(scriptArgs.logs) != 2:
-                raise Exception("Two session logs must be provided using the "
-                                "flag -l or --logs")
-            mode = "compare"
+        sessionSuffixes=scriptArgs.sessionSuffix.split(' ')
+        messageSubject = []
+        messageText = []
+        exitStatus = 0
+        for sessionSuffix in sessionSuffixes:
+            if scriptArgs.prod:
+                findRef = False if scriptArgs.logs == "latest" else True
+                scriptArgs.logs = findLogs(scriptArgs.prod, findRef=findRef,
+                                           sessionSuffix=sessionSuffix)
+                if not(
+                    isinstance(scriptArgs.logs, list) and
+                    len(scriptArgs.logs) == 2
+                ):
+                    raise Exception("Two session logs were not found for "
+                                    "prod. {}".format(scriptArgs.prod))
+                mode = "compare"
+            elif scriptArgs.logs:
+                scriptArgs.logs = scriptArgs.logs.split(' ')
+                if len(scriptArgs.logs) != 2:
+                    raise Exception("Two session logs must be provided using the "
+                                    "flag -l or --logs")
+                mode = "compare"
 
-        if mode == "overview":
-            messageSubject, messageText = checkValidStatus()
+            if mode == "overview":
+                subject, text = checkValidStatus(sessionSuffix=sessionSuffix)
+                messageSubject.append(subject)
+                messageText.append(text)
+            else:
+                subject, text, exitCode = compareSessionLogs(
+                    logFiles=scriptArgs.logs,
+                    showExecTimeDiffs=scriptArgs.email,
+                    showTestLogs=scriptArgs.full,
+                    update=scriptArgs.update,
+                    sessionSuffix=sessionSuffix
+                )
+                messageSubject.append(subject)
+                messageText.append(text)
+                if exitStatus == 1: pass
+                else: exitStatus = max(exitStatus, exitCode)
+
+        if len(messageSubject) == 1: messageSubject = messageSubject[0]
         else:
-            messageSubject, messageText, exitStatus = compareSessionLogs(
-                logFiles=scriptArgs.logs,
-                showExecTimeDiffs=scriptArgs.email,
-                showTestLogs=scriptArgs.full,
-                update=scriptArgs.update
-            )
+            mods = [s.split("V&V ")[1].split(']')[0].split(' -')[0] for s in messageSubject]
+            statuses = [s.split("State: ")[1] for s in messageSubject]
+            if "FAILED" in statuses: status = "FAILED"
+            elif "MEMLEAK" in statuses: status = "MEMLEAK"
+            else: status = "OK"
+            messageSubject = messageSubject[0].split(' ')
+            messageSubject[1] = ', '.join(mods)
+            messageSubject[-1] = status
+            if len(messageSubject) == 10: messageSubject[4:7] = ""
+            elif len(messageSubject) == 4: messageSubject[1] += ']'
+            messageSubject = ' '.join(messageSubject)
+        messageText = f"\n\n{83*'#'}\n\n\n".join(messageText)
 
     if scriptArgs.email:
         notify(recipients=recipients,
