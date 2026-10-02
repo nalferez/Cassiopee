@@ -130,9 +130,8 @@ void K_CONNECTOR::setInterpTransfersFast(
     //premier passage dans transfert couche C depuis  mise a plat de tc
 
     if (param_int_tc[0]==0 and mpi)
-    { E_Int szCom;
-      MPI_Comm_size(MPI_COMM_WORLD, &szCom);
-      for (E_Int proc = 0; proc < szCom; ++proc){source_flag[proc]=0;}
+    { // source_flag (only used by commented-out code) is not reset: it has 2048 entries and the
+      // reset loop over all ranks wrote past its end (onto the queue pointers) above 2048 ranks
 
       E_Int ech        = param_int_tc[1 + shift_graph];
       timelevel_tc     = param_int_tc[ech + 3];
@@ -954,7 +953,7 @@ void K_CONNECTOR::setInterpTransfersIntra(
 
 
                       // Prise en compte de la periodicite par rotation
-                      if (rotation == 1)
+                      if (rotation == 1 && varType != 112)
                       {
                        E_Float* angle = ptrCoefs + nbInterpD;
             #          include "includeTransfers_rotation.h"
@@ -1625,7 +1624,7 @@ if (has_data_to_send) {
                       }*/
 
                       // Prise en compte de la periodicite par rotation
-                      if ( rotation == 1 ) {
+                      if ( rotation == 1 && varType != 112 ) {
                           E_Float* angle = ptrCoefs + nbInterpD;
 #include "includeTransfersD_rotation.h"
                           }
