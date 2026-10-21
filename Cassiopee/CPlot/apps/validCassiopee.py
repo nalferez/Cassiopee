@@ -2,7 +2,7 @@
 import os, sys, re, glob, signal, platform
 import socket
 import json
-import numpy as np
+import numpy
 import subprocess
 import threading
 import time
@@ -286,7 +286,7 @@ def checkOutput(cmd, path='.', env=None, stderr=None):
         # for validation tests
         nthreads = float(Threads.get())
         if PREFS["validType"] == "regression":
-            timeout = (100. + 120.*Dist.DEBUG)*(1. + 4.8/nthreads)
+            timeout = (100. + 120.*Dist.DEBUG())*(1. + 4.8/nthreads)
         else: timeout = 3600.
         stdout, stderr = PROCESS.communicate(None, timeout=timeout)
 
@@ -890,8 +890,8 @@ def buildTestList(sessionName=None, modules=[]):
             sessionLog = [testLog for testLog in sessionLog
                           if (isinstance(testLog, list) and len(testLog) == ncolumns)]
         # Create array and remove leading and trailing white spaces
-        arr = np.array([entry.strip() for testLog in sessionLog for entry in testLog],
-                       dtype=object)
+        arr = numpy.array([entry.strip() for testLog in sessionLog for entry in testLog],
+                          dtype=object)
         arr = arr.reshape(-1, ncolumns)
 
         # Read sessionLog and combine with lastSession. Priority given to
@@ -907,8 +907,8 @@ def buildTestList(sessionName=None, modules=[]):
                 ncolumns = 7
                 sessionLog = [testLog for testLog in sessionLog
                               if (isinstance(testLog, list) and len(testLog) == ncolumns)]
-            arr2 = np.array([entry.strip() for testLog in sessionLog for entry in testLog],
-                            dtype=object)
+            arr2 = numpy.array([entry.strip() for testLog in sessionLog for entry in testLog],
+                               dtype=object)
             arr2 = arr2.reshape(-1, ncolumns)
 
             testDict = {}
@@ -918,16 +918,16 @@ def buildTestList(sessionName=None, modules=[]):
                 key = tuple(t[:2])
                 if (key not in testDict) or ('...' in testDict[key]):
                     testDict[key] = t[2:]
-            arr = np.array([list(key) + list(data) for key, data in testDict.items()])
+            arr = numpy.array([list(key) + list(data) for key, data in testDict.items()])
     else:
         # Build an empty array
-        arr = np.array([], dtype=object)
+        arr = numpy.array([], dtype=object)
 
     for m in modules:
         tests = getTests(m)
         for t in tests:
             if sessionName is not None and arr.size:
-                testArr = arr[np.logical_and(arr[:,0] == m, arr[:,1] == t)]
+                testArr = arr[numpy.logical_and(arr[:,0] == m, arr[:,1] == t)]
                 if testArr.size:
                     # Args are CPU time, Coverage, Status, and Tag if present
                     if ncolumns == 8:
@@ -1912,7 +1912,7 @@ if __name__ == '__main__':
             # Show this button if the global database can be interrogated
             toolsTab.add_command(label='Switch to global data base ' + dbInfo,
                                  command=toggleDB)
-        if Dist.DEBUG and os.getenv('ASAN_LIB') is not None:
+        if Dist.DEBUG() and os.getenv('ASAN_LIB') is not None:
             toolsTab.add_separator()
             toolsTab.add_command(label='Enable Address Sanitizer (ASan)',
                                  command=toggleASAN)
@@ -2003,7 +2003,7 @@ if __name__ == '__main__':
         if vcargs.filters:
             Filter.set(vcargs.filters)
             filterTestList()
-        if Dist.DEBUG and os.getenv('ASAN_LIB') is not None:
+        if Dist.DEBUG() and os.getenv('ASAN_LIB') is not None:
             if vcargs.memorySanitizer: USE_ASAN[0] = True
             if vcargs.leakSanitizer: USE_ASAN[1] = True
             updateASANOptions()
@@ -2037,7 +2037,7 @@ if __name__ == '__main__':
         if vcargs.filters:
             Filter.set(vcargs.filters)
             filterTestList()
-        if Dist.DEBUG and os.getenv('ASAN_LIB') is not None:
+        if Dist.DEBUG() and os.getenv('ASAN_LIB') is not None:
             if vcargs.memorySanitizer: USE_ASAN[0] = True
             if vcargs.leakSanitizer: USE_ASAN[1] = True
             updateASANOptions()

@@ -1,6 +1,5 @@
 """Conversion module for Cassiopee package.
 """
-#from numpy import *
 __version__ = '4.2'
 __author__ = "Stephanie Peron, Christophe Benoit, Gaelle Jeanfaivre, Pascal Raud, Benoit Rodriguez, Simon Verley, Bruno Maugars, Thomas Renaud"
 #
@@ -14,7 +13,7 @@ import KCore
 
 # INT size for numpys connectivities
 from KCore.Dist import EDOUBLEINT
-if EDOUBLEINT: E_NpyInt = numpy.int64
+if EDOUBLEINT(): E_NpyInt = numpy.int64
 else: E_NpyInt = numpy.int32
 
 __all__ = [
@@ -805,9 +804,11 @@ def convertFile2Arrays(fileName, format=None, nptsCurve=20, nptsLine=2,
                     if len(i) == 4:
                         if isinstance(i[2], list): # array2/3
                             for c, k in enumerate(i[2]):
-                                if k.dtype != E_NpyInt: i[2][c] = k.astype(E_NpyInt, order='K')
+                                if k.dtype != E_NpyInt:
+                                    i[2][c] = k.astype(E_NpyInt, order='K')
                         else: # array1
-                            if i[2].dtype != E_NpyInt: i[2] = i[2].astype(E_NpyInt, order='K')
+                            if i[2].dtype != E_NpyInt:
+                                i[2] = i[2].astype(E_NpyInt, order='K')
             else:
                 if len(a) == 4:
                     if isinstance(a[2], list): # array2/3
@@ -865,14 +866,20 @@ def convertFile2Arrays(fileName, format=None, nptsCurve=20, nptsLine=2,
             raise TypeError("convertFile2Arrays: file %s can not be read."%fileName)
     else:
         try:
-            return converter.convertFile2Arrays(fileName, format, nptsCurve, nptsLine, density, zoneNames, BCFaces, BCFields, centerArrays, api)
+            return converter.convertFile2Arrays(
+                fileName, format, nptsCurve, nptsLine, density, zoneNames,
+                BCFaces, BCFields, centerArrays, api
+            )
         except:
             if not autoTry: raise
             else: pass
 
             format = checkFileType(fileName)
             try:
-                return converter.convertFile2Arrays(fileName, format, nptsCurve, nptsLine, density, zoneNames, BCFaces, BCFields, centerArrays, api)
+                return converter.convertFile2Arrays(
+                    fileName, format, nptsCurve, nptsLine, density, zoneNames,
+                    BCFaces, BCFields, centerArrays, api
+                )
             except:
                 FORMATS = [
                     'bin_ply', 'fmt_tp', 'fmt_v3d',
@@ -884,10 +891,16 @@ def convertFile2Arrays(fileName, format=None, nptsCurve=20, nptsLine=2,
                 ]
                 for fmt in FORMATS:
                     try:
-                        a = converter.convertFile2Arrays(fileName, fmt, nptsCurve, nptsLine, density, zoneNames, BCFaces, BCFields, centerArrays, api)
+                        a = converter.convertFile2Arrays(
+                            fileName, fmt, nptsCurve, nptsLine, density,
+                            zoneNames, BCFaces, BCFields, centerArrays, api
+                        )
                         return a
                     except:
-                        return converter.convertFile2Arrays(fileName, format, nptsCurve, nptsLine, density, zoneNames, BCFaces, BCFields, centerArrays, api)
+                        return converter.convertFile2Arrays(
+                            fileName, format, nptsCurve, nptsLine, density,
+                            zoneNames, BCFaces, BCFields, centerArrays, api
+                        )
 
 def convertArrays2File(arrays, fileName, format=None, isize=8, rsize=8,
                        endian='big', colormap=0, dataFormat='%.9e ',
@@ -903,14 +916,16 @@ def convertArrays2File(arrays, fileName, format=None, isize=8, rsize=8,
     else:
         znames = zoneNames
         if len(zoneNames) != len(arrays):
-            raise ValueError("convertArrays2File: zoneNames list, if not empty, must have the same length of arrays list.")
+            raise ValueError("convertArrays2File: zoneNames list, if not "
+                             "empty, must have the same length of arrays list.")
     if format is None:
         format = convertExt2Format__(fileName)
     if format == 'bin_pickle':
         import pickle
         file = open(fileName, 'wb')
         print('Writing \''+fileName+'\'...', end="")
-        pickle.dump(arrays, file, protocol=pickle.HIGHEST_PROTOCOL); file.close()
+        pickle.dump(arrays, file, protocol=pickle.HIGHEST_PROTOCOL)
+        file.close()
         print('done.')
     elif format == 'fmt_free':
         file = open(fileName, 'w')
@@ -1080,7 +1095,7 @@ def setValue(array, ind, values):
     return None
 
 def getArgMin(array, varName):
-    """Get array value where the variable defined by varName is minimum.
+    """Get array values where the variable defined by varName is minimum.
     Usage: getArgMin(array, varName)"""
     if isinstance(array[0], list):
         pos1 = KCore.isNamePresent(array[0], varName)
@@ -1109,7 +1124,7 @@ def getMinValue(array, varName):
     else: return out
 
 def getArgMax(array, varName):
-    """Get array value where the variable defined by varName is maximum.
+    """Get array values where the variable defined by varName is maximum.
     Usage: getArgMax(array, varName)"""
     if isinstance(array[0], list):
         pos1 = KCore.isNamePresent(array[0], varName)
@@ -1286,7 +1301,7 @@ def adaptSurfaceNGon(array):
         return converter.adaptSurfaceNGon(array)
 
 # -- Internal --
-def convertArray2Tetra1__(array, arrayC=[], split='simple'):
+def convertArray2Tetra__(array, arrayC=[], split='simple'):
     try: sub = array[3]
     except: raise TypeError("convertArray2Tetra: arg must be an array.")
     if isinstance(sub, str): t = sub
@@ -1299,9 +1314,9 @@ def convertArray2Tetra1__(array, arrayC=[], split='simple'):
             tmp = T.breakElements(array)
             brd = []
             for i in tmp:
-                if i[3] != 'NGON': brd.append(convertArray2Tetra1__(i))
+                if i[3] != 'NGON': brd.append(convertArray2Tetra__(i))
                 else:
-                    brd.append(convertArray2Tetra1__(i, split="withBarycenters"))
+                    brd.append(convertArray2Tetra__(i, split="withBarycenters"))
             brd = T.join(brd)
             return brd
         else:
@@ -1316,11 +1331,11 @@ def convertArray2Tetra1__(array, arrayC=[], split='simple'):
 
     elif split == 'withBarycenters': # new points added at centers of elements and faces
         if t == 'STRUCT':
-            if arrayC == []: return converter.convertStruct2TetraBary(array)
-            else: return converter.convertStruct2TetraBaryBoth(array, arrayC)
+            if arrayC == []: arrayC = None
+            return converter.convertStruct2TetraBary(array, arrayC)
         elif t == 'NGON':
-            if arrayC == []: return converter.convertNGon2TetraBary(array)
-            else: return converter.convertNGon2TetraBaryBoth(array, arrayC)
+            if arrayC == []: arrayC = None
+            return converter.convertNGon2TetraBary(array, arrayC)
         else:
             group1 = ['NODE', 'TRI', 'TETRA']
             group2 = ['BAR', 'QUAD', 'PYRA', 'PENTA', 'HEXA']
@@ -1337,13 +1352,11 @@ def convertArray2Tetra1__(array, arrayC=[], split='simple'):
 
             if center:
                 tmp = center2Node(array)
-                tmp =  converter.convertArray2TetraBary(tmp)
+                tmp = converter.convertArray2TetraBary(tmp)
                 return node2Center(tmp)
             else:
-                if arrayC == []:
-                    return converter.convertArray2TetraBary(array)
-                else:
-                    return converter.convertArray2TetraBaryBoth(array, arrayC)
+                if arrayC == []: arrayC = None
+                return converter.convertArray2TetraBary(array, arrayC)
 
 # -- Convert array(s) to tetra
 def convertArray2Tetra(array, split='simple'):
@@ -1353,12 +1366,12 @@ def convertArray2Tetra(array, split='simple'):
     if isinstance(array[0], list):
         b = []
         for i in array:
-            b.append(convertArray2Tetra1__(i, split=split))
+            b.append(convertArray2Tetra__(i, split=split))
         return b
-    else: return convertArray2Tetra1__(array, split=split)
+    else: return convertArray2Tetra__(array, split=split)
 
 # -- Internal --
-def convertArray2Hexa1__(array):
+def convertArray2Hexa__(array):
     try: sub = array[3]
     except: raise TypeError("convertArray2Hexa: arg must be an array.")
     if isinstance(sub, str): t = sub
@@ -1371,7 +1384,7 @@ def convertArray2Hexa1__(array):
         tmp = T.reorder(tmp)
         brd = []
         for i in tmp:
-            if i[3] != 'NGON': brd.append(convertArray2Hexa1__(i))
+            if i[3] != 'NGON': brd.append(convertArray2Hexa__(i))
         brd = T.join(brd)
         return brd
     else:
@@ -1389,15 +1402,15 @@ def convertArray2Hexa1__(array):
 
 # -- convert arrays(s) to hexa
 def convertArray2Hexa(array):
-    """Convert a array in an unstructured hexa array.
+    """Convert an array in an unstructured hexa array.
     Unstructured array can be quad in 2D and hexa in 3D.
     Usage: convertArray2Hexa(array)"""
     if isinstance(array[0], list):
         b = []
         for i in array:
-            b.append(convertArray2Hexa1__(i))
+            b.append(convertArray2Hexa__(i))
         return b
-    else: return convertArray2Hexa1__(array)
+    else: return convertArray2Hexa__(array)
 
 def mergeByEltType(array):
     """Merge an unstructured array by element type."""
@@ -1532,8 +1545,10 @@ def addGhostCellsNGon(arrayN, arrayC=[],depth=2):
                 b.append(converter.addGhostCellsNGon(arrayN[noz],depth))
         return b
     else:
-        if arrayN != [] and arrayC==[]: return converter.addGhostCellsNGonNodes(arrayN,depth)
-        elif arrayN == [] and arrayC != []: return converter.addGhostCellsNGonCenters(arrayC,depth)
+        if arrayN != [] and arrayC == []:
+            return converter.addGhostCellsNGonNodes(arrayN, depth)
+        elif arrayN == [] and arrayC != []:
+            return converter.addGhostCellsNGonCenters(arrayC, depth)
         else: return converter.addGhostCellsNGonBoth(arrayN, arrayC, depth)
 
 def rmGhostCellsNGon(arrayN, arrayC=[], depth=2):
@@ -1545,21 +1560,23 @@ def rmGhostCellsNGon(arrayN, arrayC=[], depth=2):
         if nzones == nzonesC:
             for noz in range(nzones):
                 if arrayN[noz] != [] and arrayC[noz] == []:
-                    res = converter.rmGhostCellsNGonNodes(arrayN[noz],depth)
+                    res = converter.rmGhostCellsNGonNodes(arrayN[noz], depth)
                     b.append(res)
                 elif arrayN[noz] == [] and arrayC[noz] != []:
-                    res = converter.rmGhostCellsNGonCenters(arrayC[noz],depth)
+                    res = converter.rmGhostCellsNGonCenters(arrayC[noz], depth)
                     b.append(res)
                 else:
-                    res = converter.rmGhostCellsNGonBoth(arrayN[noz], arrayC[noz],depth)
+                    res = converter.rmGhostCellsNGonBoth(arrayN[noz], arrayC[noz], depth)
                     b.append(res)
         else:
             for noz in range(nzones):
                 b.append(converter.rmGhostCellsNGon(arrayN[noz],depth))
         return b
     else:
-        if arrayN != [] and arrayC==[]: return converter.rmGhostCellsNGonNodes(arrayN,depth)
-        elif arrayN == [] and arrayC != []: return converter.rmGhostCellsNGonCenters(arrayC,depth)
+        if arrayN != [] and arrayC == []:
+            return converter.rmGhostCellsNGonNodes(arrayN, depth)
+        elif arrayN == [] and arrayC != []:
+            return converter.rmGhostCellsNGonCenters(arrayC, depth)
         else: return converter.rmGhostCellsNGonBoth(arrayN, arrayC, depth)
 
 #==============================================================================
@@ -1652,7 +1669,8 @@ def createGlobalHook(a, function='None', indir=0):
         else: return converter.registerAllNodes(a, indir)
     elif function == 'elementCenters': # 3
         # Returns a KDT for element centers
-        if not isinstance(a[0],list): return converter.registerAllElements(convertArray2NGon([a]), indir)
+        if not isinstance(a[0],list):
+            return converter.registerAllElements(convertArray2NGon([a]), indir)
         else: return converter.registerAllElements(convertArray2NGon(a), indir)
     elif function == 'extractMesh': # 1
         raise ValueError('function=extractMesh not implemented for global hook.')
@@ -1815,9 +1833,12 @@ def _recoverGlobalIndex(a, b):
 # simple concatenation
 def mergeConnectivity(a1, a2):
     """Merge two connectivities of basic elements."""
-    if a1[0] != a2[0]: raise ValueError('mergeConnectivity: only for same fields.')
-    if len(a1) != 4 or len(a2) != 4: raise ValueError('mergeConnectivity: only for unstructured arrays.')
-    if a1[3] == 'NGON' or a2[3] == 'NGON': raise ValueError('mergeConnectivity: only for element arrays.')
+    if a1[0] != a2[0]:
+        raise ValueError('mergeConnectivity: only for same fields.')
+    if len(a1) != 4 or len(a2) != 4:
+        raise ValueError('mergeConnectivity: only for unstructured arrays.')
+    if a1[3] == 'NGON' or a2[3] == 'NGON':
+        raise ValueError('mergeConnectivity: only for element arrays.')
 
     # fields
     f1 = a1[1]; f2 = a2[1]
@@ -1996,7 +2017,11 @@ def checkFileType(fileName):
     if header[1:4] == b'HDF': return 'bin_hdf'
     if header[4:7] == b'ADF': return 'bin_adf'
     if header[0:5] == b'#!TDV': return 'bin_tp'
-    if header[0:5] == b'TITLE' or header[0:5] == b'title' or header[0:9] == b"VARIABLES" or header[0:9] == b"variables" or header[0:8] == b"FILETYPE" or header[0:8] == b"filetype":
+    if (
+        header[0:5] == b'TITLE' or header[0:5] == b'title'
+        or header[0:9] == b"VARIABLES" or header[0:9] == b"variables"
+        or header[0:8] == b"FILETYPE" or header[0:8] == b"filetype"
+    ):
         return 'fmt_tp'
     if header[0] == 0x80 and header[1] <= 0x10: return 'bin_pickle'
     if header.find(b"MeshVersionUnformatted") != -1: return 'bin_mesh'
@@ -2017,11 +2042,39 @@ def checkFileType(fileName):
     import binascii as b
     beader = b.b2a_hex(header)
     eol = b"0a"
-    if (beader[0:8] == b"04000000" or beader[0:8] == b"00000004") and (header[16:18] == b'va' or header[16:17] == b'x' or header[16:17] == b'y' or header[16:17] == b'z' or header[16:18] == b'VA' or header[16:17] == b'X' or header[16:17] == b'Y' or header[16:17] == b'Z'):
+    if (
+        (beader[0:8] == b"04000000" or beader[0:8] == b"00000004")
+        and (
+            header[16:18] == b'va' or header[16:17] == b'x'
+            or header[16:17] == b'y' or header[16:17] == b'z'
+            or header[16:18] == b'VA' or header[16:17] == b'X'
+            or header[16:17] == b'Y' or header[16:17] == b'Z'
+        )
+    ):
         return 'bin_v3d'
-    if (beader[0:8] == b"08000000" or beader[0:8] == b"00000008") and (header[20:22] == b'va' or header[20:21] == b'x' or header[20:21] == b'y' or header[20:21] == b'z' or header[20:22] == b'VA' or header[20:21] == b'X' or header[20:21] == b'Y' or header[20:21] == b'Z'):
+    if (
+        (beader[0:8] == b"08000000" or beader[0:8] == b"00000008")
+        and (
+            header[20:22] == b'va' or header[20:21] == b'x'
+            or header[20:21] == b'y' or header[20:21] == b'z'
+            or header[20:22] == b'VA' or header[20:21] == b'X'
+            or header[20:21] == b'Y' or header[20:21] == b'Z'
+        )
+    ):
         return 'bin_v3d'
-    if (beader[10:12] == eol and (beader[50:52] == b"78" or beader[50:52] == b"79" or beader[50:52] == b"80" or  beader[12:14] == b"78" or   beader[12:14] == b"79" or beader[12:14] == b"80"  or beader[50:52] == b"58" or beader[50:52] == b"59" or beader[50:52] == b"60" or  beader[12:14] == b"58" or beader[12:14] == b"59" or beader[12:14] == b"60" or beader[46:52] == b"766172" or beader[46:52] == b"564152" or beader[12:18] == b"766172" or beader[12:18] == b"564152")):
+    if (
+        beader[10:12] == eol
+        and (
+            beader[50:52] == b"78" or beader[50:52] == b"79"
+            or beader[50:52] == b"80" or  beader[12:14] == b"78"
+            or beader[12:14] == b"79" or beader[12:14] == b"80"
+            or beader[50:52] == b"58" or beader[50:52] == b"59"
+            or beader[50:52] == b"60" or  beader[12:14] == b"58"
+            or beader[12:14] == b"59" or beader[12:14] == b"60"
+            or beader[46:52] == b"766172" or beader[46:52] == b"564152"
+            or beader[12:18] == b"766172" or beader[12:18] == b"564152"
+        )
+    ):
         return 'fmt_v3d'
     if beader.find(b"4d4d") == 0: return 'bin_3ds'
     if beader[0:4] == b"d8ff": return 'bin_jpg'

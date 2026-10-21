@@ -16,7 +16,7 @@ if 'MPIRUN' in os.environ: # si MPIRUN=0, force sequentiel
     else:
         rank = 0; size = 1; KCOMM = None; COMM_WORLD = None
         master = True
-        SUM = 0; MAX = 0; MIN = 0; LAND = 0
+        SUM = 0; MAX = 0; MIN = 0; LAND = 0; LOR = 0
         from .Distributed import (
             setProc, _setProc, getProc, getProcDict,
             getProperty, getPropertyDict, convertFile2SkeletonTree,
@@ -34,8 +34,7 @@ if 'MPIRUN' in os.environ: # si MPIRUN=0, force sequentiel
         def allgather(a): return [a]
         def allgatherZones(a, coord=True, variables=[]): return a
         def allgatherTree(a): return a
-        def allgatherDict(a): return a
-        def allgatherDict2(a): return a
+        def allgatherDict(a, method=0, fillValue=None): return a
         def allgatherNext(a): return [a]
         def send(a, dest=0, tag=0): return None
         def isend(a, dest=0, tag=0): return None
@@ -47,6 +46,8 @@ if 'MPIRUN' in os.environ: # si MPIRUN=0, force sequentiel
         def Reduce(a, b, op=None, root=0): return a
         def allreduce(a, op=None): return a
         def Allreduce(a, b, op=None): b[...] = a; return None
+        def allreduceDict(a, method=0, fillValue=None, op=None): return a
+        def allreduceSet(a): return a
         def getSizeOf(a): return Internal.getSizeOf(a)
         def passPrevious(a): return a
         def passNext(a): return a
@@ -73,7 +74,7 @@ else: # try import (may fail - core or hang)
     except:
         rank = 0; size = 1; KCOMM = None; COMM_WORLD = None
         master = True
-        SUM = 0; MAX = 0; MIN = 0; LAND = 0
+        SUM = 0; MAX = 0; MIN = 0; LAND = 0; LOR = 0
         from .Distributed import (
             setProc, _setProc, getProc, getProcDict,
             getProperty, getPropertyDict, convertFile2SkeletonTree,
@@ -91,8 +92,7 @@ else: # try import (may fail - core or hang)
         def allgather(a): return [a]
         def allgatherZones(a, coord=True, variables=[]): return a
         def allgatherTree(a): return a
-        def allgatherDict(a): return a
-        def allgatherDict2(a): return a
+        def allgatherDict(a, method=0, fillValue=None): return a
         def allgatherNext(a): return [a]
         def send(a, dest=0, tag=0): return None
         def isend(a, dest=0, tag=0): return None
@@ -104,6 +104,8 @@ else: # try import (may fail - core or hang)
         def Reduce(a, b, op=None, root=0): return a
         def allreduce(a, op=None): return a
         def Allreduce(a, b, op=None): b[...] = a; return None
+        def allreduceDict(a, method=0, fillValue=None, op=None): return a
+        def allreduceSet(a): return a
         def getSizeOf(a): return Internal.getSizeOf(a)
         def passPrevious(a): return a
         def passNext(a): return a
@@ -169,10 +171,10 @@ def center2Node(t, var=None, cellNType=0, graph=None):
     if allstructured == size: # all zones are structured
         return center2Node1__(t, var, cellNType) # to be changed to 2
     else: # mixed or unstructured
-        if indices == {}:
+        if ztype != 'NGON':
             return center2Node1__(t, var, cellNType, graph) # use addXZones (default)
         else:
-            return C.center2Node(t, var, cellNType, indices=indices, BCField=BCField) # use BCMatch data (NGON)
+            return C.center2Node(t, var, cellNType, indices=indices, BCField=BCField) # use BCMatch data if any (NGON)
 
 # generic, use addXZones
 def center2Node1__(t, var=None, cellNType=0, graph=None):
@@ -253,6 +255,18 @@ def getMeanValue(t, varName):
     val = allreduce(val, op=SUM)
     npts = allreduce(npts, op=SUM)
     return val/npts
+
+def getArgMin(t, varName):
+    """Get field values where the variable defined by varName is minimum."""
+    val = C.getArgMin(t, varName)
+    vals = allgather(val)
+    return min(vals, key=lambda v: v[3])
+
+def getArgMax(t, varName):
+    """Get field values where the variable defined by varName is maximum."""
+    val = C.getArgMax(t, varName)
+    vals = allgather(val)
+    return max(vals, key=lambda v: v[3])
 
 def isFinite(t, var=None):
     """Return true if all fields in a have no NAN or INF values."""

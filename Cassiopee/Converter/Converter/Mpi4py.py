@@ -13,13 +13,14 @@ from .Distributed import (
 
 __all__ = [
     'rank', 'size', 'master',
-    'KCOMM', 'COMM_WORLD', 'SUM', 'MIN', 'MAX', 'LAND',
+    'KCOMM', 'COMM_WORLD', 'SUM', 'MIN', 'MAX', 'LAND', 'LOR',
     'setCommunicator', 'abort', 'barrier',
     'send', 'isend', 'recv', 'requestWaitall', 'sendRecv', 'sendRecvC',
     'bcast', 'Bcast', 'gather', 'Gather',
     'reduce', 'Reduce', 'allreduce', 'Allreduce',
+    'allreduceDict', 'allreduceSet',
     'bcastZone', 'gatherZones', 'allgatherZones',
-    'allgatherDict', 'allgatherDict2', 'allgatherTree',
+    'allgatherDict', 'allgatherTree',
     'allgather', 'passPrevious', 'passNext', 'allgatherNext',
     'getSizeOf',
     'readZones', 'writeZones', 'convert2PartialTree', 'convert2SkeletonTree',
@@ -47,6 +48,7 @@ SUM = MPI.SUM
 MAX = MPI.MAX
 MIN = MPI.MIN
 LAND = MPI.LAND
+LOR = MPI.LOR
 
 # version collective
 def writeZones(t, fileName, format=None, proc=None, zoneNames=None, links=None):
@@ -124,11 +126,11 @@ def reduce(data, op=MPI.SUM, root=0):
 # dataIn and dataOut must be numpys of same size and type
 # or buffer specified [data,count,MPI_DOUBLE]
 #==============================================================================
-def Reduce(dataIn, dataOut, op=MPI.SUM):
-    return KCOMM.Reduce(dataIn, dataOut, op=op)
+def Reduce(dataIn, dataOut, op=MPI.SUM, root=0):
+    return KCOMM.Reduce(dataIn, dataOut, op=op, root=root)
 
 #==============================================================================
-# Reduce to all  procs (using pickle, small data)
+# Reduce to all procs (using pickle, small data)
 #==============================================================================
 def allreduce(data, op=MPI.SUM):
     return KCOMM.allreduce(data, op=op)
@@ -140,6 +142,41 @@ def allreduce(data, op=MPI.SUM):
 #==============================================================================
 def Allreduce(dataIn, dataOut, op=MPI.SUM):
     return KCOMM.Allreduce(dataIn, dataOut, op=op)
+
+#==============================================================================
+# Reduce a dict to all procs (using pickle, small data) applying op
+# Method 0 (default) - Unique values
+# Method 1 - All values found
+# Method 2 - All values, fill missing with fillValue
+# See allgatherDict for more info on the methods used to gather data
+#==============================================================================
+def allreduceDict(data, method=0, fillValue=None, op=MPI.SUM):
+    if method not in [0, 1, 2]:
+        raise ValueError(f"allreduceDict: method can either be 0, 1 or 2, not {method}.")
+    ret = allgatherDict(data, method=method, fillValue=fillValue)
+    def reduceDict__(data):
+        if isinstance(data, dict):
+            return {k: reduceDict__(v) for k, v in data.items()}
+        if op == MPI.SUM: return sum(data)
+        elif op == MPI.MIN: return min(data)
+        elif op == MPI.MAX: return max(data)
+        elif op == MPI.LOR: return any(data)
+        elif op == MPI.LAND: return all(data)
+        elif op == set:
+            v = set(data)
+            return v.pop() if len(v) == 1 else sorted(v)
+        else:
+            raise ValueError(f"allreduceDict: unsupported operation, {op}. "
+                             "Options are: Cmpi.SUM, Cmpi.MIN, Cmpi.MAX, "
+                             "Cmpi.LOR, Cmpi.LAND, and set for strings.")
+    return reduceDict__(ret)
+
+#==============================================================================
+# Reduce a set to all procs
+#==============================================================================
+def allreduceSet(data):
+    ret = KCOMM.allgather(data)
+    return set().union(*ret)
 
 #==============================================================================
 # Send and receive with a graph
@@ -253,45 +290,84 @@ def allgather(data):
     else: return allgatherNext(data)
 
 #==============================================================================
-# gather data in a list identical on all processors
+# gather a dictionary identical on all procs
+# Method 0 (default) - Unique values:
+#   For a given key, the gathered data is a single list containing unique values
+#       only.
+#   return dict[key] = [all unique values]
+# Method 1 - All values found:
+#   For a given key, the gathered data is a list containing all values.
+#   return dict[key] = [all values found]
+# Method 2 - All values, fill missing with fillValue:
+#   For a given key, the gathered data is a list containing all values. If the
+#     key is not found on one rank, add fillValue (default None).
+#   return dict[key] = [all values, with fillValue when key is missing]
+# Method 3 - Single value:
+#   For a given key, the gathered data is a single value. If a key is found
+#       multiple times, choose the corresponding value in the lowest rank.
+#   return dict[key] = value
 #==============================================================================
-#def allgather(data):
-#    ret = KCOMM.allgather(data)
-#    return ret
-
-#==============================================================================
-# gather a dictionary identical on all procs when: dict[key] = [value]
-# return dict[key] = [all values]
-# all values in a single list (rejete les doublons de keys et doublons de values)
-#==============================================================================
-def allgatherDict(data):
+def allgatherDict(data, method=0, fillValue=None):
+    if method not in [0, 1, 2, 3]:
+        raise ValueError(f"allgatherDict: method can either be 0, 1, 2 or 3, not {method}.")
     ret = KCOMM.allgather(data)
     if not isinstance(data, dict): return ret
-    out = {}
-    for r in ret: # all proc return
-        for k in r: # for each key in dict
-            if k not in out:
-                out[k] = []
-                for data in r[k]:
-                    if data not in out[k]: out[k].append(data)
-            else:
-                for data in r[k]:
-                    if data not in out[k]: out[k].append(data)
-    return out
-
-#==============================================================================
-# gather a dict identical on all procs
-# if: dict[key] = value,
-# return dict[key] = value (en choisi une value si doublon de key)
-#==============================================================================
-def allgatherDict2(data):
-    ret = KCOMM.allgather(data)
-    if not isinstance(data, dict): return ret
-    out = {}
-    for r in ret: # all proc return
-        for k in r: # for each key in dict
-            if k not in out: out[k] = r[k]
-    return out
+    def keys__(dicts):
+        return dict.fromkeys(k for d in dicts for k in d)
+    def values__(v):
+        return v if isinstance(v, (list, tuple, set)) else [v]
+    def gatherDict__(dicts):
+        out = {}
+        if method == 0:  # Unique values
+            for k in keys__(dicts):
+                vals = [d[k] for d in dicts if k in d]
+                if any(isinstance(v, dict) for v in vals):
+                    out[k] = gatherDict__([
+                        d[k] if k in d and isinstance(d[k], dict) else {}
+                        for d in dicts
+                    ])
+                else:
+                    out[k] = []
+                    for v in vals:
+                        for vi in values__(v):
+                            if vi not in out[k]: out[k].append(vi)
+            return out
+        elif method == 1:  # All values
+            for k in keys__(dicts):
+                vals = [d[k] for d in dicts if k in d]
+                if any(isinstance(v, dict) for v in vals):
+                    out[k] = gatherDict__([
+                        d[k] if k in d and isinstance(d[k], dict) else {}
+                        for d in dicts
+                    ])
+                else:
+                    out[k] = []
+                    for v in vals: out[k].extend(values__(v))
+            return out
+        elif method == 2:  # All values, fill missing keys
+            for k in keys__(dicts):
+                vals = [d.get(k, None) for d in dicts]
+                if any(isinstance(v, dict) for v in vals if v is not None):
+                    out[k] = gatherDict__([
+                        v if isinstance(v, dict) else {} for v in vals
+                    ])
+                else:
+                    out[k] = []
+                    for v in vals:
+                        if v is None: out[k].append(fillValue)
+                        else: out[k].extend(values__(v))
+            return out
+        else:  # Value from the lowest rank
+            for k in keys__(dicts):
+                vals = [d[k] for d in dicts if k in d]
+                if isinstance(vals[0], dict):
+                    out[k] = gatherDict__([
+                        d[k] if k in d and isinstance(d[k], dict) else {}
+                        for d in dicts
+                    ])
+                else: out[k] = vals[0]
+            return out
+    return gatherDict__(ret)
 
 #==============================================================================
 # gather tree in a single tree identical on all processors

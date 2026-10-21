@@ -74,7 +74,7 @@ if srcs.ZFP:
 
 # Setup ======================================================================
 setup(
-    name="Compressor",
+    name=("Cassiopee-" if os.getenv("CASSIOPEE_DIST_PREFIX", "1") == "1" else "") + "Compressor",
     version="4.2",
     description="Compress CFD solutions.",
     author="ONERA",

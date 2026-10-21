@@ -1720,15 +1720,15 @@ def setFields(arrays, t, loc, writeDim=True):
         # Remplace les noeuds contenant les variables
         if a == []: vars = []
         else:
-            vars = a[0].split(",")
+            vars = [v for v in a[0].split(",") if v]
             # un array * ne peut pas etre mis en nodes
             if loc == 'nodes' and len(a) == 4:
                 elt = a[3]
                 if elt[-1] == '*':
                     print('Warning: setFields: %s array is not set.'%elt)
                     vars = []
-        p = 0
-        for v in vars:
+
+        for p, v in enumerate(vars):
             renamed = 0 # si le nom est change en nom CGNS = 1
             variable = Internal.getCGNSName(v)
             if variable != v: renamed = 1
@@ -1770,8 +1770,6 @@ def setFields(arrays, t, loc, writeDim=True):
                 else:
                     info[2].append(node)
                     if renamed == 1: Internal._rmNodesByName(info, v)
-
-            p += 1
 
         # update les dimensions si necessaire
         if writeDim and loc == 'nodes' and vars != []:
@@ -2777,7 +2775,10 @@ def _initVars(t, varNameString, v1=None, v2=None, mode=0, isVectorized=False):
     #centerCoordNeeded = True # for DBX
     if centerCoordNeeded:
         if callable(v1):
-            # Initialisation(s) by function # Reg
+            # Initialisation(s) by function
+            if not isVectorized:
+                print("Warning: _initVars: not vectorizing a function may "
+                      "significantly affect performance")
             _TZAGC3(t, loc, loc, False, Converter.initVars,
                     Converter.initVars, varNames, v1, v2, mode, isVectorized)
         elif isinstance(v1, (int, float, numpy.float64)):
@@ -2798,6 +2799,9 @@ def _initVars(t, varNameString, v1=None, v2=None, mode=0, isVectorized=False):
             [_addVars(t, varName) for varName in varNameString]
             if callable(v1):
                 # ... by function
+                if not isVectorized:
+                    print("Warning: _initVars: not vectorizing a function may "
+                          "significantly affect performance")
                 __TZA3(t, loc, Converter._initVars, varNames, v1, v2, mode, isVectorized)
             else:
                 # ... by constant
@@ -3570,7 +3574,7 @@ def _convertBAR2Struct(t):
 # split='withBarycenters': ajout de points aux centres des elements et des faces
 def convertArray2Tetra(t, split='simple'):
     """Convert a zone to an unstructured zone.
-    Unstructured array can be triangular in 2D and tetraedrical in 3D.
+    Unstructured array can be triangular in 2D and tetrahedral in 3D.
     Usage: convertArray2Tetra(t, split)"""
     tp = Internal.copyRef(t)
     _convertArray2Tetra(tp, split)
@@ -3590,10 +3594,10 @@ def _convertArray2Tetra(t, split='simple'):
             fieldn = getAllFields(z, 'nodes', api=1)[0]
             fieldc = getAllFields(z, 'centers', api=1)[0]
             if fieldc == []:
-                res = Converter.convertArray2Tetra1__(fieldn, split='withBarycenters')
+                res = Converter.convertArray2Tetra__(fieldn, split='withBarycenters')
                 z = setFields([res], z, 'nodes', writeDim=True)
             else:
-                res = Converter.convertArray2Tetra1__(fieldn, fieldc, split='withBarycenters')
+                res = Converter.convertArray2Tetra__(fieldn, fieldc, split='withBarycenters')
                 z = setFields([res[0]], z, 'nodes', writeDim=True)
                 z = setFields([res[1]], z, 'centers', writeDim=False)
     return None
@@ -3602,7 +3606,7 @@ def _convertArray2Tetra(t, split='simple'):
 def convertArray2Hexa(t):
     """Convert a structured zone to an unstructured quad/hexa zone.
     Convert an unstructured zone to a quad/hexa zone. If the original
-    zone is a TRI,TETRA or PENTA zone, return a QUAD/HEXA/HEXA zone with
+    zone is a TRI, TETRA or PENTA zone, return a QUAD/HEXA/HEXA zone with
     degenerated edges.
     Usage: convertArray2Hexa(t)"""
     tp = Internal.copyRef(t)

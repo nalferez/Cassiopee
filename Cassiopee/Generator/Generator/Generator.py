@@ -18,7 +18,7 @@ __all__ = ['cart', 'cartr1', 'cartr2', 'cartHexa', 'cartTetra', 'cartPenta',
            'enforceLine', 'enforcePoint', 'enforceCurvature', 'enforceCurvature2',
            'addPointInDistribution', 'map', 'map1d', 'map1dpl', 'map2d',
            'mapCurvature', 'refine', 'defineSizeMapForMMGs', 'mmgs', 'densify',
-           'hyper2D', 'hyper2D2', 'hyper2D3', 'hyper2D4', 'close', 'closeLegacy', 'zip',
+           'hyper2D', 'hyper2D2', 'hyper2D3', 'hyper2D4', 'close', 'zip',
            'pointedHat', 'stitchedHat', 'plaster', 'selectInsideElts', 'grow', 'stack',
            'allTFI', 'TFI', 'TFITri', 'TFITri2', 'TFIO', 'TFIHalfO', 'TFIMono',
            'TFIStar', 'TFIStar2',
@@ -52,12 +52,12 @@ def cartr2(Xo, H, R, Xf, doubleLeft=(0,0,0), doubleRight=(0,0,0), api=1, skeleto
     return generator.cartr2(Xo, H, R, Xf, doubleLeft, doubleRight, api, skeleton)
 
 def cartHexa(Xo, H, N, api=1):
-    """Create a cartesian mesh defined by an hexaedrical array.
+    """Create a cartesian mesh defined by an hexahedral array.
     Usage: cartHexa((xo,yo,zo), (hi,hj,hk), (ni,nj,nk))"""
     return generator.cartHexa(Xo, H, N, api)
 
 def cartTetra(Xo, H, N, api=1):
-    """Create a cartesian mesh defined by a tetraedrical array.
+    """Create a cartesian mesh defined by a tetrahedral array.
     Usage: cartTetra((xo,yo,zo), (hi,hj,hk), (ni,nj,nk))"""
     return generator.cartTetra(Xo, H, N, api)
 
@@ -127,11 +127,14 @@ def bbox(arrays):
     """Returns the bounding box of a list of arrays.
     Usage: bbox(arrays)"""
     import KCore
-    if len(arrays) == 0: return [1.e256, 1.e256, 1.e256, -1.e256, -1.e256, -1.e256]
+    fmin = numpy.finfo(numpy.float64).min
+    fmax = numpy.finfo(numpy.float64).max
+    if len(arrays) == 0:
+        return [fmin, fmin, fmin, fmax, fmax, fmax]
     if not isinstance(arrays[0], list): ars = [arrays]
     else: ars = arrays
-    xmin = 1.e256; ymin = 1.e256; zmin = 1.e256
-    xmax =-1.e256; ymax =-1.e256; zmax =-1.e256
+    xmin = fmax; ymin = fmax; zmin = fmax
+    xmax = fmin; ymax = fmin; zmax = fmin
     for a in ars:
         varx = KCore.isNamePresent(a, 'CoordinateX')
         if varx == -1:
@@ -360,7 +363,7 @@ def enforceCurvature(arrayD, arrayC, power=0.5):
 # alpha is the factor of stretch for point of maximum curvature
 #--------------------------------------------------------------
 def enforceCurvature2(arrayD, arrayC, alpha=1.e-2):
-    try: import Geom as D; import math; import KCore
+    try: import Geom as D; import KCore
     except: raise ImportError("enforceCurvature2: requires Converter and Geom modules.")
 
     tol = 1.e-12 # tolerance on coincident points (=close)
@@ -394,10 +397,10 @@ def enforceCurvature2(arrayD, arrayC, alpha=1.e-2):
     for i in range(ni): rc[1][0,i] = min(1.,rc[1][0,i])
     rcmean = C.getMeanValue(rc, 'radius')
     dh = C.initVars(rc, 'dhloc', 1.); dh = C.extractVars(dh, ['dhloc'])
-    coefa = math.log(alpha)/(rcmin-1.)
+    coefa = numpy.log(alpha)/(rcmin-1.)
     for i in range(ni):
         rad = rc[1][0,i]
-        if rad < 0.2*rcmean: dh[1][0,i] = math.exp(coefa*rc[1][0,i]-coefa)
+        if rad < 0.2*rcmean: dh[1][0,i] = numpy.exp(coefa*rc[1][0,i]-coefa)
     if loop == 1: rc[1][0,ni-1] = rc[1][0,0]
     minima = []; dht = dh[1]
     dhmax = C.getMaxValue(dh, 'dhloc'); dhmin = C.getMinValue(dh, 'dhloc')
@@ -487,7 +490,6 @@ def map1dpl(array, d, dir, h1, h2, isAvg, pnts):
     islocationdependent = False
     if h1 is not None and h2 is not None:
         islocationdependent = True
-        import numpy
         import Geom as D
         import Geom.MapEdge as MapE
         N = len(d[1][0])
@@ -540,7 +542,6 @@ def map1dpl(array, d, dir, h1, h2, isAvg, pnts):
 
 def d_local(m,j,k,ni,h1,h2,N):
     import Transform as T
-    import numpy
     import Geom as D
     import Geom.MapEdge as MapE
     l = T.subzone(m, (1,j+1,k+1), (ni,j+1,k+1))
@@ -647,7 +648,8 @@ def refinePerDir__(a, power, dir):
     else: factor = power
     try:
         import Transform as T
-        import Geom as D; import Post as P
+        import Geom as D
+        import Post as P
     except: raise ImportError("refine: requires Transform, Converter, Geom, Post modules.")
     if dir != 1 and dir != 2 and dir != 3: raise ValueError("refine: dir must be 1, 2 or 3.")
 
@@ -707,10 +709,10 @@ def refinePerDir__(a, power, dir):
     else: return aout
 
 def defineSizeMapForMMGs(array, hmax, sizeConstraints):
-    import KCore; import Generator; import Transform
+    import KCore; import Transform
     if hmax > 0: array = C.initVars(array, 'sizemap=%f'%hmax)
     else:
-        vol = Generator.getVolumeMap(array)
+        vol = getVolumeMap(array)
         vol = C.initVars(vol, '{vol}=(1.15*{vol})**0.5')
         vol = C.center2Node(vol)
         vol[0] = 'sizemap'
@@ -719,7 +721,7 @@ def defineSizeMapForMMGs(array, hmax, sizeConstraints):
 
     szcs = C.convertArray2Hexa(sizeConstraints)
     c = Transform.join(szcs)
-    v = Generator.getVolumeMap(c)
+    v = getVolumeMap(c)
     v = C.center2Node(v) # should be max
     c = C.addVars([c,v])
     hook = C.createHook(c, function='nodes')
@@ -815,21 +817,6 @@ def hyper2D4(array, arrayd, type):
     """Generate an hyperbolic mesh.
     Usage: hyper2D4(array, arrayd, type)"""
     return generator.hyper2D4(array, arrayd, type)
-
-def closeLegacy(array, tol=1.e-12, suppressDegeneratedNGons=False):
-    """Close an unstructured mesh defined by an array gathering points closer than tol.
-    Usage: close(array, tol)"""
-    if isinstance(array[0], list):
-        out = []
-        for a in array:
-            if len(a) == 5: # merge intra-borders (C-type meshes)
-                outl = generator.closeBorders([a], [], tol)[0]
-            else:
-                outl = generator.closeMeshLegacy(a, tol, suppressDegeneratedNGons)
-            out.append(outl)
-        return out
-    else:
-        return generator.closeMeshLegacy(array, tol, suppressDegeneratedNGons)
 
 def close(array, tol=1.e-12, rmOverlappingPts=True, rmOrphanPts=True,
           rmDuplicatedFaces=True, rmDuplicatedElts=True,
@@ -1382,7 +1369,6 @@ def mapSplit(array, dist, splitCrit=100., densMax=1000):
 def mapSplitStruct__(array, dist, splitCrit, densMax):
     import KCore
     try:
-        import math
         import Transform as T
         import Geom as D
     except:
@@ -1407,7 +1393,7 @@ def mapSplitStruct__(array, dist, splitCrit, densMax):
 
     for i in range(1, nbpoints):
         dx = x[i]-x[i-1]; dy = y[i]-y[i-1]; dz = z[i]-z[i-1]
-        ld[i] = ld[i-1] + math.sqrt(dx*dx+dy*dy+dz*dz)*ldti
+        ld[i] = ld[i-1] + numpy.sqrt(dx*dx+dy*dy+dz*dz)*ldti
 
     # Compute total length of array
     lt = D.getLength(a); lti = 1./lt
@@ -1424,9 +1410,9 @@ def mapSplitStruct__(array, dist, splitCrit, densMax):
 
     xa = a[1][posx]; ya = a[1][posy]; za = a[1][posz]
 
-    for i in range(1,len(xa)):
+    for i in range(1, len(xa)):
         dxa = xa[i]-xa[i-1]; dya = ya[i]-ya[i-1]; dza = za[i]-za[i-1]
-        la = math.sqrt(dxa*dxa+dya*dya+dza*dza) *lti
+        la = numpy.sqrt(dxa*dxa+dya*dya+dza*dza) *lti
         if la < stepmin and la > 0.: stepmin = la
     if lt/stepmin > densMax: stepmin = lt/densMax
     # Densify array
@@ -1435,7 +1421,7 @@ def mapSplitStruct__(array, dist, splitCrit, densMax):
     a = T.splitCurvatureRadius(a, splitCrit)
 
     # Build array with distance of each "split point"
-    L = numpy.zeros((len(a)), dtype='float64')
+    L = numpy.zeros((len(a)), dtype=numpy.float64)
     ltinv = 1./lt
     L[0] = D.getLength(a[0]) * ltinv
 
@@ -1448,8 +1434,8 @@ def mapSplitStruct__(array, dist, splitCrit, densMax):
         ind2 = D.getDistantIndex(dist, 1, L[i]*ldt)
         ind1 = ind2-1
 
-        d1 = math.fabs(L[i]-ld[ind1])
-        d2 = math.fabs(L[i]-ld[ind2])
+        d1 = numpy.fabs(L[i]-ld[ind1])
+        d2 = numpy.fabs(L[i]-ld[ind2])
         if d1 < d2: indsplit = ind1
         else: indsplit = ind2
         # Split distribution with "split points"
@@ -1481,7 +1467,6 @@ def tetraMesher(a, maxh=-1., quality=1.2, grading=1.2, triangulateOnly=0,
         a = C.convertArray2Tetra(a)
         a = T.join(a)
     except: pass
-    import math
     if a[3] == 'BAR':
         p = fittingPlaster(a)
         b = gapfixer(a, p)
@@ -1491,7 +1476,7 @@ def tetraMesher(a, maxh=-1., quality=1.2, grading=1.2, triangulateOnly=0,
         if maxh == -1.: # auto maxh
             vol = getVolumeMap(a)
             maxh = C.getMeanValue(vol, 'vol')
-            maxh = math.sqrt(2*maxh)
+            maxh = numpy.sqrt(2*maxh)
         if algo == 0: # netgen
             if remeshBoundaries == 0:
                 if maxh < 0: maxh = 1.e6
@@ -1554,7 +1539,7 @@ def gapsmanager(components, mode=0, refine=0, coplanar=0):
 def front2Hexa(a, surf, h, hf, hext, density=50):
     """Generate an hexa grid starting from a front a, a surface surf,
     and h, hf, hext the height of the mesh, of the first and last cells."""
-    try: import Transform as T; import math
+    try: import Transform as T
     except: raise ImportError("front2Hexa: requires Transform module.")
 
     # projection de a sur la surface ortho
@@ -1566,7 +1551,7 @@ def front2Hexa(a, surf, h, hf, hext, density=50):
     for ind in range(npts):
         dx=a1[0,ind]-b1[0,ind]; dy=a1[1,ind]-b1[1,ind]; dz=a1[2,ind]-b1[2,ind]
         h0 = max(h0, dx*dx+dy*dy+dz*dz)
-    h0 = math.sqrt(h0)
+    h0 = numpy.sqrt(h0)
     h0 = max(h, h0) # hauteur max du maillage (sans extension)
     nk = int(h0*density)+1; nk = max(nk,5)
     distrib = cart((0.,0.,0.),(1./nk,1.,1.),(nk+1,1,1))
@@ -1640,8 +1625,9 @@ def refinedSharpEdges__(surfaces, step, angle):
     """Get refined sharp edges from a given surface. 
     Usage: snapSharpEdges(meshes, surfaces)"""
     try:
-        import Post as P; import Geom as D
-        import Transform as T; from . import Generator as G
+        import Post as P
+        import Geom as D
+        import Transform as T
     except:
         raise ImportError("snapSharpEdges: requires Post, Geom, Converter, Transform module.")
     b = C.convertArray2Tetra(surfaces); b = T.join(b); b = close(b)
@@ -1700,7 +1686,7 @@ def refinedSharpEdges__(surfaces, step, angle):
     if ncontours != []:
         contours =  C.convertArray2Tetra(ncontours)
         contours = T.join(contours)
-        contours = G.close(contours)
+        contours = close(contours)
     if corners != []: corners = T.join(corners)
     return [b, contours, corners]
 
@@ -1861,7 +1847,7 @@ def findBest(diff, bary):
 # Match l'exterieur de a1 sur l'exterieur de a2 si la distance est
 # inferieure a tol
 def _forceMatch1(a1, a2, tol):
-    import Post; import KCore; import Geom; import Transform; import Generator
+    import Post; import KCore
 
     # exterior of a1
     ext1 = Post.exteriorFaces(a1)
@@ -1920,7 +1906,7 @@ def _forceMatch1(a1, a2, tol):
 
 # Force match sur la bande delimitee par P1-P2
 def _forceMatch2(a1, a2, P1, P2):
-    import Post; import KCore; import Geom; import Transform; import Generator
+    import Post; import Geom; import Transform
 
     # exterior of a1
     ext1 = Post.exteriorFaces(a1)
@@ -1930,14 +1916,14 @@ def _forceMatch2(a1, a2, P1, P2):
 
     # Find split index of P1 and P2
     hook = C.createHook(ext1, function='nodes')
-    nodes,dist = C.nearestNodes(hook, Geom.point(P1))
+    nodes, _ = C.nearestNodes(hook, Geom.point(P1))
     ind1s1 = nodes[0]-1
-    nodes,dist = C.nearestNodes(hook, Geom.point(P2))
+    nodes, _ = C.nearestNodes(hook, Geom.point(P2))
     ind2s1 = nodes[0]-1
     hook = C.createHook(ext2, function='nodes')
-    nodes,dist = C.nearestNodes(hook, Geom.point(P1))
+    nodes, _ = C.nearestNodes(hook, Geom.point(P1))
     ind1s2 = nodes[0]-1
-    nodes,dist = C.nearestNodes(hook, Geom.point(P2))
+    nodes, _ = C.nearestNodes(hook, Geom.point(P2))
     ind2s2 = nodes[0]-1
     ext1 = Transform.splitBAR(ext1, ind1s1, ind2s1)
     ext2 = Transform.splitBAR(ext2, ind1s2, ind2s2)
@@ -1949,10 +1935,10 @@ def _forceMatch2(a1, a2, P1, P2):
     bary = numpy.empty(n1+n2, dtype=numpy.float64)
     for i, e1 in enumerate(ext1):
         di = Geom.getLength(e1)
-        bi = Generator.barycenter(e1)
+        bi = barycenter(e1)
         for j, e2 in enumerate(ext2):
             dj = Geom.getLength(e2)
-            bj = Generator.barycenter(e2)
+            bj = barycenter(e2)
             diff[i+n1*j] = abs(di-dj)
             bary[i+n1*j] = (bi[0]-bj[0])**2+(bi[1]-bj[1])**2+(bi[2]-bj[2])**2
 
@@ -1965,7 +1951,7 @@ def _forceMatch2(a1, a2, P1, P2):
 
 # force match avec deux courbes en entree
 def _forceMatch3(a1, a2, ext1, ext2):
-    import Post; import KCore; import Geom; import Transform; import Generator
+    import KCore
 
     # Get pos
     posx1 = KCore.isCoordinateXPresent(a1)
@@ -1985,7 +1971,7 @@ def _forceMatch3(a1, a2, ext1, ext2):
 
     # match ext1 sur ext2
     hook = C.createHook(ext2, function='nodes')
-    nodes,dist = C.nearestNodes(hook, ext1)
+    nodes, _ = C.nearestNodes(hook, ext1)
 
     ext1[1][posx1,:] = ext2[1][posx2,nodes[:]-1]
     ext1[1][posy1,:] = ext2[1][posy2,nodes[:]-1]
@@ -1996,7 +1982,7 @@ def _forceMatch3(a1, a2, ext1, ext2):
 
     # match ext2 sur new ext1
     hook = C.createHook(ext1, function='nodes')
-    nodes,dist = C.nearestNodes(hook, ext2)
+    nodes, _ = C.nearestNodes(hook, ext2)
     a2[1][posx2,indices2[:]-1] = ext1[1][posx1,nodes[:]-1]
     a2[1][posy2,indices2[:]-1] = ext1[1][posy1,nodes[:]-1]
     a2[1][posz2,indices2[:]-1] = ext1[1][posz1,nodes[:]-1]
@@ -2025,7 +2011,7 @@ def addNormalLayersStruct__(surfaces, distrib, check=0, niterType=0, niter=0, ni
                             kappaType=0, kappaS=[0.2,1.6], blanking=False, cellNs=[],
                             algo=0):
     import KCore
-    try: import Transform as T; import Generator as G
+    try: import Transform as T
     except: raise ImportError("addNormalLayers: requires Converter, Transform modules.")
     kmax = distrib[1].shape[1] # nb of layers in the normal direction
 
@@ -2198,7 +2184,7 @@ def addNormalLayersStruct__(surfaces, distrib, check=0, niterType=0, niter=0, ni
                 cellNp[noz][1][0,:] = cellN[1][0,:]
                 if cellNs[noz] is None: cellNs[noz] = C.copy(cellN)
                 else:
-                    cellNs[noz] = G.stack(cellNs[noz], cellN)
+                    cellNs[noz] = stack(cellNs[noz], cellN)
                 # modification du lissage pour les points masques
                 ni1 = ni-1
                 ni2 = max(ni-2,0)

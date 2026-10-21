@@ -5,7 +5,6 @@ from . import Converter
 from . import converter
 from . import PyTree
 import numpy
-import math
 # global definition: coordinates name
 coordinate = ['CoordinateX', 'CoordinateY', 'CoordinateZ']
 
@@ -226,14 +225,12 @@ def _rmGhostCells(t, b, d, adaptBCs=0, modified=[]):
             img = dim[1]; jmg = dim[2]; kmg = dim[3]
             # Traitement particulier 2D
             if kmg == 2:
-                try:
-                    import Transform.PyTree as T
-                    zpp = T.subzone(zp, (1,1,1), (-1,-1,1)); kmg = 1
-                    zp[2] = zpp[2] # force in place
-                    zp[1] = zpp[1]
-                    dim = Internal.getZoneDim(zp)
-                    #print('Warning: rmGhostCells: matching boundaries will be lost.')
-                except: pass
+                import Transform.PyTree as T
+                zpp = T.subzone(zp, (1,1,1), (-1,-1,1)); kmg = 1
+                zp[2] = zpp[2] # force in place
+                zp[1] = zpp[1]
+                dim = Internal.getZoneDim(zp)
+                #print('Warning: rmGhostCells: matching boundaries will be lost.')
             # zone dimension without ghost cells
             im = img-2*d; jm = jmg-2*d; km = kmg-2*d
             # check dimensions
@@ -513,9 +510,9 @@ def getInfoForFillJoinsStruct__(prange, prangedonor, trirac, dim, dimdonor,
         nmratioFact = nmratio[0]*nmratio[1]*nmratio[2]
         if nmratioFact < 1:
             isFine = 1
-            iratio = int(math.ceil(1./nmratio[0]))
-            jratio = int(math.ceil(1./nmratio[1]))
-            kratio = int(math.ceil(1./nmratio[2]))
+            iratio = int(numpy.ceil(1./nmratio[0]))
+            jratio = int(numpy.ceil(1./nmratio[1]))
+            kratio = int(numpy.ceil(1./nmratio[2]))
         else:
             isFine = -1
             iratio = int(nmratio[0])

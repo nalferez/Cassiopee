@@ -32,7 +32,7 @@ to the current rank fully loaded and no skeleton zones.
 It can be viewed as a *loaded skeleton tree* with skeleton zones suppressed.
 
 Generally, Cassiopee functions will operate seamlessly on
-a partial tree, if the function doesn't requires data exchanges.
+a partial tree, if the function doesn't require data exchanges.
 If the function requires exchanges, then a specific version exists
 in the Module.Mpi module. For instance, for Converter, only center2Node
 requires exchanges and is redefined in Converter.Mpi.
@@ -90,7 +90,9 @@ List of functions
     Converter.Mpi.setCommunicator
     Converter.Mpi.addXZones
     Converter.Mpi.rmXZones
+    Converter.Mpi.allgatherDict
     Converter.Mpi.allgatherTree
+    Converter.Mpi.allreduceDict
 
 **-- Actions**
 
@@ -120,7 +122,7 @@ Input/output
     :type fileName: string
     :param format: bin_cgns, bin_adf, bin_hdf (optional)
     :type format: string
-    :param maxFloatSize: the maxSize of float array to load
+    :param maxFloatSize: the maximum size of float arrays to load
     :type maxFloatSize: int
     :param maxDepth: max depth of load
     :type maxDepth: int
@@ -175,7 +177,7 @@ Input/output
     and returns None.
 
     :param t: input data
-    :type t: [pyTree]
+    :type t: pyTree
     :param fileName: file name to read from
     :type fileName: string
     :param format: bin_cgns, bin_adf, bin_hdf (optional)
@@ -202,7 +204,7 @@ Input/output
     Distributor2.distribute or setProc. 
 
     :param t: input data
-    :type t: [pyTree]
+    :type t: pyTree
     :param fileName: file name to write to
     :type fileName: string
     :param format: bin_cgns, bin_adf, bin_hdf (optional)
@@ -226,7 +228,7 @@ Input/output
    partial tree (**P**) to a file (adf or hdf).
 
    :param t: input data
-   :type t: [pyTree]
+   :type t: pyTree
    :param fileName: file name to write to
    :type fileName: string
    :param format: bin_cgns, bin_adf, bin_hdf (optional)
@@ -251,14 +253,14 @@ Conversions
 .. py:function:: Converter.Mpi.convert2SkeletonTree(t, maxSize=6)
 
     Convert a tree (**LS** or **P**) to a skeleton tree (S). In a skeleton tree,
-    numpys in DataArray_t nodes are replaced by None.
+    numpy arrays in DataArray_t nodes are replaced by None.
 
     Exists also as in place version (_convert2SkeletonTree) that modifies t
     and returns None.
 
     :param t: input data
     :type t: [pyTree, base, zone, list of zones]
-    :param maxSize: numpy bigger than maxSize are remplace by None
+    :param maxSize: numpy arrays larger than maxSize are replaced by None
     :type maxSize: int
     :rtype: Identical to t
 
@@ -295,7 +297,7 @@ Conversions
 .. py:function:: Converter.Mpi.createBBoxTree(t, method='AABB', keepOldNodes=True)
 
     From a partial tree (**P**) or a loaded skeleton tree (**LS**), create a full tree containing 
-    the bbox of zones. A bbox is a structured grid made of 8 points englobing
+    the bbox of zones. A bbox is a structured grid made of 8 points surrounding a
     zone. The returned tree is identical on all processors. 
     Argument method can be 'AABB' (axis aligned bbox) or 'OBB' (oriented bbox). 
 
@@ -396,10 +398,10 @@ Graphs
     :param t2: optional second tree for type='bbox3'
     :type t2: pyTree
     :param procDict: if provided, used for zone affectation
-    :type procDict: dictionary
-    :param intersectionDict: dictionary of intersections
-    :type intersectionDict: python dictionary
-    :rtype: python dictionary of communications
+    :type procDict: dict
+    :param intersectionsDict: dictionary of intersections
+    :type intersectionsDict: dict
+    :rtype: dict of communications
 
     *Example of use:*
 
@@ -431,9 +433,9 @@ Exchanges
     Exists also as in place version (_addXZones) that modifies t and returns None.
 
     :param t: input tree
-    :type t: [pyTree]
+    :type t: pyTree
     :param graph: communication graph as defined by computeGraph
-    :type graph: dictionary
+    :type graph: dict
     :return: modified reference copy of t
     :rtype: tree with connected zones added
 
@@ -452,7 +454,7 @@ Exchanges
     Exists also as in place version (_rmXZones) that modifies t and returns None.
 
     :param t: input tree
-    :type t: [pyTree]
+    :type t: pyTree
     :rtype: tree with connected zones suppressed
 
     *Example of use:*
@@ -463,13 +465,46 @@ Exchanges
 
 ---------------------------------------------------------------------------
 
+.. py:function:: Converter.Mpi.allgatherDict(data, method=0, fillValue=None)
+
+    Gather a distributed dict on all processors.
+    All processors then see the same dict.
+    There are four ways to build the gathered dict:
+      - method 0 (default) - Unique values: for a given key, the gathered data
+        is a single list containing unique values only.
+      - method 1 - All values found: for a given key, the gathered data is a
+        list containing all values.
+      - method 2 - All values, fill missing with fillValue: for a given key, the
+        gathered data is a list containing all values. If the key is not found
+        on one rank, add fillValue (default None).
+      - method 3 - Single value: for a given key, the gathered data is a single
+        value. If a key is found multiple times, choose the corresponding value
+        in the lowest rank.
+
+    :param data: input dict
+    :type data: dict
+    :param method: method index (0, 1, 2, or 3)
+    :type method: int
+    :param fillValue: fill value when a key is not present on a rank
+    :type fillValue: [int, float, bool, list, NoneType]
+    :rtype: merged and gathered dict (identical on all processors)
+
+    *Example of use:*
+
+    * `Gather a distributed dict (pyTree) <Examples/Converter/allgatherDictPT.py>`_:
+
+    .. literalinclude:: ../build/Examples/Converter/allgatherDictPT.py
+
+
+---------------------------------------------------------------------------
+
 .. py:function:: Converter.Mpi.allgatherTree(t)
 
     Gather a distributed tree on all processors.
     All processors then see the same tree.
 
     :param t: input tree
-    :type t: [pyTree]
+    :type t: pyTree
     :rtype: merged and gathered tree (identical on all processors)
 
     *Example of use:*
@@ -477,6 +512,39 @@ Exchanges
     * `Gather a distributed tree (pyTree) <Examples/Converter/allgatherTreePT.py>`_:
 
     .. literalinclude:: ../build/Examples/Converter/allgatherTreePT.py
+
+
+---------------------------------------------------------------------------
+
+.. py:function:: Converter.Mpi.allreduceDict(data, method=0, fillValue=None, op=Cmpi.SUM)
+
+    Reduce a distributed dict to all procs (using pickle, small data) applying op.
+    All processors then see the same dict.
+    There are three ways to build the gathered dict:
+      - method 0 (default) - Unique values: for a given key, the gathered data
+        is a single list containing unique values only.
+      - method 1 - All values found: for a given key, the gathered data is a
+        list containing all values.
+      - method 2 - All values, fill missing with fillValue: for a given key, the
+        gathered data is a list containing all values. If the key is not found
+        on one rank, add fillValue (default None).
+    Valid reduce ops to apply to the gathered dict are Cmpi.SUM, Cmpi.MIN, Cmpi.MAX, Cmpi.LOR, and Cmpi.LAND.
+
+    :param data: input dict
+    :type data: dict
+    :param method: method index (0, 1, or 2)
+    :type method: int
+    :param fillValue: fill value when a key is not present on a rank
+    :type fillValue: [int, float, bool, list, NoneType]
+    :param op: reduce operator
+    :type op: MPI object
+    :rtype: reduced dict (identical on all processors)
+
+    *Example of use:*
+
+    * `Gather a distributed dict (pyTree) <Examples/Converter/allreduceDictPT.py>`_:
+
+    .. literalinclude:: ../build/Examples/Converter/allreduceDictPT.py
 
 
 ---------------------------------------------------------------------------
@@ -489,7 +557,7 @@ Actions
 
     Enable to monitor CPU usage and memory usage for each node/process.
     If fileName="stdout", information is written to standard output with the processor number. 
-    If fileName is another name, information is written in "filenameXXX" files, one for each process. If filename does not have a format for the process number and/or an file extension, it is appended "%03d" and ".out", respectively.
+    If fileName is another name, information is written in "filenameXXX" files, one for each process. If filename does not have a format for the process number and/or a file extension, it is appended "%03d" and ".out", respectively.
     If cpu=True, time elapsed since the previous call to "trace" by this node is written.
     If mem=True, the current usage of memory of each process is written.
     Method used to find memory: 0: Rss in smaps, 1: tracemalloc.
@@ -522,7 +590,7 @@ Actions
     Otherwise, the zone with its coordinates is moved to node.
 
     :param t: input tree
-    :type t: [pyTree]
+    :type t: pyTree
     :rtype: merged and gathered tree (identical on all processors)
 
     *Example of use:*

@@ -18,11 +18,10 @@
 */
 #include "converter.h"
 
-using namespace K_FUNC;
 using namespace K_FLD;
 
 // ============================================================================
-/* Convert an unstructured array to a hexaedrical mesh */
+/* Convert an unstructured array to a hexahedral mesh */
 // ============================================================================
 PyObject* K_CONVERTER::convertUnstruct2Hexa(PyObject* self, PyObject* args)
 {

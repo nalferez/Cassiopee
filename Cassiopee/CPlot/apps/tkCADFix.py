@@ -6,7 +6,7 @@ import CPlot.PyTree as CPlot
 import CPlot.Tk as CTK
 import Converter.Internal as Internal
 import CPlot.iconics as iconics
-import math
+import numpy
 
 # local widgets list
 WIDGETS = {}; VARS = []
@@ -485,8 +485,8 @@ def createApp(win):
             NL = OCC.getNbLonelyEdges(CTK.t)
             tol = Internal.getNodeFromName1(CAD, 'hmax')
             tol = Internal.getValue(tol)
-            power = math.floor(math.log10(abs(tol)))
-            tol = round(tol, -power)
+            power = numpy.floor(numpy.log10(abs(tol)))
+            tol = round(tol, -int(power))
 
     # -0- CAD file name -
     V = TK.StringVar(win); V.set(fileName); VARS.append(V)
