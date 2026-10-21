@@ -16,7 +16,7 @@ NEQ_LBM =  89
 # Mise a plat (compactage) arbre donneur au niveau de la base
 # fonctionne avec ___setInterpTransfer
 #==============================================================================
-def miseAPlatDonorTree__(zones, tc, graph=None, list_graph=None, nbpts_linelets=0):
+def miseAPlatDonorTree__(zones, tc, graph=None, list_graph=None, nbpts_linelets=0, neq=None):
     if isinstance(graph, list):
         ###########################IMPORTANT ######################################
         #test pour savoir si graph est une liste de dictionnaires (explicite local)
@@ -97,12 +97,7 @@ def miseAPlatDonorTree__(zones, tc, graph=None, list_graph=None, nbpts_linelets=
 
         else: neq_trans = neq_base
 
-        try:
-               import dNami.rhsinfo as rhs
-               # neq_trans = rhs.nvarst_dyn+len(rhs.varname)
-               neq_trans = len(rhs.varname)
-        except:
-               pass
+        if neq is not None: neq_trans = neq   # number of transferred variables given by the solver
 
         #print(z[0])
         subRegions =  Internal.getNodesFromType1(z, 'ZoneSubRegion_t')
