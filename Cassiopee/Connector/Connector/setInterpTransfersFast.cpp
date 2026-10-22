@@ -38,6 +38,14 @@ using namespace K_FLD;
 
 //#define TimeShow
 
+// dNami transfers (varType 111: solved variables, 112: stored groups): grp2transfer is the descriptor built by dNami
+// (dNami src_cpp/transfer.cpp), so that Cassiopee reads no dNami parameter layout:
+//   [ng, nvars, nvars of group 1..ng, then for each local zone z = 0, 1, ...: shift of group 1..ng in the zone]
+// ng = 0 for varType 111 (nvars = number of solved variables); the shift is the offset of the group's first variable
+// in the zone's array (the variables of a group are NDIMDX apart).
+#define DNAMI_GRP_NVARS(d, g)    (d)[1 + (g)]
+#define DNAMI_GRP_SHIFT(d, z, g) (d)[1 + (d)[0]*(1 + (z)) + (g)]
+
 
 #ifdef TimeShow
 
@@ -452,10 +460,9 @@ void K_CONNECTOR::setInterpTransfersIntra(
   else if (varType == 4)  nvars = param_int[0][NEQ_LBM] +5;     // LBM transfer, 19 or 27 Qs and 5 macros (32 max in total)
   else if (varType == 41) nvars = param_int[0][NEQ_LBM] +5 + 12;
   else if (varType == 5 ) nvars = param_int[0][NEQ_LBM] +5 +  6; // LBM Overset ou hybride : 19 or 27 Q, 5 macro and 6 gradients
-  else if (varType == 111)nvars = param_int[0][4]; // dNami transfers varsolved
+  else if (varType == 111) nvars = grp2transfer[1]; // dNami transfers varsolved
   else                    nvars = 6;
 
-  E_Int beg_param_grp = 0;
   E_Int nbgrptot      = 0;
 
   if (varType == 112)
@@ -463,14 +470,11 @@ void K_CONNECTOR::setInterpTransfersIntra(
 
   nvars = 0;
 
-  beg_param_grp = 13 + param_int[0][4] + param_int[0][22] + 1 + param_int[0][22 + 1 + param_int[0][4] + param_int[0][22] ] + 6 + 6 + 6 +1+3;
-  nbgrptot      = param_int[0][beg_param_grp];
+  nbgrptot      = grp2transfer[0];
 
   for (E_Int g = 1 ; g <= grp2transfer[0]; g++)
   {
-
-    E_Int grpId        = grp2transfer[g];
-    E_Int nbvars_grpId = param_int[0][beg_param_grp + nbgrptot + grpId];
+    E_Int nbvars_grpId = DNAMI_GRP_NVARS(grp2transfer, g);
 
     nvars = nvars + nbvars_grpId;
   }
@@ -698,8 +702,6 @@ void K_CONNECTOR::setInterpTransfersIntra(
           {*/
            if (varType == 112)
            {
-              E_Int beg_param_grpR = 13 + param_int[NoR][4] + param_int[NoR][22] + 1 + param_int[NoR][22 + 1+ param_int[NoR][4] + param_int[NoR][22] ] + 6 + 6 + 6 +1+3;
-              E_Int beg_param_grpD = 13 + param_int[NoD][4] + param_int[NoD][22] + 1 + param_int[NoD][22 + 1+ param_int[NoD][4] + param_int[NoD][22] ] + 6 + 6 + 6 +1+3;
 /*
               std:cout << "\n zone donnor : " << NoD << " zone receveur " << NoR << "\n"<<"\n param_grp NoD ";
 
@@ -715,12 +717,10 @@ void K_CONNECTOR::setInterpTransfersIntra(
             E_Int eqst = 0;
 
             for (E_Int g = 1 ; g <= grp2transfer[0]; g++){
+                E_Int nbvars_grpId = DNAMI_GRP_NVARS(grp2transfer, g); // same number of variables for all zones. Here we take it from zone 0
 
-                E_Int grpId        = grp2transfer[g];
-                E_Int nbvars_grpId = param_int[NoR][beg_param_grpR + nbgrptot + grpId]; // same number of variables for all zones. Here we take it from zone 0
-
-                E_Int shift_grpIdR = param_int[NoR][beg_param_grpR + grpId];
-                E_Int shift_grpIdD = param_int[NoD][beg_param_grpD + grpId];
+                E_Int shift_grpIdR = DNAMI_GRP_SHIFT(grp2transfer, NoR, g);
+                E_Int shift_grpIdD = DNAMI_GRP_SHIFT(grp2transfer, NoD, g);
 
                 for (E_Int varst = 0; varst < nbvars_grpId; varst++){
 
@@ -1044,10 +1044,9 @@ void K_CONNECTOR::setInterpTransfersInter(
   else if (varType == 4)  nvars = param_int[0][NEQ_LBM] +5;     // LBM transfer, 19 or 27 Qs and 5 macros (32 max in total)
   else if (varType == 41) nvars = param_int[0][NEQ_LBM] +5 +12; // LBM Overset ou hybride : 19 or 27 Q, 5 macro and 6 gradients
   else if (varType == 5 ) nvars = param_int[0][NEQ_LBM] +5 + 6; // LBM Overset ou hybride : 19 or 27 Q, 5 macro and 6 gradients
-  else if (varType == 111) nvars = param_int[0][4]; // dNami transfers varsolved
+  else if (varType == 111) nvars = grp2transfer[1]; // dNami transfers varsolved
   else                    nvars = 6;
 
-  E_Int beg_param_grp = 0;
   E_Int nbgrptot      = 0;
 
   if (varType == 112)
@@ -1055,8 +1054,7 @@ void K_CONNECTOR::setInterpTransfersInter(
 
   nvars = 0;
 
-  beg_param_grp = 13 + param_int[0][4] + param_int[0][22] + 1 + param_int[0][22 + 1 + param_int[0][4] + param_int[0][22] ] + 6 + 6 + 6 +1+3;
-  nbgrptot      = param_int[0][beg_param_grp];
+  nbgrptot      = grp2transfer[0];
 
 
 /*  printf("\n[Send] nbgrptot is : %d",nbgrptot);
@@ -1069,9 +1067,7 @@ void K_CONNECTOR::setInterpTransfersInter(
 
   for (E_Int g = 1 ; g <= grp2transfer[0]; g++)
   {
-
-    E_Int grpId        = grp2transfer[g];
-    E_Int nbvars_grpId = param_int[0][beg_param_grp + nbgrptot + grpId];
+    E_Int nbvars_grpId = DNAMI_GRP_NVARS(grp2transfer, g);
 
     nvars = nvars + nbvars_grpId;
   }
@@ -1454,16 +1450,12 @@ if (has_data_to_send) {
                       if (varType == 112)
                       {
 
-                       E_Int beg_param_grpD = 13 + param_int[NoD][4] + param_int[NoD][22] + 1 + param_int[NoD][22 + 1 + param_int[NoD][4] + param_int[NoD][22] ] + 6 + 6 + 6 +1+3;
-
                        E_Int eqst = 0;
 
                        for (E_Int g = 1 ; g <= grp2transfer[0]; g++){
+                           E_Int nbvars_grpId = DNAMI_GRP_NVARS(grp2transfer, g); // same number of variables for all zones. Here we take it from zone 0
 
-                           E_Int grpId        = grp2transfer[g];
-                           E_Int nbvars_grpId = param_int[NoD][beg_param_grpD + nbgrptot + grpId]; // same number of variables for all zones. Here we take it from zone 0
-
-                           E_Int shift_grpIdD = param_int[NoD][beg_param_grpD + grpId];
+                           E_Int shift_grpIdD = DNAMI_GRP_SHIFT(grp2transfer, NoD, g);
 
                            for (E_Int varst = 0; varst < nbvars_grpId; varst++){
 
@@ -1720,14 +1712,12 @@ void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& p
 
      RecvQueue  pt_rcv_queue = *pair_of_queue_loc->first;
 
-     E_Int beg_param_grp = 0;
      E_Int nbgrptot      = 0;
 
      if (grp2transfer[0]>0)
      { // dNami transfer groups from varstored
 
-     beg_param_grp = 13 + param_int[0][4] + param_int[0][22] + 1 + param_int[0][22 + 1 + param_int[0][4] + param_int[0][22] ] + 6 + 6 + 6 +1+3;
-     nbgrptot      = param_int[0][beg_param_grp];
+     nbgrptot      = grp2transfer[0];
 /*       std:cout << "\n [Recv] param_grp ";
        for (E_Int addr = 0;addr<5 ;addr++){
          std::cout <<  param_int[0][beg_param_grp+addr]<< " ";
@@ -1787,14 +1777,11 @@ void K_CONNECTOR::getTransfersInter( E_Int& nbcom, E_Float**& ipt_ro, E_Int**& p
 
 
              E_Int eqst = 0;
-             E_Int beg_param_grpR = 13 + param_int[NoR][4] + param_int[NoR][22] + 1 + param_int[NoR][22 + 1 + param_int[NoR][4] + param_int[NoR][22] ] + 6 + 6 + 6 +1+3;
 
              for (E_Int g = 1 ; g <= grp2transfer[0]; g++){
+                 E_Int nbvars_grpId = DNAMI_GRP_NVARS(grp2transfer, g); // same number of variables for all zones. Here we take it from zone 0
 
-                 E_Int grpId        = grp2transfer[g];
-                 E_Int nbvars_grpId = param_int[NoR][beg_param_grpR + nbgrptot + grpId]; // same number of variables for all zones. Here we take it from zone 0
-
-                 E_Int shift_grpIdR = param_int[NoR][beg_param_grpR + grpId];
+                 E_Int shift_grpIdR = DNAMI_GRP_SHIFT(grp2transfer, NoR, g);
 
                  for (E_Int varst = 0; varst < nbvars_grpId; varst++){
 
