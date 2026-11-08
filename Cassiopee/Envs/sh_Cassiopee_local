@@ -728,6 +728,54 @@ elif [ "$MAC" = "adastra_gpu" ]; then
     export PROD_LD_LIBRARY_PATH="/opt/cray/pe/python/3.11.5/lib"
     export PYTHONEXE=python3
     
+elif [ "$MAC" = "adastra_genoa" ]; then
+#------------------ adastra genoa (dNami CPU build, fork) ---------------------
+    # Modules match the paths of the 'adastra_genoa' entry of KCore/installBase.py
+    export ELSAPROD=adastra_genoa
+    export ELSAPROD=$ELSAPROD$EXT
+    export OMP_NUM_THREADS=1   # dNami: 1 thread per MPI rank (the installer sets the build parallelism itself)
+    export OMP_PLACES=cores
+    export PRODMODE=1
+    module purge
+    module load cpe/25.09
+    module load PrgEnv-gnu
+    module load craype-x86-genoa
+    module load cray-mpich/9.0.1
+    module load cray-python/3.11.7
+    module load cray-hdf5-parallel/1.14.3.7
+    PROD_LD_LIBRARY_PATH="/opt/rh/gcc-toolset-14/root/usr/lib/gcc/x86_64-redhat-linux/14"
+    PROD_LD_LIBRARY_PATH="$CRAY_LD_LIBRARY_PATH":"$PROD_LD_LIBRARY_PATH"
+    export PYTHONEXE=python3
+
+elif [ "$MAC" = "jean_zay_cpu" ]; then
+#------------------ jean-zay cpu_p1 (dNami CPU build, fork) -------------------
+    # Python is not a module: the dNami installer builds its own (put it first in PATH after sourcing this file)
+    export ELSAPROD=jean_zay_cpu
+    export ELSAPROD=$ELSAPROD$EXT
+    export OMP_NUM_THREADS=1   # dNami: 1 thread per MPI rank (the installer sets the build parallelism itself)
+    type module > /dev/null 2>&1 || . /etc/profile.d/z_modules.sh
+    module purge > /dev/null 2>&1
+    module load gcc/13.3.0
+    module load openmpi/4.1.8
+    module load hdf5/1.12.0
+    export PYTHONEXE=python3
+    export PRODMODE=1
+
+elif [ "$MAC" = "irene_rome" ]; then
+#------------------ irene rome (dNami CPU build, fork) ------------------------
+    # One module per 'module load' line (a combined load loads nothing on the CCC machines). HDF5 = the one
+    # bundled with python3/3.12 (h5py of that module), paths in the 'irene_rome' entry of KCore/installBase.py
+    export ELSAPROD=irene_rome
+    export ELSAPROD=$ELSAPROD$EXT
+    export OMP_NUM_THREADS=1   # dNami: 1 thread per MPI rank (the installer sets the build parallelism itself)
+    module load flavor/python3/cuda-12.2
+    module load gnu/11
+    module load mpi/openmpi/4
+    module load python3/3.12
+    PROD_LD_LIBRARY_PATH="/ccc/products2/python3-3.12/Rhel_8__x86_64/gcc--11.1.0__openmpi--4.0.1/cuda-12.2/install_tree/hdf5/1.12.3/kqkwrtpqwps2mvxplsxnvbdj2snbu6po/lib"
+    export PYTHONEXE=python3
+    export PRODMODE=1
+
 elif [ "$MAC" = "atlas" ]; then
 #----------------------------- Atlas msys2  -----------------------------------
     export ELSAPROD=win64

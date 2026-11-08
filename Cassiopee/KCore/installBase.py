@@ -609,6 +609,70 @@ installDict = {
         'NvccAdditionalOptions': []
     },
 
+    # ---- dNami CPU builds on the French national machines (fork entries, MACHINE=<key>; validated 2026-10-27
+    # with dNami; modules in Envs/sh_Cassiopee_local, same key; paths follow the module versions loaded there)
+    'adastra_genoa': {
+        'description': 'CINES Adastra GENOA (AMD EPYC 9654), cpe/25.09 PrgEnv-gnu gcc 14, cray-mpich 9.0.1',
+        'f77compiler': 'gfortran',
+        'f90compiler': 'gfortran',
+        'Cppcompiler': 'gcc',
+        'CppAdditionalOptions': ['-march=znver4', '-mtune=znver4',
+                                 '-Wno-implicit-function-declaration',
+                                 '-Wno-int-conversion',
+                                 '-Wno-incompatible-pointer-types',
+                                 '-DCACHELINE=64', '-DNB_SOCKET=2',
+                                 '-DCORE_PER_SOCK=96', '-DSIMD=AVX512'],
+        'f77AdditionalOptions': ['-march=znver4', '-mtune=znver4'],
+        'useOMP': True,
+        'static': False,
+        'additionalIncludePaths': [
+            '/opt/cray/pe/mpich/9.0.1/ofi/gnu/11.2/include',
+            '/opt/cray/pe/hdf5-parallel/1.14.3.7/gnu/12.2/include'],
+        'additionalLibs': ['hdf5', 'mpi', 'gfortran', 'gomp'],
+        'additionalLibPaths': [
+            '/opt/cray/pe/mpich/9.0.1/ofi/gnu/11.2/lib',
+            '/opt/cray/pe/hdf5-parallel/1.14.3.7/gnu/12.2/lib'],
+        'useCuda': False,
+        'NvccAdditionalOptions': []
+    },
+
+    'jean_zay_cpu': {
+        'description': 'IDRIS Jean Zay cpu_p1 (Xeon Gold 6248, Cascade Lake), gcc 13.3 + OpenMPI 4.1.8',
+        'f77compiler': 'gfortran',
+        'f90compiler': 'gfortran',
+        'Cppcompiler': 'gcc',
+        'CppAdditionalOptions': ['-march=cascadelake', '-O3',
+                                 '-DCACHELINE=64', '-DNB_SOCKET=2',
+                                 '-DCORE_PER_SOCK=20', '-DSIMD=AVX512'],
+        'f77AdditionalOptions': ['-march=cascadelake', '-O3'],
+        'useOMP': True,
+        'static': False,
+        'additionalIncludePaths': [],
+        'additionalLibs': [],
+        'additionalLibPaths': [],
+        'useCuda': False,
+        'NvccAdditionalOptions': []
+    },
+
+    'irene_rome': {
+        'description': 'TGCC Irene Rome (AMD EPYC 7H12), gcc 11 + OpenMPI 4, HDF5 of the python3/3.12 module',
+        'f77compiler': 'gfortran',
+        'f90compiler': 'gfortran',
+        'Cppcompiler': 'gcc',
+        'CppAdditionalOptions': ['-mavx2', '-mfma', '-DOMPI_SKIP_MPICXX'],
+        'f77AdditionalOptions': [],
+        'useOMP': True,
+        'static': False,
+        'additionalIncludePaths': [
+            '/ccc/products2/python3-3.12/Rhel_8__x86_64/gcc--11.1.0__openmpi--4.0.1/cuda-12.2/install_tree/hdf5/1.12.3/kqkwrtpqwps2mvxplsxnvbdj2snbu6po/include',
+            '/ccc/products/openmpi-4.1.4/gcc--11.1.0/default/include'],
+        'additionalLibs': [],
+        'additionalLibPaths': [
+            '/ccc/products2/python3-3.12/Rhel_8__x86_64/gcc--11.1.0__openmpi--4.0.1/cuda-12.2/install_tree/hdf5/1.12.3/kqkwrtpqwps2mvxplsxnvbdj2snbu6po/lib'],
+        'useCuda': False,
+        'NvccAdditionalOptions': []
+    },
+
     # 'ubuntu': {
     #     'description': 'Linux ubuntu 24.04',
     #     'f77compiler': 'gfortran',
